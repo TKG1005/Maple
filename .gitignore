@@ -1,3 +1,4 @@
 .venv/
 pokemon-showdown/
 .python-version
+.DS_Store
