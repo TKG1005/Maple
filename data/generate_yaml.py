@@ -76,7 +76,7 @@ def build_yaml(df: pd.DataFrame) -> dict:
 def main() -> None:
     """Excel 読み込み → dict 生成 → YAML 書き出し"""
     # 3‑A) Excel ファイルを読み込む（最初のシートを想定）
-    df = pd.read_excel(SOURCE_XLSX)
+    df = pd.read_csv(SOURCE_XLSX)
 
     # 3‑B) DataFrame を辞書へ変換
     yaml_dict = build_yaml(df)
@@ -95,4 +95,4 @@ def main() -> None:
 # ---------- 4. スクリプト実行エントリポイント ----------------------------
 
 if __name__ == "__main__":
-    main
+    main()

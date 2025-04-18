@@ -1,1 +1,795 @@
- 
+my_active:
+  active_level:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_akt:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts
+    encoder: identity
+    default: 0
+  active_boosts_def:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_spa:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_spd:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_spe:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_acc:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_boosts_eve:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_fainted_flag:
+    dtype: bool
+    battle_path: battle.active_pokemon.fainted
+    encoder: identity
+    default: 0
+  active_is_terastallized:
+    dtype: bool
+    battle_path: battle.active_pokemon.is_terastallized
+    encoder: identity
+    default: 0
+  active_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_revealed:
+    dtype: bool
+    battle_path: battle.active_pokemon.revealed
+    encoder: identity
+    default: 0
+  active_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  active_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+opp_active:
+  opp_active_lebel:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_akt:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts
+    encoder: identity
+    default: 0
+  opp_active_boosts_def:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_spa:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_spd:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_spe:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_acc:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_boosts_eve:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_fainted_flag:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_terastallized:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_revealed:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_active_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+my_bench1:
+  my_bench1_level:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_fainted_flag:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_terastallized:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_revealed:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench1_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+my_bench2:
+  my_bench2_level:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_fainted_flag:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_terastallized:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_revealed:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_bench2_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+opp_bench1:
+  opp_bench1_level:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_fainted_flag:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_terastallized:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_revealed:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench1_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+opp_bench2:
+  opp_bench2_level:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_current_hp:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_current_hp_frac:
+    dtype: float
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_fainted_flag:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_terastallized:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_held_item:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_move1:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_move2:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_move3:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_move4:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_revealed:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_species:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_brn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_fnt:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_frz:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_par:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_psn:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_slp:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_is_tox:
+    dtype: bool
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_teratype:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_primary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_bench2_secondary_type:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+field:
+  weather:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  terrain:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+my_field:
+  my_field_reflect:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_field_lightscreen:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_field_auroraveil:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+opp_field:
+  opp_field_reflect:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_field_lightscreen:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_field_auroraveil:
+    dtype: nan
+    battle_path: nan
+    encoder: identity
+    default: 0
+meta:
+  turn_count:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  my_remaining_pokemon:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
+  opp_remaining_pokemon:
+    dtype: int
+    battle_path: nan
+    encoder: identity
+    default: 0
