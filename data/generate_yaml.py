@@ -58,12 +58,16 @@ def build_yaml(df: pd.DataFrame) -> dict:
         entry = {
             # dtype: 空欄なら float32 を既定に
             "dtype": str(row.get("Type", "float32")).lower(),
+            
+            # shape:　空欄なら[]
+            "shape": str(row.get("one-hot長","")).strip(),
 
             # battle_path: poke‑env 内の取得パス
             "battle_path": str(row.get("Battle　経路", "")).strip(),
 
             # encoder: 未指定なら identity
             "encoder": str(row.get("Encoder", "identity")).strip(),
+            
 
             # default: NaN の場合は 0 で埋める
             "default": row.get("Default", 0)
