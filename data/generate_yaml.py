@@ -26,58 +26,45 @@ TARGET_YAML = "state_spec.yml"        # 出力: YAML ファイル
 # ---------- 2. DataFrame → ネスト辞書 変換関数 ----------------------------
 
 def build_yaml(df: pd.DataFrame) -> dict:
-    """
-    行単位で DataFrame を走査し、
-    {Category: {Feature ID: メタ情報…}} の辞書を生成する。
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        読み込んだ Excel シート
-
-    Returns
-    -------
-    dict
-        YAML へそのまま safe_dump できるネスト辞書
-    """
     spec: dict = {}
 
-    # → DataFrame を 1 行ずつ処理
     for _, row in df.iterrows():
-
-        # 2‑A) カテゴリとフィーチャ名を取得（空ならスキップ）
-        cat  = row.get("Category")
+        cat = row.get("Category")
         feat = row.get("Feature ID")
         if pd.isna(cat) or pd.isna(feat):
-            continue  # 必須列が欠けている行は無視
+            continue
 
-        # 2‑B) カテゴリ辞書が無ければ作成
         spec.setdefault(cat, {})
 
-        # 2‑C) 個々のフィーチャに対するメタ情報を構築
         entry = {
-            # dtype: 空欄なら float32 を既定に
             "dtype": str(row.get("Type", "float32")).lower(),
-            
-            # shape:　空欄なら[]
-            "shape": str(row.get("one-hot長","")).strip(),
-
-            # battle_path: poke‑env 内の取得パス
             "battle_path": str(row.get("Battle　経路", "")).strip(),
-
-            # encoder: 未指定なら identity
             "encoder": str(row.get("Encoder", "identity")).strip(),
-            
-
-            # default: NaN の場合は 0 で埋める
-            "default": row.get("Default", 0)
+            "default": row.get("Default", 0),
         }
 
-        # 2‑D) ネスト辞書へ登録
+        # --- 新規追加（Range 列） ---
+        range_val = row.get("Range")
+        if isinstance(range_val, str) and "range" in range_val:
+            # 例: 'range:[0,255] scale_to:[0,1]' を分解
+            parts = [p.strip() for p in range_val.split(" ") if p]
+            for p in parts:
+                if p.startswith("range:"):
+                    entry["range"] = eval(p.replace("range:", ""))
+                elif p.startswith("scale_to:"):
+                    entry["scale_to"] = eval(p.replace("scale_to:", ""))
+
+        # --- 新規追加（classes 列） ---
+        classes_val = row.get("classes")
+        if isinstance(classes_val, str) and classes_val.strip().startswith("["):
+            try:
+                entry["classes"] = eval(classes_val.strip())
+            except Exception:
+                pass  # eval失敗時は無視
+
         spec[cat][feat] = entry
 
     return spec
-
 
 # 取得したわざ一覧を固定順でソートする関数
 def get_sorted_moves(pokemon) -> list[Move]:
