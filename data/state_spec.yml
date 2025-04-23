@@ -1,124 +1,55 @@
 my_active:
-  active_boosts_acc:
-    dtype: int
-    battle_path: nan
-    encoder: linear_scale
-    default: '0'
   active_current_hp_frac:
     dtype: float
     battle_path: battle.active_pokemon.current_hp_fraction
     encoder: identity
     default: '1'
   active_move1_type:
-    dtype: pkemontype
-    battle_path: battle.active_pokemon.moves['key'].type
+    dtype: str
+    battle_path: active_sorted_moves[0].type.name.lower()
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
-  active_move2_type:
-    dtype: pkemontype
-    battle_path: battle.active_pokemon.moves['key'].type
-    encoder: onehot
-    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
-  active_move3_type:
-    dtype: pkemontype
-    battle_path: battle.active_pokemon.moves['key'].type
-    encoder: onehot
-    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
-  active_move4_type:
-    dtype: pkemontype
-    battle_path: battle.active_pokemon.moves['key'].type
-    encoder: onehot
-    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
-  active_primary_type:
-    dtype: pokemontype(enum)
-    battle_path: battle.active_pokemon.type_1
-    encoder: onehot
-    default: .nan
-  active_secondary_type:
-    dtype: pokemontype(enum)
-    battle_path: battle.active_pokemon.type_2
-    encoder: onehot
-    default: .nan
+  active_move1_base_power:
+    dtype: int
+    battle_path: active_sorted_moves[0].base_power
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
 opp_active:
   opp_active_current_hp_frac:
     dtype: float
     battle_path: battle.opponent_active_pokemon.current_hp_fraction
     encoder: identify
     default: '1'
-  opp_active_primary_type:
-    dtype: pokemontype
-    battle_path: battle.opponent_actie_pokemon.type_1
-    encoder: onehot
-    default: none
-  opp_active_secondary_type:
-    dtype: pokemontype
-    battle_path: battle.opponent_actie_pokemon.type_2
-    encoder: onehot
-    default: none
 my_bench1:
   my_bench1_current_hp_frac:
     dtype: float
     battle_path: bench1.current_hp_frac
     encoder: nan
     default: .nan
-  my_bench1_primary_type:
-    dtype: pokemontype
-    battle_path: bench1.type_1
-    encoder: onehot
-    default: none
-  my_bench1_secondary_type:
-    dtype: pokemontype
-    battle_path: bench1.type_2
-    encoder: onehot
-    default: none
 my_bench2:
   my_bench2_current_hp_frac:
     dtype: float
     battle_path: bench2.current_hp_frac
     encoder: nan
     default: '1'
-  my_bench2_primary_type:
-    dtype: pokemontype
-    battle_path: bench2.type_1
-    encoder: onehot
-    default: none
-  my_bench2_secondary_type:
-    dtype: pokemontype
-    battle_path: bench2.type_2
-    encoder: onehot
-    default: none
 opp_bench1:
   opp_bench1_current_hp_frac:
     dtype: float
     battle_path: opp_bench1.current_hp_fraction
     encoder: identity
     default: '1'
-  opp_bench1_primary_type:
-    dtype: pokemontype
-    battle_path: opp_bench1.type_1
-    encoder: onehot
-    default: none
-  opp_bench1_secondary_type:
-    dtype: pokemontype
-    battle_path: opp_bench1.type_2
-    encoder: nan
-    default: none
 opp_bench2:
   opp_bench2_current_hp_frac:
     dtype: float
     battle_path: opp_bench2.current_hp_fraction
     encoder: identity
     default: '1'
-  opp_bench2_primary_type:
-    dtype: pokemontype
-    battle_path: opp_bench2.type_1
-    encoder: onehot
-    default: none
-  opp_bench2_secondary_type:
-    dtype: pokemontype
-    battle_path: opp_bench2.type_2
-    encoder: onehot
-    default: none
 field:
   weather:
     dtype: weather

@@ -1,0 +1,58 @@
+Corviknight @ Flame Orb  
+Ability: Pressure  
+Tera Type: Flying  
+EVs: 252 HP  
+- Body Press  
+- Double-Edge  
+- Hone Claws  
+- Nasty Plot  
+
+Dragapult @ Focus Sash  
+Ability: Infiltrator  
+Tera Type: Dragon  
+EVs: 252 HP / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Dragon Dance  
+- Surf  
+- Thunder Wave  
+- Will-O-Wisp  
+
+Ursaluna @ Assault Vest  
+Ability: Unnerve  
+Tera Type: Ground  
+EVs: 252 HP  
+Gentle Nature  
+IVs: 0 Atk  
+- Body Press  
+- Hyper Voice  
+- Seismic Toss  
+- Counter  
+
+Ting-Lu @ Leftovers  
+Ability: Vessel of Ruin  
+Tera Type: Dark  
+EVs: 252 HP / 252 Atk  
+- Facade  
+- Whirlwind  
+- Lash Out  
+- Earthquake  
+
+Alomomola @ Rocky Helmet  
+Ability: Regenerator  
+Tera Type: Water  
+EVs: 252 Def / 252 SpD  
+IVs: 0 Atk  
+- Blizzard  
+- Alluring Voice  
+- Pain Split  
+- Healing Wish  
+
+Hydreigon @ Life Orb  
+Ability: Levitate  
+Tera Type: Dark  
+EVs: 252 SpA / 252 Spe  
+- Draco Meteor  
+- Stealth Rock  
+- Head Smash  
+- Heat Wave  

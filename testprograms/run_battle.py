@@ -16,11 +16,11 @@ async def main():
         battle_format="gen9randombattle",
         # ローカルサーバーで動かす場合、通常 server_configuration の指定は不要
         # server_configuration=...,
-        log_level= 20 # INFOレベルのログを出力する場合 (デバッグに便利)
+        log_level= 40 # INFOレベルのログを出力する場合 (デバッグに便利)
     )
     player2 = RandomPlayer(
         battle_format="gen9randombattle",
-        log_level = 20
+        log_level = 40
     )
 
     # --- 対戦の実行 ---

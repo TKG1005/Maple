@@ -14,6 +14,11 @@ class MySimplePlayer(Player):
     """
     def choose_move(self, battle):
         # battle オブジェクトは現在の対戦状況を表します
+        
+        #　対戦が継続しているかどうかの確認
+        if battle.finished:
+            print("対戦終了済みです。行動を選択しません。")
+            return None
 
         # 1. 使える技があるか確認
         if battle.available_moves:

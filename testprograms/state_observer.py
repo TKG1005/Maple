@@ -1,6 +1,7 @@
 
 import numpy as np
 import yaml
+import time
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.pokemon import Pokemon
 from poke_env.environment.move import Move
@@ -12,6 +13,8 @@ class StateObserver:
         self.encoders = self._build_encoders(self.spec)
 
     def observe(self, battle: AbstractBattle) -> np.ndarray:
+
+        # observeの本体処理
         state = []
         context = self._build_context(battle)
         for group, features in self.spec.items():
@@ -29,15 +32,20 @@ class StateObserver:
         ctx = {'battle': battle}
         my_team = list(battle.team.values())
         active = next(p for p in my_team if p.active)
+        ctx['active'] = active
+        ctx['active_sorted_moves'] = sorted(active.moves.values(), key=lambda m: m.id)
         bench = [p for p in my_team if not p.active]
         ctx['bench1'] = bench[0] if len(bench) > 0 else None
         ctx['bench2'] = bench[1] if len(bench) > 1 else None
         opp_team = list(battle.opponent_team.values())
+        opp_active = next(p for p in opp_team if p.active)
+        ctx['opp_active'] = opp_active
         opp_bench = [p for p in opp_team if not p.active]
         ctx['opp_bench1'] = opp_bench[0] if len(opp_bench) > 0 else None
         ctx['opp_bench2'] = opp_bench[1] if len(opp_bench) > 1 else None
         ctx['my_alive_count'] = sum(1 for p in my_team if not p.fainted)
         ctx['opp_alive_count'] = sum(1 for p in opp_team if not p.fainted)
+        
         return ctx
 
     def _extract(self, path: str, ctx: dict):
