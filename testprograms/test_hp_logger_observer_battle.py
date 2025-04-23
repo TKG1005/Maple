@@ -23,10 +23,6 @@ class HPLoggingObserverPlayer(MySimplePlayer):
     # ② 通常ターンの choose_move
 
     def choose_move(self, battle: Battle):    
-        # Team Preview 中は turn==0 なのでベクトル生成をスキップ
-        if battle.turn == 0:
-            return self.choose_default_move()
-
         state_vec = self.observer.observe(battle)
         # 状態ベクトルから自分と相手のHP割合を抜き出す（添字は仮）
         my_hp = battle.active_pokemon.current_hp_fraction
@@ -46,7 +42,7 @@ async def main():
 
     if player1.battles:
         battle_result = list(player1.battles.values())[-1]
-        final_turn = battle_result.turn
+        final_turn = len(battle_result.turns)           # または battle_result.complete_turns
         if battle_result.won:
             print(f"勝者: HPLoggingObserverPlayer / 最終ターン: {final_turn}")
         elif battle_result.lost:
