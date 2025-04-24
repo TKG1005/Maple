@@ -22,6 +22,7 @@ class MySimplePlayer(Player):
             return self.create_order(battle.available_switches[0])
 
         # 3) どうにもならない（降参など）
+        print('取れる行動がありません')
         return self.choose_random_move(battle)  # choose_default_move() は避ける
 
 # --- クラス定義はここまで ---
