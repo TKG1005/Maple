@@ -2,10 +2,24 @@
 
 from poke_env.player import Player
 from poke_env.environment.battle import Battle
+from src.action.action_masker import generate_action_mask
 
 class AvailableMovesChecker(Player):
 
     def choose_move(self, battle: Battle):
+        
+        
+        mask = generate_action_mask(battle.available_moves,battle.available_switches,battle.can_tera)
+        print(mask)
+        
+        
+        
+        
+        
+        
+        """
+        別のプログラムテストのためいったんコメントアウト
+        
         print("\n=== 利用可能な技 ===")
         if battle.available_moves:
             for move in battle.available_moves:
@@ -19,6 +33,7 @@ class AvailableMovesChecker(Player):
                 print(f"ポケモン名: {poke.species}, 残りHP割合: {poke.current_hp_fraction:.2f}")
         else:
             print("交代可能なポケモンはいません。")
+        """
 
         # 一旦ランダムに行動を返す（テストのため）
         return self.choose_random_move(battle)

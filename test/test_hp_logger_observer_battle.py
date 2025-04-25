@@ -1,12 +1,19 @@
+import sys
+import os
+
+# test ディレクトリから見て src ディレクトリをパスに追加
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 
 import asyncio
-import time
-from my_simple_player import MySimplePlayer
+import time  
+from src.agents.my_simple_player import MySimplePlayer
 from poke_env.player import RandomPlayer
 from poke_env.environment.battle import Battle
-from state_observer import StateObserver
+from src.state.state_observer import StateObserver
 from print_available import AvailableMovesChecker
-with open("my_team.txt", encoding="utf-8") as f:
+with open("config/my_team.txt", encoding="utf-8") as f:
     team_str = f.read()
     
 
@@ -37,7 +44,7 @@ class HPLoggingObserverPlayer(MySimplePlayer):
 async def main():
 
     #player1 = HPLoggingObserverPlayer(battle_format="gen9randombattle",log_level=25)
-    player1 = AvailableMovesChecker(battle_format="gen9randombattle",log_level=25)
+    player1 = MySimplePlayer(battle_format="gen9randombattle",log_level=25)
     player2 = RandomPlayer(battle_format="gen9randombattle", log_level=25)
 
     print("テスト対戦を開始します（StateObserver使用）...")
