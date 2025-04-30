@@ -30,13 +30,13 @@ my_bench1:
   my_bench1_current_hp_frac:
     dtype: float
     battle_path: bench1.current_hp_frac
-    encoder: nan
-    default: .nan
+    encoder: float
+    default: '1'
 my_bench2:
   my_bench2_current_hp_frac:
     dtype: float
     battle_path: bench2.current_hp_frac
-    encoder: nan
+    encoder: float
     default: '1'
 opp_bench1:
   opp_bench1_current_hp_frac:
