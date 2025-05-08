@@ -9,6 +9,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 import asyncio
 import time  
 from src.agents.my_simple_player import MySimplePlayer
+from src.agents.rule_based_player import RuleBasedPlayer
+
 from poke_env.player import RandomPlayer
 from poke_env.environment.battle import Battle
 from src.state.state_observer import StateObserver
@@ -44,7 +46,7 @@ class HPLoggingObserverPlayer(MySimplePlayer):
 async def main():
 
     #player1 = HPLoggingObserverPlayer(battle_format="gen9randombattle",log_level=25)
-    player1 = MySimplePlayer(battle_format="gen9randombattle",log_level=25)
+    player1 = RuleBasedPlayer(battle_format="gen9randombattle",log_level=25)
     player2 = RandomPlayer(battle_format="gen9randombattle", log_level=25)
 
     print("テスト対戦を開始します（StateObserver使用）...")

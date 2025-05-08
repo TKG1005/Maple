@@ -30,7 +30,6 @@ class StateObserver:
 
                 # ② _extract に default を渡す
                 val = self._extract(meta["battle_path"], context, default_val)
-                print(val)
 
                 enc = self.encoders.get((group, key), lambda x: x)
                 encoded = enc(val)
