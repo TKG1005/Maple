@@ -14,7 +14,7 @@ from poke_env.player import RandomPlayer
 from poke_env.environment.battle import Battle
 
 # 対戦設定
-N_BATTLES = 10
+N_BATTLES = 1000
 BATTLE_FORMAT = "gen9randombattle"
 
 async def main():

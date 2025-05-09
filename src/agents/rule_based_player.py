@@ -45,7 +45,7 @@ class RuleBasedPlayer(Player):
             print(f"Opponent Active: {opponent_active_pokemon.species} (HP: {opponent_active_pokemon.current_hp_fraction * 100:.1f}%)")
         # --- 状態観測 ---
         try:
-            # current_state_vector = self.observer.observe(battle) # 必要であればコメントアウト解除
+            current_state_vector = self.observer.observe(battle) # 必要であればコメントアウト解除
             # print(f"State observed. Vector length: {len(current_state_vector)}") # 詳細すぎる場合はコメントアウト
             pass # StateObserver自体は初期化時に確認しているので、ここでは省略可
         except Exception as e:

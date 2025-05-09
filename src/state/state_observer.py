@@ -64,7 +64,7 @@ class StateObserver:
         ctx['opp_bench1'] = opp_bench[0] if len(opp_bench) > 0 else None
         ctx['opp_bench2'] = opp_bench[1] if len(opp_bench) > 1 else None
         ctx['my_alive_count'] = sum(1 for p in my_team if not p.fainted)
-        # 推定残数 = 生存確認 + 未確認
+        # 推定残数 = 生存確認 + 未確認py
         ctx['opp_alive_count'] = opp_alive_seen + unknown_remaining
         
         return ctx

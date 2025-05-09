@@ -1,17 +1,17 @@
 my_active:
   active_current_hp_frac:
     dtype: float
-    battle_path: battle.active_pokemon.current_hp_fraction
+    battle_path: active.current_hp_fraction
     encoder: identity
     default: '1'
   active_move1_type:
-    dtype: str
+    dtype: pkemontype
     battle_path: active_sorted_moves[0].type.name.lower()
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
   active_move1_base_power:
     dtype: int
-    battle_path: active_sorted_moves[0].base_power
+    battle_path: active_sorted_moves[0].type.base_power
     encoder: linear_scale
     default: '0'
     range:
@@ -24,19 +24,19 @@ opp_active:
   opp_active_current_hp_frac:
     dtype: float
     battle_path: battle.opponent_active_pokemon.current_hp_fraction
-    encoder: identify
+    encoder: identity
     default: '1'
 my_bench1:
   my_bench1_current_hp_frac:
     dtype: float
     battle_path: bench1.current_hp_frac
-    encoder: float
+    encoder: identity
     default: '1'
 my_bench2:
   my_bench2_current_hp_frac:
     dtype: float
     battle_path: bench2.current_hp_frac
-    encoder: float
+    encoder: nan
     default: '1'
 opp_bench1:
   opp_bench1_current_hp_frac:

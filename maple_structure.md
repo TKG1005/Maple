@@ -1,4 +1,5 @@
 /Users/takagikouichi/Documents/GitHub/Maple
+├── analyze_battle_results.py
 ├── config
 │   ├── action_map.yml
 │   ├── battle_available_notes.md
@@ -527,6 +528,14 @@
 │   ├── tsconfig.json
 │   └── tsconfig.tsbuildinfo
 ├── requirements.txt
+├── results
+│   ├── battle_metrics_20250509_025518.csv
+│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031443.csv
+│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031527.csv
+│   ├── battle_outcome_pie.png
+│   ├── battle_turns_histogram.png
+│   ├── total_wins_ties_bar.png
+│   └── turns_per_battle_line.png
 ├── src
 │   ├── action
 │   │   ├── __pycache__
@@ -550,6 +559,8 @@
     ├── check_connection.py
     ├── print_available.py
     ├── run_battle.py
-    └── test_hp_logger_observer_battle.py
+    ├── test_hp_logger_observer_battle.py
+    ├── test_rb_vs_random_battle.py
+    └── test_rule_based_battle.py
 
-391 directories, 162 files
+392 directories, 172 files

@@ -13,7 +13,7 @@ from src.agents.rule_based_player import RuleBasedPlayer # RuleBasedPlayerをイ
 from poke_env.player import Player # Playerクラスをインポート（チーム設定のため）
 
 # 対戦設定
-N_BATTLES = 10  # 対戦回数
+N_BATTLES = 1000  # 対戦回数
 BATTLE_FORMAT = "gen9randombattle"  # 対戦フォーマット (パーティ手動登録の場合は変更が必要)
 
 # チーム定義 (手動で登録する場合)
