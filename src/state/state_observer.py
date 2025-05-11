@@ -80,9 +80,13 @@ class StateObserver:
         enc = {}
         for group, features in spec.items():
             for key, meta in features.items():
+                print(key,meta )
                 enc_key = (group, key)
+                print(enc_key)
                 kind = meta.get('encoder', 'identity')
+                print(kind)
                 default = meta.get('default', 0)
+                print(default)
                 if kind == 'identity':
                     enc[enc_key] = lambda x, d=default: float(x) if x is not None else float(d)
                 elif kind == 'onehot':
@@ -93,4 +97,5 @@ class StateObserver:
                     enc[enc_key] = lambda x, l=lo, h=hi, d=default: (float(x) - l) / (h - l) if x is not None else float(d)
                 else:
                     enc[enc_key] = lambda x, d=default: float(x) if x is not None else float(d)
+        print(enc)
         return enc
