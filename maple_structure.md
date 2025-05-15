@@ -5,9 +5,11 @@
 │   ├── battle_available_notes.md
 │   ├── generate_yaml.py
 │   ├── move_catalog.md
+│   ├── moves_english_japanese.csv
+│   ├── my_team_for_debug.txt
 │   ├── my_team.txt
-│   ├── state_feature_catalog_temp.csv
-│   └── state_spec.yml
+│   ├── pokemon_all_moves.csv
+│   └── state_feature_catalog_temp - シート1.csv
 ├── docs
 │   ├── ai-design
 │   ├── environment
@@ -532,6 +534,7 @@
 │   ├── battle_metrics_20250509_025518.csv
 │   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031443.csv
 │   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031527.csv
+│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_090059.csv
 │   ├── battle_outcome_pie.png
 │   ├── battle_turns_histogram.png
 │   ├── total_wins_ties_bar.png
@@ -548,6 +551,8 @@
 │   │   └── rule_based_player.py
 │   ├── state
 │   │   ├── __pycache__
+│   │   ├── generate_yaml.py
+│   │   ├── state_feature_catalog_temp - シート1.csv
 │   │   ├── state_observer.py
 │   │   └── state_spec.yml
 │   └── util
@@ -561,6 +566,7 @@
     ├── run_battle.py
     ├── test_hp_logger_observer_battle.py
     ├── test_rb_vs_random_battle.py
-    └── test_rule_based_battle.py
+    ├── test_rule_based_battle.py
+    └── test_state_observer.py
 
-392 directories, 172 files
+392 directories, 178 files

@@ -30,9 +30,12 @@ class StateObserver:
 
                 # ② _extract に default を渡す
                 val = self._extract(meta["battle_path"], context, default_val)
+                
 
                 enc = self.encoders.get((group, key), lambda x: x)
                 encoded = enc(val)
+                if battle.turn == 1:
+                    print(key, encoded)
                 state.extend(encoded if isinstance(encoded, list) else [encoded])
         
         return np.array(state, dtype=np.float32)
@@ -80,22 +83,62 @@ class StateObserver:
         enc = {}
         for group, features in spec.items():
             for key, meta in features.items():
-                print(key,meta )
                 enc_key = (group, key)
-                print(enc_key)
                 kind = meta.get('encoder', 'identity')
-                print(kind)
                 default = meta.get('default', 0)
-                print(default)
                 if kind == 'identity':
                     enc[enc_key] = lambda x, d=default: float(x) if x is not None else float(d)
+                    
+                # StateObserver._build_encoders の onehot 部分の修正案2 (よりシンプル)
                 elif kind == 'onehot':
                     classes = meta.get('classes', [])
-                    enc[enc_key] = lambda x, cls=classes, d=default: [1 if str(x).lower() == str(c).lower() else 0 for c in cls]
+                    # default値の扱いをlambdaの外側で決定する方が、クロージャの問題を避けやすい
+                    # ただし、現在のStateObserverではobserve内でevalしているので、ここでは文字列のまま扱う
+                    raw_default_for_lambda = default # meta.get('default',0)で取得したdefaultをそのまま渡す
+
+                    def _onehot_encoder_simple(val, cls_list, default_str_val):
+                        value_to_encode_str = ""
+                        if val is None:
+                            value_to_encode_str = "none" # PythonのNoneは 'none' という文字列で表現
+                        elif hasattr(val, 'name') and callable(getattr(val, 'name', None)) is False and not isinstance(val, str): # Enumっぽいオブジェクトかチェック (より堅牢な型チェック推奨)
+                            value_to_encode_str = val.name.lower() # PokemonType.FIRE -> "fire"
+                        else:
+                            value_to_encode_str = str(val).lower()
+
+                        # classes リストが空の場合の処理 (前述の通り、default の形式によって要調整)
+                        if not cls_list:
+                            # ここでは、default がエンコード済みリストであることを期待し、そうでなければエラーや空リストを返す
+                            # 例: default_val_evaluated = eval(default_str_val) if isinstance(default_str_val, str) else default_str_val
+                            # if isinstance(default_val_evaluated, list): return default_val_evaluated
+                            return [] # もしくはエラー
+
+                        encoded_list = [1 if value_to_encode_str == str(c).lower() else 0 for c in cls_list]
+
+                        # 全て0で、かつvalue_to_encode_strが空でない場合（クラスリストにない値が来た場合）、
+                        # default値を使うか、あるいは「不明」カテゴリに対応するベクトルを返すか。
+                        # ここでは、もしclassesにvalue_to_encode_strがなければ、全て0のベクトルが返る。
+                        # それが意図しない場合（例：不明カテゴリに割り当てたい）、追加のロジックが必要。
+                        # 例えば、sum(encoded_list) == 0 であれば、不明カテゴリのインデックスを1にするなど。
+                        if sum(encoded_list) == 0 and value_to_encode_str != "": # クラスリストにない有効な値が来た
+                            # default_str_val がエンコード済みリストならそれを使う、そうでなければ 'none' (または不明) カテゴリをエンコード
+                            try:
+                                default_as_list = eval(default_str_val) if isinstance(default_str_val,str) else default_str_val
+                                if isinstance(default_as_list, list) and len(default_as_list) == len(cls_list):
+                                    return default_as_list
+                            except:
+                                pass # eval失敗
+
+                            # evalできない場合やリストでない場合、cls_listの'none'を探してエンコード
+                            if "none" in [str(c).lower() for c in cls_list]:
+                                return [1 if "none" == str(c).lower() else 0 for c in cls_list]
+                            # 'none'もなければ、もう諦めてall zero
+
+                        return encoded_list
+
+                    enc[enc_key] = lambda x, c=classes, d_str=raw_default_for_lambda: _onehot_encoder_simple(x, c, d_str)
                 elif kind == 'linear_scale':
                     lo, hi = meta.get('range', [0, 1])
                     enc[enc_key] = lambda x, l=lo, h=hi, d=default: (float(x) - l) / (h - l) if x is not None else float(d)
                 else:
                     enc[enc_key] = lambda x, d=default: float(x) if x is not None else float(d)
-        print(enc)
         return enc

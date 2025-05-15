@@ -74,11 +74,11 @@ class ObservingRandomPlayer(RandomPlayer):
         try:
             if hasattr(self, 'observer') and self.observer:
                 observed_state = self.observer.observe(battle)
-                print(f"[{self.username}] Observed state (shape: {observed_state.shape}):")
-                np.set_printoptions(threshold=np.inf) # 全要素表示したい場合
-                pprint(observed_state.tolist()) # リストとして整形して表示
+                #print(f"[{self.username}] Observed state (shape: {observed_state.shape}):")
+                # np.set_printoptions(threshold=np.inf) # 全要素表示したい場合
+                #pprint(observed_state.tolist()) # リストとして整形して表示
                 #print(observed_state) # 通常のprint
-                print(f"[{self.username}] State vector dimension from observer output: {len(observed_state)}")
+                #print(f"[{self.username}] State vector dimension from observer output: {len(observed_state)}")
 
             else:
                 print(f"[{self.username}] StateObserver not available.")
@@ -111,7 +111,7 @@ class ObservingRandomPlayer(RandomPlayer):
 
 async def main():
     # --- 設定 ---
-    state_spec_path = "config/state_spec.yml"
+    state_spec_path = "src/state/state_spec.yml"
     battle_format = "gen9randombattle" # ランダムバトル形式
     num_battles = 1
 
