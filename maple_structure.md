@@ -9,7 +9,8 @@
 │   ├── my_team_for_debug.txt
 │   ├── my_team.txt
 │   ├── pokemon_all_moves.csv
-│   └── state_feature_catalog_temp - シート1.csv
+│   ├── state_feature_catalog_temp - シート1.csv
+│   └── state_spec.yml
 ├── docs
 │   ├── ai-design
 │   ├── environment
@@ -549,6 +550,8 @@
 │   │   ├── my_simple_player.py
 │   │   ├── random_player.py
 │   │   └── rule_based_player.py
+│   ├── environments
+│   │   └── pokemon_env.py
 │   ├── state
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
@@ -569,4 +572,4 @@
     ├── test_rule_based_battle.py
     └── test_state_observer.py
 
-392 directories, 178 files
+393 directories, 180 files
