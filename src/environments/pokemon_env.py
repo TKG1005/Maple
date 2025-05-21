@@ -162,6 +162,104 @@ class PokemonEnv(gym.Env):
 
         return observation, reward, terminated, truncated, info
 
+    async def _reset_env(self, seed=None, options=None):
+        """
+        非同期で環境をリセットして初期観測を返します。
+        Gymnasium の reset() から呼ばれる内部コルーチン。
+
+        Returns
+        -------
+        observation : np.ndarray
+            初期状態ベクトル
+        info : dict
+            デバッグ用の追加情報
+        """
+
+        # 0) 乱数シード（必要ならここで使う）
+        if seed is not None:
+            np.random.seed(seed)
+
+        # 1) 前のバトルが残っていたらクリーンアップ
+        if not self._battle_is_over and self.current_battle:
+            # 対戦が終わるのを待つ／強制終了する等、設計次第
+            # ここでは強制終了して次へ
+            await self.close()
+
+        # 2) プレイヤー側 WebSocket を起動（まだなら）
+        if not self.player.ps_client.is_listening:
+            # listen() は無限ループなので Task として fire-and-forget
+            self.loop.create_task(self.player.ps_client.listen())
+
+        # opponent は __init__ で start_listening=True なので通常は動いているが、
+        # 念のためチェック
+        if not self.opponent.ps_client.is_listening:
+            self.loop.create_task(self.opponent.ps_client.listen())
+
+        # 3) ログイン完了を待つ
+        await asyncio.gather(
+            self.player.ps_client.wait_for_login(),
+            self.opponent.ps_client.wait_for_login(),
+        )
+
+        # 4) プレイヤ内部のバトルトラッカーをリセット
+        self.player.reset_battles()
+        self.opponent.reset_battles()
+        self.current_battle = None
+        self._battle_is_over = False
+
+        # 5) チャレンジを送ってバトルを開始
+        #    Player.send_challenges / accept_challenges はバトル終了までブロック
+        #    するのでバックグラウンドタスクとして動かす
+        challenge_task = self.loop.create_task(
+            self.player.send_challenges(self.opponent.username, 1)
+        )
+        accept_task = self.loop.create_task(
+            self.opponent.accept_challenges(self.player.username, 1)
+        )
+
+        # 6) self.current_battle がセットされるまで待機
+        timeout = 30.0  # 秒
+        start_t = self.loop.time()
+        while self.current_battle is None:
+            if self.loop.time() - start_t > timeout:
+                raise TimeoutError(
+                    "Battle did not start within %.1f seconds." % timeout
+                )
+            await asyncio.sleep(0.1)
+
+        # choose_move() が呼ばれて current_battle が出来た時点で
+        # active_pokemon 等の request も揃っているはずだが、
+        # available_moves が空の可能性もあるため念のためリトライ
+        while (
+            self.current_battle.active_pokemon is None
+            or len(self.current_battle.available_moves) == 0
+        ):
+            await asyncio.sleep(0.05)
+
+        # 7) 観測値を生成
+        observation = self.state_observer.observe(self.current_battle)
+        self._current_observation = observation
+
+        info = {
+            "battle_tag": self.current_battle.battle_tag,
+            "turn": self.current_battle.turn,
+            "opponent": self.opponent.username,
+        }
+
+        return observation, info
+
+    async def smoke_test():
+        obs, info = env.reset()
+        print("First obs shape:", obs.shape, "info:", info)
+        done = False
+        total_reward = 0
+        while not done:
+            action = env.action_space.sample()
+            obs, reward, done, truncated, inf = env.step(action)
+            total_reward += reward
+        print("Episode finished. Total reward:", total_reward)
+
+
     def step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         # loop.is_running() のチェックは、asyncio.run() を使っている場合、run()の内部でループが開始・終了するため、
         # PokemonEnvの初期化時と挙動が異なる可能性がある。
@@ -176,9 +274,20 @@ class PokemonEnv(gym.Env):
             return self.loop.run_until_complete(self._handle_battle_step(action_index))
 
 
-    def reset(self, seed=None, options=None):
-        # (タスク1.3で実装)
-        raise NotImplementedError("Reset method not implemented yet.")
+    def reset(self, seed: int | None = None, options: dict | None = None):
+        """
+        Gymnasium 互換 reset().
+        非同期処理を包むだけで、戻り値は (observation, info)。
+        """
+        if self.loop.is_running():
+            fut = asyncio.run_coroutine_threadsafe(
+                self._reset_env(seed, options), self.loop
+            )
+            return fut.result()
+        else:
+            return self.loop.run_until_complete(
+                self._reset_env(seed, options)
+            )
 
     def render(self, mode='human'):
         # renderメソッドの実装は変更なしでOK
@@ -216,31 +325,20 @@ class PokemonEnv(gym.Env):
     async def close(self):
         print(f"Closing PokemonEnv (Player: {self.player.username}).")
         tasks_to_await = []
+        results = await asyncio.gather(*tasks_to_await, return_exceptions=True)
+        for task_result, who in zip(results, ["EnvPlayer", "Opponent"]):
+            if isinstance(task_result, Exception) and not isinstance(task_result, ConnectionClosedOK):
+                print(f"[close] {who}: {type(task_result).__name__} - {task_result}")
 
+        
+                    
         # EnvPlayer のクリーンアップ
-        if self.player and hasattr(self.player, 'ps_client') and self.player.ps_client:
-            # websocket 属性が存在し、かつ None でなく、かつ closed でないことを確認
-            if hasattr(self.player.ps_client, 'websocket') and \
-               self.player.ps_client.websocket is not None and \
-               not self.player.ps_client.websocket.closed:
-                print(f"Attempting to stop listening for EnvPlayer: {self.player.username}")
-                tasks_to_await.append(self.player.ps_client.stop_listening())
-            else:
-                print(f"EnvPlayer {self.player.username} websocket attribute not found, is None, or already closed.")
-
-        # Opponent Player のクリーンアップ
-        if self.opponent and hasattr(self.opponent, 'ps_client') and self.opponent.ps_client:
-            if hasattr(self.opponent.ps_client, 'websocket') and \
-               self.opponent.ps_client.websocket is not None and \
-               not self.opponent.ps_client.websocket.closed:
-                print(f"Attempting to stop listening for Opponent: {self.opponent.username}")
-                try:
-                    tasks_to_await.append(self.opponent.ps_client.stop_listening())
-                except Exception as e:
-                    print(f"Could not schedule stop_listening for opponent {self.opponent.username} directly: {e}")
-            else:
-                print(f"Opponent {self.opponent.username} websocket attribute not found, is None, or already closed.")
-
+        # EnvPlayer 側は listen していない可能性があるのでガード
+        if self.player.ps_client.is_listening:          # ← 追加
+            tasks_to_await.append(self.player.ps_client.stop_listening())
+        if self.opponent.ps_client.is_listening:
+            tasks_to_await.append(self.opponent.ps_client.stop_listening())
+            
         if tasks_to_await:
             try:
                 results = await asyncio.gather(*tasks_to_await, return_exceptions=True)
@@ -393,24 +491,17 @@ async def main_test():
         import traceback
         traceback.print_exc()
     finally:
-        # OpponentPlayer のクリーンアップ
-        if 'opponent_player' in locals() and opponent_player and hasattr(opponent_player, 'ps_client') and opponent_player.ps_client:
-            print(f"Stopping opponent player ({opponent_player.username}) listening in main_test finally...")
-            try:
-                await opponent_player.ps_client.stop_listening()
-            except ConnectionClosedOK:
-                print(f"Opponent player ({opponent_player.username}) connection already closed (OK).")
-            except Exception as e:
-                print(f"Error stopping opponent_player listening in main_test finally: {type(e).__name__} - {e}")
-        else:
-            print(f"Opponent player ({opponent_player.username}) or its ps_client is None in main_test finally.")
-
+        # ─────────────────────────────────────────────
+        # ここを env.close() だけに統一
+        # ─────────────────────────────────────────────
         if 'env' in locals() and env:
+            # 非同期で定義した close() を呼び出すには await が必須
             print(f"Closing PokemonEnv ({env.player.username}) in main_test finally...")
             try:
-                await env.close()
+                await env.close()        # ← opponent も内部で stop_listening される
             except Exception as e:
-                print(f"Error during env.close() in main_test finally: {e}")
+                print(f"Error during env.close() in main_test finally: {type(e).__name__} - {e}")
+
 
 if __name__ == '__main__':
     asyncio.run(main_test())
