@@ -1,450 +1,519 @@
+# src/environments/pokemon_env.py
+
+from websockets.exceptions import ConnectionClosedOK # ★ PokemonEnv.close() のために追加 ★
 import asyncio
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
 import sys
 import os
+import logging
+from typing import Optional, Tuple, Dict, Any
 
 
 from poke_env.player import Player, RandomPlayer
+from poke_env.ps_client.account_configuration import AccountConfiguration
+from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Battle
-from poke_env.data import GenData # 第9世代データを利用
+from poke_env.player.battle_order import BattleOrder
+# from poke_env.player.baselines import MaxBasePowerPlayer # 現状未使用ならコメントアウト可
+from poke_env.exceptions import ShowdownException
 
-# プロジェクトルートをシステムパスに追加
-# __file__ は src/environments/pokemon_env.py を指す
-# os.path.dirname(__file__) は src/environments
-# os.path.join(os.path.dirname(__file__), '..') は src
-# os.path.join(os.path.dirname(__file__), '..', '..') はプロジェクトルート (Maple)
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
     sys.path.append(project_root)
-# M3で作成したクラス・関数をインポート
-from src.state.state_observer import StateObserver
-from src.action.action_helper import get_available_actions, action_index_to_order
-# ActionHelperは特定の関数を利用するため、クラスインスタンスではなく関数を直接利用
 
+from src.state.state_observer import StateObserver
+# action_helper_module は __init__ の引数で渡されるので、ここでのインポートは不要
+# import src.action.action_helper as action_helper_module
 
 class PokemonEnv(gym.Env):
-    metadata = {'render_modes': ['human'], 'render_fps': 1} # render_modes は必要に応じて
+    metadata = {'render_modes': ['human'], 'render_fps': 1}
 
-    def __init__(self, opponent_player: Player, state_observer: StateObserver, battle_format: str = "gen9ou", team_pascal: str = None):
-        """
-        PokemonEnv のコンストラクタ
-
-        Args:
-            opponent_player (Player): 対戦相手のプレイヤーインスタンス
-            state_observer (StateObserver): 状態観測用のオブザーバーインスタンス
-            battle_format (str, optional): 対戦フォーマット. Defaults to "gen9randombattle".
-                                            将来的には "gen9ou" など固定パーティ用も想定。
-            team_pascal (str, optional): 使用するチームのPascalフォーマット文字列。
-                                         固定パーティの場合に指定。
-        """
+    def __init__(self, opponent_player: Player, state_observer: StateObserver, action_helper,
+                 battle_format: str = "gen9ou", team_pascal: str = None, player_username: str = "MapleEnvPlayer"):
         super().__init__()
 
         self.battle_format = battle_format
         self.opponent = opponent_player
         self.state_observer = state_observer
-        # ActionHelperの機能は直接メソッドとして利用するか、このEnvクラス内で呼び出す
+        self.action_helper = action_helper
+        self.current_battle: Optional[Battle] = None
+        self._player_username = player_username
+        self._player_password = None
+        
 
         # --- 状態空間 (Observation Space) の定義 ---
-        # M3で定義した StateObserver が返すNumpy配列の形状と型に基づいて定義します。
-        # state_spec.yml から状態ベクトルの次元数を計算する必要があります。
-        # ここでは仮の次元数として 300 を設定しますが、StateObserverの実装に合わせて正確な値に置き換えてください。
-        # 例: self.state_observer.get_observation_space_dim() のようなメソッドを StateObserver に追加すると便利です。
-        # データ型は float32 が一般的です。
-        # 各要素の取りうる値の範囲 (low, high) も指定できますが、正規化されている場合は 0 から 1 などになります。
-        # ここでは、state_spec.ymlに基づき、ほとんどの値が0から1の範囲か、-1から1の範囲（ブーストなど）に正規化されていると仮定します。
-        # 最小値と最大値をより正確に設定することが望ましいですが、まずは -np.inf, np.inf としておくことも可能です。
-        # state_observer.observe(None) # ダミーのバトルオブジェクトで初期の観測空間の次元数を取得する（要実装）
-        # self._dummy_battle = Battle("dummy_battle", self.battle_format, GenData()) # observeの引数に合わせる
-        # self._dummy_observation = self.state_observer.observe(self._dummy_battle) # 仮のBattleオブジェクトで次元数を取得
-
-        # state_spec.ymlを読み込み、各特徴量の次元を合計してobservation_spaceの次元を決定する
-        # この処理はStateObserver側で行い、プロパティとして次元数を公開するのが望ましい
-        # ここでは仮に state_observer が `observation_dim` プロパティを持つとします。
-        # StateObserverに `get_observation_dim()` のようなメソッドを追加するか、
-        # 初期化時に計算してプロパティとして保持するようにしてください。
-        # ダミーのBattleオブジェクトを作成して、一度observeを実行し、そのshapeから次元数を取得するのが最も確実です。
         try:
-            # StateObserver に get_observation_space_shape メソッドを実装することを推奨
-            # observation_shape = self.state_observer.get_observation_space_shape() # (dim,) のようなタプルを想定
-            # self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=observation_shape, dtype=np.float32)
-            # 現時点では仮の値を設定します。後ほど StateObserver の実装と合わせて修正してください。
-            # state_spec.ymlから計算した次元数を設定する必要があります。
-            # state_observer.py の observe メソッドが返す NumPy 配列の長さを調べて設定してください。
-            # 例: (state_observer.observe(ダミーのBattleオブジェクト)).shape[0]
-            # ここでは仮に358次元とします (state_spec.yml を元に手計算した場合の概算、正確な値に要修正)
-            # TODO: StateObserverから正確な次元数を取得するように修正
-            dummy_obs_len = self._get_dummy_observation_length()
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(dummy_obs_len,), dtype=np.float32)
-            print(f"Observation space set with dimension: {dummy_obs_len}")
-
+            obs_dim = self.state_observer.get_observation_dimension()
+            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32) # ★先に設定★
+            print(f"Observation space set with dimension: {obs_dim}")
         except Exception as e:
             print(f"Error setting up observation space: {e}")
-            print("Please ensure StateObserver can provide observation dimension.")
-            # フォールバックとして仮の値を設定
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(300,), dtype=np.float32)
-
+            raise e
 
         # --- 行動空間 (Action Space) の定義 ---
-        # M3で定義した行動空間のサイズに基づいて定義します。
-        # 固定長10（通常技4 + テラスタル技4 + 交代2）と定義されていました。
-        self.action_space_size = 10 # 通常技0-3, テラスタル技4-7, 交代8-9
-        self.action_space = spaces.Discrete(self.action_space_size)
+        self.action_space_size = 10 # 固定長10と仮定
+        self.action_space = spaces.Discrete(self.action_space_size) # ★先に設定★
 
-        # --- poke-env 関連の初期化 ---
-        # EnvPlayer は poke-env の Player を Gym Env 内でラップするためのものです。
-        # これがエージェント自身となり、対戦を行います。
-        # pokemon_env.py の PokemonEnv クラスの __init__ メソッド内
+        env_player_account_config = AccountConfiguration(self._player_username, self._player_password)
 
         self.player = EnvPlayer(
-            opponent_player_for_env=self.opponent, # 引数名を _env_opponent に合わせるか、EnvPlayer側で受け取る引数名を変える
+            account_configuration=env_player_account_config,
             battle_format=self.battle_format,
             team=team_pascal,
-            # log_level=20 # デバッグ用にログレベルを設定 (10:DEBUG, 20:INFO)
+            log_level=logging.DEBUG,
+            env_ref=self
         )
 
-        self.current_battle: Battle = None # 現在のバトルオブジェクトを保持
+        try:
+            self.loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
+
+        self._battle_is_over = True
+        self._current_observation: Optional[np.ndarray] = None
 
         print("PokemonEnv initialized.")
-        print(f"Observation Space: {self.observation_space}")
-        print(f"Action Space: {self.action_space}")
+        print(f"Observation Space: {self.observation_space}") # ★設定後にprint★
+        print(f"Action Space: {self.action_space}")       # ★設定後にprint★
 
-
-    def _get_dummy_observation_length(self) -> int:
+    async def _handle_battle_step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """
-        StateObserverから観測ベクトルの長さを取得するためのヘルパーメソッド。
-        StateObserverが正しく初期化されている必要があります。
+        非同期で1ステップの対戦処理を行う内部メソッド
         """
-        # poke-envのBattleオブジェクトの最小限の模倣を試みます。
-        # 実際のBattleオブジェクトとは異なるため、StateObserverがNoneアクセスでエラーにならないよう注意が必要です。
-        # StateObserverの_build_contextや_extractがNoneの属性アクセスを安全に処理するように実装されていることが前提です。
-        class DummyPokemon:
-            def __init__(self, species="pikachu", active=False):
-                self.species = species
-                self.active = active
-                self.moves = {} # {move_id: DummyMove()}
-                self.current_hp_fraction = 1.0
-                self.boosts = {'atk': 0, 'def': 0, 'spa': 0, 'spd': 0, 'spe': 0, 'acc': 0, 'eva': 0}
-                self.status = None
-                self.tera_type = None # PokemonType.NORMAL など
-                self.type_1 = None # PokemonType.ELECTRIC など
-                self.type_2 = None
-                self.is_terastallized = False
-                self.fainted = False
+        if self.current_battle is None or self._battle_is_over:
+            print("Error: Battle not started or already over. Call reset() first.")
+            dummy_obs = np.zeros(self.observation_space.shape, dtype=self.observation_space.dtype)
+            if self._current_observation is not None:
+                dummy_obs = self._current_observation
+            # current_battle が None の場合、state_observer.observe に渡せないため修正
+            # elif self.current_battle:
+            #     dummy_obs = self.state_observer.observe(self.current_battle)
+            return dummy_obs, 0.0, True, False, {"error": "Battle not started or over"}
 
-            # StateObserverが参照する可能性のある他の属性やメソッドを適宜追加
-
-        # pokemon_env.py の DummyBattle クラス内
-
-        class DummyBattle(Battle): # AbstractBattleを継承
-            def __init__(self, battle_tag: str, battle_format_str: str, data: GenData): # 引数名を battle_format_str に変更
-                # Battleクラスのコンストラクタを呼び出す
-                # Battleクラスの battle_tag は読み取り専用プロパティの可能性があるため、
-                # super().__init__ で設定されることを期待する。
-                # 必要な引数のみを指定する。
-                try:
-                    # poke-env 0.9.0あたりのBattleコンストラクタを想定
-                    super().__init__(
-                        battle_tag=battle_tag,
-                        battle_format_str=battle_format_str, # 引数名を合わせる
-                        data=data,
-                        # logger=gym.logger, # Battleクラスは自身のロガーを持つことが多いので、Noneのままか、専用ロガーを渡す
-                        # max_battle_turns=1000, # デフォルト値があるはず
-                        # start_timer_on_battle_start=False,
-                        # start_timer_request_timeout=20.0
-                    )
-                except TypeError as e:
-                    # コンストラクタのシグネチャが異なる場合のフォールバックまたはエラーハンドリング
-                    print(f"Error calling Battle.__init__ in DummyBattle: {e}")
-                    print("Attempting minimal initialization for DummyBattle (may cause issues with StateObserver).")
-                    # Battleクラスの親である AbstractBattle のコンストラクタを試すか、
-                    # 必須属性を手動で設定する必要がある。
-                    # Battleクラスが持つべき最低限の属性を手動で設定
-                    self._battle_tag = battle_tag # 直接代入を試みる (もしBattleのsuper().__init__が失敗した場合)
-                    self._battle_format = battle_format_str
-                    self._data = data
-                    self._logger = gym.logger
-                    self._turn = 0
-                    self._finished = False
-                    # ... 他の AbstractBattle や Battle が期待する属性 ...
-
-
-                # DummyBattle として必要な属性を初期化 (super().__init__ でカバーされない場合)
-                # self.battle_tag は super().__init__ で設定されることを期待
-                self._battle_format = battle_format_str # 引数名と合わせる
-                self._data = data
-                self._logger = gym.logger if not hasattr(self, '_logger') or self._logger is None else self._logger # superで設定されていなければ
-                self.turn = getattr(self, '_turn', 0) # superで設定されていなければ
-                self.team = {f"p1:{i+1}": DummyPokemon(active=(i==0)) for i in range(3)}
-                self.opponent_team = {f"p2:{i+1}": DummyPokemon(active=(i==0)) for i in range(3)}
-                self.active_pokemon = self.team["p1:1"]
-                self.opponent_active_pokemon = self.opponent_team["p2:1"]
-                self.weather = getattr(self, 'weather', None)
-                self.fields = getattr(self, 'fields', {})
-                self.side_conditions = getattr(self, 'side_conditions', {})
-                self.opponent_side_conditions = getattr(self, 'opponent_side_conditions', {})
-                self.finished = getattr(self, '_finished', False) # superで設定されていなければ
-                self.available_moves = []
-                self.available_switches = []
-                self.can_mega_evolve = False
-                self.can_z_move = False
-                self.can_dynamax = False
-                self.can_tera = None
-                self._rqid = getattr(self, '_rqid', 0)
-                self._player_role = getattr(self, '_player_role', "p1")
-                # ... 他、StateObserverが参照する可能性のあるBattleの属性を初期化 ...
-            # Battleクラスが持つべきメソッドのダミー実装 (StateObserverが呼び出す可能性のあるもの)
-            # 例: get_pokemon, get_opponent_pokemon など
-            def get_pokemon(self, identifier: str, force_exact_match: bool = True) -> DummyPokemon:
-                # ダミー実装
-                parts = identifier.split(': ')
-                player_id = parts[0][:2] # 'p1' or 'p2'
-                # pokemon_name = parts[1] # 必要であれば
-
-                if player_id == self._player_role: # self.player._player_id に相当s
-                    # 簡単のため、常にアクティブなポケモンを返すか、チームの最初のポケモンを返す
-                    return self.active_pokemon if self.active_pokemon else list(self.team.values())[0]
-                else:
-                    return self.opponent_active_pokemon if self.opponent_active_pokemon else list(self.opponent_team.values())[0]
-
-        # GenData インスタンスを作成
-        gen_data = GenData(9)
-        # DummyBattle のインスタンスを作成
-        dummy_battle = DummyBattle("dummy_battle_tag", self.battle_format, gen_data)
-
-        # StateObserver が None を安全に扱えるように実装されていることが前提
-        # 例: active_pokemon が None の場合、関連する特徴量はデフォルト値になるなど
-        # 技の情報もNoneアクセスに備えておく必要がある
-        for i in range(4):
-            dummy_move = type(f'DummyMove{i}', (), {
-                'id': f'move{i}', 'type': None, 'base_power': 0, 'accuracy': 0,
-                'category': None, 'current_pp': 0, 'max_pp': 0
-            })()
-            if dummy_battle.active_pokemon:
-                 dummy_battle.active_pokemon.moves[f'move{i}'] = dummy_move
-        
-        # ダミーの available_moves と available_switches を設定 (StateObserverのロジックによる)
-        # StateObserverの_build_contextで参照する可能性があるため
-        # dummy_battle.available_moves = [dummy_battle.active_pokemon.moves['move0']] if dummy_battle.active_pokemon and 'move0' in dummy_battle.active_pokemon.moves else []
-        # dummy_battle.available_switches = [p for p in dummy_battle.team.values() if not p.active and not p.fainted]
-
-        # observeメソッドを実行して形状を取得
-        # state_observer.py の observe メソッドがバトルオブジェクトのどの属性を参照するかによって、
-        # DummyBattle に必要な属性・メソッドは変わります。
-        # 実行してみて AttributeError などが出たら、その属性を DummyBattle に追加してください。
+        # 1. 行動をOrderに変換
         try:
-            obs_vector = self.state_observer.observe(dummy_battle)
-            return obs_vector.shape[0]
-        except Exception as e:
-            print(f"Error during dummy observation for shape: {e}")
-            print("Falling back to default observation dimension (300). Review StateObserver and DummyBattle.")
-            return 300 # フォールバック
+            order = self.action_helper.action_index_to_order(self.player, self.current_battle, action_index)
+            print(f"[{self.player.username}] Action index: {action_index} -> Order: {order_str}")
+        except ValueError as e:
+            print(f"Error converting action_index {action_index} to order: {e}")
+            obs = self.state_observer.observe(self.current_battle)
+            self._current_observation = obs
+            # battle.finished を参照する前に battle オブジェクトの存在を確認
+            terminated = self.current_battle.finished if self.current_battle else True
+            return obs, -0.01, terminated, False, {"error": f"Invalid action {action_index}", "message": str(e)}
 
-    def step(self, action_index: int):
-        # タスク1.2 で実装
-        raise NotImplementedError
+        self.player.set_next_action_for_battle(self.current_battle, order)
 
-    def reset(self, seed=None, options=None):
-        # タスク1.3 で実装
-        # super().reset(seed=seed) # Gymnasium 0.26+ の場合
-        raise NotImplementedError
+        try:
+            await asyncio.wait_for(self.player.wait_for_battle_update(self.current_battle), timeout=10.0)
+        except asyncio.TimeoutError:
+            print(f"Warning: Timeout waiting for battle update in step for battle {self.current_battle.battle_tag if self.current_battle else 'N/A'}")
+        except ShowdownException as e:
+            print(f"ShowdownException during step: {e}")
+            self._battle_is_over = True
+            obs = self.state_observer.observe(self.current_battle) if self.current_battle else np.zeros(self.observation_space.shape, dtype=self.observation_space.dtype)
+            self._current_observation = obs
+            return obs, -1.0, True, True, {"error": "ShowdownException", "message": str(e)}
+
+        if self.current_battle is None or not hasattr(self.current_battle, 'battle_tag'):
+            print(f"Error: current_battle is None or invalid after step logic. Battle might have ended abruptly.")
+            self._battle_is_over = True
+            obs = self._current_observation if self._current_observation is not None else \
+                  np.zeros(self.observation_space.shape, dtype=self.observation_space.dtype)
+            return obs, -1.0, True, False, {"error": "Battle object became invalid"}
+
+        observation = self.state_observer.observe(self.current_battle)
+        self._current_observation = observation
+
+        reward = 0.0
+        terminated = self.current_battle.finished
+        truncated = False
+
+        if terminated:
+            self._battle_is_over = True
+            if self.current_battle.won:
+                reward = 1.0
+            # battle.lost は Player クラスのプロパティなので、 AbstractBattle にはない
+            # battle.won が False で finished なら負けか引き分けと判断
+            elif not self.current_battle.won : # 勝利していない場合
+                reward = -1.0 # 敗北時の報酬
+            # else: # 引き分け (wonでもなくlostでもない場合だが、poke-envではwon=Falseで敗北も含む)
+            # 上記のelifで敗北はカバーされるので、厳密な引き分けの判定はwonでもなく、サーバーメッセージで'tie'となる場合
+            # ここではシンプルに勝利以外を-1にしている。引き分けを0にするなら別途条件分岐が必要。
+            # 例えば、battle.tied (poke-env v0.6.5以降でBattleクラスにあり) などで判定
+            if hasattr(self.current_battle, 'tied') and self.current_battle.tied:
+                 reward = 0.0 # 引き分けの場合
+            print(f"Battle finished. Won: {self.current_battle.won}, Tied: {hasattr(self.current_battle, 'tied') and self.current_battle.tied}, Reward: {reward}")
+
+
+        info = {
+            "action_index": action_index,
+            "order_str": order_str if 'order_str' in locals() else "N/A",
+            "turn": self.current_battle.turn,
+            "finished": terminated,
+            "won": self.current_battle.won if terminated else None,
+            "my_active_hp_frac": self.current_battle.active_pokemon.current_hp_fraction if self.current_battle.active_pokemon else 0,
+            "opponent_active_hp_frac": self.current_battle.opponent_active_pokemon.current_hp_fraction if self.current_battle.opponent_active_pokemon else 0,
+        }
+        if hasattr(self.current_battle, 'trapped') and self.current_battle.trapped: # AbstractBattleにはtrappedがない場合がある
+            info["trapped"] = self.current_battle.trapped
+
+        return observation, reward, terminated, truncated, info
+
+    async def _reset_env(self, seed=None, options=None):
+        """
+        非同期で環境をリセットして初期観測を返します。
+        Gymnasium の reset() から呼ばれる内部コルーチン。
+
+        Returns
+        -------
+        observation : np.ndarray
+            初期状態ベクトル
+        info : dict
+            デバッグ用の追加情報
+        """
+
+        # 0) 乱数シード（必要ならここで使う）
+        if seed is not None:
+            np.random.seed(seed)
+
+
+
+        # 2) プレイヤー側 WebSocket を起動（まだなら）
+        if not self.player.ps_client.is_listening:
+            print(f"[DBG] Starting player WebSocket listener for {self.player.username}")
+            # listen() は無限ループなので Task として fire-and-forget
+            listen_task = self.loop.create_task(self.player.ps_client.listen())
+            self.player.ps_client._listening_coroutine = listen_task
+
+        # opponent は __init__ で start_listening=True なので通常は動いているが、
+        # 念のためチェック
+        if not self.opponent.ps_client.is_listening:
+            self.loop.create_task(self.opponent.ps_client.listen())
+
+        # 3) ログイン完了を待つ
+        await asyncio.gather(
+            self.player.ps_client.wait_for_login(),
+            self.opponent.ps_client.wait_for_login(),
+        )
+
+        # 4) プレイヤ内部のバトルトラッカーをリセット
+        self.player.reset_battles()
+        self.opponent.reset_battles()
+        self.current_battle = None
+        self._battle_is_over = False
+
+        # 5) チャレンジを送ってバトルを開始
+        #    Player.send_challenges / accept_challenges はバトル終了までブロック
+        #    するのでバックグラウンドタスクとして動かす
+        challenge_task = self.loop.create_task(
+            self.player.send_challenges(self.opponent.username, 1)
+        )
+        accept_task = self.loop.create_task(
+            self.opponent.accept_challenges(self.player.username, 1)
+        )
+
+        # 6) self.current_battle がセットされるまで待機
+        timeout = 30.0  # 秒
+        start_t = self.loop.time()
+        while self.current_battle is None:
+            if self.loop.time() - start_t > timeout:
+                raise TimeoutError(
+                    "Battle did not start within %.1f seconds." % timeout
+                )
+            await asyncio.sleep(0.1)
+
+        # choose_move() が呼ばれて current_battle が出来た時点で
+        # active_pokemon 等の request も揃っているはずだが、
+        # available_moves が空の可能性もあるため念のためリトライ
+        while (
+            self.current_battle.active_pokemon is None
+            or len(self.current_battle.available_moves) == 0
+        ):
+            await asyncio.sleep(0.05)
+
+        # 7) 観測値を生成
+        observation = self.state_observer.observe(self.current_battle)
+        self._current_observation = observation
+
+        info = {
+            "battle_tag": self.current_battle.battle_tag,
+            "turn": self.current_battle.turn,
+            "opponent": self.opponent.username,
+        }
+
+        return observation, info
+
+    async def smoke_test():
+        obs, info = env.reset()
+        print("First obs shape:", obs.shape, "info:", info)
+        done = False
+        total_reward = 0
+        while not done:
+            action = env.action_space.sample()
+            obs, reward, done, truncated, inf = env.step(action)
+            total_reward += reward
+        print("Episode finished. Total reward:", total_reward)
+
+
+    def step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+        # 利用可能な行動をBattleOrderに変換（poke-envの命令オブジェクトを取得）
+        action_order = action_index_to_order(self.player, self.current_battle, action_index)
+        # BattleOrderオブジェクトをEnvPlayerに渡して実行
+        self.player.set_next_action(action_order)
+        # ...（以降、ターン終了まで待機し観測と報酬を取得）...
+
+
+    def reset(self, seed: int | None = None, options: dict | None = None):
+        """
+        Gymnasium 互換 reset().
+        非同期処理を包むだけで、戻り値は (observation, info)。
+        """
+        if self.loop.is_running():
+            fut = asyncio.run_coroutine_threadsafe(
+                self._reset_env(seed, options), self.loop
+            )
+            return fut.result()
+        else:
+            return self.loop.run_until_complete(
+                self._reset_env(seed, options)
+            )
 
     def render(self, mode='human'):
-        # デバッグ用に現在のバトル状態などを表示（任意実装）
+        # renderメソッドの実装は変更なしでOK
         if mode == 'human':
-            if self.current_battle:
-                print(f"Turn: {self.current_battle.turn}")
-                if self.current_battle.active_pokemon:
-                    print(f"My Active: {self.current_battle.active_pokemon.species} ({self.current_battle.active_pokemon.current_hp_fraction*100:.1f}%)")
-                if self.current_battle.opponent_active_pokemon:
-                    print(f"Opponent Active: {self.current_battle.opponent_active_pokemon.species} ({self.current_battle.opponent_active_pokemon.current_hp_fraction*100:.1f}%)")
-                # さらに詳細な情報を表示することも可能
+            if self.current_battle and not self._battle_is_over:
+                print(f"\n--- Turn: {self.current_battle.turn} ---")
+                my_active = self.current_battle.active_pokemon
+                opp_active = self.current_battle.opponent_active_pokemon
+                if my_active:
+                    moves_info = []
+                    for move_idx, move_obj in enumerate(my_active.moves.values()): # my_active.moves.values() を使用
+                         moves_info.append(f"{move_obj.id}({move_obj.current_pp}/{move_obj.max_pp})")
+                    print(f"My Active: {my_active.species} (HP: {my_active.current_hp_fraction*100:.1f}%) Status: {my_active.status} Moves: {moves_info}")
+                if opp_active:
+                    print(f"Opponent Active: {opp_active.species} (HP: {opp_active.current_hp_fraction*100:.1f}%) Status: {opp_active.status}")
+
+                if hasattr(self.action_helper, 'get_available_actions_with_details'):
+                    _, detailed_actions = self.action_helper.get_available_actions_with_details(self.current_battle)
+                    print("Available Actions:")
+                    for idx, action_info in detailed_actions.items():
+                        print(f"  {idx}: {action_info['type']} - {action_info['name']}")
+                elif hasattr(self.action_helper, 'get_available_actions'):
+                    action_mask, action_mapping = self.action_helper.get_available_actions(self.current_battle)
+                    print("Available Actions (Index: Type, Sub-Index):")
+                    for i in range(len(action_mask)):
+                        if action_mask[i] == 1:
+                             print(f"  {i}: {action_mapping.get(i)}")
+            elif self._battle_is_over:
+                print("Battle is over. Call reset() to start a new one.")
             else:
-                print("Battle not started yet.")
-        else:
-            # 他のレンダリングモードが必要な場合は実装
-            pass
+                print("Battle not started yet for render. Call reset() first.")
 
-    def close(self):
-        # 環境をクリーンアップするための処理（例: サーバー接続を切断など）
-        # poke-env の場合、Playerが内部で ShowdownConnector を持つため、
-        # Player のChallenge終了や切断処理をここで行うことを検討します。
-        # asyncio のイベントループを停止させる必要がある場合もあります。
-        print("Closing PokemonEnv.")
-        if self.player and hasattr(self.player, 'stop_listening') and callable(self.player.stop_listening):
+    
+
+    async def close(self):
+        print(f"Closing PokemonEnv (Player: {self.player.username}).")
+        tasks_to_await = []
+        results = await asyncio.gather(*tasks_to_await, return_exceptions=True)
+        for task_result, who in zip(results, ["EnvPlayer", "Opponent"]):
+            if isinstance(task_result, Exception) and not isinstance(task_result, ConnectionClosedOK):
+                print(f"[close] {who}: {type(task_result).__name__} - {task_result}")
+
+        
+                    
+        # EnvPlayer のクリーンアップ
+        # EnvPlayer 側は listen していない可能性があるのでガード
+        if self.player.ps_client.is_listening:          # ← 追加
+            tasks_to_await.append(self.player.ps_client.stop_listening())
+        if self.opponent.ps_client.is_listening:
+            tasks_to_await.append(self.opponent.ps_client.stop_listening())
+            
+        if tasks_to_await:
             try:
-                # poke-env の Player が非同期で動作している場合、
-                # stop_listening() も非同期メソッドの可能性があり、
-                # イベントループ内で実行する必要があるかもしれません。
-                # ここでは同期的に呼び出せることを仮定します。
-                # self.player.stop_listening() # 通常、Playerが自分で閉じるので明示的な呼び出しは不要な場合も
-                pass
+                results = await asyncio.gather(*tasks_to_await, return_exceptions=True)
+                for i, result in enumerate(results):
+                    player_name = "EnvPlayer" if i == 0 and self.player else "Opponent"
+                    if isinstance(result, Exception):
+                        if not isinstance(result, ConnectionClosedOK):
+                            print(f"Exception during stop_listening for {player_name}: {type(result).__name__} - {result}")
+                    else:
+                        print(f"stop_listening for {player_name} completed.")
+                print("Async cleanup tasks in close() processed.")
             except Exception as e:
-                print(f"Error during player cleanup: {e}")
-        # asyncioのイベントループがこのEnvの外部で管理されている場合は、
-        # ここで特別なループ停止処理は不要かもしれません。
+                print(f"Error during asyncio.gather in close: {e}")
 
+        print("PokemonEnv close() method finished.")
 class EnvPlayer(Player):
-    """
-    Gymnasium Env内でpoke-envのPlayerをラップするクラス。
-    choose_moveはEnvのstepメソッドから指示されたactionを実行するようにオーバーライドされる。
-    """
-    # pokemon_env.py の EnvPlayer クラス内
-
-    def __init__(self, opponent_player_for_env: Player, battle_format: str, team: str = None, log_level: int = None): # opponent引数名を変更
-        # Playerのコンストラクタに必要な引数を渡す
-        # poke_env 0.9.0 の Player.__init__ のシグネチャに合わせてください
-        # Player.__init__(self, player_configuration=None, *, avatar=None, battle_format=None, log_level=None, max_concurrent_battles=1, save_replays=False, server_configuration=None, start_timer_on_battle_start=False, start_listening=True, team=None)
-        # 必要なものだけ指定します。
-        super().__init__( # opponent引数を削除
+    def __init__(self, account_configuration: AccountConfiguration, battle_format: str, team: str = None, log_level: int = None, env_ref: Optional[PokemonEnv] = None):
+        super().__init__(
+            account_configuration=account_configuration,
             battle_format=battle_format,
             team=team,
-            log_level=log_level
-            # 必要に応じて player_configuration や server_configuration を設定
-            # player_configuration=PlayerConfiguration(avatar=None, name=None), # 名前やアバターを設定する場合
-            # server_configuration=ShowdownServerConfiguration, # デフォルト以外を使用する場合
+            log_level=log_level,
+            start_listening=False # PokemonEnvのresetで開始
         )
-        self._env_opponent = opponent_player_for_env # Envが管理する対戦相手を内部変数として保持
-        self._battle_to_play_against_env_opponent_task = None # challengeメソッドのタスクを保持
+        # self._opponent_ai: Optional[Player] = None # EnvPlayerは相手AIを直接持たない
+        self._current_battle_for_player: Optional[Battle] = None
+        self._env_ref = env_ref
 
-    def choose_move(self, battle: Battle) -> str:
-        # このメソッドは、Envのstepメソッドから渡されたアクションを実行するために
-        # 外部から設定されるか、Envが直接 self.player.send_message を呼び出す形になる。
-        # 通常の強化学習ループでは、エージェントが行動を選択し、
-        # Envのstepメソッドがその行動をpoke-envのPlayerに伝えて実行させる。
-        # そのため、この choose_move が呼ばれるのは、
-        # 環境側から「次の行動を決定してください」というpoke-envの通常の流れの場合。
-        # RLエージェントが行動を決定する場合、このメソッドは直接使われないか、
-        # Envが決定した行動を返すプレースホルダーになる。
-        # ここでは、Envからactionが供給されることを期待するため、
-        # このメソッドが呼ばれた場合は何もしないか、エラーを出す。
-        # あるいは、Envが次のactionをセットするのを待つFutureを返す。
+        self._choose_move_called_event = asyncio.Event()
+        self._action_to_send: Optional[str] = None
+
+        self._battle_update_event = asyncio.Event()
+        
+        # poke-env が使うコールバックを差し替え
+        self.ps_client._handle_battle_message = self._handle_battle_message
+
+
+
+    def choose_move(self, battle: Battle):
+        # Envからの次アクションがセット済みの場合はそれを取得（BattleOrder型）
         if self._action_to_send:
-            action_str = self._action_to_send
-            self._action_to_send = None # 一度使ったらクリア
-            return action_str
+            action_order = self._action_to_send  # 例: BattleOrderオブジェクト
+            self._action_to_send = None
+            return action_order  # BattleOrderなのでmessage属性あり
         else:
-            # Envのstepメソッドがactionを設定するまで待機するメカニズムが必要
-            # ここでは仮にランダムな手を打つようにしておく (デバッグ用)
-            # print("EnvPlayer.choose_move called without pre-set action, choosing random.")
-            # return self.choose_random_move(battle) # Playerクラスのメソッドを利用
-            # raise RuntimeError("EnvPlayer.choose_move was called directly. Action should be provided by the environment.")
-            # 非同期で行動を待つ場合
+            # 未設定ならFutureを作成し、Env側のstep()からの入力を待つ
             loop = asyncio.get_event_loop()
             self._next_action_future = loop.create_future()
-            # print("EnvPlayer: Waiting for action from Env...")
-            # このFutureはEnvのstepメソッドでactionが渡された際に結果設定される
-            # Battle._player_decision_is_made.set()のような仕組みを参考にする
-            return self._next_action_future # BattleはこのFutureをawaitする
+            return self._next_action_future
 
-    async def start_battle_against_opponent(self, opponent: Player, battle_format: str = "gen9randombattle", team_pascal: str = None):
+    def set_next_action_for_battle(self, battle: Battle, action_order: Optional [BattleOrder]): # 引数を order_str に変更
+        if self._current_battle_for_player and self._current_battle_for_player.battle_tag != battle.battle_tag:
+             print(f"Warning [{self.username}]: set_next_action called for battle {battle.battle_tag}, but current is {self._current_battle_for_player.battle_tag}")
+        self._action_to_send: Optional[BattleOrder] = action_order # order文字列を保存
+        self._choose_move_called_event.set()
+
+    async def _handle_battle_message(self, split_messages: list[list[str]]):
+        """poke-env から受け取った 1 バッチ分のメッセージを処理する。
+
+        `split_messages` は「ルームヘッダ行」と複数の
+        `|XXX|...` 行が 1 つのリストにまとまった構造になる。
+        強制交代時は `|request|…` 1 行だけ、というケースがあるので
+        **先頭も含めて** 全メッセージを調べる。
         """
-        指定された対戦相手との対戦を開始し、対戦が終了するまで待機する。
-        """
-        if self._battle_to_play_against_env_opponent_task and not self._battle_to_play_against_env_opponent_task.done():
-            print("A battle is already in progress or was not properly cleaned up.")
-            return
+        await super()._handle_battle_message(split_messages)
 
-        self._battle_to_play_against_env_opponent_task = asyncio.create_task(
-            self._challenge_and_wait(opponent, battle_format, team_pascal)
-        )
-        try:
-            await self._battle_to_play_against_env_opponent_task
-        except asyncio.CancelledError:
-            print("Battle task was cancelled.")
-        finally:
-            self._battle_to_play_against_env_opponent_task = None
+        trigger_tags = {"request", "turn", "upkeep", "win", "lose", "tie", "error"}
+        if any(len(m) > 1 and m[1] in trigger_tags for m in split_messages):
+            # 新しい request / ターン進行 / バトル終了 など
+            # いずれかを検知したら待機中コルーチンを起こす
+            self._battle_update_event.set()
 
-
-    async def _challenge_and_wait(self, opponent: Player, battle_format: str, team_pascal: str = None):
-        if team_pascal:
-            self.update_team(team_pascal) # チームをセット
-        
-        # 対戦相手にチャレンジ
-        await self.send_challenges(opponent.username, n_challenges=1, to_wait=opponent.logged_in)
-        # print(f"Challenged {opponent.username}. Waiting for battle to finish...")
-
-    def set_next_action(self, action_order: str):
-        """Envから実行すべき行動文字列を受け取る"""
-        if hasattr(self, '_next_action_future') and self._next_action_future and not self._next_action_future.done():
-            self._next_action_future.set_result(action_order)
-            # print(f"EnvPlayer: Action '{action_order}' set by Env.")
-        else:
-            # Futureが準備できていないか、すでに行動が設定されている場合
-            # stepメソッドのロジックで、choose_moveが呼ばれる前にactionが設定されるように調整が必要
-            # print(f"EnvPlayer: Future not ready or already set. Buffering action '{action_order}'.")
-            self._action_to_send = action_order # バッファリング
-
+    async def _battle_message(self, battle: Battle, message: str):
+        # ❶ まず battle を更新
+        await super()._battle_message(battle, message)
+        # ❷ その後にイベントを通知
+        if message.startswith(('|turn|', '|win|', '|lose|', '|tie|', '|error|', '|upkeep|')):
+            self._battle_update_event.set()
+            
     async def _battle_finished_callback(self, battle: Battle):
-        """バトル終了時に呼ばれるコールバック (Playerクラスのメソッドをオーバーライド)"""
-        # print(f"Battle {battle.battle_tag} finished. Player won: {battle.won}")
-        # Envにバトル終了を通知するなどの処理をここで行う
-        # 例えば、resetメソッドで次のバトルを開始する準備をするなど
-        # このコールバックはpoke-envの内部ループから呼ばれるため、
-        # Envのメインループとの同期に注意が必要
+        # バトル終了フラグをEnv側に通知
         if hasattr(self, '_env_instance') and self._env_instance:
-             self._env_instance.current_battle_finished = True # Envインスタンスにフラグを立てるなど
-        # Playerクラスのデフォルトのコールバックも呼び出す場合
-        await super()._battle_finished_callback(battle)
+            self._env_instance.current_battle_finished = True
+        # 親クラスのコールバックを同期的に呼ぶ（戻り値なし）
+        super()._battle_finished_callback(battle)  # 非同期でないためawaitしない
+
+    async def wait_for_battle_update(self, battle: Battle):
+        prev_turn  = battle.turn
+        prev_rqid = battle.last_request.get("rqid", -1) if hasattr(battle, "last_request") else -1
+        print(f"[DBG] wait_for_battle_update enter "
+              f"prev_turn={prev_turn}, prev_rqid={prev_rqid}")
+        while True:
+            await self._battle_update_event.wait()
+            self._battle_update_event.clear()
+            cur_turn = battle.turn
+            cur_rqid = battle.last_request.get("rqid", -1) if hasattr(battle, "last_request") else -1
+            print(f"[DBG] wake: turn={cur_turn}, rqid={cur_rqid}, "
+                  f"wait={getattr(battle,'_wait',None)}, finished={battle.finished}")
+
+            # ターン番号か rqid が進んだか　バトルが終了したタイミングで抜ける
+            # サーバから行動受付中 (battle._wait == False) になった瞬間だけ抜ける
+            if (
+                (cur_rqid > prev_rqid or cur_turn > prev_turn)  # 何か新しい request が来た
+                and not battle._wait                          # しかも wait フラグが外れた
+            ) or battle.finished:
+                break
+
 
 # --- 動作確認のための仮コード ---
-if __name__ == '__main__':
+async def main_test():
     print("PokemonEnv class defined. Basic structure is ready.")
-    print("To test further, you'll need to implement step and reset methods,")
-    print("and run it with a StateObserver instance and an opponent player.")
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-    # StateObserverの初期化 (state_spec.ymlのパスを適切に設定してください)
-    # このファイルがプロジェクトルート/src/environments/pokemon_env.py にあると仮定すると、
-    # state_spec.yml が プロジェクトルート/config/state_spec.yml にある場合、
-    # パスは "../../config/state_spec.yml" のようになります。
-    # 実行場所に応じてパスを調整してください。
-    # ここでは、このスクリプトが src/environments/ にあり、
-    # state_spec.yml が ../../config/ にあると仮定します。
     try:
-        spec_path = "config/state_spec.yml" # このファイルの場所に合わせて調整してください
+        spec_path = os.path.join(project_root, "config/state_spec.yml")
         observer = StateObserver(spec_path)
         print(f"StateObserver loaded with spec: {spec_path}")
-    except FileNotFoundError:
-        print(f"Error: state_spec.yml not found at {spec_path}. Please check the path.")
-        print("Skipping PokemonEnv instantiation for now.")
-        observer = None
+        print(f"Calculated observation dimension: {observer.get_observation_dimension()}")
     except Exception as e:
-        print(f"Error initializing StateObserver: {e}")
-        observer = None
+        print(f"Error initializing StateObserver or getting dimension: {e}")
+        import traceback
+        traceback.print_exc()
+        return
 
+    opponent_account_config = AccountConfiguration("OpponentRandomTest", None) # ユーザー名を変更して衝突を避ける
+    opponent_player = RandomPlayer(
+        account_configuration=opponent_account_config,
+        battle_format="gen9ou",
+        log_level=logging.INFO,
+        start_listening=True # RandomPlayer は listen 状態で待機させる
+    )
+    print("Opponent player created and starts listening.")
 
-    if observer:
-        # 対戦相手プレイヤーの準備 (例: RandomPlayer)
-        opponent = RandomPlayer(battle_format="gen9randombattle")
-        print("Opponent player (RandomPlayer) created.")
-
-        # PokemonEnv インスタンスの作成
-        # チームはデバッグ用にmy_team_for_debug.txtから読み込むことを想定
-        # my_team_for_debug.txt の内容をPascalフォーマット文字列として渡す必要があります。
-        # ここでは仮にNoneとして、ランダムバトルを想定します。
-        # 固定パーティの場合は、team_pascal引数にチーム文字列を指定してください。
-        # 例: my_team_pascal_str = open("../../config/my_team_for_debug.txt", "r").read()
-        #     env = PokemonEnv(opponent_player=opponent, state_observer=observer, battle_format="gen9ou", team_pascal=my_team_pascal_str)
+    try:
+        team_str = None
+        team_file_path = os.path.join(project_root, "config/my_team_for_debug.txt")
         try:
-            env = PokemonEnv(opponent_player=opponent, state_observer=observer)
-            print("PokemonEnv instance created successfully.")
-            print(f"Observation Space: {env.observation_space}")
-            print(f"Action Space: {env.action_space}")
+            with open(team_file_path, "r") as f:
+                team_str = f.read()
+            print(f"Team loaded from {team_file_path}")
+        except FileNotFoundError:
+            print(f"Warning: {team_file_path} not found.")
 
-            # 受け入れ基準の確認
-            assert isinstance(env, gym.Env), "PokemonEnv is not a subclass of gym.Env"
-            assert hasattr(env, 'observation_space'), "observation_space is not defined"
-            assert hasattr(env, 'action_space'), "action_space is not defined"
-            assert env.action_space.n == 10, f"Action space size is {env.action_space.n}, expected 10"
-            # observation_spaceの形状はStateObserverの実装に依存するため、ここでは具体的なチェックは難しい
-            # assert env.observation_space.shape == (observer.get_observation_space_dim(),), "Observation space shape mismatch"
-            print("Basic acceptance criteria met.")
+        # action_helper モジュールをインポート
+        from src.action import action_helper as action_helper_module
 
-        except Exception as e:
-            print(f"Error during PokemonEnv instantiation or basic checks: {e}")
-            import traceback
-            traceback.print_exc()
+        env = PokemonEnv(
+            opponent_player=opponent_player,
+            state_observer=observer,
+            action_helper=action_helper_module, # ★action_helperモジュールを渡す★
+            battle_format="gen9ou",
+            team_pascal=team_str,
+            player_username="MapleEnvPlayerTest"
+        )
+        print("PokemonEnv instance created successfully.")
+        # print(f"Observation Space: {env.observation_space}") # __init__内でprint済
+        # print(f"Action Space: {env.action_space}")       # __init__内でprint済
 
-    else:
-        print("PokemonEnv instantiation skipped due to StateObserver initialization failure.")
+        assert isinstance(env, gym.Env)
+        assert hasattr(env, 'observation_space')
+        assert hasattr(env, 'action_space')
+        assert env.action_space.n == 10
+        assert env.observation_space.shape == (observer.get_observation_dimension(),)
+        print("Basic acceptance criteria met.")
+
+    except Exception as e:
+        print(f"Error during PokemonEnv instantiation or basic checks: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        # ─────────────────────────────────────────────
+        # ここを env.close() だけに統一
+        # ─────────────────────────────────────────────
+        if 'env' in locals() and env:
+            # 非同期で定義した close() を呼び出すには await が必須
+            print(f"Closing PokemonEnv ({env.player.username}) in main_test finally...")
+            try:
+                await env.close()        # ← opponent も内部で stop_listening される
+            except Exception as e:
+                print(f"Error during env.close() in main_test finally: {type(e).__name__} - {e}")
+
+
+if __name__ == '__main__':
+    asyncio.run(main_test())

@@ -9,7 +9,8 @@
 │   ├── my_team_for_debug.txt
 │   ├── my_team.txt
 │   ├── pokemon_all_moves.csv
-│   └── state_feature_catalog_temp - シート1.csv
+│   ├── state_feature_catalog_temp - シート1.csv
+│   └── state_spec.yml
 ├── docs
 │   ├── ai-design
 │   ├── environment
@@ -20,7 +21,9 @@
 │   │   ├── 2025_04_14.md
 │   │   ├── 2025_04_15.md
 │   │   ├── 2025_04_18.md
-│   │   └── 2025_04_19.md
+│   │   ├── 2025_04_19.md
+│   │   ├── 2025_05_16.md
+│   │   └── 2025_05_22.md
 │   ├── planning
 │   │   └── PLANNING.md
 │   └── README.md
@@ -294,7 +297,6 @@
 │   │   ├── needle
 │   │   ├── negotiator
 │   │   ├── node-abi
-│   │   ├── node-addon-api
 │   │   ├── node-gyp
 │   │   ├── node-static
 │   │   ├── nodemailer
@@ -373,7 +375,6 @@
 │   │   ├── sprintf-js
 │   │   ├── sql-template-strings
 │   │   ├── sqlite
-│   │   ├── sqlite3
 │   │   ├── sqlstring
 │   │   ├── ssri
 │   │   ├── stream-parser
@@ -549,6 +550,9 @@
 │   │   ├── my_simple_player.py
 │   │   ├── random_player.py
 │   │   └── rule_based_player.py
+│   ├── environments
+│   │   ├── __pycache__
+│   │   └── pokemon_env.py
 │   ├── state
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
@@ -564,9 +568,10 @@
     ├── check_connection.py
     ├── print_available.py
     ├── run_battle.py
+    ├── test_env_reset.py
     ├── test_hp_logger_observer_battle.py
     ├── test_rb_vs_random_battle.py
     ├── test_rule_based_battle.py
     └── test_state_observer.py
 
-392 directories, 178 files
+392 directories, 183 files

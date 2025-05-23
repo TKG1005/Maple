@@ -2,29 +2,30 @@
 
 import numpy as np
 
-def generate_action_mask(available_moves, available_switches, can_terastallize):
+def generate_action_mask(
+    available_moves,
+    available_switches,
+    can_tera,
+    force_switch: bool = False,   # ★追加
+):
     """
-    固定長10の行動空間（通常技4、テラスタル技4、交代2）に対するマスクベクトルを生成する。
-
-    Returns: np.array([1, 1, ..., -1])（長さ10）
+    固定長10（通常技4・テラス技4・交代2）のマスクを返す。
+    force_switch=True のときは技／テラスを 0 にし、交代だけ 1 にする。
     """
+    mask = np.zeros(10, dtype=np.int8)
 
-    mask = np.full(10, 0)  # 全部 0 で初期化
-
-    # 通常技スロット 0〜3
-    for i in range(min(4, len(available_moves))):
-        if available_moves[i]:
+    # --- 技スロット --------------------------------------------------------
+    if not force_switch:                       # ★ここがポイント
+        for i, _ in enumerate(available_moves[:4]):
             mask[i] = 1
 
-    # テラスタル技スロット 4〜7
-    if can_terastallize:
-        for i in range(min(4, len(available_moves))):
-            if available_moves[i]:
-                mask[i + 4] = 1
+        # --- テラスタル技 -------------------------------------------------
+        if can_tera:
+            for i, _ in enumerate(available_moves[:4]):
+                mask[4 + i] = 1
 
-    # 交代スロット 8〜9
-    for i in range(min(2, len(available_switches))):
-        if available_switches[i]:
-            mask[i + 8] = 1
+    # --- 交代スロット ------------------------------------------------------
+    for i, _ in enumerate(available_switches[:2]):
+        mask[8 + i] = 1
 
     return mask
