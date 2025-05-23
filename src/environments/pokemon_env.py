@@ -15,8 +15,10 @@ from poke_env.player import Player, RandomPlayer
 from poke_env.ps_client.account_configuration import AccountConfiguration
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Battle
+from poke_env.player.battle_order import BattleOrder
 # from poke_env.player.baselines import MaxBasePowerPlayer # 現状未使用ならコメントアウト可
 from poke_env.exceptions import ShowdownException
+
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
@@ -94,7 +96,7 @@ class PokemonEnv(gym.Env):
 
         # 1. 行動をOrderに変換
         try:
-            order_str = self.action_helper.action_index_to_order(self.player, self.current_battle, action_index)
+            order = self.action_helper.action_index_to_order(self.player, self.current_battle, action_index)
             print(f"[{self.player.username}] Action index: {action_index} -> Order: {order_str}")
         except ValueError as e:
             print(f"Error converting action_index {action_index} to order: {e}")
@@ -104,7 +106,7 @@ class PokemonEnv(gym.Env):
             terminated = self.current_battle.finished if self.current_battle else True
             return obs, -0.01, terminated, False, {"error": f"Invalid action {action_index}", "message": str(e)}
 
-        self.player.set_next_action_for_battle(self.current_battle, order_str)
+        self.player.set_next_action_for_battle(self.current_battle, order)
 
         try:
             await asyncio.wait_for(self.player.wait_for_battle_update(self.current_battle), timeout=10.0)
@@ -259,17 +261,11 @@ class PokemonEnv(gym.Env):
 
 
     def step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
-        # loop.is_running() のチェックは、asyncio.run() を使っている場合、run()の内部でループが開始・終了するため、
-        # PokemonEnvの初期化時と挙動が異なる可能性がある。
-        # asyncio.run_coroutine_threadsafe は外部のイベントループでコルーチンを実行するためのもの。
-        # main_test が asyncio.run() で実行されている場合、その中で env.step() が呼ばれると、
-        # self.loop は main_test を実行しているループと同じはず。
-        if self.loop.is_running(): # asyncio.run() のコンテキスト内では True になるはず
-            future = asyncio.run_coroutine_threadsafe(self._handle_battle_step(action_index), self.loop)
-            return future.result()
-        else:
-            # asyncio.run() の外から呼ばれることは通常ないはずだが、フォールバック
-            return self.loop.run_until_complete(self._handle_battle_step(action_index))
+        # 利用可能な行動をBattleOrderに変換（poke-envの命令オブジェクトを取得）
+        action_order = action_index_to_order(self.player, self.current_battle, action_index)
+        # BattleOrderオブジェクトをEnvPlayerに渡して実行
+        self.player.set_next_action(action_order)
+        # ...（以降、ターン終了まで待機し観測と報酬を取得）...
 
 
     def reset(self, seed: int | None = None, options: dict | None = None):
@@ -375,30 +371,22 @@ class EnvPlayer(Player):
 
 
 
-    async def choose_move(self, battle: Battle) -> str: # poke-env >= 0.6.0 では BattleOrder を返す
-        self._current_battle_for_player = battle
-        if self._env_ref:
-            self._env_ref.current_battle = battle # Env に現在のバトル状況を伝える
+    def choose_move(self, battle: Battle):
+        # Envからの次アクションがセット済みの場合はそれを取得（BattleOrder型）
+        if self._action_to_send:
+            action_order = self._action_to_send  # 例: BattleOrderオブジェクト
+            self._action_to_send = None
+            return action_order  # BattleOrderなのでmessage属性あり
+        else:
+            # 未設定ならFutureを作成し、Env側のstep()からの入力を待つ
+            loop = asyncio.get_event_loop()
+            self._next_action_future = loop.create_future()
+            return self._next_action_future
 
-        await self._choose_move_called_event.wait()
-        self._choose_move_called_event.clear()
-
-        if self._action_to_send is None:
-            print(f"Warning [{self.username}]: choose_move called but _action_to_send is None. Sending default (random).")
-            # BattleOrderを返す必要があるので、choose_random_moveからBattleOrderオブジェクトを取得する
-            # (choose_random_move は BattleOrder インスタンスを返すはず)
-            random_order = self.choose_random_move(battle)
-            return random_order.message # BattleOrder.message で文字列コマンドを取得
-
-        action_order_str = self._action_to_send
-        self._action_to_send = None
-        print(f"[{self.username} choose_move]: Sending order string: {action_order_str} for battle {battle.battle_tag}")
-        return action_order_str # poke-env は文字列も受け付けるはず
-
-    def set_next_action_for_battle(self, battle: Battle, action_order_str: str): # 引数を order_str に変更
+    def set_next_action_for_battle(self, battle: Battle, action_order: Optional [BattleOrder]): # 引数を order_str に変更
         if self._current_battle_for_player and self._current_battle_for_player.battle_tag != battle.battle_tag:
              print(f"Warning [{self.username}]: set_next_action called for battle {battle.battle_tag}, but current is {self._current_battle_for_player.battle_tag}")
-        self._action_to_send = action_order_str # order文字列を保存
+        self._action_to_send: Optional[BattleOrder] = action_order # order文字列を保存
         self._choose_move_called_event.set()
 
     async def _handle_battle_message(self, split_messages: list[list[str]]):
@@ -424,18 +412,12 @@ class EnvPlayer(Player):
         if message.startswith(('|turn|', '|win|', '|lose|', '|tie|', '|error|', '|upkeep|')):
             self._battle_update_event.set()
             
-    def _battle_finished_callback(self, battle):
-        async def _async_cb():
-            print(f"[{self.username}] Battle finished callback for {battle.battle_tag}. Won: {battle.won}")
-            if self._env_ref:
-                self._env_ref.current_battle = battle
-                self._env_ref._battle_is_over = True
-                self._battle_update_event.set()
-            self._choose_move_called_event.set()
-            self._action_to_send = None
-            self._current_battle_for_player = None
-            await super(EnvPlayer, self)._battle_finished_callback(battle) # 必ず親クラスのメソッドを呼ぶ
-        asyncio.create_task(_async_cb())  # POKE_LOOP 内なので OK
+    async def _battle_finished_callback(self, battle: Battle):
+        # バトル終了フラグをEnv側に通知
+        if hasattr(self, '_env_instance') and self._env_instance:
+            self._env_instance.current_battle_finished = True
+        # 親クラスのコールバックを同期的に呼ぶ（戻り値なし）
+        super()._battle_finished_callback(battle)  # 非同期でないためawaitしない
 
     async def wait_for_battle_update(self, battle: Battle):
         prev_turn  = battle.turn
