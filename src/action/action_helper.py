@@ -6,9 +6,8 @@ from poke_env.environment.move import Move
 from poke_env.environment.pokemon import Pokemon
 from poke_env.player.player import Player # Playerをインポート
 from poke_env.environment.pokemon_type import PokemonType # 型ヒント用
-# from src.action.action_masker import generate_action_mask # 既にインポート済みのはず
+from .action_masker import generate_action_mask # 既にインポート済みのはず
 
-# (get_available_actions は変更なし、または詳細情報を返す版を追加)
 
 # ActionDetail の型定義 (render用)
 class ActionDetail(TypedDict):
@@ -16,6 +15,48 @@ class ActionDetail(TypedDict):
     name: str
     id: Union[str, int] # move.id や pokemon.species
     # 必要なら他の情報も追加 (例: move_type, move_power, pokemon_hp_fraction)
+    
+def get_available_actions(battle: Battle) -> Tuple[np.ndarray, Dict[int, Tuple[str, int]]]:
+    """
+    固定長 10（技4 + テラス技4 + 交代2）の行動空間に対して  
+    - action_mask  … 取り得る行動 = 1 / 取れない = 0  
+    - mapping      … action_index → ("move"/"terastal"/"switch", サブID)  
+    を返すユーティリティ関数。
+    """
+    force_switch = battle.force_switch
+
+    
+    
+    # 技は force_switch の間は空リストにしておく
+    # 利用可能な技をソートして決定論的に並べる
+    moves_sorted: List[Move] = (
+        [] if force_switch else sorted(battle.available_moves, key=lambda m: m.id)
+    )
+    switches: List[Pokemon] = battle.available_switches
+    can_tera: bool = (battle.can_tera is not None) and (not force_switch)
+
+    # ① マスク生成（再利用しやすいように外だし済み）
+    mask = generate_action_mask(moves_sorted, switches, can_tera, force_switch)
+
+    # ② インデックス → 実際の行動を示すマッピング
+    mapping: Dict[int, Tuple[str, int]] = {}
+
+    #   技スロット 0-3
+    #   テラス技スロット 4-7
+    if not force_switch:
+        for i in range(min(4, len(moves_sorted))):
+            mapping[i] = ("move", i)
+        if can_tera:
+            for i in range(min(4, len(moves_sorted))):
+                mapping[4 + i] = ("terastal", i)
+                
+    #   交代スロット 8-9
+    for i in range(min(2, len(switches))):
+        mapping[8 + i] = ("switch", i)
+        
+
+    return mask, mapping
+
 
 def get_available_actions_with_details(battle: Battle) -> Tuple[np.ndarray, Dict[int, ActionDetail]]:
     """

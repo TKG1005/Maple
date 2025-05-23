@@ -53,8 +53,8 @@ class StateObserver:
                 encoded_val = enc_func(val)
 
                 # デバッグ用printは条件を絞るか、詳細ログレベルで管理した方が良い
-                if battle.turn == 1: # 例としてターン1の時だけ出力
-                    print(f"Debug observe: {key} raw='{val}' encoded='{encoded_val}'")
+                # if battle.turn == 1: # 例としてターン1の時だけ出力
+                #    print(f"Debug observe: {key} raw='{val}' encoded='{encoded_val}'")
 
                 
                 # if battle.turn == 1:

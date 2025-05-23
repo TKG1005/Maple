@@ -40,6 +40,7 @@ class PokemonEnv(gym.Env):
         self.current_battle: Optional[Battle] = None
         self._player_username = player_username
         self._player_password = None
+        
 
         # --- 状態空間 (Observation Space) の定義 ---
         try:
@@ -60,7 +61,7 @@ class PokemonEnv(gym.Env):
             account_configuration=env_player_account_config,
             battle_format=self.battle_format,
             team=team_pascal,
-            log_level=logging.INFO,
+            log_level=logging.DEBUG,
             env_ref=self
         )
 
@@ -77,7 +78,6 @@ class PokemonEnv(gym.Env):
         print(f"Observation Space: {self.observation_space}") # ★設定後にprint★
         print(f"Action Space: {self.action_space}")       # ★設定後にprint★
 
-    # ... (step, reset, render, close メソッドは変更なし) ...
     async def _handle_battle_step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """
         非同期で1ステップの対戦処理を行う内部メソッド
@@ -107,7 +107,7 @@ class PokemonEnv(gym.Env):
         self.player.set_next_action_for_battle(self.current_battle, order_str)
 
         try:
-            await asyncio.wait_for(self.player.wait_for_battle_update(self.current_battle), timeout=30.0)
+            await asyncio.wait_for(self.player.wait_for_battle_update(self.current_battle), timeout=10.0)
         except asyncio.TimeoutError:
             print(f"Warning: Timeout waiting for battle update in step for battle {self.current_battle.battle_tag if self.current_battle else 'N/A'}")
         except ShowdownException as e:
@@ -179,16 +179,14 @@ class PokemonEnv(gym.Env):
         if seed is not None:
             np.random.seed(seed)
 
-        # 1) 前のバトルが残っていたらクリーンアップ
-        if not self._battle_is_over and self.current_battle:
-            # 対戦が終わるのを待つ／強制終了する等、設計次第
-            # ここでは強制終了して次へ
-            await self.close()
+
 
         # 2) プレイヤー側 WebSocket を起動（まだなら）
         if not self.player.ps_client.is_listening:
+            print(f"[DBG] Starting player WebSocket listener for {self.player.username}")
             # listen() は無限ループなので Task として fire-and-forget
-            self.loop.create_task(self.player.ps_client.listen())
+            listen_task = self.loop.create_task(self.player.ps_client.listen())
+            self.player.ps_client._listening_coroutine = listen_task
 
         # opponent は __init__ で start_listening=True なので通常は動いているが、
         # 念のためチェック
@@ -371,6 +369,10 @@ class EnvPlayer(Player):
         self._action_to_send: Optional[str] = None
 
         self._battle_update_event = asyncio.Event()
+        
+        # poke-env が使うコールバックを差し替え
+        self.ps_client._handle_battle_message = self._handle_battle_message
+
 
 
     async def choose_move(self, battle: Battle) -> str: # poke-env >= 0.6.0 では BattleOrder を返す
@@ -399,35 +401,63 @@ class EnvPlayer(Player):
         self._action_to_send = action_order_str # order文字列を保存
         self._choose_move_called_event.set()
 
-    async def _battle_message(self, battle: Battle, from_ps: bool, message_type: str, *args: Any):
-        # EnvPlayer の _battle_message は変更なしでOK
-        if message_type in ["turn", "win", "lose", "tie", "error"] or battle.finished: # poke-env v0.5.x 'error', battle.finished
-            if self._env_ref and self._env_ref.current_battle and self._env_ref.current_battle.battle_tag == battle.battle_tag:
-                 self._battle_update_event.set()
-        await super()._battle_message(battle, from_ps, message_type, *args) # 必ず親クラスのメソッドを呼ぶ
+    async def _handle_battle_message(self, split_messages: list[list[str]]):
+        """poke-env から受け取った 1 バッチ分のメッセージを処理する。
 
-    async def _battle_finished_callback(self, battle: Battle):
-        # EnvPlayer の _battle_finished_callback は変更なしでOK
-        print(f"[{self.username}] Battle finished callback for {battle.battle_tag}. Won: {battle.won}")
-        if self._env_ref:
-            self._env_ref.current_battle = battle
-            self._env_ref._battle_is_over = True
+        `split_messages` は「ルームヘッダ行」と複数の
+        `|XXX|...` 行が 1 つのリストにまとまった構造になる。
+        強制交代時は `|request|…` 1 行だけ、というケースがあるので
+        **先頭も含めて** 全メッセージを調べる。
+        """
+        await super()._handle_battle_message(split_messages)
+
+        trigger_tags = {"request", "turn", "upkeep", "win", "lose", "tie", "error"}
+        if any(len(m) > 1 and m[1] in trigger_tags for m in split_messages):
+            # 新しい request / ターン進行 / バトル終了 など
+            # いずれかを検知したら待機中コルーチンを起こす
             self._battle_update_event.set()
-        self._choose_move_called_event.set()
-        self._action_to_send = None
-        self._current_battle_for_player = None
-        await super()._battle_finished_callback(battle) # 必ず親クラスのメソッドを呼ぶ
+
+    async def _battle_message(self, battle: Battle, message: str):
+        # ❶ まず battle を更新
+        await super()._battle_message(battle, message)
+        # ❷ その後にイベントを通知
+        if message.startswith(('|turn|', '|win|', '|lose|', '|tie|', '|error|', '|upkeep|')):
+            self._battle_update_event.set()
+            
+    def _battle_finished_callback(self, battle):
+        async def _async_cb():
+            print(f"[{self.username}] Battle finished callback for {battle.battle_tag}. Won: {battle.won}")
+            if self._env_ref:
+                self._env_ref.current_battle = battle
+                self._env_ref._battle_is_over = True
+                self._battle_update_event.set()
+            self._choose_move_called_event.set()
+            self._action_to_send = None
+            self._current_battle_for_player = None
+            await super(EnvPlayer, self)._battle_finished_callback(battle) # 必ず親クラスのメソッドを呼ぶ
+        asyncio.create_task(_async_cb())  # POKE_LOOP 内なので OK
 
     async def wait_for_battle_update(self, battle: Battle):
-        # EnvPlayer の wait_for_battle_update は変更なしでOK
-        if self._env_ref and self._env_ref.current_battle and self._env_ref.current_battle.battle_tag == battle.battle_tag:
-            if self._env_ref.current_battle.finished:
-                self._battle_update_event.clear()
-                return
-        print(f"[{self.username}] Waiting for battle update for {battle.battle_tag} (current turn: {battle.turn})...")
-        await self._battle_update_event.wait()
-        self._battle_update_event.clear()
-        print(f"[{self.username}] Battle update received for {battle.battle_tag} (finished: {battle.finished}, new turn: {battle.turn if not battle.finished else 'N/A'}).")
+        prev_turn  = battle.turn
+        prev_rqid = battle.last_request.get("rqid", -1) if hasattr(battle, "last_request") else -1
+        print(f"[DBG] wait_for_battle_update enter "
+              f"prev_turn={prev_turn}, prev_rqid={prev_rqid}")
+        while True:
+            await self._battle_update_event.wait()
+            self._battle_update_event.clear()
+            cur_turn = battle.turn
+            cur_rqid = battle.last_request.get("rqid", -1) if hasattr(battle, "last_request") else -1
+            print(f"[DBG] wake: turn={cur_turn}, rqid={cur_rqid}, "
+                  f"wait={getattr(battle,'_wait',None)}, finished={battle.finished}")
+
+            # ターン番号か rqid が進んだか　バトルが終了したタイミングで抜ける
+            # サーバから行動受付中 (battle._wait == False) になった瞬間だけ抜ける
+            if (
+                (cur_rqid > prev_rqid or cur_turn > prev_turn)  # 何か新しい request が来た
+                and not battle._wait                          # しかも wait フラグが外れた
+            ) or battle.finished:
+                break
+
 
 # --- 動作確認のための仮コード ---
 async def main_test():
