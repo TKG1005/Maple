@@ -97,7 +97,7 @@ class PokemonEnv(gym.Env):
         # 1. 行動をOrderに変換
         try:
             order = self.action_helper.action_index_to_order(self.player, self.current_battle, action_index)
-            print(f"[{self.player.username}] Action index: {action_index} -> Order: {order_str}")
+            print(f"[{self.player.username}] Action index: {action_index} -> Order: {order}")
         except ValueError as e:
             print(f"Error converting action_index {action_index} to order: {e}")
             obs = self.state_observer.observe(self.current_battle)
@@ -261,12 +261,16 @@ class PokemonEnv(gym.Env):
 
 
     def step(self, action_index: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
-        # 利用可能な行動をBattleOrderに変換（poke-envの命令オブジェクトを取得）
-        action_order = action_index_to_order(self.player, self.current_battle, action_index)
-        # BattleOrderオブジェクトをEnvPlayerに渡して実行
-        self.player.set_next_action(action_order)
-        # ...（以降、ターン終了まで待機し観測と報酬を取得）...
-
+        # アクションインデックスをBattleOrderに変換
+        order = self.action_helper.action_index_to_order(self.player, self.current_battle, action_index)
+        # BattleOrderをEnvPlayerにセットして次の行動に指定
+        self.player.set_next_action_for_battle(self.current_battle, order)
+        # 非同期のバトル進行処理が完了するまで待機
+        if self.loop.is_running():
+            fut = asyncio.run_coroutine_threadsafe(self._handle_battle_step(action_index), self.loop)
+            return fut.result()
+        else:
+            return self.loop.run_until_complete(self._handle_battle_step(action_index))
 
     def reset(self, seed: int | None = None, options: dict | None = None):
         """
@@ -373,6 +377,11 @@ class EnvPlayer(Player):
 
     def choose_move(self, battle: Battle):
         # Envからの次アクションがセット済みの場合はそれを取得（BattleOrder型）
+        # 初回呼び出し時に現在のBattleを環境に登録
+        if self._env_ref is not None and self._env_ref.current_battle is None:
+            self._env_ref.current_battle = battle
+            self._current_battle_for_player = battle
+                    
         if self._action_to_send:
             action_order = self._action_to_send  # 例: BattleOrderオブジェクト
             self._action_to_send = None
@@ -383,9 +392,17 @@ class EnvPlayer(Player):
             self._next_action_future = loop.create_future()
             return self._next_action_future
 
-    def set_next_action_for_battle(self, battle: Battle, action_order: Optional [BattleOrder]): # 引数を order_str に変更
+    def set_next_action_for_battle(self, battle: Battle, action_order: Optional [BattleOrder]): 
+        # （バトルIDのチェックはそのまま）
         if self._current_battle_for_player and self._current_battle_for_player.battle_tag != battle.battle_tag:
-             print(f"Warning [{self.username}]: set_next_action called for battle {battle.battle_tag}, but current is {self._current_battle_for_player.battle_tag}")
+            print(f"Warning [{self.username}]: set_next_action called for battle {battle.battle_tag}, but current is {self._current_battle_for_player.battle_tag}")
+        # Futureが未完了で待機中なら結果をセットして解決する
+        if hasattr(self, "_next_action_future") and not self._next_action_future.done():
+            self._next_action_future.set_result(action_order)    
+        else:
+            # 念のためFallback（通常はこちらは通らない想定）
+            self._action_to_send = action_order            
+                
         self._action_to_send: Optional[BattleOrder] = action_order # order文字列を保存
         self._choose_move_called_event.set()
 
