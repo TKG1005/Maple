@@ -54,8 +54,10 @@ def run_episode(env, episode_num: int) -> float:
     while not done:
         t += 1
         mask, _ = action_helper.get_available_actions(env.current_battle)
+        print(f"[DBG]action_mask = {mask}")
         valid_indices = np.where(mask == 1)[0]
         action = int(np.random.choice(valid_indices))  #利用可能な行動からランダムに１つを選ぶ
+        print(f"選択した行動 {action}")
 
         next_obs, reward, done, truncated, inf = env.step(action)
         cum_r += reward

@@ -55,8 +55,6 @@ def get_available_actions(battle: Battle) -> Tuple[np.ndarray, Dict[int, Tuple[s
     for i in range(min(2, len(switches))):
         mapping[8 + i] = ("switch", i)
         
-    print(f"Available moves: {mask}")
-
     return mask, mapping
 
 

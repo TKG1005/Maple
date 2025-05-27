@@ -415,8 +415,9 @@ class EnvPlayer(Player):
         **先頭も含めて** 全メッセージを調べる。
         """
         await super()._handle_battle_message(split_messages)
+        print(f"リクエスト検知 -------------------:{split_messages}")
 
-        trigger_tags = {"request", "turn", "upkeep", "win", "lose", "tie", "error"}
+        trigger_tags = {"request", "win", "lose", "tie", "error"}
         if any(len(m) > 1 and m[1] in trigger_tags for m in split_messages):
             # 新しい request / ターン進行 / バトル終了 など
             # いずれかを検知したら待機中コルーチンを起こす
