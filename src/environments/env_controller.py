@@ -42,6 +42,10 @@ REWARD_WIN, REWARD_LOSS, REWARD_TIE, REWARD_INVALID = 1.0, -1.0, 0.0, -0.01
 RESET_TIMEOUT, STEP_TIMEOUT = 30.0, 10.0  # [sec]
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG,           # ← DEBUG に下げる
+    stream=sys.stdout,
+)
 
 __all__ = ["_AsyncPokemonBackend", "EnvPlayer"]
 
@@ -85,7 +89,7 @@ class _AsyncPokemonBackend:
             account_configuration=env_account,
             battle_format=battle_format,
             team=team_pascal,
-            log_level=logging.WARNING,
+            log_level=logging.DEBUG,
             env_ref=self,
         )
         self._opponent = opponent_player
@@ -344,25 +348,30 @@ class EnvPlayer(Player):
     # RL インタフェース -------------------------------------------------
     # ------------------------------------------------------------------
 
-    def choose_move(self, battle: Battle):  # type: ignore[override]
-        """poke‑env が呼ぶメソッド．Future が返る場合がある点に注意．"""
-        # 初回呼び出しで backend へ Battle を渡す
+    def choose_move(self, battle: Battle):
         if self._backend_ref and self._backend_ref._current_battle is None:
             self._backend_ref._current_battle = battle
-
+        # ログ: Future既存チェック
+        logger.debug(f"[choose_move] Turn {battle.turn}, _wait={battle._wait}, "
+                     f"Future exists={bool(self._next_action_future)} (done={self._next_action_future.done() if self._next_action_future else None})")
         if self._next_action_future and not self._next_action_future.done():
+            logger.debug(f"[choose_move] Reusing existing pending Future.")
             return self._next_action_future
-        # 新しい Future を作り，step() から結果が渡されるのを待つ
         loop = asyncio.get_event_loop()
         self._next_action_future = loop.create_future()
+        logger.debug(f"[choose_move] Created new Future {id(self._next_action_future)} for turn {battle.turn}.")
         return self._next_action_future
 
     def set_next_action_for_battle(self, battle: Battle, order: BattleOrder):
+        logger.debug(f"[set_next_action] Called at turn {battle.turn}, _wait={battle._wait}, move_on_next_request={battle.move_on_next_request}. "
+                     f"Future exists={bool(self._next_action_future)} (done={self._next_action_future.done() if self._next_action_future else None})")
         if self._next_action_future and not self._next_action_future.done():
+            logger.debug(f"[set_next_action] Setting result on Future {id(self._next_action_future)}.")
             self._next_action_future.set_result(order)
-        else:  # fallback
+        else:
             logger.warning("Future not pending; using backup path.")
             self._next_action_future = asyncio.get_event_loop().create_future()
+            logger.debug(f"[set_next_action] Created new backup Future {id(self._next_action_future)} and set result immediately.")
             self._next_action_future.set_result(order)
 
     # ------------------------------------------------------------------
