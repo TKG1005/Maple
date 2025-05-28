@@ -13,6 +13,8 @@
 │   └── state_spec.yml
 ├── docs
 │   ├── ai-design
+│   │   ├── Architecture.md
+│   │   └── tasks.md
 │   ├── environment
 │   ├── issues
 │   ├── logs
@@ -23,7 +25,8 @@
 │   │   ├── 2025_04_18.md
 │   │   ├── 2025_04_19.md
 │   │   ├── 2025_05_16.md
-│   │   └── 2025_05_22.md
+│   │   ├── 2025_05_22.md
+│   │   └── 2025_05_23.md
 │   ├── planning
 │   │   └── PLANNING.md
 │   └── README.md
@@ -105,6 +108,7 @@
 │   │   ├── chatlog-access.txt
 │   │   ├── errors.txt
 │   │   ├── lastbattle.txt
+│   │   ├── lastbattle(1).txt
 │   │   ├── logging.md
 │   │   ├── modlog
 │   │   ├── randbats
@@ -532,26 +536,22 @@
 │   └── tsconfig.tsbuildinfo
 ├── requirements.txt
 ├── results
-│   ├── battle_metrics_20250509_025518.csv
-│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031443.csv
-│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_031527.csv
-│   ├── battle_metrics_rb_vs_random_defaultnames_20250509_090059.csv
-│   ├── battle_outcome_pie.png
-│   ├── battle_turns_histogram.png
-│   ├── total_wins_ties_bar.png
-│   └── turns_per_battle_line.png
 ├── src
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-312.pyc
 │   ├── action
+│   │   ├── __init__.py
 │   │   ├── __pycache__
-│   │   ├── action_helper.py
-│   │   └── action_masker.py
+│   │   └── action_helper.py
 │   ├── agents
 │   │   ├── __pycache__
 │   │   ├── my_simple_player.py
-│   │   ├── random_player.py
 │   │   └── rule_based_player.py
 │   ├── environments
+│   │   ├── __init__.py
 │   │   ├── __pycache__
+│   │   ├── env_controller.py
 │   │   └── pokemon_env.py
 │   ├── state
 │   │   ├── __pycache__
@@ -565,13 +565,6 @@
     │   ├── my_simple_player.cpython-312.pyc
     │   ├── print_available.cpython-312.pyc
     │   └── state_observer.cpython-312.pyc
-    ├── check_connection.py
-    ├── print_available.py
-    ├── run_battle.py
-    ├── test_env_reset.py
-    ├── test_hp_logger_observer_battle.py
-    ├── test_rb_vs_random_battle.py
-    ├── test_rule_based_battle.py
-    └── test_state_observer.py
+    └── test_env_step_loop.py
 
-392 directories, 183 files
+393 directories, 175 files

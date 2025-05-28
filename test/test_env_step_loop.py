@@ -109,7 +109,7 @@ def main():
     print("===============")
 
     # ⑤ 全 WebSocket をクローズ
-    asyncio.run(env.close())
+    env.close()
 
 
 if __name__ == "__main__":
