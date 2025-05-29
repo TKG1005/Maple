@@ -398,6 +398,7 @@ class EnvPlayer(Player):
             self._battle_update_event.set()
 
     async def wait_for_battle_update(self, battle: Battle):
+        logger.debug(f"Entering wait_for_battle_update: turn={battle.turn}, rqid={battle.last_request.get('rqid', -1)},_wait={battle._wait}")
         prev_turn = battle.turn
         prev_rqid = battle.last_request.get("rqid", -1)
         while True:
