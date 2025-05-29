@@ -13,8 +13,7 @@
 │   └── state_spec.yml
 ├── docs
 │   ├── ai-design
-│   │   ├── Architecture.md
-│   │   └── tasks.md
+│   │   └── Architecture.md
 │   ├── environment
 │   ├── issues
 │   ├── logs
@@ -560,6 +559,7 @@
 │   │   ├── state_observer.py
 │   │   └── state_spec.yml
 │   └── util
+├── tasks.md
 └── test
     ├── __pycache__
     │   ├── my_simple_player.cpython-312.pyc
