@@ -340,6 +340,7 @@ class EnvPlayer(Player):
         )
         self._backend_ref = env_ref
         self._next_action_future: Optional[asyncio.Future] = None
+        self._last_rqid = -1 
         self._battle_update_event = asyncio.Event()
         # poke‑env コールバック差し替え
         self.ps_client._handle_battle_message = self._handle_battle_message  # type: ignore[attr-defined]
@@ -349,14 +350,26 @@ class EnvPlayer(Player):
     # ------------------------------------------------------------------
 
     def choose_move(self, battle: Battle):
+        current_rqid = battle.last_request.get("rqid", -1)
+        logger.debug(f"[choose_move] rqid={current_rqid}, last={self._last_rqid}")
+        if current_rqid < self._last_rqid:
+            logger.warning(f"[choose_move] 古いrequest rqid={current_rqid} を無視 (last={self._last_rqid})")
+            return asyncio.get_event_loop().create_future() 
+        
         if self._backend_ref and self._backend_ref._current_battle is None:
             self._backend_ref._current_battle = battle
         # ログ: Future既存チェック
         logger.debug(f"[choose_move] Turn {battle.turn}, _wait={battle._wait}, "
                      f"Future exists={bool(self._next_action_future)} (done={self._next_action_future.done() if self._next_action_future else None})")
+        
+        if current_rqid == self._last_rqid:
+            if self._next_action_future and not self._next_action_future.done():
+                return self._next_action_future
+        
         if self._next_action_future and not self._next_action_future.done():
             logger.debug(f"[choose_move] Reusing existing pending Future.")
             return self._next_action_future
+        self._last_rqid = current_rqid
         loop = asyncio.get_event_loop()
         self._next_action_future = loop.create_future()
         logger.debug(f"[choose_move] Created new Future {id(self._next_action_future)} for turn {battle.turn}.")
@@ -393,7 +406,19 @@ class EnvPlayer(Player):
             if battle.finished:
                 break
             if (
-                battle.turn > prev_turn
-                or battle.last_request.get("rqid", -1) > prev_rqid
+                battle.turn > prev_turn or
+                battle.last_request.get("rqid", -1) > prev_rqid
             ) and not battle._wait:
+                if battle.force_switch:
+                    logger.info("[wait] 強制交代リクエストを検出")
+                    if battle.available_switches:
+                        switch_in = battle.available_switches[0]
+                        self.set_next_action_for_battle(battle, BattleOrder(switch_in))
+                        # switch 完了までループ継続
+                        prev_turn = battle.turn
+                        prev_rqid = battle.last_request.get("rqid", -1)
+                        continue
+                    else:
+                        logger.warning("[wait] 交代先がいない")
+                        break
                 break
