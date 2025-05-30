@@ -97,7 +97,8 @@ class PokemonEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
         )
-        self.action_space = spaces.Discrete(10)
+        # 10 = 技4 + テラスタル4 + 交代2
+        self.action_space = spaces.Discrete(ACTION_SPACE_SIZE)
 
         # --- バックエンド ---
         self._backend = _AsyncPokemonBackend(
@@ -131,8 +132,15 @@ class PokemonEnv(gym.Env):
     def step(
         self, action: int
     ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:  # type: ignore[override]
-        """1 ステップ実行 (同期)."""
-        return self._backend.sync_step(action)
+        """
+        1 ステップ実行 (同期)。Backend で STEP_TIMEOUT を超えた場合は
+        truncated=True を付与して返す。
+        """
+        obs, rew, term, trunc, info = self._backend.sync_step(action)
+        # Backend から "timeout" フラグが上がってきたら truncated 扱い
+        if info.get("error") == "timeout":
+            trunc = True
+        return obs, rew, term, trunc, info
 
     def render(self, mode: str = "human") -> None:  # noqa: D401
         if mode != "human":
