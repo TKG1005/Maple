@@ -393,33 +393,27 @@ class EnvPlayer(Player):
 
     async def _handle_battle_message(self, split_messages):  # type: ignore[override]
         await super()._handle_battle_message(split_messages)
+        print(f"デバッグーーーーーーーーーーーーーーーー{split_messages}")
         trigger_tags = {"request", "win", "lose", "tie", "error"}
         if any(len(m) > 1 and m[1] in trigger_tags for m in split_messages):
             self._battle_update_event.set()
 
     async def wait_for_battle_update(self, battle: Battle):
-        logger.debug(f"Entering wait_for_battle_update: turn={battle.turn}, rqid={battle.last_request.get('rqid', -1)},_wait={battle._wait}")
+        logger.debug(f"Entering wait_for_battle_update: turn={battle.turn}, rqid={battle.last_request.get('rqid', -1)},_wait={battle._wait},forceSwitch={battle.force_switch}")
         prev_turn = battle.turn
         prev_rqid = battle.last_request.get("rqid", -1)
         while True:
             await self._battle_update_event.wait()
+            print(f"メッセージハンドラからイベントセット　forceSwitch={battle.force_switch},turn={battle.turn}, rqid={battle.last_request.get('rqid', -1)}")
             self._battle_update_event.clear()
             if battle.finished:
+                break
+            #強制交代リクエストを優先して処理
+            if battle.force_switch: 
+                logger.info("[wait] 強制交代リクエストを検出")
                 break
             if (
                 battle.turn > prev_turn or
                 battle.last_request.get("rqid", -1) > prev_rqid
             ) and not battle._wait:
-                if battle.force_switch:
-                    logger.info("[wait] 強制交代リクエストを検出")
-                    if battle.available_switches:
-                        switch_in = battle.available_switches[0]
-                        self.set_next_action_for_battle(battle, BattleOrder(switch_in))
-                        # switch 完了までループ継続
-                        prev_turn = battle.turn
-                        prev_rqid = battle.last_request.get("rqid", -1)
-                        continue
-                    else:
-                        logger.warning("[wait] 交代先がいない")
-                        break
                 break
