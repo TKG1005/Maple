@@ -85,9 +85,9 @@ def main():
     opp_cfg = AccountConfiguration("OpponentRandomTest", None)
     opponent = RandomPlayer(account_configuration=opp_cfg,
                             battle_format="gen9ou",
-                            log_level=logging.WARNING,
+                            log_level=logging.DEBUG,
                             team=team_str,  # ★ここを追加
-                            start_listening=True)
+                            start_listening=False)
 
     # ③ PokemonEnv を初期化
     env = PokemonEnv(opponent_player=opponent,
@@ -114,3 +114,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # asyncio の残タスクが確実に終了する猶予を与える
+    asyncio.get_event_loop().run_until_complete(asyncio.sleep(0.1))

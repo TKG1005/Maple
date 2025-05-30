@@ -166,23 +166,31 @@ class _AsyncPokemonBackend:
     # 追加: 既存 WebSocket / listen タスクを確実に閉じるヘルパ
     # --------------------------------------------------------------
     async def _cleanup_ws(self) -> None:
-        """アクティブな listen() を停止し、ソケットを完全に閉じる。"""
-        tasks = []
-        if self._player.ps_client.is_listening:
-            tasks.append(self._player.ps_client.stop_listening())
-        if self._opponent.ps_client.is_listening:
-            tasks.append(self._opponent.ps_client.stop_listening())
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+        # ――― ① listen() タスク & WebSocket を完全停止 ―――
+        async def _stop(client):
+            if client.is_listening:
+                await client.stop_listening()
+            # listen() をキャンセルし残タスクを一切残さない
+            coro = getattr(client, "_listening_coroutine", None)
+            if coro and not coro.done():
+                coro.cancel()
+                try:
+                    await coro
+                except asyncio.CancelledError:
+                    pass
 
-        # サーバ側でユーザ名解放が反映されるまでわずかに待機
-        await asyncio.sleep(0.05)
-        # --- 重要: ログイン状態をリセット -----------------------------
-        # stop_listening() だけでは logged_in フラグが残るため、
-        # 次の wait_for_login() が即時復帰してしまう。
-        self._player.ps_client.logged_in.clear()
-        self._opponent.ps_client.logged_in.clear()
-        
+        await asyncio.gather(
+            _stop(self._player.ps_client),
+            _stop(self._opponent.ps_client),
+            return_exceptions=True,
+        )
+
+        # ――― ② Showdown! 側が同じユーザ名を解放するのを待つ ―――
+        await asyncio.sleep(0.2)   # 0.05 秒では短いケースがあったため延長
+
+        # ――― ③ ログインフラグをクリア（再接続時に必須） ―――
+        for client in (self._player.ps_client, self._opponent.ps_client):
+            client.logged_in.clear()
         
     # ------------------------------------------------------------------
     # 非同期実装本体 -----------------------------------------------------
@@ -217,6 +225,18 @@ class _AsyncPokemonBackend:
         # --- 前回のバトル情報を初期化 -------------------------------
         self._player.reset_battles()
         self._opponent.reset_battles()
+
+        # ---------- 重要: 古いチャレンジ PM を必ず捨てる ----------
+        # 2 回以上届くケースがあり、残っていると accept_challenges が
+        # 過去のエントリを拾ってハングするため。
+        for q in (self._player._challenge_queue,
+                  self._opponent._challenge_queue):
+            while not q.empty():
+                try:
+                    q.get_nowait()
+                    q.task_done()
+                except asyncio.QueueEmpty:
+                    break
         self._current_battle = None
         self._battle_is_over = False
 
@@ -301,33 +321,32 @@ class _AsyncPokemonBackend:
     async def _close_async(self):  # noqa: D401
         """WebSocket を閉じる．"""
         logger.info("Closing PokemonEnv backend …")
-        tasks = []
-        if self._player.ps_client.is_listening:
-            tasks.append(self._player.ps_client.stop_listening())
-        if self._opponent.ps_client.is_listening:
-            tasks.append(self._opponent.ps_client.stop_listening())
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+        await self._cleanup_ws()
         logger.info("Backend closed.")
-
     # ------------------------------------------------------------------
     # helper utilities --------------------------------------------------
     # ------------------------------------------------------------------
 
     async def _ensure_listeners(self):
         """EnvPlayer / opponent の listen() を開始する．"""
-        if not self._player.ps_client.is_listening:
-            self._loop.create_task(self._player.ps_client.listen())
-        if not self._opponent.ps_client.is_listening:
-            self._loop.create_task(self._opponent.ps_client.listen())
+        for client in (self._player.ps_client, self._opponent.ps_client):
+            if client.is_listening:
+                # 既に稼働中ならスキップ
+                continue
+            # 古い listen() が終わっていることを念のため確認
+            coro = getattr(client, "_listening_coroutine", None)
+            if coro and not coro.done():
+                await asyncio.sleep(0)   # イベントループを一度回す
+            client._listening_coroutine = self._loop.create_task(client.listen())
 
     async def _launch_challenge(self):
         """1 戦だけチャレンジを送信・受諾．"""
-        self._loop.create_task(
-            self._player.send_challenges(self._opponent.username, 1)
-        )
+        # 受諾タスクを先に開始
         self._loop.create_task(
             self._opponent.accept_challenges(self._player.username, 1)
+        )
+        self._loop.create_task(
+            self._player.send_challenges(self._opponent.username, 1)
         )
 
     async def _wait_until(self, cond, timeout: float):
