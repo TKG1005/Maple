@@ -31,6 +31,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
 
 import gymnasium as gym
+import threading
 import numpy as np
 from gymnasium import spaces
 from websockets.exceptions import ConnectionClosedOK
@@ -111,6 +112,9 @@ class PokemonEnv(gym.Env):
             player_username=player_username,
         )
         
+        #close() 呼び出し済みかどうかを管理
+        self._closed = False
+        
     @property
     def current_battle(self):
         """
@@ -150,5 +154,22 @@ class PokemonEnv(gym.Env):
     def close(self):  # noqa: D401  # type: ignore[override]
         """すべての WebSocket／タスクを破棄 (同期)."""
         self._backend.sync_close()
+        if not self._closed:
+            self._backend.sync_close()
+            self._closed = True
 
+    # ------------------------ 追加ここから ------------------------
+    def __del__(self):
+        """
+        ガーベジコレクタが環境を破棄する際に未 close なら自動で close。
+        例外が出ても interpreter 終了を妨げないよう握り潰す。
+        """
+        try:
+            # CPython の GC スレッドと衝突しないようロック
+            lock = threading.Lock()
+            with lock:
+                self.close()
+        except Exception:
+            pass
+    # ------------------------ 追加ここまで ------------------------
 

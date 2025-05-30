@@ -162,6 +162,28 @@ class _AsyncPokemonBackend:
                 opp_active.current_hp_fraction * 100,
             )
 
+    # --------------------------------------------------------------
+    # 追加: 既存 WebSocket / listen タスクを確実に閉じるヘルパ
+    # --------------------------------------------------------------
+    async def _cleanup_ws(self) -> None:
+        """アクティブな listen() を停止し、ソケットを完全に閉じる。"""
+        tasks = []
+        if self._player.ps_client.is_listening:
+            tasks.append(self._player.ps_client.stop_listening())
+        if self._opponent.ps_client.is_listening:
+            tasks.append(self._opponent.ps_client.stop_listening())
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        # サーバ側でユーザ名解放が反映されるまでわずかに待機
+        await asyncio.sleep(0.05)
+        # --- 重要: ログイン状態をリセット -----------------------------
+        # stop_listening() だけでは logged_in フラグが残るため、
+        # 次の wait_for_login() が即時復帰してしまう。
+        self._player.ps_client.logged_in.clear()
+        self._opponent.ps_client.logged_in.clear()
+        
+        
     # ------------------------------------------------------------------
     # 非同期実装本体 -----------------------------------------------------
     # ------------------------------------------------------------------
@@ -169,7 +191,17 @@ class _AsyncPokemonBackend:
     async def _reset_async(
         self, seed: Optional[int], options: Optional[Dict[str, Any]]
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
-        """poke‑env にチャレンジを送り，最初の観測を返す．"""
+        """poke-env にチャレンジを送り，最初の観測を返す．
+
+        * 前回バトルのソケットが残っていると Showdown 側で
+          「同じユーザ名が既に接続中」と判定されるため，
+          まず `_cleanup_ws()` で完全に切断してから
+          新しい listen() を開始する。
+        """
+        # 1. 古い WebSocket / listen タスクを必ず閉じる
+        await self._cleanup_ws()
+
+ 
         if seed is not None:
             np.random.seed(seed)
 
@@ -393,8 +425,7 @@ class EnvPlayer(Player):
 
     async def _handle_battle_message(self, split_messages):  # type: ignore[override]
         await super()._handle_battle_message(split_messages)
-        print(f"デバッグーーーーーーーーーーーーーーーー{split_messages}")
-        trigger_tags = {"request", "win", "lose", "tie", "error"}
+        trigger_tags = {"faint","request", "win", "lose", "tie", "error"}
         if any(len(m) > 1 and m[1] in trigger_tags for m in split_messages):
             self._battle_update_event.set()
 
@@ -404,13 +435,14 @@ class EnvPlayer(Player):
         prev_rqid = battle.last_request.get("rqid", -1)
         while True:
             await self._battle_update_event.wait()
-            print(f"メッセージハンドラからイベントセット　forceSwitch={battle.force_switch},turn={battle.turn}, rqid={battle.last_request.get('rqid', -1)}")
+            
             self._battle_update_event.clear()
             if battle.finished:
                 break
             #強制交代リクエストを優先して処理
             if battle.force_switch: 
-                logger.info("[wait] 強制交代リクエストを検出")
+                if battle.move_on_next_request:
+                    logger.info("[wait] 強制交代リクエストを検出")
                 break
             if (
                 battle.turn > prev_turn or
