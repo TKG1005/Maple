@@ -87,7 +87,7 @@ def main():
                             battle_format="gen9ou",
                             log_level=logging.DEBUG,
                             team=team_str,  # ★ここを追加
-                            start_listening=False)
+                            start_listening=True)
 
     # ③ PokemonEnv を初期化
     env = PokemonEnv(opponent_player=opponent,
