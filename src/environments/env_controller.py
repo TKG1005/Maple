@@ -12,6 +12,8 @@ import logging
 import os
 import sys
 from typing import Optional, TYPE_CHECKING, Dict, Any, Tuple
+from typing import Optional, TYPE_CHECKING, Dict, Any, Tuple
+import types
 
 import numpy as np
 from poke_env.environment.battle import Battle
@@ -94,6 +96,10 @@ class _AsyncPokemonBackend:
         )
         self._opponent = opponent_player
         
+        self._loop.set_exception_handler(
+    lambda loop, ctx: logger.error("UNHANDLED ASYNCIO EXCEPTION: %s", ctx["message"])
+)
+        
         # ---------- ワークアラウンド ----------
         # poke-env は改行付き PM 内の `/challenge` を取りこぼすことがある。
         # 対戦相手（RandomPlayer 等）にも同じパッチを当てて
@@ -105,26 +111,22 @@ class _AsyncPokemonBackend:
     # ------------------------------------------------------------
     @staticmethod
     def _apply_pm_challenge_workaround(player):
-        """
-        Monkey-patch PSClient so that '/challenge' PMs are always routed to
-        Player._handle_challenge_request(), even when the message contains
-        stray new-lines.
-        """
-        client = player.ps_client
-        original = client._handle_message
+        """/challenge を含む PM を確実に Player 側へ渡すパッチ"""
+        client    = player.ps_client
+        _original = client._handle_message      # もともとの bound method
 
-        async def patched(msg: str, *, _orig=original, _player=player):
+        async def _patched(self, msg: str, *, _orig=_original, _player=player):
+            # /challenge を検出して自前でキューへ
             if msg.startswith("|pm|"):
                 for tokens in (m.split("|") for m in msg.split("\n") if m):
                     if len(tokens) > 5 and tokens[4].startswith("/challenge"):
-                        try:
-                            await _player._handle_challenge_request(tokens)
-                        except Exception:
-                            pass  # ignore and keep going
+                        await _player._handle_challenge_request(tokens)
+            # 元のハンドラも呼び出す
             await _orig(msg)
 
-        client._handle_message = patched
-
+        # ★ ここがポイント：MethodType で **self をバインド** して代入
+        client._handle_message = types.MethodType(_patched, client)
+        
     # ------------------------------------------------------------------
     # 同期ラッパー
     # ------------------------------------------------------------------
@@ -395,6 +397,8 @@ class _AsyncPokemonBackend:
         if not b:
             return False
         return b.active_pokemon is not None and b.available_moves
+    
+    
 
 
 
