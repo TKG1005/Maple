@@ -100,33 +100,8 @@ class _AsyncPokemonBackend:
     lambda loop, ctx: logger.error("UNHANDLED ASYNCIO EXCEPTION: %s", ctx["message"])
 )
         
-        # ---------- ワークアラウンド ----------
-        # poke-env は改行付き PM 内の `/challenge` を取りこぼすことがある。
-        # 対戦相手（RandomPlayer 等）にも同じパッチを当てて
-        # accept_challenges() が正しく動くようにする。
-        self._apply_pm_challenge_workaround(self._opponent)
 
-    # ------------------------------------------------------------
-    # internal helpers
-    # ------------------------------------------------------------
-    @staticmethod
-    def _apply_pm_challenge_workaround(player):
-        """/challenge を含む PM を確実に Player 側へ渡すパッチ"""
-        client    = player.ps_client
-        _original = client._handle_message      # もともとの bound method
 
-        async def _patched(self, msg: str, *, _orig=_original, _player=player):
-            # /challenge を検出して自前でキューへ
-            if msg.startswith("|pm|"):
-                for tokens in (m.split("|") for m in msg.split("\n") if m):
-                    if len(tokens) > 5 and tokens[4].startswith("/challenge"):
-                        await _player._handle_challenge_request(tokens)
-            # 元のハンドラも呼び出す
-            await _orig(msg)
-
-        # ★ ここがポイント：MethodType で **self をバインド** して代入
-        client._handle_message = types.MethodType(_patched, client)
-        
     # ------------------------------------------------------------------
     # 同期ラッパー
     # ------------------------------------------------------------------
@@ -261,19 +236,6 @@ class _AsyncPokemonBackend:
         self._player.reset_battles()
         self._opponent.reset_battles()
 
-        # ---------- 重要: 古いチャレンジ PM を必ず捨てる ----------
-        # 2 回以上届くケースがあり、残っていると accept_challenges が
-        # 過去のエントリを拾ってハングするため。
-        for q in (self._player._challenge_queue,
-                  self._opponent._challenge_queue):
-            while not q.empty():
-                try:
-                    q.get_nowait()
-                    q.task_done()
-                except asyncio.QueueEmpty:
-                    break
-        self._current_battle = None
-        self._battle_is_over = False
 
         # --- チャレンジ送信 ------------------------------------------
         await self._launch_challenge()

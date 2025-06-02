@@ -1,12 +1,25 @@
 import os
+import sys
 import numpy as np
 import types
 
 import pytest
 
+# Maple パッケージのインポート
+# ***** Maple プロジェクト内モジュール *****
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
+
+
 from src.environments import pokemon_env
 from src.action import action_helper
 from src.state.state_observer import StateObserver
+
+# ---------- 前提ファイルの場所 ----------
+
+SPEC_PATH    = os.path.join(PROJECT_ROOT, "config", "state_spec.yml")
+TEAM_PATH    = os.path.join(PROJECT_ROOT, "config", "my_team.txt")
 
 
 class DummyBackend:
