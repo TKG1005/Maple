@@ -397,6 +397,33 @@ class EnvPlayer(Player):
         self._battle_update_event = asyncio.Event()
         # poke‑env コールバック差し替え
         self.ps_client._handle_battle_message = self._handle_battle_message  # type: ignore[attr-defined]
+        # ------------------------------------------------------------------
+        # [FIX] PM 形式チャレンジが改行付きで届くと poke-env 本家の
+        # _handle_message が無視してしまうバグへのワークアラウンド。
+        # 改行有無に関係なく `/challenge` を検出し _handle_challenge_request
+        # を呼ぶラッパを差し込み、元実装の機能はそのまま保持する。
+        # ------------------------------------------------------------------
+        original_handle_message = self.ps_client._handle_message  # type: ignore[attr-defined]
+
+        async def _patched_handle_message(msg: str, *,
+                                          _orig=original_handle_message,
+                                          _player=self):
+            # PM のみ監視し、行単位で再分割して challenge を検出
+            if msg.startswith("|pm|"):
+                for tokens in (m.split("|") for m in msg.split("\n") if m):
+                    if len(tokens) > 5 and tokens[4].startswith("/challenge"):
+                        try:
+                            # Player メソッドを利用してキューへ追加
+                            await _player._handle_challenge_request(tokens)  # type: ignore[arg-type]
+                        except Exception:
+                            # 失敗しても他の処理に影響させない
+                            pass
+            # 既存ロジックへ委譲
+            await _orig(msg)  # type: ignore[arg-type]
+
+        # PSClient インスタンスへモンキーパッチ
+        self.ps_client._handle_message = _patched_handle_message  # type: ignore
+
 
     # ------------------------------------------------------------------
     # RL インタフェース -------------------------------------------------
