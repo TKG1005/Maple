@@ -152,8 +152,6 @@ class PokemonEnv(gym.Env):
         self._backend.render()
 
     def close(self):  # noqa: D401  # type: ignore[override]
-        """すべての WebSocket／タスクを破棄 (同期)."""
-        self._backend.sync_close()
         if not self._closed:
             self._backend.sync_close()
             self._closed = True

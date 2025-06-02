@@ -62,7 +62,7 @@
 | S-1 | `StateObserver` は `Battle` オブジェクトを受け取り、固定長 `numpy.ndarray(dtype=float32)` を返すこと。 | **Must**   |
 | S-2 | 観測ベクトルの次元数は `get_observation_dimension()` で取得可能であること。                            | **Must**   |
 | S-3 | 特徴量定義を YAML (`config/state_spec.yml`) から読み取り、ポケモン種別や技スロット増減に依存しない汎用設計とすること。      | **Should** |
-| S-4 | 観測には最低限以下を含める: 自ポケモン HP%, 相手 HP%, 残ポケ数, 天候, フィールド, 各技 PP 残量フラグ。                  | **Must**   |
+
 
 ### 3.3 行動空間 (ActionHelper)
 
@@ -82,7 +82,7 @@
 | C-3 | `Backend` は `RESET_TIMEOUT = 30s` までに `_current_battle` が確立しない場合、例外を送出してエピソードをトランケートすること。                     | **Must**   |
 | C-4 | 各 `step()` は `STEP_TIMEOUT = 10s` 以内にターン結果を受信できない場合、警告を出し `truncated=True`・`terminated=True` として返すこと。         | **Must**   |
 | C-5 | ShowdownException や WebSocket 切断時は対戦を即時終了し、`reward = REWARD_LOSS` とすること。                                      | **Must**   |
-| C-6 | 強制交代（`forceSwitch`）を検出した場合は `available_switches[0]` を自動選択し、タイムアウトを防ぐこと。                                       | **Should** |
+| C-6 | 強制交代（`forceSwitch`）を検出した場合は `available_switches` からランダム選択し、タイムアウトを防ぐこと。                                       | **Should** |
 
 ### 3.5 報酬設計
 

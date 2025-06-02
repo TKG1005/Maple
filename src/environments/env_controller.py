@@ -168,16 +168,18 @@ class _AsyncPokemonBackend:
     async def _cleanup_ws(self) -> None:
         # ――― ① listen() タスク & WebSocket を完全停止 ―――
         async def _stop(client):
-            if client.is_listening:
-                await client.stop_listening()
-            # listen() をキャンセルし残タスクを一切残さない
             coro = getattr(client, "_listening_coroutine", None)
             if coro and not coro.done():
-                coro.cancel()
                 try:
-                    await coro
-                except asyncio.CancelledError:
+                    await client.stop_listening()
+                except Exception:
                     pass
+                if not coro.done():
+                    coro.cancel()
+                    try:
+                        await coro
+                    except asyncio.CancelledError:
+                        pass
 
         await asyncio.gather(
             _stop(self._player.ps_client),
@@ -330,13 +332,13 @@ class _AsyncPokemonBackend:
     async def _ensure_listeners(self):
         """EnvPlayer / opponent の listen() を開始する．"""
         for client in (self._player.ps_client, self._opponent.ps_client):
-            if client.is_listening:
-                # 既に稼働中ならスキップ
-                continue
-            # 古い listen() が終わっていることを念のため確認
             coro = getattr(client, "_listening_coroutine", None)
             if coro and not coro.done():
-                await asyncio.sleep(0)   # イベントループを一度回す
+                if client.logged_in.is_set():
+                    # 既に稼働中ならスキップ
+                    continue
+                # 古い listen() が終わっていない場合は一度イベントループを回す
+                await asyncio.sleep(0)
             client._listening_coroutine = self._loop.create_task(client.listen())
 
     async def _launch_challenge(self):

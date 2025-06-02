@@ -86,8 +86,8 @@ def main():
     opponent = RandomPlayer(account_configuration=opp_cfg,
                             battle_format="gen9ou",
                             log_level=logging.DEBUG,
-                            team=team_str,  # ★ここを追加
-                            start_listening=True)
+                            team=team_str, 
+                            start_listening=False)
 
     # ③ PokemonEnv を初期化
     env = PokemonEnv(opponent_player=opponent,
