@@ -93,6 +93,37 @@ class _AsyncPokemonBackend:
             env_ref=self,
         )
         self._opponent = opponent_player
+        
+        # ---------- ワークアラウンド ----------
+        # poke-env は改行付き PM 内の `/challenge` を取りこぼすことがある。
+        # 対戦相手（RandomPlayer 等）にも同じパッチを当てて
+        # accept_challenges() が正しく動くようにする。
+        self._apply_pm_challenge_workaround(self._opponent)
+
+    # ------------------------------------------------------------
+    # internal helpers
+    # ------------------------------------------------------------
+    @staticmethod
+    def _apply_pm_challenge_workaround(player):
+        """
+        Monkey-patch PSClient so that '/challenge' PMs are always routed to
+        Player._handle_challenge_request(), even when the message contains
+        stray new-lines.
+        """
+        client = player.ps_client
+        original = client._handle_message
+
+        async def patched(msg: str, *, _orig=original, _player=player):
+            if msg.startswith("|pm|"):
+                for tokens in (m.split("|") for m in msg.split("\n") if m):
+                    if len(tokens) > 5 and tokens[4].startswith("/challenge"):
+                        try:
+                            await _player._handle_challenge_request(tokens)
+                        except Exception:
+                            pass  # ignore and keep going
+            await _orig(msg)
+
+        client._handle_message = patched
 
     # ------------------------------------------------------------------
     # 同期ラッパー
@@ -343,12 +374,12 @@ class _AsyncPokemonBackend:
 
     async def _launch_challenge(self):
         """1 戦だけチャレンジを送信・受諾．"""
-        # 受諾タスクを先に開始
-        self._loop.create_task(
-            self._opponent.accept_challenges(self._player.username, 1)
-        )
+
         self._loop.create_task(
             self._player.send_challenges(self._opponent.username, 1)
+        )
+        self._loop.create_task(
+            self._opponent.accept_challenges(None, 1)
         )
 
     async def _wait_until(self, cond, timeout: float):
