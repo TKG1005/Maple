@@ -343,7 +343,7 @@ class _AsyncPokemonBackend:
             self._player.send_challenges(self._opponent.username, 1)
         )
         self._loop.create_task(
-            self._opponent.accept_challenges(None, 1)
+            self._opponent.accept_challenges("MapleEnvPlayer", 1)
         )
 
     async def _wait_until(self, cond, timeout: float):
