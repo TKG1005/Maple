@@ -209,51 +209,32 @@ class _AsyncPokemonBackend:
     async def _reset_async(
         self, seed: Optional[int], options: Optional[Dict[str, Any]]
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
-        """poke-env にチャレンジを送り，最初の観測を返す．
+        """poke-env にチャレンジを送り，最初の観測を返す。"""
 
-        * 前回バトルのソケットが残っていると Showdown 側で
-          「同じユーザ名が既に接続中」と判定されるため，
-          まず `_cleanup_ws()` で完全に切断してから
-          新しい listen() を開始する。
-        """
-        # 1. 古い WebSocket / listen タスクを必ず閉じる
         await self._cleanup_ws()
-
- 
         if seed is not None:
             np.random.seed(seed)
 
-        # --- listen() を起動 -----------------------------------------
         await self._ensure_listeners()
-
-        # --- ログイン完了待ち ----------------------------------------
         await asyncio.gather(
             self._player.ps_client.wait_for_login(),
             self._opponent.ps_client.wait_for_login(),
         )
 
-        # --- 前回のバトル情報を初期化 -------------------------------
         self._player.reset_battles()
         self._opponent.reset_battles()
 
-
-        # --- チャレンジ送信 ------------------------------------------
         await self._launch_challenge()
-
-        # --- Battle オブジェクトが用意されるのを待つ -----------------
         await self._wait_until(lambda: self._current_battle is not None, RESET_TIMEOUT)
-
-        # --- request が出揃うまで再度待機 ---------------------------
         await self._wait_until(self._battle_ready, 2.0)
 
-        obs = self._state_observer.observe(self._current_battle)  # type: ignore[arg-type]
+        obs = self._state_observer.observe(self._current_battle)
         self._last_observation = obs
-        info = {
-            "battle_tag": self._current_battle.battle_tag,  # type: ignore[union-attr]
-            "turn": self._current_battle.turn,  # type: ignore[union-attr]
+        return obs, {
+            "battle_tag": self._current_battle.battle_tag,
+            "turn": self._current_battle.turn,
             "opponent": self._opponent.username,
         }
-        return obs, info
 
     async def _step_async(
         self, action_idx: int
