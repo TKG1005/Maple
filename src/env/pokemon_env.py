@@ -71,7 +71,7 @@ class PokemonEnv(gym.Env):
                     return self.choose_random_move(battle)
 
             self._env_player = EnvPlayer(
-                battle_format="gen9randombattle",
+                battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
             )
         else:
