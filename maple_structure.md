@@ -530,7 +530,7 @@
 │   │   ├── generate_yaml.py
 │   │   ├── state_feature_catalog_temp - シート1.csv
 │   │   ├── state_observer.py
-│   │   └── state_spec.yml
+│   │   └── [moved to config/state_spec.yml]
 │   └── util
 └── test
     └── test_pokemon_env_step2_4.py
