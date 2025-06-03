@@ -3,7 +3,7 @@ from pathlib import Path
 from poke_env.player.random_player import RandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
-from src.agents.my_simple_player import MySimplePlayer
+from agents.my_simple_player import MySimplePlayer
 
 
 def main() -> None:
