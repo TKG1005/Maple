@@ -37,7 +37,10 @@ def test_connect_local_showdown_turn1():
 
     opponent = RandomOpponent(
         battle_format="gen9randombattle",
-        server_configuration=LocalhostServerConfiguration,
+        server_configuration=(
+    "ws://localhost:8000/showdown/websocket",
+    "https://play.pokemonshowdown.com/action.php?",
+),
         team=team_str,
     )
 
