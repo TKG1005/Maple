@@ -29,6 +29,18 @@ class PokemonEnv(gym.Env):
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
 
+        # Determine the dimension of the observation vector from the
+        # provided StateObserver and create the observation space.  The
+        # StateObserver is expected to expose a `get_observation_dimension`
+        # method which returns the length of the state vector.
+        state_dim = self.state_observer.get_observation_dimension()
+        self.observation_space = gym.spaces.Box(
+            low=0,
+            high=1,
+            shape=(state_dim,),
+            dtype=np.float32,
+        )
+
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
         """Reset the environment and return the initial observation and info."""
         super().reset(seed=seed)
