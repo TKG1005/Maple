@@ -12,6 +12,7 @@
 │   └── state_spec.yml
 ├── docs
 │   └── AI-design
+│       ├── M2
 │       └── M4
 ├── maple_structure.md
 ├── pokemon-showdown
@@ -530,6 +531,7 @@
 │   │   ├── __init__.py
 │   │   ├── __pycache__
 │   │   └── pokemon_env.py
+│   ├── run_local_battle.py
 │   ├── state
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
@@ -537,11 +539,9 @@
 │   │   └── state_observer.py
 │   └── util
 └── test
-    ├── __pycache__
-    │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
-    │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
-    │   └── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
-    ├── test_pokemon_env_showdown.py
-    └── test_pokemon_env_step5.py
+    └── __pycache__
+        ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
+        ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
+        └── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
 
-389 directories, 156 files
+390 directories, 155 files
