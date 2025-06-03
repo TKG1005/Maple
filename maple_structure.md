@@ -21,6 +21,7 @@
 │   ├── COMMANDLINE.md
 │   ├── config
 │   │   ├── avatars
+│   │   ├── avatars.json
 │   │   ├── chat-plugins
 │   │   ├── chatrooms.json
 │   │   ├── config-example.js
@@ -30,7 +31,8 @@
 │   │   ├── formats.ts
 │   │   ├── hosts.csv
 │   │   ├── ladders
-│   │   └── proxies.csv
+│   │   ├── proxies.csv
+│   │   └── suspects.json
 │   ├── CONTRIBUTING.md
 │   ├── data
 │   │   ├── abilities.ts
@@ -85,9 +87,12 @@
 │   ├── LICENSE
 │   ├── logs
 │   │   ├── chat
+│   │   ├── chatlog-access.txt
 │   │   ├── logging.md
 │   │   ├── modlog
+│   │   ├── randbats
 │   │   ├── repl
+│   │   ├── responder.jsonl
 │   │   └── tickets
 │   ├── node_modules
 │   │   ├── @esbuild
@@ -533,8 +538,10 @@
 │   └── util
 └── test
     ├── __pycache__
+    │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
     │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
     │   └── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
+    ├── test_pokemon_env_showdown.py
     └── test_pokemon_env_step5.py
 
-388 directories, 150 files
+389 directories, 156 files
