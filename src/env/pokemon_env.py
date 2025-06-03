@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Tuple
 
+from action import ACTION_SIZE
+
 import numpy as np
 
 import gymnasium as gym
@@ -40,6 +42,8 @@ class PokemonEnv(gym.Env):
             shape=(state_dim,),
             dtype=np.float32,
         )
+        # Action indices are represented as a discrete space.
+        self.action_space = gym.spaces.Discrete(ACTION_SIZE)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
         """Reset the environment and return the initial observation and info."""
