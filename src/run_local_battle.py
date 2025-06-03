@@ -1,3 +1,4 @@
+
 """Run a local battle between ``MySimplePlayer`` and ``RandomPlayer``.
 
 This script connects both players to a local Showdown server and lets them
@@ -12,10 +13,12 @@ available in the environment.
 from __future__ import annotations
 
 import sys
+
 from pathlib import Path
 
 from poke_env.player.random_player import RandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+
 
 # When this file is executed directly (e.g. ``python src/run_local_battle.py``),
 # the parent directory of ``src`` is not automatically added to ``sys.path``.
@@ -35,6 +38,8 @@ def main() -> None:
         team = team_file.read_text()
     except OSError:
         # If the team file does not exist, fall back to a random team.
+
+
         team = None
 
     player = MySimplePlayer(
@@ -53,4 +58,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
