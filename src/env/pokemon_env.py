@@ -46,10 +46,49 @@ class PokemonEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(ACTION_SIZE)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
-        """Reset the environment and return the initial observation and info."""
+        """Reset the environment and start a new battle."""
+
         super().reset(seed=seed)
-        observation = None  # TODO: replace with initial observation
-        info: dict = {}
+
+        # poke_env は開発環境によってはインストールされていない場合があるため、
+        # メソッド内で遅延インポートする。
+        try:
+            from poke_env.player import Player
+            from poke_env.server_configuration import LocalhostServerConfiguration
+        except Exception as exc:  # pragma: no cover - ランタイム用
+            raise RuntimeError(
+                "poke_env package is required to run PokemonEnv"
+            ) from exc
+
+        # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
+        if not hasattr(self, "_env_player"):
+
+            class EnvPlayer(Player):
+                """Simple player used internally by the environment."""
+
+                def choose_move(self, battle):  # pragma: no cover - placeholder
+                    # reset 直後はランダム行動としておく。実際の行動は step で決定する。
+                    return self.choose_random_move(battle)
+
+            self._env_player = EnvPlayer(
+                battle_format="gen9randombattle",
+                server_configuration=LocalhostServerConfiguration,
+            )
+        else:
+            # 既存プレイヤーのバトル履歴をクリア
+            self._env_player.reset_battles()
+
+        if hasattr(self.opponent_player, "reset_battles"):
+            self.opponent_player.reset_battles()
+
+        # 対戦を開始 (ローカルの Showdown サーバー使用)
+        self._env_player.play_against(self.opponent_player, n_battles=1)
+
+        # 開始したばかりのバトルオブジェクトを取得
+        battle = next(iter(self._env_player.battles.values()))
+        observation = self.state_observer.observe(battle)
+
+        info: dict = {"battle_tag": battle.battle_tag}
         return observation, info
 
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
