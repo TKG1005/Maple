@@ -53,7 +53,7 @@ def main() -> None:
         server_configuration=LocalhostServerConfiguration,
     )
 
-    player.play_against(opponent, n_battles=1)
+    player.battle_against(opponent, n_battles=1)
 
 
 if __name__ == "__main__":
