@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Tuple
 
+import numpy as np
+
 import gymnasium as gym
 
 
@@ -12,9 +14,20 @@ class PokemonEnv(gym.Env):
 
     metadata = {"render_modes": [None]}
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        opponent_player: Any,
+        state_observer: Any,
+        action_helper: Any,
+        *,
+        seed: int | None = None,
+        **kwargs: Any,
+    ) -> None:
         super().__init__()
-        # TODO: store passed arguments as needed
+        self.opponent_player = opponent_player
+        self.state_observer = state_observer
+        self.action_helper = action_helper
+        self.rng = np.random.default_rng(seed)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
         """Reset the environment and return the initial observation and info."""
