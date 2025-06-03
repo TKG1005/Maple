@@ -20,8 +20,9 @@ from poke_env.environment.pokemon_type import PokemonType
 
 # ---------- 1. 入出力ファイルパス -----------------------------------------
 
-SOURCE_XLSX = "state_feature_catalog_temp - シート1.csv"  # 入力: Excel 台帳
-TARGET_YAML = "state_spec.yml"        # 出力: YAML ファイル
+CURRENT_DIR = Path(__file__).resolve().parent
+SOURCE_XLSX = CURRENT_DIR / "state_feature_catalog_temp - シート1.csv"  # 入力: Excel 台帳
+TARGET_YAML = CURRENT_DIR / "state_spec.yml"        # 出力: YAML ファイル
 
 # ---------- 2. DataFrame → ネスト辞書 変換関数 ----------------------------
 
