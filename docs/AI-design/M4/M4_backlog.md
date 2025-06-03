@@ -103,12 +103,12 @@
 **目的**: 新しいバトルを開始して初期状態を返す。
 
 **達成条件**
-* showdownサーバーに接続して対戦を開始
+* showdownサーバー(ローカル、ポート:8000)に接続して対戦を開始
 * poke‑env のトレーナーをリセット or 新たに生成。
 * 初期 `battle` オブジェクトから `StateObserver.observe` を呼び、状態と info を返す。
 
 **テスト内容**
-
+* ローカルのshowdownサーバーで対戦が開始され、turn1が表示される。
 * `state, info = env.reset()` が正常に実行され、`observation_space` を満たす。
 
 **使用ライブラリ・技術**
