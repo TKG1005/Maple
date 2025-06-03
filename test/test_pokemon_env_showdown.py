@@ -15,7 +15,7 @@ def test_connect_local_showdown_turn1():
 
     from env.pokemon_env import PokemonEnv
     from poke_env.player import Player
-    from poke_env.server_configuration import LocalhostServerConfiguration
+    from poke_env.ps_client.server_configuration import ServerConfiguration
 
     class TurnObserver:
         def get_observation_dimension(self):
@@ -36,7 +36,7 @@ def test_connect_local_showdown_turn1():
     team_str = team_path.read_text()
 
     opponent = RandomOpponent(
-        battle_format="gen9ou",
+        battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
         team=team_str,
     )

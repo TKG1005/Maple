@@ -54,7 +54,7 @@ class PokemonEnv(gym.Env):
         # メソッド内で遅延インポートする。
         try:
             from poke_env.player import Player
-            from poke_env.server_configuration import LocalhostServerConfiguration
+            from poke_env.ps_client.server_configuration import ServerConfiguration
         except Exception as exc:  # pragma: no cover - ランタイム用
             raise RuntimeError(
                 "poke_env package is required to run PokemonEnv"
@@ -79,8 +79,8 @@ class PokemonEnv(gym.Env):
                 team = None
 
             self._env_player = EnvPlayer(
-                battle_format="gen9ou",
-                server_configuration=LocalhostServerConfiguration,
+                battle_format="gen9randombattle",
+                server_configuration=ServerConfiguration,
                 team=team,
             )
         else:
