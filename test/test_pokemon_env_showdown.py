@@ -32,9 +32,13 @@ def test_connect_local_showdown_turn1():
         def choose_move(self, battle):
             return self.choose_random_move(battle)
 
+    team_path = ROOT / "config" / "my_team.txt"
+    team_str = team_path.read_text()
+
     opponent = RandomOpponent(
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
+        team=team_str,
     )
 
     env = PokemonEnv(opponent, TurnObserver(), DummyActionHelper())

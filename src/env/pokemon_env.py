@@ -63,6 +63,8 @@ class PokemonEnv(gym.Env):
         # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
         if not hasattr(self, "_env_player"):
 
+            from pathlib import Path
+
             class EnvPlayer(Player):
                 """Simple player used internally by the environment."""
 
@@ -70,9 +72,16 @@ class PokemonEnv(gym.Env):
                     # reset 直後はランダム行動としておく。実際の行動は step で決定する。
                     return self.choose_random_move(battle)
 
+            team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
+            try:
+                team = team_path.read_text()
+            except OSError:  # pragma: no cover - デバッグ用
+                team = None
+
             self._env_player = EnvPlayer(
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
+                team=team,
             )
         else:
             # 既存プレイヤーのバトル履歴をクリア
