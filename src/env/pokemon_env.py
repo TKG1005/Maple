@@ -80,9 +80,7 @@ class PokemonEnv(gym.Env):
 
             self._env_player = EnvPlayer(
                 battle_format="gen9randombattle",
-                server_configuration=(
-    "ws://localhost:8000/showdown/websocket",
-    "https://play.pokemonshowdown.com/action.php?",
+                server_configuration=ServerConfiguration.LocalhostServerConfiguration,
 ),
                 team=team,
             )
