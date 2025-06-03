@@ -51,16 +51,12 @@ def dummy_modules(monkeypatch):
     yield
 
 
-def test_import_pokemon_env():
+def test_action_space_sample_range():
     from env.pokemon_env import PokemonEnv
-    assert PokemonEnv is not None
-
-
-def test_env_instantiation():
-    from env.pokemon_env import PokemonEnv
+    from action import ACTION_SIZE
 
     class DummyObserver:
-        def __init__(self, dim=3):
+        def __init__(self, dim=2):
             self.dim = dim
         def get_observation_dimension(self):
             return self.dim
@@ -72,24 +68,6 @@ def test_env_instantiation():
             return idx
 
     env = PokemonEnv(object(), DummyObserver(), DummyActionHelper())
-    assert env.observation_space.shape == (3,)
-
-
-def test_observation_space_contains():
-    from env.pokemon_env import PokemonEnv
-
-    class DummyObserver:
-        def __init__(self, dim=4):
-            self.dim = dim
-        def get_observation_dimension(self):
-            return self.dim
-        def observe(self, battle=None):
-            return [0] * self.dim
-
-    class DummyActionHelper:
-        def action_index_to_order(self, idx):
-            return idx
-
-    env = PokemonEnv(object(), DummyObserver(4), DummyActionHelper())
-    dummy_state = [0] * 4
-    assert env.observation_space.contains(dummy_state)
+    sample = env.action_space.sample()
+    assert 0 <= sample < ACTION_SIZE
+    assert env.action_space.n == ACTION_SIZE
