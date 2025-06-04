@@ -8,6 +8,9 @@ from typing import Any, Tuple
 import numpy as np
 
 import gymnasium as gym
+import asyncio
+import threading
+import time
 
 
 class PokemonEnv(gym.Env):
@@ -94,8 +97,28 @@ class PokemonEnv(gym.Env):
         if hasattr(self.opponent_player, "reset_battles"):
             self.opponent_player.reset_battles()
 
-        # 対戦を開始 (ローカルの Showdown サーバー使用)
-        self._env_player.battle_against(self.opponent_player, n_battles=1)
+        # 対戦を非同期で開始 (ローカルの Showdown サーバー使用)
+        async def start_battle() -> None:
+            await asyncio.gather(
+                self._env_player.send_challenges(
+                    self.opponent_player.username,
+                    n_challenges=1,
+                    to_wait=self.opponent_player.ps_client.logged_in,
+                ),
+                self.opponent_player.accept_challenges(
+                    self._env_player.username, n_challenges=1
+                ),
+            )
+
+        self._battle_thread = threading.Thread(
+            target=lambda: asyncio.run(start_battle()),
+            daemon=True,
+        )
+        self._battle_thread.start()
+
+        # バトルオブジェクトが生成されるまで待機
+        while not self._env_player.battles:
+            time.sleep(0.1)
 
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
