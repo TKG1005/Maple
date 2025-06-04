@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Tuple
 
-from action import ACTION_SIZE
 
 import numpy as np
 
@@ -26,6 +25,9 @@ class PokemonEnv(gym.Env):
         **kwargs: Any,
     ) -> None:
         super().__init__()
+        
+        self.ACTION_SIZE = 10
+        
         self.opponent_player = opponent_player
         self.state_observer = state_observer
         self.action_helper = action_helper
@@ -43,7 +45,7 @@ class PokemonEnv(gym.Env):
             dtype=np.float32,
         )
         # Action indices are represented as a discrete space.
-        self.action_space = gym.spaces.Discrete(ACTION_SIZE)
+        self.action_space = gym.spaces.Discrete(self.ACTION_SIZE)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
         """Reset the environment and start a new battle."""
@@ -81,7 +83,6 @@ class PokemonEnv(gym.Env):
             self._env_player = EnvPlayer(
                 battle_format="gen9randombattle",
                 server_configuration=ServerConfiguration.LocalhostServerConfiguration,
-),
                 team=team,
             )
         else:
