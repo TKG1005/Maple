@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import logging
 import sys
 from pathlib import Path
+from typing import List, Dict
+
+from tqdm import tqdm
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -22,7 +26,7 @@ except OSError:
     TEAM = None
 
 
-async def main() -> dict:
+async def run_single_battle() -> dict:
     player_1 = RuleBasedPlayer(
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
@@ -47,6 +51,20 @@ async def main() -> dict:
     return {"winner": winner, "turns": turns}
 
 
+async def main(n: int = 1) -> dict:
+    results: List[Dict[str, int | str]] = []
+    for _ in tqdm(range(n), desc="Battles"):
+        result = await run_single_battle()
+        results.append(result)
+
+    avg_turns = sum(r["turns"] for r in results) / n if n else 0
+    return {"results": results, "average_turns": avg_turns}
+
+
 if __name__ == "__main__":
-    result = asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Run battles locally")
+    parser.add_argument("--n", type=int, default=1, help="number of battles")
+    args = parser.parse_args()
+
+    result = asyncio.run(main(args.n))
     print(json.dumps(result, ensure_ascii=False))
