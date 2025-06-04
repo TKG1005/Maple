@@ -36,8 +36,8 @@ async def main() -> dict:
     )
 
     await asyncio.gather(
-        player_1.send_challenges(player_2.username, n_challenges=1),
-        player_2.accept_challenges(player_1.username, n_challenges=1),
+        player_1.send_challenges(player_2.username, n_challenges=1, to_wait=player_2.ps_client.logged_in),
+        player_2.accept_challenges(player_1.username, n_challenges=1)
     )
 
     winner = "p1" if player_1.n_won_battles == 1 else "p2"
