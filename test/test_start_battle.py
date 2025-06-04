@@ -11,6 +11,13 @@ if str(ROOT_DIR) not in sys.path:
 from src.env.pokemon_env import PokemonEnv
 from src.agents.my_simple_player import MySimplePlayer
 
+TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+try:
+    TEAM = TEAM_FILE.read_text()
+except OSError:
+    TEAM = None
+
+
 
 class DummyObserver:
     def __init__(self, dim: int) -> None:
@@ -28,11 +35,12 @@ class DummyActionHelper:
 
 
 async def main() -> None:
-    opponent = MySimplePlayer(battle_format="gen9randombattle")
+    opponent = MySimplePlayer(battle_format="gen9ou")
     env = PokemonEnv(
         opponent_player=opponent,
         state_observer=DummyObserver(5),
         action_helper=DummyActionHelper(),
+        team=TEAM,
     )
     obs, info = env.reset()
     print("reset returned", info)

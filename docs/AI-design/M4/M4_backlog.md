@@ -108,6 +108,7 @@
 * **達成条件**:
 
   * EnvPlayer と opponent\_player を生成/リセット。
+  * "gen9ou"ルール
   * `config/my_team.txt` からチームを読み込み設定。
 * **テスト**: `env.reset()` 呼び出しで新規 Battle が生成。再呼び出しでも問題なし。
 
