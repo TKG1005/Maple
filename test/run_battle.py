@@ -26,12 +26,13 @@ async def main() -> dict:
     player_1 = RuleBasedPlayer(
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
-        log_level=logging.INFO,
+        log_level=logging.DEBUG,
         team=TEAM,
     )
     player_2 = RuleBasedPlayer(
         battle_format="gen9pu",
         server_configuration=LocalhostServerConfiguration,
+        log_level=logging.DEBUG,
         team=TEAM,
     )
 
