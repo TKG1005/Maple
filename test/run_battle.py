@@ -15,16 +15,24 @@ if str(ROOT_DIR) not in sys.path:
 from src.agents.rule_based_player import RuleBasedPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
+TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+try:
+    TEAM = TEAM_FILE.read_text()
+except OSError:
+    TEAM = None
+
 
 async def main() -> dict:
     player_1 = RuleBasedPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
-        log_level=logging.DEBUG
+        log_level=logging.DEBUG,
+        team=TEAM,
     )
     player_2 = RuleBasedPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
+        team=TEAM,
     )
 
     await asyncio.gather(
