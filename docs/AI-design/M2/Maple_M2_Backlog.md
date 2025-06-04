@@ -14,7 +14,7 @@
 | 6 | `my_team.txt` 作成 | 手動チームを登録 | 6 匹分の Showdown 形式テキストが保存 | `poke-env` の `to_showdown_format` で再変換し一致 | poke-env |
 | 7 | シンプル対戦クライアント骨格 | `SimpleAgent` クラスを実装 | `python simple_agent.py --team my_team.txt` でインスタンス生成のみ成功 | インポート時エラーゼロ、`print(agent.team)` 表示 | Python OOP, poke-env |
 | 8 | ランダム AI 同士の 1 戦スクリプト | 1 本対戦を完走させる | `python run_battle.py` が終端コード 0 で終了し、勝敗が標準出力に表示 | バトルログ中に `"Win"` または `"Loss"` が含まれる | poke-env (`RandomPlayer`), asyncio |
-| 9 | 勝敗・ターン数の取得ロジック | 結果をプログラムで参照 | `run_battle.py` 実行後、JSON で `{winner:"p1", turns:25}` など出力 | `assert result["turns"] > 0` を含むテストが通る | Python 標準 `json` |
+| 9 | 勝敗・ターン数の取得ロジック | 結果をプログラムで参照 | `run_battle.py` 実行後、logger で `{winner:"p1", turns:25}` など出力 | `assert result["turns"] > 0` を含むテストが通る | Python 標準 `logging` |
 |10 | 連続バトル 10 回実行 | 安定して複数試合 | `python run_battle.py --n 10` が 10 試合完走、平均ターン数を表示 | 失敗 (例: 接続切れ) が 0 件 | asyncio, tqdm |
 |11 | Gymnasium 環境ラッパー雛形 | 後続 RL の足場 | `PokemonBattleEnv` クラス (Gymnasium Env) が `reset()` と `step()` をダミー実装 | `env = PokemonBattleEnv()` で `env.action_space`, `env.observation_space` が出力 | gymnasium |
 |12 | README 更新 | 手順をドキュメント化 | `README.md` にローカルで 1 戦するまでのコマンド列が箇条書き | 新規環境で README 通り実行し btl 完了 | Markdown |
