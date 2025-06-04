@@ -56,8 +56,8 @@ class RuleBasedPlayer(Player):
         # --- 行動取得 ---
         try:
             available_action_mask, available_action_mapping = get_available_actions(battle)
-            # print(f"LOG: Available action mask: {available_action_mask}") # 詳細すぎる場合はコメントアウト
-            print(f"LOG: Available action mapping: {available_action_mapping}")
+            print(f"LOG: Available action mask: {available_action_mask}") 
+            #print(f"LOG: Available action mapping: {available_action_mapping}") # 詳細すぎる場合はコメントアウト
             if not available_action_mapping: # マッピングが空なら選択肢なし
                 print("LOG: No actions available in mapping. Choosing a random move (fallback).")
                 return self.choose_random_move(battle)

@@ -12,24 +12,32 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from poke_env.player.random_player import RandomPlayer
+from src.agents.rule_based_player import RuleBasedPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+
+TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+try:
+    TEAM = TEAM_FILE.read_text()
+except OSError:
+    TEAM = None
 
 
 async def main() -> dict:
-    player_1 = RandomPlayer(
-        battle_format="gen9randombattle",
+    player_1 = RuleBasedPlayer(
+        battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
-        log_level=logging.DEBUG
+        log_level=logging.DEBUG,
+        team=TEAM,
     )
-    player_2 = RandomPlayer(
-        battle_format="gen9randombattle",
+    player_2 = RuleBasedPlayer(
+        battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
+        team=TEAM,
     )
 
     await asyncio.gather(
-        player_1.send_challenges(player_2.username, n_challenges=1),
-        player_2.accept_challenges(player_1.username, n_challenges=1),
+        player_1.send_challenges(player_2.username, n_challenges=1, to_wait=player_2.ps_client.logged_in),
+        player_2.accept_challenges(player_1.username, n_challenges=1)
     )
 
     winner = "p1" if player_1.n_won_battles == 1 else "p2"
