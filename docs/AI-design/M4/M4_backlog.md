@@ -86,6 +86,7 @@
 
 * **目的**: 状態ベクトルに基づき観測空間を設定。
 * **使用技術**: `gymnasium.spaces.Box`
+* **Maple projectとの統合** 状態空間の次元数はMaple/src/state/state_observer.pyのget_observation_dimensionで取得可能
 * **達成条件**: `self.observation_space = spaces.Box(low=0, high=1, shape=(STATE_DIM,), dtype=np.float32)`
 * **テスト**: `observation_space.contains(dummy_state)` が True。
 

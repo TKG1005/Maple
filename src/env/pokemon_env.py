@@ -26,7 +26,7 @@ class PokemonEnv(gym.Env):
     ) -> None:
         super().__init__()
         
-        self.ACTION_SIZE = 10
+        self.ACTION_SIZE = 10 #"gen9ou"ルールでは行動空間は10で固定
         
         self.opponent_player = opponent_player
         self.state_observer = state_observer
