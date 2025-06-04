@@ -24,13 +24,13 @@ except OSError:
 
 async def main() -> dict:
     player_1 = RuleBasedPlayer(
-        battle_format="gen9randombattle",
+        battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
-        log_level=logging.DEBUG,
+        log_level=logging.INFO,
         team=TEAM,
     )
     player_2 = RuleBasedPlayer(
-        battle_format="gen9randombattle",
+        battle_format="gen9pu",
         server_configuration=LocalhostServerConfiguration,
         team=TEAM,
     )
