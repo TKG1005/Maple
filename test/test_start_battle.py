@@ -2,6 +2,7 @@ import asyncio
 import sys
 from pathlib import Path
 import numpy as np
+import logging
 
 # Ensure src path is available
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -35,12 +36,11 @@ class DummyActionHelper:
 
 
 async def main() -> None:
-    opponent = MySimplePlayer(battle_format="gen9ou")
+    opponent = MySimplePlayer(battle_format="gen9ou",team=TEAM,)
     env = PokemonEnv(
         opponent_player=opponent,
         state_observer=DummyObserver(5),
         action_helper=DummyActionHelper(),
-        team=TEAM,
     )
     obs, info = env.reset()
     print("reset returned", info)

@@ -15,7 +15,7 @@ class MySimplePlayer(Player):
         mask, mapping = get_available_actions(battle)
 
         # 2) マスクベクトルをログ出力
-        print("Available action mask:", mask)
+        print(f"Turn:{battle.turn},Available action mask:{mask}")
 
         # 3) マッピングが空ならランダムチョイス
         if not mapping:
