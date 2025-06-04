@@ -24,8 +24,8 @@ setuptools==79.0.1
 six==1.17.0
 svgwrite==1.4.3
 tabulate==0.9.0
+tqdm==4.67.1
 typing_extensions==4.13.2
 tzdata==2025.2
 urllib3==2.4.0
 websockets==15.0.1
-tqdm==4.66.2

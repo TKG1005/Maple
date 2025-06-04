@@ -89,6 +89,7 @@
 │   ├── logs
 │   │   ├── chat
 │   │   ├── chatlog-access.txt
+│   │   ├── lastbattle.txt
 │   │   ├── logging.md
 │   │   ├── modlog
 │   │   ├── randbats
@@ -539,9 +540,13 @@
 │   │   └── state_observer.py
 │   └── util
 └── test
-    └── __pycache__
-        ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
-        ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
-        └── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
+    ├── __pycache__
+    │   ├── run_battle.cpython-312.pyc
+    │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
+    │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
+    │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
+    │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
+    ├── run_battle.py
+    └── simple_agent.py
 
-390 directories, 155 files
+390 directories, 160 files
