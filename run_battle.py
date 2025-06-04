@@ -1,14 +1,15 @@
-"""Run a single battle between two :class:`RandomPlayer` instances."""
+"""Run a single battle and return the result as JSON serialisable data."""
 
 from __future__ import annotations
 
 import asyncio
+import json
 
 from poke_env.player.random_player import RandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
 
-async def main() -> None:
+async def main() -> dict:
     player_1 = RandomPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
@@ -23,9 +24,13 @@ async def main() -> None:
         player_2.accept_challenges(player_1.username, n_challenges=1),
     )
 
-    result = "Win" if player_1.n_won_battles == 1 else "Loss"
-    print(result)
+    winner = "p1" if player_1.n_won_battles == 1 else "p2"
+    battle = next(iter(player_1.battles.values()), None)
+    turns = getattr(battle, "turn", 0)
+
+    return {"winner": winner, "turns": turns}
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    result = asyncio.run(main())
+    print(json.dumps(result, ensure_ascii=False))
