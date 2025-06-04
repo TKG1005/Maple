@@ -57,6 +57,8 @@ class PokemonEnv(gym.Env):
         try:
             from poke_env.player import Player
             from poke_env.ps_client.server_configuration import ServerConfiguration
+            from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+
         except Exception as exc:  # pragma: no cover - ランタイム用
             raise RuntimeError(
                 "poke_env package is required to run PokemonEnv"
@@ -82,7 +84,7 @@ class PokemonEnv(gym.Env):
 
             self._env_player = EnvPlayer(
                 battle_format="gen9randombattle",
-                server_configuration=ServerConfiguration.LocalhostServerConfiguration,
+                server_configuration=LocalhostServerConfiguration,
                 team=team,
             )
         else:
@@ -93,7 +95,7 @@ class PokemonEnv(gym.Env):
             self.opponent_player.reset_battles()
 
         # 対戦を開始 (ローカルの Showdown サーバー使用)
-        self._env_player.play_against(self.opponent_player, n_battles=1)
+        self._env_player.battle_against(self.opponent_player, n_battles=1)
 
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
