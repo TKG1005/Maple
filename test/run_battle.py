@@ -5,6 +5,12 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from poke_env.player.random_player import RandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
