@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 
 from poke_env.player.random_player import RandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
@@ -13,6 +14,7 @@ async def main() -> dict:
     player_1 = RandomPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
+        log_level=logging.DEBUG
     )
     player_2 = RandomPlayer(
         battle_format="gen9randombattle",
