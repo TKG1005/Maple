@@ -12,17 +12,17 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from poke_env.player.random_player import RandomPlayer
+from src.agents.rule_based_player import RuleBasedPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
 
 async def main() -> dict:
-    player_1 = RandomPlayer(
+    player_1 = RuleBasedPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
         log_level=logging.DEBUG
     )
-    player_2 = RandomPlayer(
+    player_2 = RuleBasedPlayer(
         battle_format="gen9randombattle",
         server_configuration=LocalhostServerConfiguration,
     )
