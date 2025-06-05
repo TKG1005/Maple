@@ -27,7 +27,7 @@ class DummyActionHelper:
     pass
 
 
-async def main() -> None:
+async def _run() -> None:
     opponent = MySimplePlayer(battle_format="gen9randombattle")
     env = PokemonEnv(
         opponent_player=opponent,
@@ -40,5 +40,10 @@ async def main() -> None:
     env.close()
 
 
+def main() -> None:
+    """Entry point for manual testing."""
+    asyncio.run(_run())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
