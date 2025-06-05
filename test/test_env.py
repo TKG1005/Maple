@@ -18,6 +18,12 @@ from src.env import PokemonEnv
 from src.state.state_observer import StateObserver
 from src.action import action_helper
 
+TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+try:
+    TEAM = TEAM_FILE.read_text()
+except OSError:
+    TEAM = None
+
 
 def main() -> None:
     """Run one episode and print the result."""
@@ -27,7 +33,7 @@ def main() -> None:
         print("poke_env is not available:", exc)
         return
 
-    opponent = RandomPlayer(battle_format="gen9ou")
+    opponent = RandomPlayer(battle_format="gen9ou",team=TEAM)
     observer = StateObserver(str(Path("config") / "state_spec.yml"))
     env = PokemonEnv(opponent, observer, action_helper)
 
