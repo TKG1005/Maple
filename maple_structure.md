@@ -13,7 +13,8 @@
 ├── docs
 │   └── AI-design
 │       ├── M2
-│       └── M4
+│       ├── M4
+│       └── PokemonEnv_Specification.md
 ├── maple_structure.md
 ├── pokemon-showdown
 │   ├── ARCHITECTURE.md
@@ -59,6 +60,7 @@
 │   ├── databases
 │   │   ├── chat-plugins.db
 │   │   ├── migrations
+│   │   ├── offline-pms.db
 │   │   └── schemas
 │   ├── dist
 │   │   ├── config
@@ -542,6 +544,7 @@
 └── test
     ├── __pycache__
     │   ├── run_battle.cpython-312.pyc
+    │   ├── test_env.cpython-312-pytest-8.4.0.pyc
     │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
     │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
     │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
@@ -549,4 +552,4 @@
     ├── run_battle.py
     └── simple_agent.py
 
-390 directories, 160 files
+390 directories, 163 files
