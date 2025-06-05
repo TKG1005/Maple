@@ -172,7 +172,7 @@
 * **目的**: `terminated` / `truncated` 判定ロジック。エピソードの報酬結果の出力。
 * **使用技術**: Battle 属性・ターン数
 * **達成条件**: Battle.finished → terminated, MAX\_TURNS 超 → truncated。
-* **テスト**: ダミー Battle で各ケース検証。
+* **テスト**: 対戦を1回走らせてエピソード終了を確認したログと報酬、ターン数を出力
 
 ---
 
