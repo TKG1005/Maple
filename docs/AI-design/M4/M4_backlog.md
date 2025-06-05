@@ -169,7 +169,7 @@
 
 ### 12. エピソード終了判定の実装
 
-* **目的**: `terminated` / `truncated` 判定ロジック。
+* **目的**: `terminated` / `truncated` 判定ロジック。エピソードの報酬結果の出力。
 * **使用技術**: Battle 属性・ターン数
 * **達成条件**: Battle.finished → terminated, MAX\_TURNS 超 → truncated。
 * **テスト**: ダミー Battle で各ケース検証。
