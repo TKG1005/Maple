@@ -91,6 +91,15 @@ class PokemonEnv(gym.Env):
                         self, battle, action_idx
                     )
 
+                async def teampreview(self, battle):
+                    """Pick the first available pokémon for team preview."""
+                    team_size = len(battle.team) if battle.team else 0
+                    num_to_select = min(3, team_size)
+                    if num_to_select > 0:
+                        order = "/team " + "".join(str(i + 1) for i in range(num_to_select))
+                        return order
+                    return "/team 123"
+
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
                 team = team_path.read_text()
