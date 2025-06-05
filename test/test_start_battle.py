@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import numpy as np
 
+
 # Ensure src path is available
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -11,7 +12,15 @@ if str(ROOT_DIR) not in sys.path:
 from src.env.pokemon_env import PokemonEnv
 from src.agents.my_simple_player import MySimplePlayer
 
-
+#------------------チームファイルを読み込み-----------------
+TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+try:
+    TEAM = TEAM_FILE.read_text()
+except OSError:
+    TEAM = None
+    print("[DBG]team open error")
+    
+    
 class DummyObserver:
     def __init__(self, dim: int) -> None:
         self.dim = dim
@@ -28,7 +37,9 @@ class DummyActionHelper:
 
 
 async def _run() -> None:
-    opponent = MySimplePlayer(battle_format="gen9randombattle")
+
+
+    opponent = MySimplePlayer(battle_format="gen9ou",team=TEAM)
     env = PokemonEnv(
         opponent_player=opponent,
         state_observer=DummyObserver(5),
