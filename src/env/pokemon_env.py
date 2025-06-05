@@ -16,6 +16,9 @@ import time
 class PokemonEnv(gym.Env):
     """A placeholder Gymnasium environment for Pokémon battles."""
 
+    # Step12: エピソード終了判定に利用する最大ターン数
+    MAX_TURNS: int = 100
+
     metadata = {"render_modes": [None]}
 
     def __init__(
@@ -130,6 +133,7 @@ class PokemonEnv(gym.Env):
 
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
+        self._current_battle = battle
         observation = self.state_observer.observe(battle)
 
         info: dict = {"battle_tag": battle.battle_tag}
@@ -140,12 +144,21 @@ class PokemonEnv(gym.Env):
         # まずアクションをキューに送信
         self._action_queue.put_nowait(int(action))
 
-        # 現段階ではダミー値を返すだけ
-        observation = self.observation_space.sample()
-        reward: float = 0.0
-        terminated: bool = False
-        truncated: bool = False
-        info: dict = {}
+        # 現在のバトル状態を取得
+        battle = getattr(self, "_current_battle", None)
+
+        if battle is not None:
+            observation = self.state_observer.observe(battle)
+            reward = self._calc_reward(battle)
+            terminated, truncated = self._check_episode_end(battle)
+            info: dict = {"turn": getattr(battle, "turn", 0)}
+        else:  # バトルが取得できない場合はダミー値
+            observation = self.observation_space.sample()
+            reward = 0.0
+            terminated = False
+            truncated = False
+            info = {}
+
         return observation, reward, terminated, truncated, info
 
     # Step11: 報酬計算ユーティリティ
@@ -160,6 +173,16 @@ class PokemonEnv(gym.Env):
         if getattr(battle, "won", False):
             return 1.0
         return -1.0
+
+    # Step12: エピソード終了判定ユーティリティ
+    def _check_episode_end(self, battle: Any) -> Tuple[bool, bool]:
+        """Return termination flags based on battle state and turn count."""
+
+        terminated = getattr(battle, "finished", False)
+        truncated = False
+        if not terminated and getattr(battle, "turn", 0) > self.MAX_TURNS:
+            truncated = True
+        return terminated, truncated
 
     def render(self) -> None:
         """Render the environment if applicable."""
