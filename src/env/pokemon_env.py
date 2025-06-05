@@ -29,7 +29,10 @@ class PokemonEnv(gym.Env):
     ) -> None:
         super().__init__()
         
-        self.ACTION_SIZE = 10 #"gen9ou"ルールでは行動空間は10で固定
+        self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
+
+        # Step10: 非同期アクションキューを導入
+        self._action_queue: asyncio.Queue[int] = asyncio.Queue()
         
         self.opponent_player = opponent_player
         self.state_observer = state_observer
@@ -72,12 +75,17 @@ class PokemonEnv(gym.Env):
 
             from pathlib import Path
 
+            self_env = self
+
             class EnvPlayer(Player):
                 """Simple player used internally by the environment."""
 
-                def choose_move(self, battle):  # pragma: no cover - placeholder
-                    # reset 直後はランダム行動としておく。実際の行動は step で決定する。
-                    return self.choose_random_move(battle)
+                async def choose_move(self, battle):
+                    """Waits for an action index from the queue and returns an order."""
+                    action_idx = await self_env._action_queue.get()
+                    return self_env.action_helper.action_index_to_order(
+                        self, battle, action_idx
+                    )
 
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
@@ -129,7 +137,10 @@ class PokemonEnv(gym.Env):
 
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
         """Take a step in the environment using the given action."""
-        # 実装予定箇所。現段階ではダミー値を返すだけとする。
+        # まずアクションをキューに送信
+        self._action_queue.put_nowait(int(action))
+
+        # 現段階ではダミー値を返すだけ
         observation = self.observation_space.sample()
         reward: float = 0.0
         terminated: bool = False
