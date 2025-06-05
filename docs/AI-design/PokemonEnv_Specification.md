@@ -13,7 +13,7 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. 各ターンで `/choose …` を送信<br>3. サーバーが結果をブロードキャスト |
+| メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. 各ターン開始時にサーバーが `request` JSON を送信<br>3. プレイヤーが `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
 
 ---
 
@@ -24,7 +24,8 @@
 * 手順  
   1. `reset()` で `play_against` を呼び、裏で非同期タスクが起動  
   2. `step(action)` は行動インデックスを **BattleOrder** に変換し送信  
-  3. サーバー応答で `Battle` オブジェクトが更新されるまで待機 → 観測生成  
+  3. 各ターンでサーバーから `request` を含むメッセージを受信すると `poke_env` 内の `Battle` オブジェクトが更新される
+  4. `PokemonEnv` はこの更新を検知して観測ベクトルを生成
 
 ---
 
