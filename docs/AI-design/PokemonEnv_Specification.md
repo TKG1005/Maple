@@ -15,6 +15,9 @@
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
 | メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. サーバーが `request` JSON を送信してプレイヤーに行動選択を要求<br>3. プレイヤーが `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
 
+* 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
+* `forceSwitch` が `True` の場合、同一ターンに複数の `request` が送られる
+
 ---
 
 ## 3. 同期 / 非同期処理
@@ -27,8 +30,9 @@
   3. サーバーから `request` を含むメッセージを受信すると `poke_env` 内の `Battle` オブジェクトが更新される
   4. `PokemonEnv` はこの更新を検知して観測ベクトルを生成
 * 注意
- * `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
- * 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
+* `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
+* 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
+* `step()` 実行後は最新 `rqid` の `request` を処理し `battle.turn` が増加するまで待機する
 ---
 
 ## 4. 観測（状態）空間
@@ -113,7 +117,8 @@ sequenceDiagram
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート  
 * **EnvPlayer**: 初手は `choose_random_move()` でランダム行動  
-* **再利用接続**: 各エピソード開始時に `reset_battles()`  
+* **再利用接続**: 各エピソード開始時に `reset_battles()`
+* **step 待機処理**: 送信後、最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
 * **未実装**: `render()`, `close()` は将来拡張  
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
