@@ -148,6 +148,19 @@ class PokemonEnv(gym.Env):
         info: dict = {}
         return observation, reward, terminated, truncated, info
 
+    # Step11: 報酬計算ユーティリティ
+    def _calc_reward(self, battle: Any) -> float:
+        """Return +1 if the battle is won, -1 if lost, otherwise 0."""
+
+        # battle.finished はバトルが終了したかどうかを示す poke-env の属性
+        if not getattr(battle, "finished", False):
+            return 0.0
+
+        # battle.won が True なら勝利、False なら敗北とみなす
+        if getattr(battle, "won", False):
+            return 1.0
+        return -1.0
+
     def render(self) -> None:
         """Render the environment if applicable."""
         return None
