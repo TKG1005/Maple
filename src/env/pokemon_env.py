@@ -86,7 +86,7 @@ class PokemonEnv(gym.Env):
                 team = None
 
             self._env_player = EnvPlayer(
-                battle_format="gen9randombattle",
+                battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
                 team=team,
             )
