@@ -129,9 +129,10 @@ class PokemonEnv(gym.Env):
 
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
         """Take a step in the environment using the given action."""
-        observation = None  # TODO: next observation
+        # 実装予定箇所。現段階ではダミー値を返すだけとする。
+        observation = self.observation_space.sample()
         reward: float = 0.0
-        terminated: bool = True
+        terminated: bool = False
         truncated: bool = False
         info: dict = {}
         return observation, reward, terminated, truncated, info
