@@ -87,7 +87,7 @@ sequenceDiagram
     Showdown-->>EnvPlayer: state
     EnvPlayer-->>PokemonEnv: Battle
     note over PokemonEnv: 観測ベクトル生成<br/>↓
-    PokemonEnv->>Agent: 環境ベクトル
+    PokemonEnv->>Agent: 観測ベクトル
     Agent->>PokemonEnv: step(action_idx)
     PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
     EnvPlayer->>Showdown: /choose …
