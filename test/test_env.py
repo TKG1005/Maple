@@ -39,3 +39,17 @@ def test_observation_space_contains():
     )
     dummy_state = np.zeros(dim, dtype=np.float32)
     assert env.observation_space.contains(dummy_state)
+
+
+def test_step_returns_tuple():
+    """`step` が 5 要素タプルを返すことを確認"""
+    dim = 5
+    env = PokemonEnv(
+        opponent_player=DummyOpponent(),
+        state_observer=DummyObserver(dim),
+        action_helper=DummyActionHelper(),
+    )
+    action = env.action_space.sample()
+    result = env.step(action)
+    assert isinstance(result, tuple)
+    assert len(result) == 5

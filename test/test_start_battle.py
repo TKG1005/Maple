@@ -47,6 +47,10 @@ async def _run() -> None:
     )
     obs, info = env.reset()
     print("reset returned", info)
+    # step が例外なく 5 要素タプルを返すか簡易チェック
+    action = env.action_space.sample()
+    result = env.step(action)
+    print("step returned", result)
     await asyncio.sleep(1)
     env.close()
 
