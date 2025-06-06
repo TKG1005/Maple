@@ -117,9 +117,9 @@ sequenceDiagram
 ## 8. 実装ノート
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート  
-* **EnvPlayer**: 初手は `choose_random_move()` でランダム行動  
+* **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: 送信後、最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
+* **step 待機処理**: 最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
 * **未実装**: `render()`, `close()` は将来拡張  
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
@@ -128,6 +128,9 @@ sequenceDiagram
 ## 9. 参考コードスニペット
 
 ```python
+# 環境ベクトル取得
+state: np.array = state_observer.observ(battle)
+
 # 行動マスク取得
 mask, mapping = action_helper.get_available_actions(battle)
 
