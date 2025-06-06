@@ -141,9 +141,6 @@ class PokemonEnv(gym.Env):
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
 
-        # Handle team preview request if present during step
-        self._env_player.teampreview(battle)
-
         # QueuedRandomPlayer chooses actions autonomously. Only enqueue when
         # using the internal queue-based player.
         if not isinstance(self._env_player, QueuedRandomPlayer):
