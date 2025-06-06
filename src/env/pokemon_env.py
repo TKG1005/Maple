@@ -13,6 +13,8 @@ import threading
 import time
 import logging
 from src.agents.queued_random_player import QueuedRandomPlayer
+from poke_env.ps_client.account_configuration import AccountConfiguration
+import uuid
 
 
 class PokemonEnv(gym.Env):
@@ -36,6 +38,10 @@ class PokemonEnv(gym.Env):
 
         # Step10: 非同期アクションキューを導入
         self._action_queue: asyncio.Queue[int] = asyncio.Queue()
+
+        # poke-env の PSClient.listen() を走らせる専用イベントループ
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._loop_thread: threading.Thread | None = None
 
         self.opponent_player = opponent_player
         self.state_observer = state_observer
@@ -88,10 +94,12 @@ class PokemonEnv(gym.Env):
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
+            unique_name = f"env_{uuid.uuid4().hex[:8]}"
             self._env_player = QueuedRandomPlayer(
                 self._action_queue,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
+                account_configuration=AccountConfiguration(unique_name, None),
                 team=team,
                 log_level=logging.DEBUG,
             )
@@ -101,6 +109,24 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self.opponent_player, "reset_battles"):
             self.opponent_player.reset_battles()
+
+        # 前回のイベントループが残っていればクリーンアップ
+        if self._loop is not None:
+            self.close()
+
+        # poke-env の PSClient.listen() 用イベントループを用意
+        self._loop = asyncio.new_event_loop()
+
+        def _run_loop(loop: asyncio.AbstractEventLoop) -> None:
+            asyncio.set_event_loop(loop)
+            loop.run_forever()
+
+        self._loop_thread = threading.Thread(
+            target=_run_loop,
+            args=(self._loop,),
+            daemon=True,
+        )
+        self._loop_thread.start()
 
         # 対戦を非同期で開始 (ローカルの Showdown サーバー使用)
         async def start_battle() -> None:
@@ -115,11 +141,8 @@ class PokemonEnv(gym.Env):
                 ),
             )
 
-        self._battle_thread = threading.Thread(
-            target=lambda: asyncio.run(start_battle()),
-            daemon=True,
-        )
-        self._battle_thread.start()
+        fut = asyncio.run_coroutine_threadsafe(start_battle(), self._loop)
+        fut.result()
 
         # バトルオブジェクトが生成されるまで待機
         while not self._env_player.battles:
@@ -144,36 +167,11 @@ class PokemonEnv(gym.Env):
         if not isinstance(self._env_player, QueuedRandomPlayer):
             self._action_queue.put_nowait(int(action))
 
-        # "asyncio.run" may not be used when an event loop is already running
-        # (e.g. when this method is called inside an "asyncio.run" context).
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            # No running event loop -> safe to call asyncio.run directly
-            asyncio.run(self._wait_for_turn(battle, start_turn))
-        else:
-            # Another event loop is running in this thread. Run the coroutine in
-            # a separate thread with its own event loop.
-            exc: Exception | None = None
-
-            def _run_in_thread() -> None:
-                nonlocal exc
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(
-                        self._wait_for_turn(battle, start_turn)
-                    )
-                except Exception as e:  # pragma: no cover - propagate
-                    exc = e
-                finally:
-                    loop.close()
-
-            thread = threading.Thread(target=_run_in_thread)
-            thread.start()
-            thread.join()
-            if exc:
-                raise exc
+        future = asyncio.run_coroutine_threadsafe(
+            self._wait_for_turn(battle, start_turn),
+            self._loop,
+        )
+        future.result()
 
         observation = self.state_observer.observe(battle)
 
@@ -234,4 +232,30 @@ class PokemonEnv(gym.Env):
 
     def close(self) -> None:
         """Clean up resources used by the environment."""
-        pass
+        if self._loop is None:
+            return
+
+        if hasattr(self._env_player, "ps_client"):
+            try:
+                fut = asyncio.run_coroutine_threadsafe(
+                    self._env_player.ps_client.stop_listening(), self._loop
+                )
+                fut.result()
+            except Exception:
+                pass
+
+        if hasattr(self.opponent_player, "ps_client"):
+            try:
+                fut = asyncio.run_coroutine_threadsafe(
+                    self.opponent_player.ps_client.stop_listening(), self._loop
+                )
+                fut.result()
+            except Exception:
+                pass
+
+        self._loop.call_soon_threadsafe(self._loop.stop)
+        if self._loop_thread is not None:
+            self._loop_thread.join()
+
+        self._loop = None
+        self._loop_thread = None
