@@ -24,6 +24,7 @@
 
 * 外部: `poke_env` は **asyncio**‐ベースで WebSocket を管理  
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
+
 * 手順
   1. `reset()` で `play_against()` を呼び、裏で非同期タスクが起動
   2. `step(action)` は行動インデックスを `_action_queue` に投入
@@ -31,6 +32,7 @@
   4. `EnvPlayer.choose_move()` はキューから `action_idx` を受け取り `BattleOrder` を生成して返す
   5. `poke-env` が `/choose` を送信し `Battle` オブジェクトを更新
   6. `step()` は `battle.turn` が進むまで待機し、観測と報酬を返す
+
 * 注意
 * `request` は順不同で届くことがあるが、`Battle` オブジェクトが常に最新状態を保持するため、キュー投入済みの行動をそのまま処理できる
 * 交代要求など複数の `request` が続くケースも、`choose_move()` が逐次呼び出されることで対処できる
@@ -83,7 +85,7 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 
 ```mermaid
 sequenceDiagram
-    participant Agent
+    participant Agent(EnvPlayer)
     participant PokemonEnv
     participant EnvPlayer
     participant Showdown
@@ -95,6 +97,7 @@ sequenceDiagram
     PokemonEnv->>EnvPlayer: put(action_idx)
     Showdown-->>EnvPlayer: request
     EnvPlayer->>Showdown: /choose … (queueから取得)
+
     PokemonEnv-->>Agent: obs, reward, done
 ```
 
