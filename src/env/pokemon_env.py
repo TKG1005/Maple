@@ -151,9 +151,28 @@ class PokemonEnv(gym.Env):
         try:
             asyncio.run(self._wait_for_turn(battle, start_turn))
         except RuntimeError:
-            loop = asyncio.new_event_loop()
-            loop.run_until_complete(self._wait_for_turn(battle, start_turn))
-            loop.close()
+            # Another event loop is running in this thread. Run the
+            # coroutine in a separate thread with its own event loop.
+            exc: Exception | None = None
+
+            def _run_in_thread() -> None:
+                nonlocal exc
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(
+                        self._wait_for_turn(battle, start_turn)
+                    )
+                except Exception as e:  # pragma: no cover - propagate
+                    exc = e
+                finally:
+                    loop.close()
+
+            thread = threading.Thread(target=_run_in_thread)
+            thread.start()
+            thread.join()
+            if exc:
+                raise exc
 
         observation = self.state_observer.observe(battle)
         reward: float = self._calc_reward(battle)
