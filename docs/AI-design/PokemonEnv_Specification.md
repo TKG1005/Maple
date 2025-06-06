@@ -27,8 +27,10 @@
 * 手順  
   1. `reset()` で `play_against` を呼び、裏で非同期タスクが起動  
   2. `step(action)` は行動インデックスを **BattleOrder** に変換し送信  
-  3. サーバーから `request` を含むメッセージを受信すると `poke_env` 内の `Battle` オブジェクトが更新される
-  4. `PokemonEnv` はこの更新を検知して観測ベクトルを生成
+  3. poke-envはPSClient.listen()でshowdownサーバーからのメッセージを待機
+  4. poke-envは `request` を含むJSONを受信すると Battle.parse_request()を実行して、`poke_env` 内の `Battle` オブジェクトが更新される
+  5. `PokemonEnv` はpoke-envがshowdownサーバから受け取るJSONを監視して、`request` を含むメッセージを検知して`Battle` オブジェクトが更新されるのを待つ
+  6. `PokemonEnv` はメッセージの内容に応じてエージェントの対応するメソッドを呼ぶ("teamPreview":trueならchoose_team,その他の場合はchoose_move())
 * 注意
 * `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
 * 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
