@@ -92,7 +92,7 @@ sequenceDiagram
     EnvPlayer-->>PokemonEnv: Battle
     note over PokemonEnv: 観測ベクトル生成(state_observer.pyを使用)
     PokemonEnv->>Agent: 観測ベクトル
-    Agent: 行動空間ベクトルを取得(action_helper.pyを使用)
+    Agent: 行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
     Agent->>PokemonEnv: step(action_idx)
     PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
     EnvPlayer->>Showdown: /choose …
