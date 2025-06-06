@@ -25,11 +25,17 @@ class QueuedRandomPlayer(Player):
         self._queue = action_queue
         self._rng = np.random.default_rng(seed)
 
+    async def choose_team(self, battle: Any) -> str:  # pragma: no cover - runtime
+        """Select the first three Pokémon when team preview occurs."""
+        print("[DBG:queued_random_player.py]chose default team 123")
+        return "123"
+
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
         mask, mapping = get_available_actions(battle)
-        print(f"[DBG:queued_random_player.py]mask = {mask}")
+        print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
         if mapping:
             action_idx = int(self._rng.choice(list(mapping.keys())))
             await self._queue.put(action_idx)
             return action_index_to_order(self, battle, action_idx)
         return self.choose_random_move(battle)
+

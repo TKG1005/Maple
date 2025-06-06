@@ -127,6 +127,10 @@ class PokemonEnv(gym.Env):
 
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
+
+        # Step: team preview handling
+        self._handle_team_preview(battle)
+
         observation = self.state_observer.observe(battle)
 
         info: dict = {"battle_tag": battle.battle_tag}
@@ -136,6 +140,9 @@ class PokemonEnv(gym.Env):
         """Send an action and wait for the next turn."""
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
+
+        # Handle team preview request if present during step
+        self._handle_team_preview(battle)
 
         # QueuedRandomPlayer chooses actions autonomously. Only enqueue when
         # using the internal queue-based player.
@@ -210,6 +217,30 @@ class PokemonEnv(gym.Env):
         if not terminated and getattr(battle, "turn", 0) > self.MAX_TURNS:
             truncated = True
         return terminated, truncated
+
+    def _handle_team_preview(self, battle: Any) -> None:
+        """Send team selection when a team preview request is present."""
+        request = getattr(battle, "request", None)
+        if not isinstance(request, dict) or not request.get("teamPreview"):
+            return
+
+        if not hasattr(self._env_player, "choose_team"):
+            return
+
+        def _run() -> None:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(self._env_player.choose_team(battle))
+            loop.close()
+
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(self._env_player.choose_team(battle))
+        else:
+            thread = threading.Thread(target=_run)
+            thread.start()
+            thread.join()
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:
