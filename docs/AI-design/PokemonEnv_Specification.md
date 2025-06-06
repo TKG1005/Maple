@@ -27,9 +27,9 @@
 
 * 手順
   1. `reset()` で `play_against()` を呼び、裏で非同期タスクが起動
-  2. `step(action)` は行動インデックスを `_action_queue` に投入
-  3. Showdown から `request` が届くと poke-env が `EnvPlayer.teampreview()` または `EnvPlayer.choose_move()` を呼び出す
-  4. `EnvPlayer.choose_move()` はキューから `action_idx` を受け取り `BattleOrder` を生成して返す
+  2. Showdown から {"teampreview":true}を含む`request` が届くと poke-env が `EnvPlayer.teampreview()` を呼び出す
+  3. Showdownから`request` が届くとpoke-envが`EnvPlayer.choose_move()` を呼ぶ
+  4. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`action_idx` を返す
   5. `poke-env` が `/choose` を送信し `Battle` オブジェクトを更新
   6. `step()` は `battle.turn` が進むまで待機し、観測と報酬を返す
 
