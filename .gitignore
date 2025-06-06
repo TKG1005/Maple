@@ -5,3 +5,5 @@
 .env
 .docs
 __pycache__/
+src/env/__pycache__/
+.gitignore
