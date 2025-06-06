@@ -19,6 +19,8 @@ from src.state.state_observer import StateObserver
 from src.action import action_helper
 from src.agents.queued_random_player import QueuedRandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+from poke_env.player_configuration import PlayerConfiguration
+import uuid
 
 
 async def main() -> None:
@@ -28,10 +30,12 @@ async def main() -> None:
     except OSError:
         team = None
 
+    opponent_name = f"opp_{uuid.uuid4().hex[:8]}"
     opponent = QueuedRandomPlayer(
         asyncio.Queue(),
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
+        player_configuration=PlayerConfiguration(opponent_name, None),
         team=team,
     )
     observer = StateObserver("config/state_spec.yml")

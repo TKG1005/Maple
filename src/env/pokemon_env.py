@@ -13,6 +13,8 @@ import threading
 import time
 import logging
 from src.agents.queued_random_player import QueuedRandomPlayer
+from poke_env.player_configuration import PlayerConfiguration
+import uuid
 
 
 class PokemonEnv(gym.Env):
@@ -93,10 +95,12 @@ class PokemonEnv(gym.Env):
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
+            unique_name = f"env_{uuid.uuid4().hex[:8]}"
             self._env_player = QueuedRandomPlayer(
                 self._action_queue,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
+                player_configuration=PlayerConfiguration(unique_name, None),
                 team=team,
                 log_level=logging.DEBUG,
             )
