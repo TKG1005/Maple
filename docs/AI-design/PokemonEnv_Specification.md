@@ -28,9 +28,8 @@
   1. `reset()` で `play_against` を呼び、裏で非同期タスクが起動  
   2. `step(action)` は行動インデックスを **BattleOrder** に変換し送信  
   3. poke-envはPSClient.listen()でshowdownサーバーからのメッセージを待機
-  4. poke-envは `request` を含むJSONを受信すると Battle.parse_request()を実行して、`poke_env` 内の `Battle` オブジェクトが更新される(この時に"request"はパースされるのでBattleオブジェクトにはrequest情報は残らない)
-  5. `PokemonEnv` は独自にpoke-envがshowdownサーバから受け取るJSONを監視して、`request` を含むメッセージを検知して`Battle` オブジェクトが更新されるのを待つ
-  6. `PokemonEnv` はメッセージの内容に応じてエージェントの対応するメソッドを呼ぶ("teamPreview":trueならchoose_team,その他の場合はchoose_move())
+  4. poke-envは `request` を含むJSONを受信すると Battle.parse_request()を実行して、`poke_env` 内の `Battle` オブジェクトを更新する(この時に"request"はパースされるのでBattleオブジェクトにはrequest情報は残らない)
+  5. poke-envはメッセージハンドラを経由してEnvPlayer.choose_move()を呼ぶ
 * 注意
 * `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
 * 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
@@ -83,22 +82,19 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 
 ```mermaid
 sequenceDiagram
-    participant Agent
+    participant Agent(EnvPlayer)
     participant PokemonEnv
-    participant poke_env/EnvPlayer
+    participant poke_env
     participant Showdown
     Agent->>PokemonEnv: reset()
     PokemonEnv->>EnvPlayer: play_against()
     Showdown-->>poke-env: request("teamPreview":true)
     poke-env->>EnvPlayer: teampreview()
-    EnvPlayer->>Showdown: /team 123(現時点では先頭3匹を返す)
+    EnvPlayer->>Showdown: /team (ランダムに3匹を選ぶ）
     Showdown-->>poke-env: request
     poke-env: update state
-    PokemonEnv: catch request (Showdown-->>poke-envのJSONを監視)
-    PokemonEnv->>Agent: choose_move(Battle)
-    Agent: 状態空間ベクトルを取得(state_observer.py),行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
-    Agent->>EnvPlayer: step(action_idx)
-    PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
+    poke-env-->>EnvPlayer: choose_move(battle)
+    EnvPlayer: 状態空間ベクトルを取得(state_observer.py),行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
     EnvPlayer->>Showdown: /choose …
     PokemonEnv-->>Agent: obs, reward, done
 ```
