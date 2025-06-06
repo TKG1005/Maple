@@ -17,6 +17,7 @@ class PokemonEnv(gym.Env):
     """A placeholder Gymnasium environment for Pokémon battles."""
 
     metadata = {"render_modes": [None]}
+    MAX_TURNS: int = 100
 
     def __init__(
         self,
@@ -142,11 +143,21 @@ class PokemonEnv(gym.Env):
 
         # 現段階ではダミー値を返すだけ
         observation = self.observation_space.sample()
-        reward: float = 0.0
-        terminated: bool = False
-        truncated: bool = False
+        battle = next(iter(self._env_player.battles.values()), None)
+        reward: float = self._calc_reward(battle) if battle else 0.0
+        terminated, truncated = self._check_episode_end(battle)
         info: dict = {}
         return observation, reward, terminated, truncated, info
+
+    def _check_episode_end(self, battle: Any) -> Tuple[bool, bool]:
+        """Return terminated and truncated flags based on battle status."""
+        if battle is None:
+            return False, False
+        terminated = getattr(battle, "finished", False)
+        truncated = False
+        if not terminated and getattr(battle, "turn", 0) > self.MAX_TURNS:
+            truncated = True
+        return terminated, truncated
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:
