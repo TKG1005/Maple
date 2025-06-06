@@ -85,19 +85,21 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 
 ```mermaid
 sequenceDiagram
-    participant Agent(EnvPlayer)
+    participant EnvPlayer(Agent)
     participant PokemonEnv
-    participant EnvPlayer
+    participant poke-env
     participant Showdown
     Agent->>PokemonEnv: reset()
-    PokemonEnv->>EnvPlayer: play_against()
-    Showdown-->>EnvPlayer: request("teamPreview":true)
-    EnvPlayer->>Showdown: /team 123(現時点では先頭3匹を返す)
-    Agent->>PokemonEnv: step(action_idx)
-    PokemonEnv->>EnvPlayer: put(action_idx)
-    Showdown-->>EnvPlayer: request
-    EnvPlayer->>Showdown: /choose … (queueから取得)
-
+    PokemonEnv->>Showdown: play_against()
+    Showdown-->>poke-env: request{"teamPreview":true}
+    poke-env->>EnvPlayer: teampreview(Battle)
+    EnvPlayer->>poke-env: /team ...(ランダムに3匹選ぶ)
+    poke-env->>Showdown: /team
+    Showdown->>poke-env: request
+    poke-env->>EnvPlayer: choose_move(Battle)
+    EnvPlayer->>PokemonEnv: step(action_idx)
+    PokemonEnv->>poke-env: BattleOrder(/choose ...)
+    poke-env->>Showdown/choose 
     PokemonEnv-->>Agent: obs, reward, done
 ```
 
@@ -133,8 +135,6 @@ sequenceDiagram
 # 環境ベクトル取得
 state: np.ndarray = state_observer.observe(battle)
 
-# チームプレビュー処理
-env._handle_team_preview(battle)
 
 # 行動マスク取得
 mask, mapping = action_helper.get_available_actions(battle)
