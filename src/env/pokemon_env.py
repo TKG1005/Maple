@@ -234,9 +234,10 @@ class PokemonEnv(gym.Env):
             return
 
         def _hook(message: str, *args: Any, **kwargs: Any) -> Any:
-            result = original(message, *args, **kwargs)
-
             current_tag: str | None = None
+            request = None
+            battle = None
+
             for line in message.splitlines():
                 if not line:
                     continue
@@ -259,16 +260,21 @@ class PokemonEnv(gym.Env):
                 except Exception:
                     continue
 
-                battle = None
                 if tag:
                     battle = self._env_player.battles.get(tag)
                 if battle is None and current_tag:
                     battle = self._env_player.battles.get(current_tag)
                 if battle is None:
                     battle = next(iter(self._env_player.battles.values()), None)
-                if battle is None:
-                    continue
+                break
 
+            if battle is not None and request is not None:
+                setattr(battle, "request", request)
+                self._handle_team_preview(battle)
+
+            result = original(message, *args, **kwargs)
+
+            if battle is not None and request is not None:
                 setattr(battle, "request", request)
                 self._handle_team_preview(battle)
 
