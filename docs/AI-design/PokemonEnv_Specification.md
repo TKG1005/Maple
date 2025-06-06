@@ -87,7 +87,9 @@ sequenceDiagram
     participant Showdown
     Agent->>PokemonEnv: reset()
     PokemonEnv->>EnvPlayer: play_against()
-    EnvPlayer->>Showdown: /team, /choose (random)
+    EnvPlayer->>Showdown: /team
+    PokemonEnv->>EnvPlayer: select_team()
+    EnvPlayer->>Showdown: /choose team (1,2,3)
     Showdown-->>EnvPlayer: state
     EnvPlayer-->>PokemonEnv: Battle
     note over PokemonEnv: 観測ベクトル生成(state_observer.pyを使用)
@@ -118,7 +120,7 @@ sequenceDiagram
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート  
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
-* **チームプレビュー**: `"teamPreview": true` を含む `request` を受信した場合、エージェントのポケモン選択メソッド `select_team()` を呼び出し `/choose team` を送信する。デフォルト実装は登録順先頭 3 匹を選出
+* **チームプレビュー**: 対戦開始時に Showdown サーバーから `"teamPreview": true` を含む `request` JSON が届いたら、PokemonEnv はエージェントのポケモン選択メソッド `select_team()` を呼び出し `/choose team` を送信する。デフォルト実装では登録順先頭 3 匹を選出
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
 * **step 待機処理**: 最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
 * **未実装**: `render()`, `close()` は将来拡張  
