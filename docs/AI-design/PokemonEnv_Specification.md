@@ -92,7 +92,7 @@ sequenceDiagram
     Agent->>PokemonEnv: reset()
     PokemonEnv->>Showdown: play_against()
     Showdown-->>poke-env: request{"teamPreview":true}
-    poke-env->>EnvPlayer: teampreview(Battle)
+    poke-env->>EnvPlayer: EnvPlayer.teampreview(Battle)
     EnvPlayer->>poke-env: /team ...(ランダムに3匹選ぶ)
     poke-env->>Showdown: /team
     Showdown->>poke-env: request
@@ -121,9 +121,9 @@ sequenceDiagram
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
 * **非同期キュー**: `PokemonEnv.step()` と `EnvPlayer.choose_move()` を接続するため `_action_queue` を利用
-* **チームプレビュー**: `EnvPlayer.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトは先頭 3 匹を選出）
+* **チームプレビュー**: `EnvPlayer.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: `battle.turn` が進むまで非同期でループし、タイムアウトを設ける
+* **step 待機処理**: `rqid` が進むまで非同期でループし、タイムアウトを設ける
 * **未実装**: `render()`, `close()` は将来拡張
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
@@ -134,7 +134,6 @@ sequenceDiagram
 ```python
 # 環境ベクトル取得
 state: np.ndarray = state_observer.observe(battle)
-
 
 # 行動マスク取得
 mask, mapping = action_helper.get_available_actions(battle)
