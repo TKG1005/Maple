@@ -13,7 +13,7 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. サーバーが `request` JSON を送信してプレイヤーに行動選択を要求<br>3. プレイヤーが `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
+| メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. サーバーが `"teamPreview": true` を含む `request` を送り選出ポケモンを要求<br>3. プレイヤーが `/choose team …` を返信 (現実装では先頭 3 匹を選択)<br>4. 以降各ターンで `request` が届き `/choose …` を返信<br>5. サーバーが結果をブロードキャスト |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
 * `forceSwitch` が `True` の場合、同一ターンに複数の `request` が送られる
@@ -118,6 +118,7 @@ sequenceDiagram
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート  
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
+* **チームプレビュー**: `"teamPreview": true` を含む `request` を受信した場合、エージェントのポケモン選択メソッド `select_team()` を呼び出し `/choose team` を送信する。デフォルト実装は登録順先頭 3 匹を選出
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
 * **step 待機処理**: 最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
 * **未実装**: `render()`, `close()` は将来拡張  
