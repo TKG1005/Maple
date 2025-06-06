@@ -27,7 +27,6 @@ class QueuedRandomPlayer(Player):
 
     async def choose_team(self, battle: Any) -> str:  # pragma: no cover - runtime
         """Select the first three Pokémon when team preview occurs."""
-        print("[DBG:queued_random_player.py]chose default team 123")
         return "123"
 
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
