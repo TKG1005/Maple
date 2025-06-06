@@ -82,7 +82,7 @@ class PokemonEnv(gym.Env):
                         request = None
 
                     await original(message)
-
+        
                     if not isinstance(request, dict):
                         return
 
@@ -93,11 +93,13 @@ class PokemonEnv(gym.Env):
 
                     battle = self._env_player.battles.get(tag) if tag else None
                     if battle is None:
+                        print("バトルがありません")
                         return
 
                     if request.get("teamPreview"):
                         await self._env_player.choose_team(battle)
                     else:
+                        print("チームプレビューじゃありません")
                         await self._env_player.choose_move(battle)
                     return
 
