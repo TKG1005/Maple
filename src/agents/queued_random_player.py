@@ -30,6 +30,7 @@ class QueuedRandomPlayer(Player):
         """Randomly select three Pokémon from 1–6."""
         indices = self._rng.choice(range(1, 7), size=3, replace=False)
         order = "/team " + "".join(str(i) for i in indices)
+        print(f'[DBG:queued_random_player.py] order = {order}')
         return order
 
     async def choose_team(self, battle: Any) -> str:  # pragma: no cover - runtime
