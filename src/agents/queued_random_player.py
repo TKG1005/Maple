@@ -27,6 +27,7 @@ class QueuedRandomPlayer(Player):
 
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
         mask, mapping = get_available_actions(battle)
+        print(f"[DBG:queued_random_player.py]mask = {mask}")
         if mapping:
             action_idx = int(self._rng.choice(list(mapping.keys())))
             await self._queue.put(action_idx)

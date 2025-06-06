@@ -11,6 +11,7 @@ import gymnasium as gym
 import asyncio
 import threading
 import time
+import logging
 
 
 class PokemonEnv(gym.Env):
@@ -102,6 +103,7 @@ class PokemonEnv(gym.Env):
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
                 team=team,
+                log_level=logging.DEBUG,
             )
         else:
             # 既存プレイヤーのバトル履歴をクリア

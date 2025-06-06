@@ -90,8 +90,9 @@ sequenceDiagram
     EnvPlayer->>Showdown: /team, /choose (random)
     Showdown-->>EnvPlayer: state
     EnvPlayer-->>PokemonEnv: Battle
-    note over PokemonEnv: 観測ベクトル生成<br/>↓
+    note over PokemonEnv: 観測ベクトル生成(state_observer.pyを使用)
     PokemonEnv->>Agent: 観測ベクトル
+    Agent: 行動空間ベクトルを取得(action_helper.pyを使用)
     Agent->>PokemonEnv: step(action_idx)
     PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
     EnvPlayer->>Showdown: /choose …
