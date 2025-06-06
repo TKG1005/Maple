@@ -91,6 +91,7 @@
 │   ├── logs
 │   │   ├── chat
 │   │   ├── chatlog-access.txt
+│   │   ├── errors.txt
 │   │   ├── lastbattle.txt
 │   │   ├── logging.md
 │   │   ├── modlog
@@ -529,6 +530,7 @@
 │   ├── agents
 │   │   ├── __pycache__
 │   │   ├── my_simple_player.py
+│   │   ├── queued_random_player.py
 │   │   └── rule_based_player.py
 │   ├── env
 │   │   ├── __init__.py
@@ -550,6 +552,7 @@
     │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
     │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
     ├── run_battle.py
-    └── simple_agent.py
+    ├── simple_agent.py
+    └── test_run_battle.py
 
-390 directories, 163 files
+390 directories, 166 files
