@@ -42,7 +42,6 @@ class PokemonEnv(gym.Env):
         # poke-env の PSClient.listen() を走らせる専用イベントループ
         self._loop: asyncio.AbstractEventLoop | None = None
         self._loop_thread: threading.Thread | None = None
-        self._listen_tasks: list[asyncio.Task] = []
 
         self.opponent_player = opponent_player
         self.state_observer = state_observer
@@ -131,10 +130,6 @@ class PokemonEnv(gym.Env):
 
         # 対戦を非同期で開始 (ローカルの Showdown サーバー使用)
         async def start_battle() -> None:
-            self._listen_tasks = [
-                asyncio.create_task(self._env_player.ps_client.listen()),
-                asyncio.create_task(self.opponent_player.ps_client.listen()),
-            ]
             await asyncio.gather(
                 self._env_player.send_challenges(
                     self.opponent_player.username,
@@ -239,10 +234,6 @@ class PokemonEnv(gym.Env):
         """Clean up resources used by the environment."""
         if self._loop is None:
             return
-
-        for task in self._listen_tasks:
-            task.cancel()
-        self._listen_tasks.clear()
 
         if hasattr(self._env_player, "ps_client"):
             try:
