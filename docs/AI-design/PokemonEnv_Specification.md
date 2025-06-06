@@ -89,20 +89,18 @@ sequenceDiagram
     participant Showdown
     Agent->>PokemonEnv: reset()
     PokemonEnv->>EnvPlayer: play_against()
+    Showdown-->>poke-env: request(teamPreview=true)
+    PokemonEnv->>Agent: choose_team()
+    Agent->>EnvPlayer: /team 123(現時点では先頭3匹を返す)
     EnvPlayer->>Showdown: /team
-    Showdown-->>EnvPlayer: request(teamPreview=true)
-    PokemonEnv->>EnvPlayer: select_team()
-    EnvPlayer->>Showdown: /choose team (1,2,3)
-    Showdown-->>EnvPlayer: state
-    EnvPlayer-->>PokemonEnv: Battle
-    note over PokemonEnv: 観測ベクトル生成(state_observer.pyを使用)
-    PokemonEnv->>Agent: 観測ベクトル
-    Agent: 行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
-    Agent->>PokemonEnv: step(action_idx)
+    Showdown-->>poke-env: request
+    poke-env: update state
+    PokemonEnv: catch request (Showdown-->>poke-envのJSONを監視)
+    PokemonEnv->>Agent: choose_move(Battle)
+    Agent: 状態空間ベクトルを取得(state_observer.py),行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
+    Agent->>EnvPlayer: step(action_idx)
     PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
     EnvPlayer->>Showdown: /choose …
-    Showdown-->>EnvPlayer: state
-    EnvPlayer-->>PokemonEnv: Battle
     PokemonEnv-->>Agent: obs, reward, done
 ```
 
