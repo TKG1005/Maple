@@ -17,7 +17,7 @@ pytest.importorskip("poke_env")
 from src.env import PokemonEnv
 from src.state.state_observer import StateObserver
 from src.action import action_helper
-from src.agents.rule_based_player import RuleBasedPlayer
+from src.agents.queued_random_player import QueuedRandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
 
@@ -28,7 +28,8 @@ async def main() -> None:
     except OSError:
         team = None
 
-    opponent = RuleBasedPlayer(
+    opponent = QueuedRandomPlayer(
+        asyncio.Queue(),
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
         team=team,

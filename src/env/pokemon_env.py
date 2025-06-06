@@ -29,12 +29,12 @@ class PokemonEnv(gym.Env):
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        
+
         self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
 
         # Step10: 非同期アクションキューを導入
         self._action_queue: asyncio.Queue[int] = asyncio.Queue()
-        
+
         self.opponent_player = opponent_player
         self.state_observer = state_observer
         self.action_helper = action_helper
@@ -54,7 +54,9 @@ class PokemonEnv(gym.Env):
         # Action indices are represented as a discrete space.
         self.action_space = gym.spaces.Discrete(self.ACTION_SIZE)
 
-    def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
+    def reset(
+        self, *, seed: int | None = None, options: dict | None = None
+    ) -> Tuple[Any, dict]:
         """Reset the environment and start a new battle."""
 
         super().reset(seed=seed)
@@ -64,7 +66,9 @@ class PokemonEnv(gym.Env):
         try:
             from poke_env.player import Player
             from poke_env.ps_client.server_configuration import ServerConfiguration
-            from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+            from poke_env.ps_client.server_configuration import (
+                LocalhostServerConfiguration,
+            )
 
         except Exception as exc:  # pragma: no cover - ランタイム用
             raise RuntimeError(
@@ -137,17 +141,38 @@ class PokemonEnv(gym.Env):
         return observation, info
 
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
-        """Take a step in the environment using the given action."""
-        # まずアクションをキューに送信
+        """Send an action and wait for the next turn."""
+        battle = next(iter(self._env_player.battles.values()))
+        start_turn = getattr(battle, "turn", 0)
+
+        # アクションをキューに投入
         self._action_queue.put_nowait(int(action))
 
-        # 現段階ではダミー値を返すだけ
-        observation = self.observation_space.sample()
-        battle = next(iter(self._env_player.battles.values()), None)
-        reward: float = self._calc_reward(battle) if battle else 0.0
+        try:
+            asyncio.run(self._wait_for_turn(battle, start_turn))
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(self._wait_for_turn(battle, start_turn))
+            loop.close()
+
+        observation = self.state_observer.observe(battle)
+        reward: float = self._calc_reward(battle)
         terminated, truncated = self._check_episode_end(battle)
         info: dict = {}
         return observation, reward, terminated, truncated, info
+
+    async def _wait_for_turn(self, battle: Any, start_turn: int) -> None:
+        """Wait until the battle turn increases or finishes."""
+        timeout = 30.0
+        start = time.time()
+        while True:
+            if getattr(battle, "finished", False):
+                break
+            if getattr(battle, "turn", 0) > start_turn:
+                break
+            if time.time() - start > timeout:
+                raise TimeoutError("Turn did not progress in time")
+            await asyncio.sleep(0.1)
 
     def _check_episode_end(self, battle: Any) -> Tuple[bool, bool]:
         """Return terminated and truncated flags based on battle status."""
