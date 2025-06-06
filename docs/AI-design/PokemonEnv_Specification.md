@@ -24,16 +24,19 @@
 
 * 外部: `poke_env` は **asyncio**‐ベースで WebSocket を管理  
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
-* 手順  
-  1. `reset()` で `play_against` を呼び、裏で非同期タスクが起動  
-  2. `step(action)` は行動インデックスを **BattleOrder** に変換し送信  
-  3. poke-envはPSClient.listen()でshowdownサーバーからのメッセージを待機
-  4. poke-envは `request` を含むJSONを受信すると Battle.parse_request()を実行して、`poke_env` 内の `Battle` オブジェクトを更新する(この時に"request"はパースされるのでBattleオブジェクトにはrequest情報は残らない)
-  5. poke-envはメッセージハンドラを経由してEnvPlayer.choose_move()を呼ぶ
+
+* 手順
+  1. `reset()` で `play_against()` を呼び、裏で非同期タスクが起動
+  2. `step(action)` は行動インデックスを `_action_queue` に投入
+  3. Showdown から `request` が届くと poke-env が `EnvPlayer.teampreview()` または `EnvPlayer.choose_move()` を呼び出す
+  4. `EnvPlayer.choose_move()` はキューから `action_idx` を受け取り `BattleOrder` を生成して返す
+  5. `poke-env` が `/choose` を送信し `Battle` オブジェクトを更新
+  6. `step()` は `battle.turn` が進むまで待機し、観測と報酬を返す
+
 * 注意
-* `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
-* 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
-* `step()` 実行後は最新 `rqid` の `request` を処理し `battle.turn` が増加するまで待機する
+* `request` は順不同で届くことがあるが、`Battle` オブジェクトが常に最新状態を保持するため、キュー投入済みの行動をそのまま処理できる
+* 交代要求など複数の `request` が続くケースも、`choose_move()` が逐次呼び出されることで対処できる
+* `step()` は `battle.turn` が変化しない場合に備えてタイムアウトを設ける
 ---
 
 ## 4. 観測（状態）空間
@@ -84,18 +87,17 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 sequenceDiagram
     participant Agent(EnvPlayer)
     participant PokemonEnv
-    participant poke_env
+    participant EnvPlayer
     participant Showdown
     Agent->>PokemonEnv: reset()
     PokemonEnv->>EnvPlayer: play_against()
-    Showdown-->>poke-env: request("teamPreview":true)
-    poke-env->>EnvPlayer: teampreview()
-    EnvPlayer->>Showdown: /team (ランダムに3匹を選ぶ）
-    Showdown-->>poke-env: request
-    poke-env: update state
-    poke-env-->>EnvPlayer: choose_move(battle)
-    EnvPlayer: 状態空間ベクトルを取得(state_observer.py),行動空間ベクトルを取得(action_helper.pyを使用), アルゴリズムに基づいて行動を決定(現時点ではランダム選択)
-    EnvPlayer->>Showdown: /choose …
+    Showdown-->>EnvPlayer: request("teamPreview":true)
+    EnvPlayer->>Showdown: /team 123(現時点では先頭3匹を返す)
+    Agent->>PokemonEnv: step(action_idx)
+    PokemonEnv->>EnvPlayer: put(action_idx)
+    Showdown-->>EnvPlayer: request
+    EnvPlayer->>Showdown: /choose … (queueから取得)
+
     PokemonEnv-->>Agent: obs, reward, done
 ```
 
@@ -114,14 +116,13 @@ sequenceDiagram
 
 ## 8. 実装ノート
 
-* **遅延インポート**: `poke_env` は `reset()` 内でインポート  
+* **遅延インポート**: `poke_env` は `reset()` 内でインポート
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
-* **メッセージ監視**: `PokemonEnv` は `poke_env` が受信した `request` を監視し、
-  `teamPreview` を含む場合は `select_team()`、それ以外は `choose_move()` を呼び出す
-* **チームプレビュー**: 対戦開始時に Showdown サーバーから `"teamPreview": true` を含む `request` JSON が届いたら、PokemonEnv はエージェントのポケモン選択メソッド `select_team()` を呼び出し `/choose team` を送信する。デフォルト実装では登録順先頭 3 匹を選出
+* **非同期キュー**: `PokemonEnv.step()` と `EnvPlayer.choose_move()` を接続するため `_action_queue` を利用
+* **チームプレビュー**: `EnvPlayer.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトは先頭 3 匹を選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: 最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
-* **未実装**: `render()`, `close()` は将来拡張  
+* **step 待機処理**: `battle.turn` が進むまで非同期でループし、タイムアウトを設ける
+* **未実装**: `render()`, `close()` は将来拡張
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
 ---

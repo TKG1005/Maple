@@ -149,11 +149,12 @@
 ### 10. 非同期アクションキュー導入と `choose_move` 改修
 
 * **目的**: エージェント行動をキュー経由で EnvPlayer に橋渡し。
-* **使用技術**: `asyncio.Queue`, poke‑env, action\_helper
+* **使用技術**: `asyncio.Queue`, poke‑env 正規 API, action\_helper
 * **達成条件**:
 
   * `self._action_queue = asyncio.Queue()` を導入。
   * EnvPlayer.choose\_move() でキューから action\_idx を await → `action_helper.action_index_to_order()` で BattleOrder 生成。
+  * poke-env の内部メソッドはフックせず、公開 API の `choose_move` コールバックで行動を送信。
 * **テスト**: キューに値を入れると choose\_move が正しい BattleOrder を返す。
 
 ---
@@ -182,10 +183,9 @@
 * **使用技術**: 非同期待機 (`asyncio.sleep`), Battle.turn 監視, queued_random_player.py
 * **達成条件**:
 
-  * `request` を含む最新の`rqid`のリクエストをループで待機して、リクエストが来たらエージェントに環境ベクトルを渡して、エージェントがキューにactionを投入後 、次の`request`または終了を待つ
-  * 強制交代用に複数 `request` が来ても対応できること
-  * `rqid`の順番が前後しても常に最新の`rqid`のリクエストに対応すること
-  * タイムアウト設計。（エラーログを出力してstepが停止したことをユーザーに通知）
+  * `_action_queue.put(action_idx)` 後、`battle.turn` が更新されるまで待機
+  * 強制交代など複数の `request` が発生しても `EnvPlayer.choose_move()` が順に処理
+  * タイムアウト設計。（エラーログを出力して step が停止したことをユーザーに通知）
 * **テスト**: 強制交代を含むターンでも正常に進行する。
 
 ---
@@ -267,9 +267,8 @@
 * **目的**: メッセージ順不同耐性を検証。
 * **使用技術**: artificial sleep, ログ監視
 * **達成条件**:
-  * 行動遅延/高速連続呼び出しでもデッドロックなし
-  * `rqid` が逆転する乱序メッセージや `forceSwitch` による連続 `request`
-    に正しく対応
+  * 行動送信が遅れても `EnvPlayer.choose_move()` が正しく待機して処理できる
+  * 強制交代など複数 `request` が連続してもキューから順に処理される
 * **テスト**: 2 秒遅延や強制交代を挟んでも正常動作。
 
 ---
