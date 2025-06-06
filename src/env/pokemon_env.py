@@ -95,9 +95,11 @@ class PokemonEnv(gym.Env):
                 team=team,
                 log_level=logging.DEBUG,
             )
+            self._install_request_hook()
         else:
             # 既存プレイヤーのバトル履歴をクリア
             self._env_player.reset_battles()
+            self._install_request_hook()
 
         if hasattr(self.opponent_player, "reset_battles"):
             self.opponent_player.reset_battles()
@@ -217,6 +219,62 @@ class PokemonEnv(gym.Env):
         if not terminated and getattr(battle, "turn", 0) > self.MAX_TURNS:
             truncated = True
         return terminated, truncated
+
+    def _install_request_hook(self) -> None:
+        """Hook into poke-env client to parse incoming request messages."""
+        import json
+
+        client = getattr(self._env_player, "ps_client", None)
+        if client is None:
+            return
+
+        original = getattr(client, "_handle_message", None)
+
+        if original is None:
+            return
+
+        def _hook(message: str, *args: Any, **kwargs: Any) -> Any:
+            result = original(message, *args, **kwargs)
+
+            current_tag: str | None = None
+            for line in message.splitlines():
+                if not line:
+                    continue
+
+                if line.startswith(">"):
+                    current_tag = line[1:].split("|", 1)[0]
+
+                if "|request|" not in line:
+                    continue
+
+                line = line.lstrip(">")
+                parts = line.split("|", 2)
+                if len(parts) < 3:
+                    continue
+
+                tag = parts[0] or current_tag
+
+                try:
+                    request = json.loads(parts[2])
+                except Exception:
+                    continue
+
+                battle = None
+                if tag:
+                    battle = self._env_player.battles.get(tag)
+                if battle is None and current_tag:
+                    battle = self._env_player.battles.get(current_tag)
+                if battle is None:
+                    battle = next(iter(self._env_player.battles.values()), None)
+                if battle is None:
+                    continue
+
+                setattr(battle, "request", request)
+                self._handle_team_preview(battle)
+
+            return result
+
+        client._handle_message = _hook
 
     def _handle_team_preview(self, battle: Any) -> None:
         """Send team selection when a team preview request is present."""
