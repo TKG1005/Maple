@@ -142,11 +142,16 @@ class PokemonEnv(gym.Env):
         if not isinstance(self._env_player, QueuedRandomPlayer):
             self._action_queue.put_nowait(int(action))
 
+        # "asyncio.run" may not be used when an event loop is already running
+        # (e.g. when this method is called inside an "asyncio.run" context).
         try:
-            asyncio.run(self._wait_for_turn(battle, start_turn))
+            asyncio.get_running_loop()
         except RuntimeError:
-            # Another event loop is running in this thread. Run the
-            # coroutine in a separate thread with its own event loop.
+            # No running event loop -> safe to call asyncio.run directly
+            asyncio.run(self._wait_for_turn(battle, start_turn))
+        else:
+            # Another event loop is running in this thread. Run the coroutine in
+            # a separate thread with its own event loop.
             exc: Exception | None = None
 
             def _run_in_thread() -> None:
