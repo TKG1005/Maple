@@ -1,4 +1,4 @@
-"""Random player that sends chosen action index via an async queue."""
+"""Random player Agent that sends chosen action index via an async queue."""
 
 from __future__ import annotations
 
