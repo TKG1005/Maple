@@ -13,7 +13,7 @@ import threading
 import time
 import logging
 from src.agents.queued_random_player import QueuedRandomPlayer
-from poke_env.player_configuration import PlayerConfiguration
+from poke_env.ps_client.account_configuration import AccountConfiguration
 import uuid
 
 
@@ -100,7 +100,7 @@ class PokemonEnv(gym.Env):
                 self._action_queue,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
-                player_configuration=PlayerConfiguration(unique_name, None),
+                account_configuration=AccountConfiguration(unique_name, None),
                 team=team,
                 log_level=logging.DEBUG,
             )

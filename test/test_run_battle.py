@@ -19,7 +19,7 @@ from src.state.state_observer import StateObserver
 from src.action import action_helper
 from src.agents.queued_random_player import QueuedRandomPlayer
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
-from poke_env.player_configuration import PlayerConfiguration
+from poke_env.ps_client.account_configuration import AccountConfiguration
 import uuid
 
 
@@ -35,7 +35,7 @@ async def main() -> None:
         asyncio.Queue(),
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
-        player_configuration=PlayerConfiguration(opponent_name, None),
+        account_configuration=AccountConfiguration(opponent_name, None),
         team=team,
     )
     observer = StateObserver("config/state_spec.yml")
