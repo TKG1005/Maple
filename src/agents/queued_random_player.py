@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 from poke_env.player import Player
+from poke_env.environment.battle import Battle
 
 from src.action.action_helper import get_available_actions, action_index_to_order
 
@@ -24,6 +25,12 @@ class QueuedRandomPlayer(Player):
         super().__init__(**kwargs)
         self._queue = action_queue
         self._rng = np.random.default_rng(seed)
+
+    def teampreview(self, battle: Battle) -> str:  # pragma: no cover - runtime
+        """Randomly select three Pokémon from 1–6."""
+        indices = self._rng.choice(range(1, 7), size=3, replace=False)
+        order = "/team " + "".join(str(i) for i in indices)
+        return order
 
     async def choose_team(self, battle: Any) -> str:  # pragma: no cover - runtime
         """Select the first three Pokémon when team preview occurs."""
