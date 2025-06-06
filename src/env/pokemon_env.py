@@ -12,6 +12,7 @@ import asyncio
 import threading
 import time
 import logging
+import json
 from src.agents.queued_random_player import QueuedRandomPlayer
 
 
@@ -56,6 +57,55 @@ class PokemonEnv(gym.Env):
         # Action indices are represented as a discrete space.
         self.action_space = gym.spaces.Discrete(self.ACTION_SIZE)
 
+    def _install_request_hook(self) -> None:
+        """Wrap PSClient._handle_message to intercept request payloads."""
+
+        try:
+            ps_client = self._env_player.ps_client  # type: ignore[attr-defined]
+        except Exception:  # pragma: no cover - runtime safety
+            return
+
+        if getattr(ps_client, "_maple_request_hook", False):
+            return
+
+        original = ps_client._handle_message
+
+        async def _hook(message: str) -> None:
+            # Check each line for '|request|{json}' pattern
+            for line in str(message).split("\n"):
+                if "|request|" in line:
+                    parts = line.split("|request|", 1)
+                    json_part = parts[1]
+                    try:
+                        request = json.loads(json_part)
+                    except Exception:
+                        request = None
+
+                    await original(message)
+
+                    if not isinstance(request, dict):
+                        return
+
+                    # Extract battle tag and retrieve battle object
+                    tag = None
+                    if parts[0].startswith(">"):
+                        tag = parts[0][1:].split("|", 1)[0]
+
+                    battle = self._env_player.battles.get(tag) if tag else None
+                    if battle is None:
+                        return
+
+                    if request.get("teamPreview"):
+                        await self._env_player.choose_team(battle)
+                    else:
+                        await self._env_player.choose_move(battle)
+                    return
+
+            await original(message)
+
+        ps_client._handle_message = _hook
+        ps_client._maple_request_hook = True
+
     def reset(
         self, *, seed: int | None = None, options: dict | None = None
     ) -> Tuple[Any, dict]:
@@ -95,9 +145,11 @@ class PokemonEnv(gym.Env):
                 team=team,
                 log_level=logging.DEBUG,
             )
+            self._install_request_hook()
         else:
             # 既存プレイヤーのバトル履歴をクリア
             self._env_player.reset_battles()
+            self._install_request_hook()
 
         if hasattr(self.opponent_player, "reset_battles"):
             self.opponent_player.reset_battles()
