@@ -41,6 +41,8 @@ class PokemonEnv(gym.Env):
         self.state_observer = state_observer
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
+        # 最新の rqid を追跡するためのカウンタ
+        self._last_rqid: int = -1
 
         # Determine the dimension of the observation vector from the
         # provided StateObserver and create the observation space.  The
@@ -66,8 +68,6 @@ class PokemonEnv(gym.Env):
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
         try:
-            from poke_env.player import Player
-            from poke_env.ps_client.server_configuration import ServerConfiguration
             from poke_env.ps_client.server_configuration import (
                 LocalhostServerConfiguration,
             )
@@ -128,8 +128,8 @@ class PokemonEnv(gym.Env):
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
 
-        # Step: team preview handling
-        self._handle_team_preview(battle)
+        # Step: 初回の request を処理 (主に team preview)
+        self._handle_request(battle)
 
         observation = self.state_observer.observe(battle)
 
@@ -141,8 +141,8 @@ class PokemonEnv(gym.Env):
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
 
-        # Handle team preview request if present during step
-        self._handle_team_preview(battle)
+        # 受信した最新 request を処理
+        self._handle_request(battle)
 
         # QueuedRandomPlayer chooses actions autonomously. Only enqueue when
         # using the internal queue-based player.
@@ -166,9 +166,7 @@ class PokemonEnv(gym.Env):
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 try:
-                    loop.run_until_complete(
-                        self._wait_for_turn(battle, start_turn)
-                    )
+                    loop.run_until_complete(self._wait_for_turn(battle, start_turn))
                 except Exception as e:  # pragma: no cover - propagate
                     exc = e
                 finally:
@@ -200,6 +198,8 @@ class PokemonEnv(gym.Env):
         timeout = 30.0
         start = time.time()
         while True:
+            # WebSocket メッセージ内の request を監視してエージェントに指示
+            self._handle_request(battle)
             if getattr(battle, "finished", False):
                 break
             if getattr(battle, "turn", 0) > start_turn:
@@ -218,25 +218,64 @@ class PokemonEnv(gym.Env):
             truncated = True
         return terminated, truncated
 
-    def _handle_team_preview(self, battle: Any) -> None:
-        """Send team selection when a team preview request is present."""
+    def _handle_request(self, battle: Any) -> None:
+        """Monitor latest request and instruct the agent."""
         request = getattr(battle, "request", None)
-        if not isinstance(request, dict) or not request.get("teamPreview"):
+        if not isinstance(request, dict):
             return
+        rqid = int(request.get("rqid", -1))
+        if rqid == self._last_rqid:
+            return
+        self._last_rqid = rqid
 
+        if request.get("teamPreview"):
+            self._call_agent_team(battle)
+        else:
+            self._call_agent_move(battle)
+
+    def _call_agent_team(self, battle: Any) -> None:
         if not hasattr(self._env_player, "choose_team"):
             return
+
+        async def _choose() -> None:
+            team = await self._env_player.choose_team(battle)
+            if hasattr(self._env_player, "_send_message"):
+                await self._env_player._send_message(team, battle.battle_tag)
 
         def _run() -> None:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            loop.run_until_complete(self._env_player.choose_team(battle))
+            loop.run_until_complete(_choose())
             loop.close()
 
         try:
             asyncio.get_running_loop()
         except RuntimeError:
-            asyncio.run(self._env_player.choose_team(battle))
+            asyncio.run(_choose())
+        else:
+            thread = threading.Thread(target=_run)
+            thread.start()
+            thread.join()
+
+    def _call_agent_move(self, battle: Any) -> None:
+        if not hasattr(self._env_player, "choose_move"):
+            return
+
+        async def _choose() -> None:
+            order = await self._env_player.choose_move(battle)
+            if hasattr(self._env_player, "_send_message"):
+                await self._env_player._send_message(order, battle.battle_tag)
+
+        def _run() -> None:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(_choose())
+            loop.close()
+
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(_choose())
         else:
             thread = threading.Thread(target=_run)
             thread.start()
