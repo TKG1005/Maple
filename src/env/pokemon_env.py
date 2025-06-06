@@ -226,13 +226,11 @@ class PokemonEnv(gym.Env):
 
         client = getattr(self._env_player, "ps_client", None)
         if client is None:
-            print("クライアントがありません")
             return
 
         original = getattr(client, "_handle_message", None)
 
         if original is None:
-            print("該当メソッドがありません")
             return
 
         def _hook(message: str, *args: Any, **kwargs: Any) -> Any:

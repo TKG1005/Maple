@@ -89,10 +89,9 @@ sequenceDiagram
     participant Showdown
     Agent->>PokemonEnv: reset()
     PokemonEnv->>EnvPlayer: play_against()
-    Showdown-->>poke-env: request(teamPreview=true)
-    PokemonEnv->>Agent: choose_team()
-    Agent->>EnvPlayer: /team 123(現時点では先頭3匹を返す)
-    EnvPlayer->>Showdown: /team
+    Showdown-->>poke-env: request("teamPreview":true)
+    poke-env->>EnvPlayer: teampreview()
+    EnvPlayer->>Showdown: /team 123(現時点では先頭3匹を返す)
     Showdown-->>poke-env: request
     poke-env: update state
     PokemonEnv: catch request (Showdown-->>poke-envのJSONを監視)
