@@ -12,6 +12,7 @@ import asyncio
 import threading
 import time
 import logging
+from src.agents.queued_random_player import QueuedRandomPlayer
 
 
 class PokemonEnv(gym.Env):
@@ -81,25 +82,14 @@ class PokemonEnv(gym.Env):
 
             from pathlib import Path
 
-            self_env = self
-
-            class EnvPlayer(Player):
-                """Simple player used internally by the environment."""
-
-                async def choose_move(self, battle):
-                    """Waits for an action index from the queue and returns an order."""
-                    action_idx = await self_env._action_queue.get()
-                    return self_env.action_helper.action_index_to_order(
-                        self, battle, action_idx
-                    )
-
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
                 team = team_path.read_text()
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
-            self._env_player = EnvPlayer(
+            self._env_player = QueuedRandomPlayer(
+                self._action_queue,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
                 team=team,
@@ -147,8 +137,10 @@ class PokemonEnv(gym.Env):
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
 
-        # アクションをキューに投入
-        self._action_queue.put_nowait(int(action))
+        # QueuedRandomPlayer chooses actions autonomously. Only enqueue when
+        # using the internal queue-based player.
+        if not isinstance(self._env_player, QueuedRandomPlayer):
+            self._action_queue.put_nowait(int(action))
 
         try:
             asyncio.run(self._wait_for_turn(battle, start_turn))
@@ -177,6 +169,15 @@ class PokemonEnv(gym.Env):
                 raise exc
 
         observation = self.state_observer.observe(battle)
+
+        # Clear action indices emitted by QueuedRandomPlayer
+        if isinstance(self._env_player, QueuedRandomPlayer):
+            try:
+                while True:
+                    self._action_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                pass
+
         reward: float = self._calc_reward(battle)
         terminated, truncated = self._check_episode_end(battle)
         info: dict = {}
