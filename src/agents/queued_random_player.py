@@ -17,13 +17,11 @@ class QueuedRandomPlayer(Player):
 
     def __init__(
         self,
-        action_queue: asyncio.Queue[int],
         *,
         seed: int | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self._queue = action_queue
         self._rng = np.random.default_rng(seed)
 
     def teampreview(self, battle: Battle) -> str:  # pragma: no cover - runtime
@@ -42,7 +40,6 @@ class QueuedRandomPlayer(Player):
         print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
         if mapping:
             action_idx = int(self._rng.choice(list(mapping.keys())))
-            await self._queue.put(action_idx)
             return action_index_to_order(self, battle, action_idx)
         return self.choose_random_move(battle)
 

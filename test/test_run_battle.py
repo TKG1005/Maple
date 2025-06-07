@@ -32,7 +32,6 @@ async def main() -> None:
 
     opponent_name = f"opp_{uuid.uuid4().hex[:8]}"
     opponent = QueuedRandomPlayer(
-        asyncio.Queue(),
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
         account_configuration=AccountConfiguration(opponent_name, None),
