@@ -29,7 +29,7 @@
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 毎ターン`step()`を呼ぶ。`step()`は`battle.turn`が進むまで待機し、観測と報酬を返す。
   3. PSClientがShwodownからのメッセージを監視する
-  4. Showdownから`request` が届くとPSClientが`EnvPlayer.choose_move()` を呼ぶ
+  4. Showdownから`request` が届くとEnvPlayerが_create_battle（非同期メソッド）でbattleオブジェクトを更新しながら`EnvPlayer.choose_move()` を呼ぶ
   5. {"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出す "（内部的にはPlayer.random_teampreview()と同じ）
   6. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
   7. `poke-env` が行動をShwodownサーバに送信する。

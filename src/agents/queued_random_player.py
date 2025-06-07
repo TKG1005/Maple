@@ -34,11 +34,11 @@ class QueuedRandomPlayer(Player):
 
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
         """ターンごとの行動を決定する。"""
-
+        await asyncio.sleep(2)
         # チームプレビュー判定
         print(battle.teampreview)
         if battle.teampreview:
-            return self.random_teampreview()
+            return self.teampreview(battle)
         
         mask, mapping = get_available_actions(battle)
         print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
