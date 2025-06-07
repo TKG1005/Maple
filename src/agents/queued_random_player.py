@@ -36,8 +36,9 @@ class QueuedRandomPlayer(Player):
         """ターンごとの行動を決定する。"""
 
         # チームプレビュー判定
-        if battle.get("teamPreview"):
-            return self.teampreview(battle)
+        print(battle.teampreview)
+        if battle.teampreview:
+            return self.random_teampreview()
         
         mask, mapping = get_available_actions(battle)
         print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
