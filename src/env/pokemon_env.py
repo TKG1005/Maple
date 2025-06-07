@@ -36,8 +36,6 @@ class PokemonEnv(gym.Env):
 
         self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
 
-        # Step10: 非同期アクションキューを導入
-        self._action_queue: asyncio.Queue[int] = asyncio.Queue()
 
         # poke-env の PSClient.listen() を走らせる専用イベントループ
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -96,7 +94,6 @@ class PokemonEnv(gym.Env):
 
             unique_name = f"env_{uuid.uuid4().hex[:8]}"
             self._env_player = QueuedRandomPlayer(
-                self._action_queue,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
                 account_configuration=AccountConfiguration(unique_name, None),
@@ -157,15 +154,10 @@ class PokemonEnv(gym.Env):
         info: dict = {"battle_tag": battle.battle_tag}
         return observation, info
 
-    def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
-        """Send an action and wait for the next turn."""
+    def step(self) -> Tuple[Any, float, bool, bool, dict]:
+        """Wait for the next turn and return observation and reward."""
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
-
-        # QueuedRandomPlayer chooses actions autonomously. Only enqueue when
-        # using the internal queue-based player.
-        if not isinstance(self._env_player, QueuedRandomPlayer):
-            self._action_queue.put_nowait(int(action))
 
         future = asyncio.run_coroutine_threadsafe(
             self._wait_for_turn(battle, start_turn),
@@ -174,14 +166,6 @@ class PokemonEnv(gym.Env):
         future.result()
 
         observation = self.state_observer.observe(battle)
-
-        # Clear action indices emitted by QueuedRandomPlayer
-        if isinstance(self._env_player, QueuedRandomPlayer):
-            try:
-                while True:
-                    self._action_queue.get_nowait()
-            except asyncio.QueueEmpty:
-                pass
 
         reward: float = self._calc_reward(battle)
         terminated, truncated = self._check_episode_end(battle)

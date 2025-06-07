@@ -47,8 +47,7 @@ async def main() -> None:
     turns = 0
 
     while not (terminated or truncated):
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, _ = env.step(action)
+        obs, reward, terminated, truncated, _ = env.step()
         total_reward += reward
         turns += 1
         await asyncio.sleep(0)
