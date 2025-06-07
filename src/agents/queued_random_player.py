@@ -31,11 +31,14 @@ class QueuedRandomPlayer(Player):
         print(f'[DBG:queued_random_player.py] order = {order}')
         return order
 
-    async def choose_team(self, battle: Any) -> str:  # pragma: no cover - runtime
-        """Select the first three Pokémon when team preview occurs."""
-        return "123"
 
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
+        """ターンごとの行動を決定する。"""
+
+        # チームプレビュー判定
+        if battle.get("teamPreview"):
+            return self.teampreview(battle)
+        
         mask, mapping = get_available_actions(battle)
         print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
         if mapping:
