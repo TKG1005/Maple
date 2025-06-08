@@ -34,6 +34,7 @@ class QueuedRandomPlayer(Player):
         indices = self._rng.choice(range(1, 7), size=3, replace=False)
         order = "/team " + "".join(str(i) for i in indices)
         print(f'[DBG:queued_random_player.py] order = {order}')
+        battle.teampreview=False
         return order
 
 
