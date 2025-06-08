@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+import json
 
 import numpy as np
 from poke_env.player import Player
@@ -61,4 +62,23 @@ class QueuedRandomPlayer(Player):
             action_idx = int(self._rng.choice(list(mapping.keys())))
             return action_index_to_order(self, battle, action_idx)
         return self.choose_random_move(battle)
+
+    async def _handle_battle_message(self, message: str) -> None:
+        """Handle battle messages and process team preview requests."""
+        if message.startswith(">") and "|request|" in message:
+            battle_tag, rest = message[1:].split("|", 1)
+            if rest.startswith("request|"):
+                json_str = rest[len("request|") :]
+                try:
+                    request = json.loads(json_str)
+                except Exception:
+                    request = None
+                battle = await self._create_battle(battle_tag)
+                if request and request.get("teamPreview") and getattr(battle, "teampreview", False):
+                    self.from_teampreview_request = True
+                    await self._handle_battle_request(battle, request)
+                    self.from_teampreview_request = False
+                    return
+
+        await super()._handle_battle_message(message)
 
