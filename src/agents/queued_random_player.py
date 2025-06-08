@@ -23,28 +23,8 @@ class QueuedRandomPlayer(Player):
     ) -> None:
         super().__init__(**kwargs)
         self._rng = np.random.default_rng(seed)
-        self._battle_ready: dict[str, asyncio.Event] = {}
 
-    async def _create_battle(self, *args: Any, **kwargs: Any) -> Any:
-        """Wrap ``Player._create_battle`` and signal completion."""
-        battle_tag = None
-        if args:
-            battle_tag = args[0]
-        if 'battle_tag' in kwargs:
-            battle_tag = kwargs['battle_tag']
 
-        event = asyncio.Event()
-        if battle_tag is not None:
-            self._battle_ready[battle_tag] = event
-
-        battle = await super()._create_battle(*args, **kwargs)
-
-        if battle_tag is None and hasattr(battle, "battle_tag"):
-            battle_tag = getattr(battle, "battle_tag")
-            self._battle_ready[battle_tag] = event
-
-        event.set()
-        return battle
 
     def teampreview(self, battle: Battle) -> str:  # pragma: no cover - runtime
         """Randomly select three Pokémon from 1–6."""
