@@ -29,10 +29,11 @@
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 毎ターン`step()`を呼ぶ。`step()`は`battle.turn`が進むまで待機し、観測と報酬を返す。
   3. PSClientがShwodownからのメッセージを監視する
-  4. Showdownから`request` が届くとEnvPlayerが_create_battle（非同期メソッド）でbattleオブジェクトを更新する。
-  5. battleオブジェクトの更新が終わったことを確認したあと、{"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出し、そうでなければ`EnvPlayer.choose_move()` を呼ぶ。
-  6. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
-  7. `poke-env` が行動をShwodownサーバに送信する。
+  4. Showdownから">battle"ではじまるJSONが届くと_ps_client_が_handle_battle_message()を呼ぶ
+  5. _handle_battle_messageが__create_battle（非同期メソッド）でbattleオブジェクトを更新する。
+  6. battleオブジェクトの更新が終わったことを確認したあと、{"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出し、そうでなければ`EnvPlayer.choose_move()` を呼ぶ。
+  7. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
+  8. `poke-env` が行動をShwodownサーバに送信する。
 
 * 注意
 * `request` は順不同で届くことがあるが、`Battle` オブジェクトが常に最新状態を保持するため、キュー投入済みの行動をそのまま処理できる
