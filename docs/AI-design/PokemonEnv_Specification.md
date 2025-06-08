@@ -29,13 +29,14 @@
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 毎ターン`step()`を呼ぶ。`step()`は`battle.turn`が進むまで待機し、観測と報酬を返す。
   3. PSClientがShwodownからのメッセージを監視する
-  4. Showdownから">battle"ではじまるJSONが届くと_ps_client_が_handle_battle_message()を呼ぶ
-  5. _handle_battle_messageが__create_battle（非同期メソッド）でbattleオブジェクトを更新する。
-  6. battleオブジェクトの更新が終わったことを確認したあと、{"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出し、そうでなければ`EnvPlayer.choose_move()` を呼ぶ。
-  7. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
+  4. Showdownから">battle"ではじまるJSONが届くとPlayer._handle_battle_message()内で_get_battle()が呼ばれてbattleオブジェクトを更新(battleオブジェクトの更新が終わったことを確認したあとに_get_battle()以下を実行するようにPlayer._handle_battle_message()をEnvPlayerでオーバーライドしておく)
+  5. _handle_battle_messageで受信したメッセージに解析を行い、条件を満たしたら_handle_battle_request()を実行する
+  6. _handle_battle_request()がEnvPlayer.choose_move()を呼ぶ
+  7. `EnvPlayer.choose_move()` はBattleオｄブジェクトを受け取り、`/choose` を返す
   8. `poke-env` が行動をShwodownサーバに送信する。
 
 * 注意
+* poke-env=0.9.0では受け取ったJSONに"teampreview"が含まれる場合にteampreview()を実行する仕様だが、Showdownサーバの仕様変更で"teampreview"を含むメッセージは送られなくなり、かわりに通常のターンと同様に"request"を含むメッセージが届き、そのメッセージ{"teamPreviw":true}を含むDict形式のデータが含まれている。これによりBattleオブジェクトが更新される際にBattle.teampreviewがtrueになる。teampreview()を呼ぶかどうかの判断はBattle.teampreviewのみで行うように_handle_battle_request()をオーバーライドしておく。
 * `request` は順不同で届くことがあるが、`Battle` オブジェクトが常に最新状態を保持するため、キュー投入済みの行動をそのまま処理できる
 * 交代要求など複数の `request` が続くケースも、`choose_move()` が逐次呼び出されることで対処できる
 * `step()` は `battle.turn` が変化しない場合に備えてタイムアウトを設ける
