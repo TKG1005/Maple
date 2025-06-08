@@ -13,7 +13,7 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. サーバーが `"teamPreview": true` を含む `request` を送り選出ポケモンを要求して、両プレイヤーのPSClientがteampreview()を呼ぶ。<br>2. 両プレイヤーが `/team` 送信(ランダムで3匹を選択)<br>3. 以降各ターンで `request` が届き `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
+| メッセージフロー | 1. サーバーが `"teamPreview": true` を含む `request` を送り選出ポケモンを要求する。両プレイヤーのPSClientがchoose_move()を呼ぶ。<br>2. 両プレイヤーは `"teamPreview": true`なら`/team` 送信(ランダムで3匹を選択)<br>3. 以降各ターンで `request` が届き `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
 * 同一ターンに複数の `request` が送られることがある
@@ -29,8 +29,8 @@
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 毎ターン`step()`を呼ぶ。`step()`は`battle.turn`が進むまで待機し、観測と報酬を返す。
   3. PSClientがShwodownからのメッセージを監視する
-  4. Showdownから`request` が届くとEnvPlayerが_create_battle（非同期メソッド）でbattleオブジェクトを更新しながら`EnvPlayer.choose_move()` を呼ぶ
-  5. {"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出す "（内部的にはPlayer.random_teampreview()と同じ）
+  4. Showdownから`request` が届くとEnvPlayerが_create_battle（非同期メソッド）でbattleオブジェクトを更新する。
+  5. battleオブジェクトの更新が終わったことを確認したあと、{"teamPreview":true}だったら `EnvPlayer.teampreview()` を呼び出し、そうでなければ`EnvPlayer.choose_move()` を呼ぶ。
   6. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
   7. `poke-env` が行動をShwodownサーバに送信する。
 
