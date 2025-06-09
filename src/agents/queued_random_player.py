@@ -64,7 +64,6 @@ class QueuedRandomPlayer(Player):
         else:
             battle = await self._get_battle(split_messages[0][0])
             
-        await asyncio.sleep(2)
         print(f"[DBG]バトルオブジェクトを確認 teampreview={battle.teampreview} player={battle.player_username}")
 
         for split_message in split_messages[1:]:
