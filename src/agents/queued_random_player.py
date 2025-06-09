@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 import random
 import orjson
+import time
 from poke_env.player import Player
 from poke_env.environment.battle import Battle
 from poke_env.environment.abstract_battle import AbstractBattle
@@ -53,7 +54,11 @@ class QueuedRandomPlayer(Player):
         :param split_message: The received battle message.
         :type split_message: str
         """
+        recv_ts = time.time()
+        print(f"[DBG] _handle_battle_message start t={recv_ts:.6f} msg={split_messages}")
+
         # Battle messages can be multiline
+        before_battle_ts = time.time()
         if (
             len(split_messages) > 1
             and len(split_messages[1]) > 1
@@ -63,20 +68,30 @@ class QueuedRandomPlayer(Player):
             battle = await self._create_battle(battle_info)
         else:
             battle = await self._get_battle(split_messages[0][0])
-            
-        print(f"[DBG]バトルオブジェクトを確認 teampreview={battle.teampreview} player={battle.player_username}")
+        after_battle_ts = time.time()
+        print(
+            f"[DBG] battle obtained t={after_battle_ts:.6f} (dt={after_battle_ts-before_battle_ts:.6f}) teampreview={battle.teampreview}"
+        )
+
+        print(
+            f"[DBG]バトルオブジェクトを確認 teampreview={battle.teampreview} player={battle.player_username} t={time.time():.6f}"
+        )
 
         for split_message in split_messages[1:]:
+            start_ts = time.time()
+            print(f"[DBG] handle sub msg start t={start_ts:.6f} kind={split_message[1]}")
             if len(split_message) <= 1:
                 continue
             elif split_message[1] == "":
                 battle.parse_message(split_message)
+                print(f"[DBG] parsed message t={time.time():.6f}")
             elif split_message[1] in self.MESSAGES_TO_IGNORE:
                 pass
             elif split_message[1] == "request":
                 if split_message[2]:
                     request = orjson.loads(split_message[2])
                     battle.parse_request(request)
+                    print(f"[DBG] parsed request t={time.time():.6f}")
                     if battle._wait:
                         self._waiting.set()
                     if battle.move_on_next_request:
