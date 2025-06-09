@@ -32,7 +32,6 @@ async def main() -> None:
 
     opponent_name = f"opp_{uuid.uuid4().hex[:8]}"
     opponent = QueuedRandomPlayer(
-        asyncio.Queue(),
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
         account_configuration=AccountConfiguration(opponent_name, None),
@@ -47,8 +46,7 @@ async def main() -> None:
     turns = 0
 
     while not (terminated or truncated):
-        action = env.action_space.sample()
-        obs, reward, terminated, truncated, _ = env.step(action)
+        obs, reward, terminated, truncated, _ = env.step()
         total_reward += reward
         turns += 1
         await asyncio.sleep(0)
