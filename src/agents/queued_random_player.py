@@ -47,25 +47,3 @@ class QueuedRandomPlayer(Player):
             return action_index_to_order(self, battle, action_idx)
         return self.choose_random_move(battle)
 
-    #チーム選出をBattle.teampreviewのみを使って行うように_handle_battle_requestをオーバーライド
-    async def _handle_battle_request(
-    self,
-    battle: AbstractBattle,
-    from_teampreview_request: bool = False,
-    maybe_default_order: bool = False,
-):
-        if maybe_default_order and (
-            "illusion" in [p.ability for p in battle.team.values()]
-            or random.random() < self.DEFAULT_CHOICE_CHANCE
-        ):
-            message = self.choose_default_move().message
-        elif battle.teampreview:
-            message = self.teampreview(battle)
-        else:
-            if maybe_default_order:
-                self._trying_again.set()
-            choice = self.choose_move(battle)
-            if isinstance(choice, Awaitable):
-                choice = await choice
-            message = choice.message
-        await self.ps_client.send_message(message, battle.battle_tag)
