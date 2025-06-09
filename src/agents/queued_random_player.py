@@ -42,7 +42,7 @@ class QueuedRandomPlayer(Player):
     async def choose_move(self, battle) -> Any:  # pragma: no cover - runtime behaviour
         """ターンごとの行動を決定する。"""
         mask, mapping = get_available_actions(battle)
-        print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping}")
+        print(f"[DBG:queued_random_player.py]mask = {mask}, mapping = {mapping} ")
         if mapping:
             action_idx = int(self._rng.choice(list(mapping.keys())))
             return action_index_to_order(self, battle, action_idx)
