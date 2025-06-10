@@ -45,17 +45,11 @@ def run_single_battle() -> dict:
 
     observation, info = env.reset()
 
-    # Run until the internal battle finishes or a safety limit is reached
-    MAX_STEPS = 100
     battle = next(iter(env._env_player.battles.values()))
-    for _ in range(MAX_STEPS):
-        _, mapping = action_helper.get_available_actions_with_details(battle)
-        action = agent.select_action(observation, mapping)
-        # `select_action` internally calls `env.step`, so the returned index is only for reference
-        time.sleep(0.1)
-        battle = next(iter(env._env_player.battles.values()))
-        if battle.finished:
-            break
+    _, mapping = action_helper.get_available_actions_with_details(battle)
+    agent.play_until_done(observation, mapping)
+
+    battle = next(iter(env._env_player.battles.values()))
 
     winner = "env" if env._env_player.n_won_battles == 1 else "opponent"
     turns = getattr(battle, "turn", 0)

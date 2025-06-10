@@ -44,3 +44,27 @@ class MapleAgent:
 
         return action_idx
 
+    def play_until_done(self, observation: Any, action_mapping: Any) -> None:
+        """Keep calling :meth:`PokemonEnv.step` until ``done`` becomes ``True``.
+
+        Parameters
+        ----------
+        observation : Any
+            Initial observation vector returned by ``env.reset``.
+        action_mapping : Any
+            Mapping of available actions corresponding to ``observation``.
+        """
+
+        done = False
+        current_obs = observation
+        current_map = action_mapping
+
+        while not done:
+            if current_map:
+                action_idx = int(self.env.rng.choice(list(current_map.keys())))
+            else:
+                action_idx = int(self.env.action_space.sample())
+
+            current_obs, current_map, _, done, _ = self.env.step(action_idx)
+
+
