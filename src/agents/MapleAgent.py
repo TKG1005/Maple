@@ -10,6 +10,9 @@ class MapleAgent:
 
     def __init__(self, env: PokemonEnv) -> None:
         self.env = env
+        # 環境側にエージェントを登録して相互参照を確立しておく
+        if hasattr(self.env, "register_agent"):
+            self.env.register_agent(self)
 
     def teampreview(self, battle: Any) -> None:
         """Hook for team preview phase. Override in subclasses."""
