@@ -10,12 +10,16 @@
 │   ├── pokemon_all_moves.csv
 │   ├── state_feature_catalog_temp - シート1.csv
 │   └── state_spec.yml
+├── data
+│   └── copy_of_poke_env
+│       └── poke_env
 ├── docs
 │   └── AI-design
 │       ├── M2
 │       ├── M4
 │       └── PokemonEnv_Specification.md
 ├── maple_structure.md
+├── poke_env
 ├── pokemon-showdown
 │   ├── ARCHITECTURE.md
 │   ├── build
@@ -91,6 +95,7 @@
 │   ├── logs
 │   │   ├── chat
 │   │   ├── chatlog-access.txt
+│   │   ├── errors.txt
 │   │   ├── lastbattle.txt
 │   │   ├── logging.md
 │   │   ├── modlog
@@ -552,4 +557,4 @@
     ├── run_battle.py
     └── simple_agent.py
 
-390 directories, 163 files
+394 directories, 164 files
