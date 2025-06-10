@@ -13,7 +13,7 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. サーバーが `"teamPreview": true` を含む `request` を送り選出ポケモンを要求して、両プレイヤーのPSClientがteampreview()を呼ぶ。<br>2. 両プレイヤーが `/team` 送信(ランダムで3匹を選択)<br>3. 以降各ターンで `request` が届き `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
+| メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.Player(PSClient)はrequestメッセージを解析して、対応したメソッド(例:choose_move(),teampreview(),etc.)を実行　3.Playerはアルゴリズムに従い行動を決定しPokemonEnvに返す 4.poke-envがサーバにコマンドを送信　5.サーバが結果を返す |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
 * 同一ターンに複数の `request` が送られることがある
@@ -27,16 +27,17 @@
 
 * 手順
   1. `reset()` で `play_against()` を呼び、対戦を開始
-  2. 毎ターン`step()`を呼ぶ。`step()`は`battle.turn`が進むまで待機し、観測と報酬を返す。
-  3. PSClientがShwodownからのメッセージを監視する
-  4. Showdown から {"teampreview":true}を含む`request` が届くと PSClient が `EnvPlayer.teampreview()` を呼び出す
-  5. Showdownから`request` が届くとPSClientが`EnvPlayer.choose_move()` を呼ぶ
-  6. `EnvPlayer.choose_move()` はBattleオブジェクトを受け取り、`/choose` を返す
-  7. `poke-env` が `/choose` を送信する。
+  2. 対戦が開始したら`EnvPlayer`はサーバからのメッセージを待機
+  3. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを通知して`action`を待機する
+  4. `PokemonEnv`は`Agent`に`battle`を渡す
+  5. `Agent`は`step(action)`を実行
+  6. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
+  7. `EnvPlayer`(`poke-env`)は`action`をShowdownサーバに送信する
+  8. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
+  9. `PokemonEnv`は`step(action)`の戻り値として`Agent`に`battle`と`reward`を返す
+  10. `Agent`は`battle`から行動を選択して次の`step(action)`を呼ぶ
 
 * 注意
-* `request` は順不同で届くことがあるが、`Battle` オブジェクトが常に最新状態を保持するため、キュー投入済みの行動をそのまま処理できる
-* 交代要求など複数の `request` が続くケースも、`choose_move()` が逐次呼び出されることで対処できる
 * `step()` は `battle.turn` が変化しない場合に備えてタイムアウトを設ける
 ---
 
@@ -91,16 +92,15 @@ sequenceDiagram
     participant poke-env/EnvPlayer
     participant Showdown
     Agent->>PokemonEnv: reset()
-    PokemonEnv->>Showdown: play_against()
-    Agent->>PokemonEnv: step()
-    Showdown->>EnvPlayer: request{"teamPreview":true}
-    EnvPlayer->>poke-env: /team ...(ランダムに3匹選ぶ)
-    poke-env->>Showdown: /team
+    PokemonEnv->>poke-env: create EnvPlayer()
+    poke-env->>Showdown: play_against()
     Showdown->>EnvPlayer: request
-    EnvPlayer->>poke-env: BattleOrder(/choose ...)
-    poke-env->>Showdown: /choose 
-    Showdown->>poke-env: state
-    PokemonEnv->>Agent: obs, reward, done
+    EnvPlayer->>PokemonEnv: request_flag, battle
+    PokemonEnv->>Agent: observation = Gym.reset()
+    Agent->>PokemonEnv: step(action=choose_move(observation))
+    PokemonEnv->>EnvPlayer: action queue
+    EnvPlayer->>Showdown: action
+    Showdonw->>EnvPlayer: request
 ```
 
 ---
@@ -120,9 +120,9 @@ sequenceDiagram
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
-* **チームプレビュー**: `EnvPlayer.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
+* **チームプレビュー**: `Agent.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: `Turn` が進むまで非同期でループし、タイムアウトを設ける
+* **step 待機処理**: `rqid` が進むまで非同期でループし、タイムアウトを設ける
 * **未実装**: `render()`, `close()` は将来拡張
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 

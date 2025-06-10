@@ -158,7 +158,6 @@ class PokemonEnv(gym.Env):
         return observation, info
 
     def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
-        """Send an action and wait for the next turn."""
         battle = next(iter(self._env_player.battles.values()))
         start_turn = getattr(battle, "turn", 0)
 
