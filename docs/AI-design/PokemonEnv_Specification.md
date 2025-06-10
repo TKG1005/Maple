@@ -13,9 +13,9 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.Player(PSClient)はrequestメッセージを解析して、対応したメソッド(例:choose_move(),teampreview(),etc.)を実行　3.Playerはアルゴリズムに従い行動を決定しPokemonEnvに返す 4.poke-envがサーバにコマンドを送信　5.サーバが結果を返す |
+| メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.EnvPlayer(PSClient)はメッセージを解析してbattleオブジェクトを更新して、PokemonEnvにフラグ付きで送信 3.EnvPlayerはPokemonEnvから帰ってきたコマンドをサーバに送信 4.サーバが結果を返す |
 
-* 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
+* 各 `request` には昇順の `rqid` が付与され、乱序で届くことがあるs
 * 同一ターンに複数の `request` が送られることがある
 
 ---
