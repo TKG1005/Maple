@@ -30,13 +30,16 @@ class PokemonEnv(gym.Env):
         **kwargs: Any,
     ) -> None:
         super().__init__()
-        
+
         self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
 
         # Step10: 非同期アクションキューを導入
         self._action_queue: asyncio.Queue[int] = asyncio.Queue()
+        # EnvPlayer から受け取る battle オブジェクト用キュー
+        self._battle_queue: asyncio.Queue[Any] = asyncio.Queue()
+
         self._agent = None  # MapleAgent を後から登録するための保持先
-        
+
         self.opponent_player = opponent_player
         self.state_observer = state_observer
         self.action_helper = action_helper
@@ -82,10 +85,16 @@ class PokemonEnv(gym.Env):
         action_idx = self._agent.select_action(observation, action_mapping)
         return int(action_idx)
 
-    def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
+    def reset(
+        self, *, seed: int | None = None, options: dict | None = None
+    ) -> Tuple[Any, dict]:
         """Reset the environment and start a new battle."""
 
         super().reset(seed=seed)
+
+        # 前回エピソードのキューをクリア
+        self._action_queue = asyncio.Queue()
+        self._battle_queue = asyncio.Queue()
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -152,18 +161,27 @@ class PokemonEnv(gym.Env):
         info: dict = {"battle_tag": battle.battle_tag}
         return observation, info
 
-    def step(self, action: Any) -> Tuple[Any, float, bool, bool, dict]:
-        """Take a step in the environment using the given action."""
-        # まずアクションをキューに送信
+    def step(self, action: Any) -> Tuple[Any, dict, float, bool, dict]:
+        """Send ``action`` to :class:`EnvPlayer` and wait for the next state."""
+
+        # アクションインデックスをキューへ投入
         self._action_queue.put_nowait(int(action))
 
-        # 現段階ではダミー値を返すだけ
-        observation = self.observation_space.sample()
-        reward: float = 0.0
-        terminated: bool = False
-        truncated: bool = False
+        # EnvPlayer から次の battle オブジェクトが届くまで待機
+        while self._battle_queue.empty():
+            time.sleep(0.1)
+
+        battle = self._battle_queue.get_nowait()
+
+        observation = self.state_observer.observe(battle)
+        _, action_mapping = self.action_helper.get_available_actions_with_details(
+            battle
+        )
+        reward = self._calc_reward(battle)
+        done: bool = bool(getattr(battle, "finished", False))
         info: dict = {}
-        return observation, reward, terminated, truncated, info
+
+        return observation, action_mapping, reward, done, info
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:

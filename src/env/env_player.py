@@ -13,7 +13,13 @@ class EnvPlayer(Player):
         self._env = env
 
     async def choose_move(self, battle):
-        # battle 情報を PokemonEnv に渡して行動を決定してもらう
-        action_idx: int = self._env.process_battle(battle)
-        return self._env.action_helper.action_index_to_order(self, battle, action_idx)
+        """Return the order chosen by the external agent via :class:`PokemonEnv`."""
 
+        # PokemonEnv に最新の battle オブジェクトを送信
+        await self._env._battle_queue.put(battle)
+
+        # PokemonEnv.step からアクションが投入されるまで待機
+        action_idx: int = await self._env._action_queue.get()
+
+        # 取得したインデックスを BattleOrder に変換して返す
+        return self._env.action_helper.action_index_to_order(self, battle, action_idx)
