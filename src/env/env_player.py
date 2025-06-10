@@ -17,6 +17,7 @@ class EnvPlayer(Player):
 
         # PokemonEnv に最新の battle オブジェクトを送信
         await self._env._battle_queue.put(battle)
+        
 
         # PokemonEnv.step からアクションが投入されるまで待機
         action_idx: int = await self._env._action_queue.get()
