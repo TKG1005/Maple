@@ -35,6 +35,7 @@ class PokemonEnv(gym.Env):
 
         # Step10: 非同期アクションキューを導入
         self._action_queue: asyncio.Queue[int] = asyncio.Queue()
+        self._agent = None  # MapleAgent を後から登録するための保持先
         
         self.opponent_player = opponent_player
         self.state_observer = state_observer
@@ -54,6 +55,21 @@ class PokemonEnv(gym.Env):
         )
         # Action indices are represented as a discrete space.
         self.action_space = gym.spaces.Discrete(self.ACTION_SIZE)
+
+    # ------------------------------------------------------------------
+    # Agent interaction utilities
+    # ------------------------------------------------------------------
+    def register_agent(self, agent: Any) -> None:
+        """Register the controlling :class:`MapleAgent`."""
+        self._agent = agent
+
+    def process_battle(self, battle: Any) -> int:
+        """Create an observation from ``battle`` and query the agent."""
+        if self._agent is None:
+            raise RuntimeError("Agent not registered")
+        observation = self.state_observer.observe(battle)
+        action_idx = self._agent.select_action(observation)
+        return int(action_idx)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:
         """Reset the environment and start a new battle."""
