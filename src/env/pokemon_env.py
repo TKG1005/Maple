@@ -98,7 +98,7 @@ class PokemonEnv(gym.Env):
                 server_configuration=LocalhostServerConfiguration,
                 account_configuration=AccountConfiguration(unique_name, None),
                 team=team,
-                log_level=logging.DEBUG,
+                log_level=logging.WARNING,
             )
         else:
             # 既存プレイヤーのバトル履歴をクリア
@@ -141,13 +141,9 @@ class PokemonEnv(gym.Env):
         fut = asyncio.run_coroutine_threadsafe(start_battle(), self._loop)
         fut.result()
 
-        # バトルオブジェクトが生成されるまで待機
-        while not self._env_player.battles:
-            time.sleep(0.1)
 
         # 開始したばかりのバトルオブジェクトを取得
         battle = next(iter(self._env_player.battles.values()))
-
 
         observation = self.state_observer.observe(battle)
 

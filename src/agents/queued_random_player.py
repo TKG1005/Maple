@@ -70,16 +70,12 @@ class QueuedRandomPlayer(Player):
             battle = await self._get_battle(split_messages[0][0])
         after_battle_ts = time.time()
         print(
-            f"[DBG] battle obtained t={after_battle_ts:.6f} (dt={after_battle_ts-before_battle_ts:.6f}) teampreview={battle.teampreview}"
+            f"[DBG] battle obtained t={after_battle_ts:.6f} (dt={after_battle_ts-before_battle_ts:.6f}) teampreview={battle.teampreview} v"
         )
-
-        print(
-            f"[DBG]バトルオブジェクトを確認 teampreview={battle.teampreview} player={battle.player_username} t={time.time():.6f}"
-        )
-
+        
         for split_message in split_messages[1:]:
             start_ts = time.time()
-            print(f"[DBG] handle sub msg start t={start_ts:.6f} kind={split_message[1]}")
+            print(f"[DBG] handle sub msg start t={start_ts:.6f} ")
             if len(split_message) <= 1:
                 continue
             elif split_message[1] == "":
@@ -91,7 +87,7 @@ class QueuedRandomPlayer(Player):
                 if split_message[2]:
                     request = orjson.loads(split_message[2])
                     battle.parse_request(request)
-                    print(f"[DBG] parsed request t={time.time():.6f}")
+                    print(f"[DBG] parsed request t={time.time():.6f} teampreview={battle.teampreview}")
                     if battle._wait:
                         self._waiting.set()
                     if battle.move_on_next_request:
