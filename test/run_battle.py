@@ -21,13 +21,6 @@ from src.agents.rule_based_player import RuleBasedPlayer
 from src.env.pokemon_env import PokemonEnv
 from src.state.state_observer import StateObserver
 from src.action import action_helper
-
-
-class RandomAgent(MapleAgent):
-    """Simple agent that selects random actions."""
-
-    def select_action(self, observation: object, action_mapping: object) -> int:
-        return self.env.action_space.sample()
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
@@ -48,7 +41,7 @@ def run_single_battle() -> dict:
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(opponent_player=opponent, state_observer=observer, action_helper=action_helper)
-    agent = RandomAgent(env)
+    agent = MapleAgent(env)
 
     observation, info = env.reset()
 
@@ -58,7 +51,7 @@ def run_single_battle() -> dict:
     for _ in range(MAX_STEPS):
         _, mapping = action_helper.get_available_actions_with_details(battle)
         action = agent.select_action(observation, mapping)
-        observation, reward, terminated, truncated, info = env.step(action)
+        # `select_action` internally calls `env.step`, so the returned index is only for reference
         time.sleep(0.1)
         battle = next(iter(env._env_player.battles.values()))
         if battle.finished:
