@@ -34,7 +34,7 @@ class DummyOpponent:
 
 
 class RandomAgent(MapleAgent):
-    def select_action(self, observation: object) -> int:
+    def select_action(self, observation: object, action_mapping: object) -> int:
         return self.env.action_space.sample()
 
 
@@ -46,7 +46,7 @@ def main() -> None:
     )
     agent = RandomAgent(env)
 
-    action = agent.select_action(None)
+    action = agent.select_action(None, {})
     result = env.step(action)
     print("Step result:", result)
 

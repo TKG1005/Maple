@@ -64,11 +64,22 @@ class PokemonEnv(gym.Env):
         self._agent = agent
 
     def process_battle(self, battle: Any) -> int:
-        """Create an observation from ``battle`` and query the agent."""
+        """Create an observation and available action mapping for ``battle``.
+
+        The resulting state vector and action mapping are sent to the registered
+        :class:`MapleAgent` which returns an action index.
+        """
         if self._agent is None:
             raise RuntimeError("Agent not registered")
+
         observation = self.state_observer.observe(battle)
-        action_idx = self._agent.select_action(observation)
+
+        # battle 情報から利用可能な行動マッピングを生成
+        _, action_mapping = self.action_helper.get_available_actions_with_details(
+            battle
+        )
+
+        action_idx = self._agent.select_action(observation, action_mapping)
         return int(action_idx)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None) -> Tuple[Any, dict]:

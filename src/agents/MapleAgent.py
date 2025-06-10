@@ -18,7 +18,16 @@ class MapleAgent:
         """Hook for team preview phase. Override in subclasses."""
         pass
 
-    def select_action(self, observation: Any) -> int:
-        """Return an action index given an observation."""
+    def select_action(self, observation: Any, action_mapping: Any) -> int:
+        """Return an action index given the current observation and actions.
+
+        Parameters
+        ----------
+        observation : Any
+            Observation vector generated from :class:`PokemonEnv`.
+        action_mapping : Any
+            Mapping of available action indices as provided by
+            ``action_helper.get_available_actions_with_details``.
+        """
         raise NotImplementedError
 
