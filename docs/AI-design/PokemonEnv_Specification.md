@@ -13,10 +13,10 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
-| メッセージフロー | 1. 両プレイヤーが `/team` 送信<br>2. サーバーが `request` JSON を送信してプレイヤーに行動選択を要求<br>3. プレイヤーが `/choose …` を返信<br>4. サーバーが結果をブロードキャスト |
+| メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.Player(PSClient)はrequestメッセージを解析して、対応したメソッド(例:choose_move(),teampreview(),etc.)を実行　3.Playerはアルゴリズムに従い行動を決定しPokemonEnvに返す 4.poke-envがサーバにコマンドを送信　5.サーバが結果を返す |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
-* `forceSwitch` が `True` の場合、同一ターンに複数の `request` が送られる
+* 同一ターンに複数の `request` が送られることがある
 
 ---
 
@@ -24,15 +24,21 @@
 
 * 外部: `poke_env` は **asyncio**‐ベースで WebSocket を管理  
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
-* 手順  
-  1. `reset()` で `play_against` を呼び、裏で非同期タスクが起動  
-  2. `step(action)` は行動インデックスを **BattleOrder** に変換し送信  
-  3. サーバーから `request` を含むメッセージを受信すると `poke_env` 内の `Battle` オブジェクトが更新される
-  4. `PokemonEnv` はこの更新を検知して観測ベクトルを生成
+
+* 手順
+  1. `reset()` で `play_against()` を呼び、対戦を開始
+  2. 対戦が開始したら`EnvPlayer`はサーバからのメッセージを待機
+  3. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを通知して`action`を待機する
+  4. `PokemonEnv`は`Agent`に`battle`を渡す
+  5. `Agent`は`step(action)`を実行
+  6. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
+  7. `EnvPlayer`(`poke-env`)は`action`をShowdownサーバに送信する
+  8. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
+  9. `PokemonEnv`は`step(action)`の戻り値として`Agent`に`battle`と`reward`を返す
+  10. `Agent`は`battle`から行動を選択して次の`step(action)`を呼ぶ
+
 * 注意
-* `request` を含むメッセージは必ずしも順番通りには届かない(rqid=n+1のメッセージがrqid=nのメッセージの後に届く場合がある)ので最新のrqidに反応する必要がある
-* 1ターンに複数の`request` を含むメッセージが来ることがある(交代選択が必要な場合:(forceSwitch=True))
-* `step()` 実行後は最新 `rqid` の `request` を処理し `battle.turn` が増加するまで待機する
+* `step()` は `battle.turn` が変化しない場合に備えてタイムアウトを設ける
 ---
 
 ## 4. 観測（状態）空間
@@ -83,21 +89,18 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 sequenceDiagram
     participant Agent
     participant PokemonEnv
-    participant poke_env/EnvPlayer
+    participant poke-env/EnvPlayer
     participant Showdown
     Agent->>PokemonEnv: reset()
-    PokemonEnv->>EnvPlayer: play_against()
-    EnvPlayer->>Showdown: /team, /choose (random)
-    Showdown-->>EnvPlayer: state
-    EnvPlayer-->>PokemonEnv: Battle
-    note over PokemonEnv: 観測ベクトル生成<br/>↓
-    PokemonEnv->>Agent: 観測ベクトル
-    Agent->>PokemonEnv: step(action_idx)
-    PokemonEnv->>EnvPlayer: choose_move(BattleOrder)
-    EnvPlayer->>Showdown: /choose …
-    Showdown-->>EnvPlayer: state
-    EnvPlayer-->>PokemonEnv: Battle
-    PokemonEnv-->>Agent: obs, reward, done
+    PokemonEnv->>poke-env: create EnvPlayer()
+    poke-env->>Showdown: play_against()
+    Showdown->>EnvPlayer: request
+    EnvPlayer->>PokemonEnv: request_flag, battle
+    PokemonEnv->>Agent: observation = Gym.reset()
+    Agent->>PokemonEnv: step(action=choose_move(observation))
+    PokemonEnv->>EnvPlayer: action queue
+    EnvPlayer->>Showdown: action
+    Showdonw->>EnvPlayer: request
 ```
 
 ---
@@ -115,11 +118,12 @@ sequenceDiagram
 
 ## 8. 実装ノート
 
-* **遅延インポート**: `poke_env` は `reset()` 内でインポート  
-* **EnvPlayer**: 初手は `choose_random_move()` でランダム行動  
+* **遅延インポート**: `poke_env` は `reset()` 内でインポート
+* **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
+* **チームプレビュー**: `Agent.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: 送信後、最新 `rqid` の `request` を処理して `battle.turn` が進むまでループ
-* **未実装**: `render()`, `close()` は将来拡張  
+* **step 待機処理**: `rqid` が進むまで非同期でループし、タイムアウトを設ける
+* **未実装**: `render()`, `close()` は将来拡張
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
 ---
@@ -127,6 +131,9 @@ sequenceDiagram
 ## 9. 参考コードスニペット
 
 ```python
+# 環境ベクトル取得
+state: np.ndarray = state_observer.observe(battle)
+
 # 行動マスク取得
 mask, mapping = action_helper.get_available_actions(battle)
 
