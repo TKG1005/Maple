@@ -33,9 +33,6 @@ class DummyOpponent:
         pass
 
 
-class RandomAgent(MapleAgent):
-    def select_action(self, observation: object, action_mapping: object) -> int:
-        return self.env.action_space.sample()
 
 
 def main() -> None:
@@ -44,11 +41,10 @@ def main() -> None:
         state_observer=DummyObserver(5),
         action_helper=DummyActionHelper(),
     )
-    agent = RandomAgent(env)
+    agent = MapleAgent(env)
 
-    action = agent.select_action(None, {})
-    result = env.step(action)
-    print("Step result:", result)
+    agent.select_action(None, {})
+    print("Step executed")
 
 
 if __name__ == "__main__":

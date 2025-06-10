@@ -19,7 +19,7 @@ class MapleAgent:
         pass
 
     def select_action(self, observation: Any, action_mapping: Any) -> int:
-        """Return an action index given the current observation and actions.
+        """Select a random valid action and execute ``env.step``.
 
         Parameters
         ----------
@@ -29,5 +29,18 @@ class MapleAgent:
             Mapping of available action indices as provided by
             ``action_helper.get_available_actions_with_details``.
         """
-        raise NotImplementedError
+
+        # ``action_mapping`` は ``action_helper.get_available_actions_with_details``
+        # から得られる辞書で、キーに選択可能な行動 index が含まれている。マッピングが
+        # 空の場合は ``action_space`` 全体からサンプリングする。
+        if action_mapping:
+            action_idx = int(self.env.rng.choice(list(action_mapping.keys())))
+        else:
+            action_idx = int(self.env.action_space.sample())
+
+        # ランダムに選んだ行動を即座に環境へ反映させる
+        # ``step`` の戻り値はここでは利用しない
+        self.env.step(action_idx)
+
+        return action_idx
 
