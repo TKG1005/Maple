@@ -28,9 +28,9 @@
 * 手順
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 対戦が開始したら`EnvPlayer`はサーバからのメッセージを待機
-  3. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを通知して`action`を待機する
-  4. `PokemonEnv`は`Agent`に`battle`を渡す
-  5. `Agent`は`step(action)`を実行
+  3. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する
+  4. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルを渡す
+  5. `Agent`はアルゴリズムに基づいて行動を決定し、`step(action)`を実行
   6. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
   7. `EnvPlayer`(`poke-env`)は`action`をShowdownサーバに送信する
   8. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
