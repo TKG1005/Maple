@@ -98,7 +98,7 @@ class PokemonEnv(gym.Env):
                 server_configuration=LocalhostServerConfiguration,
                 account_configuration=AccountConfiguration(unique_name, None),
                 team=team,
-                log_level=logging.WARNING,
+                log_level=logging.DEBUG,
             )
         else:
             # 既存プレイヤーのバトル履歴をクリア
