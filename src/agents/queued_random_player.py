@@ -70,12 +70,12 @@ class QueuedRandomPlayer(Player):
             battle = await self._get_battle(split_messages[0][0])
         after_battle_ts = time.time()
         print(
-            f"[DBG] battle obtained t={after_battle_ts:.6f} (dt={after_battle_ts-before_battle_ts:.6f}) teampreview={battle.teampreview} v"
+            f"[DBG] battle obtained t={after_battle_ts:.6f} (dt={after_battle_ts-before_battle_ts:.6f}) teampreview={battle.teampreview} "
         )
-        
+
         for split_message in split_messages[1:]:
             start_ts = time.time()
-            print(f"[DBG] handle sub msg start t={start_ts:.6f} ")
+            print(f"[DBG] handle sub msg start t={start_ts:.6f} kind={split_message[1]}")
             if len(split_message) <= 1:
                 continue
             elif split_message[1] == "":
@@ -87,11 +87,11 @@ class QueuedRandomPlayer(Player):
                 if split_message[2]:
                     request = orjson.loads(split_message[2])
                     battle.parse_request(request)
-                    print(f"[DBG] parsed request t={time.time():.6f} teampreview={battle.teampreview}")
+                    print(f"[DBG] parsed request t={time.time():.6f}")
                     if battle._wait:
                         self._waiting.set()
                     if battle.move_on_next_request:
-                        if split_message[2]["teamPreview"]:
+                        if battle.teampreview:
                             await self._handle_battle_request(battle,from_teampreview_request=True)
                         else:
                             await self._handle_battle_request(battle)
@@ -180,9 +180,9 @@ class QueuedRandomPlayer(Player):
             elif split_message[1] == "turn":
                 battle.parse_message(split_message)
                 await self._handle_battle_request(battle)
-            elif split_message[1] == "teampreview":
-                battle.parse_message(split_message)
-                await self._handle_battle_request(battle, from_teampreview_request=True)
+            #elif split_message[1] == "teampreview":
+            #    battle.parse_message(split_message)
+            #    await self._handle_battle_request(battle, from_teampreview_request=True)
             elif split_message[1] == "bigerror":
                 self.logger.warning("Received 'bigerror' message: %s", split_message)
             elif split_message[1] == "uhtml" and split_message[2] == "otsrequest":
