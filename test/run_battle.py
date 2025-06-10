@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import asyncio
 import json
-import logging
 import sys
 from pathlib import Path
 from typing import List, Dict
@@ -16,7 +14,20 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+import time
+
+from src.agents.MapleAgent import MapleAgent
 from src.agents.rule_based_player import RuleBasedPlayer
+from src.env.pokemon_env import PokemonEnv
+from src.state.state_observer import StateObserver
+from src.action import action_helper
+
+
+class RandomAgent(MapleAgent):
+    """Simple agent that selects random actions."""
+
+    def select_action(self, observation: object) -> int:
+        return self.env.action_space.sample()
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
@@ -26,35 +37,42 @@ except OSError:
     TEAM = None
 
 
-async def run_single_battle() -> dict:
-    player_1 = RuleBasedPlayer(
-        battle_format="gen9ou",
-        server_configuration=LocalhostServerConfiguration,
-        log_level=logging.DEBUG,
-        team=TEAM,
-    )
-    player_2 = RuleBasedPlayer(
+def run_single_battle() -> dict:
+    """Play one battle using :class:`PokemonEnv` against :class:`RuleBasedPlayer`."""
+
+    opponent = RuleBasedPlayer(
         battle_format="gen9ou",
         server_configuration=LocalhostServerConfiguration,
         team=TEAM,
     )
 
-    await asyncio.gather(
-        player_1.send_challenges(player_2.username, n_challenges=1, to_wait=player_2.ps_client.logged_in),
-        player_2.accept_challenges(player_1.username, n_challenges=1)
-    )
+    observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
+    env = PokemonEnv(opponent_player=opponent, state_observer=observer, action_helper=action_helper)
+    agent = RandomAgent(env)
 
-    winner = "p1" if player_1.n_won_battles == 1 else "p2"
-    battle = next(iter(player_1.battles.values()), None)
+    observation, info = env.reset()
+
+    # Run until the internal battle finishes or a safety limit is reached
+    MAX_STEPS = 100
+    battle = next(iter(env._env_player.battles.values()))
+    for _ in range(MAX_STEPS):
+        action = agent.select_action(observation)
+        observation, reward, terminated, truncated, info = env.step(action)
+        time.sleep(0.1)
+        battle = next(iter(env._env_player.battles.values()))
+        if battle.finished:
+            break
+
+    winner = "env" if env._env_player.n_won_battles == 1 else "opponent"
     turns = getattr(battle, "turn", 0)
 
     return {"winner": winner, "turns": turns}
 
 
-async def main(n: int = 1) -> dict:
+def main(n: int = 1) -> dict:
     results: List[Dict[str, int | str]] = []
     for _ in tqdm(range(n), desc="Battles"):
-        result = await run_single_battle()
+        result = run_single_battle()
         results.append(result)
 
     avg_turns = sum(r["turns"] for r in results) / n if n else 0
@@ -66,5 +84,5 @@ if __name__ == "__main__":
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     args = parser.parse_args()
 
-    result = asyncio.run(main(args.n))
+    result = main(args.n)
     print(json.dumps(result, ensure_ascii=False))
