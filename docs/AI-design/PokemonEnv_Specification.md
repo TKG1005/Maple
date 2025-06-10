@@ -29,7 +29,7 @@
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. 対戦が開始したら`EnvPlayer`はサーバからのメッセージを待機
   3. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する
-  4. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルを渡す
+  4. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルと、`action_helper.py`の`get_available_actions_with_details`で作成した選択可能な行動マッピングを送信する。
   5. `Agent`はアルゴリズムに基づいて行動を決定し、`step(action)`を実行
   6. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
   7. `EnvPlayer`(`poke-env`)は`action`をShowdownサーバに送信する
