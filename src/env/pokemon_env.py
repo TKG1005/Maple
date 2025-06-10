@@ -12,6 +12,8 @@ import asyncio
 import threading
 import time
 
+from .env_player import EnvPlayer
+
 
 class PokemonEnv(gym.Env):
     """A placeholder Gymnasium environment for Pokémon battles."""
@@ -61,9 +63,9 @@ class PokemonEnv(gym.Env):
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
         try:
-            from poke_env.player import Player
-            from poke_env.ps_client.server_configuration import ServerConfiguration
-            from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+            from poke_env.ps_client.server_configuration import (
+                LocalhostServerConfiguration,
+            )
 
         except Exception as exc:  # pragma: no cover - ランタイム用
             raise RuntimeError(
@@ -72,20 +74,7 @@ class PokemonEnv(gym.Env):
 
         # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
         if not hasattr(self, "_env_player"):
-
             from pathlib import Path
-
-            self_env = self
-
-            class EnvPlayer(Player):
-                """Simple player used internally by the environment."""
-
-                async def choose_move(self, battle):
-                    """Waits for an action index from the queue and returns an order."""
-                    action_idx = await self_env._action_queue.get()
-                    return self_env.action_helper.action_index_to_order(
-                        self, battle, action_idx
-                    )
 
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
@@ -94,6 +83,7 @@ class PokemonEnv(gym.Env):
                 team = None
 
             self._env_player = EnvPlayer(
+                self,
                 battle_format="gen9ou",
                 server_configuration=LocalhostServerConfiguration,
                 team=team,
