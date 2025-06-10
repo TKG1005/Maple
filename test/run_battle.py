@@ -26,7 +26,7 @@ from src.action import action_helper
 class RandomAgent(MapleAgent):
     """Simple agent that selects random actions."""
 
-    def select_action(self, observation: object) -> int:
+    def select_action(self, observation: object, action_mapping: object) -> int:
         return self.env.action_space.sample()
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 
@@ -56,7 +56,8 @@ def run_single_battle() -> dict:
     MAX_STEPS = 100
     battle = next(iter(env._env_player.battles.values()))
     for _ in range(MAX_STEPS):
-        action = agent.select_action(observation)
+        _, mapping = action_helper.get_available_actions_with_details(battle)
+        action = agent.select_action(observation, mapping)
         observation, reward, terminated, truncated, info = env.step(action)
         time.sleep(0.1)
         battle = next(iter(env._env_player.battles.values()))
