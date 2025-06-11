@@ -28,9 +28,9 @@
 * 手順
   1. `reset()` で `play_against()` を呼び、対戦を開始
   2. `PokemonEnv`は`reset()`内で`EnvPlayer`から`teampreview`の`request`が来るのを待機
-  3. `EnvPlayer`は`{"teamPreview":true}`の`request`が届いたら最新の`battle`オブジェクト`{"teamPreview":true}`が含まれていたという`info`を`PokemonEnv`に送信
-  4. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす
-  5. `Agent`は`info`の情報からチーム選択を実行
+  3. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求
+  4. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にteampreview要求)
+  5. `Agent`は`info`の情報からチーム選択を実行して`step(team)`を実行
   6. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   7. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
   6. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する
