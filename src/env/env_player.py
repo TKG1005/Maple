@@ -22,10 +22,14 @@ class EnvPlayer(Player):
         
 
         # PokemonEnv.step からアクションが投入されるまで待機
-        action_idx: int = await self._env._action_queue.get()
+        action_data = await self._env._action_queue.get()
+
+        # choose_move は行動インデックスのみを想定する
+        if not isinstance(action_data, int):
+            raise ValueError("Expected action index from PokemonEnv")
 
         # 取得したインデックスを BattleOrder に変換して返す
-        return self._env.action_helper.action_index_to_order(self, battle, action_idx)
+        return self._env.action_helper.action_index_to_order(self, battle, action_data)
 
     #Playerクラスの_handle_battle_requestをオーバーライド
     async def _handle_battle_request(
@@ -44,6 +48,7 @@ class EnvPlayer(Player):
             # チーム選択を PokemonEnv に通知して待機
             await self._env._battle_queue.put(battle)
             message = await self._env._action_queue.get()
+            print(f"チーム選択を送信 {message}")
         else:
             if maybe_default_order:
                 self._trying_again.set()
@@ -51,5 +56,6 @@ class EnvPlayer(Player):
             if isinstance(choice, Awaitable):
                 choice = await choice
             message = choice.message
+        
 
         await self.ps_client.send_message(message, battle.battle_tag)

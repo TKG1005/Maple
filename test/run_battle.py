@@ -47,7 +47,7 @@ def run_single_battle() -> dict:
 
     battle = next(iter(env._env_player.battles.values()))
     _, mapping = action_helper.get_available_actions_with_details(battle)
-    agent.play_until_done(observation, mapping, info)
+    agent.play_until_done(observation, mapping)
 
     battle = next(iter(env._env_player.battles.values()))
 

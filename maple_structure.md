@@ -10,6 +10,19 @@
 │   ├── pokemon_all_moves.csv
 │   ├── state_feature_catalog_temp - シート1.csv
 │   └── state_spec.yml
+├── copy_of_poke-env
+│   └── poke_env
+│       ├── __init__.py
+│       ├── __pycache__
+│       ├── concurrency.py
+│       ├── data
+│       ├── environment
+│       ├── exceptions.py
+│       ├── player
+│       ├── ps_client
+│       ├── py.typed
+│       ├── stats.py
+│       └── teambuilder
 ├── data
 │   └── copy_of_poke_env
 │       └── poke_env
@@ -523,6 +536,8 @@
 │   └── tsconfig.json
 ├── pytest.ini
 ├── requirements.txt
+├── scripts
+│   └── step_skeleton_demo.py
 ├── src
 │   ├── __init__.py
 │   ├── __pycache__
@@ -532,12 +547,15 @@
 │   │   ├── __pycache__
 │   │   └── action_helper.py
 │   ├── agents
+│   │   ├── __init__.py
 │   │   ├── __pycache__
+│   │   ├── MapleAgent.py
 │   │   ├── my_simple_player.py
 │   │   └── rule_based_player.py
 │   ├── env
 │   │   ├── __init__.py
 │   │   ├── __pycache__
+│   │   ├── env_player.py
 │   │   └── pokemon_env.py
 │   ├── run_local_battle.py
 │   ├── state
@@ -557,4 +575,4 @@
     ├── run_battle.py
     └── simple_agent.py
 
-394 directories, 164 files
+403 directories, 173 files
