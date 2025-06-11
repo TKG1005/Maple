@@ -26,7 +26,8 @@
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
 
 * 手順
-  1. 非同期処理はpoke-envの`POKE_LOOP`を利用する
+  1. 非同期処理は poke-env が保持する `POKE_LOOP` イベントループを利用し、同期 API からは `asyncio.run_coroutine_threadsafe(coro, POKE_LOOP)` でタスクを登録し `future.result()` で待機する
+  2. バトル開始待ちや状態待ちは `asyncio.Queue.get()` や `asyncio.Event.wait()` を `asyncio.wait_for()` と組み合わせて実施し、ビジーウェイトを行わない
   1. `reset()` で `battle_against()` を呼び、対戦を開始
   2. `PokemonEnv`は`reset()`内で`EnvPlayer`から`|teampreview|`のメッセージが来るのを待機
   3. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求(この時点ではBattleオブジェクトは空である)
@@ -129,8 +130,8 @@ sequenceDiagram
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
 * **チームプレビュー**: `Agent.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: `rqid` が進むまで非同期でループし、タイムアウトを設ける
-* **未実装**: `render()`, `close()` は将来拡張
+* **step 待機処理**: `asyncio.wait_for(queue.get(), timeout)` を用いて待ち合わせ、ビジーウェイトを避ける
+* **close() 実装**: `POKE_LOOP` 上のタスクをキャンセルし、キューの `join()` 後にリソースを解放する
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 
 ---
