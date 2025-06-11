@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
+import random
+from typing import Any, Awaitable
 
+from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player import Player
 
 
@@ -38,8 +40,10 @@ class EnvPlayer(Player):
             or random.random() < self.DEFAULT_CHOICE_CHANCE
         ):
             message = self.choose_default_move().message
-        elif from_teampreview_request: #from_teampreview_requestのみで判断するように変更
-            message = self.teampreview(battle)
+        elif from_teampreview_request:
+            # チーム選択を PokemonEnv に通知して待機
+            await self._env._battle_queue.put(battle)
+            message = await self._env._action_queue.get()
         else:
             if maybe_default_order:
                 self._trying_again.set()
@@ -47,4 +51,5 @@ class EnvPlayer(Player):
             if isinstance(choice, Awaitable):
                 choice = await choice
             message = choice.message
+
         await self.ps_client.send_message(message, battle.battle_tag)
