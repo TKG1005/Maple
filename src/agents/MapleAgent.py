@@ -21,9 +21,12 @@ class MapleAgent:
         ``battle.team`` and returns a ``"/team"`` command string.  Subclasses
         can override this method to implement a custom selection strategy.
         """
+        
+        print("チームプレビューリクエスト確認")
 
         team_size = len(getattr(battle, "team", [])) if battle else 0
         if team_size <= 0:
+            
             return "/team 123"  # フォールバック
 
         num_to_select = min(3, team_size)

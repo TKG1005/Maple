@@ -48,6 +48,7 @@ class EnvPlayer(Player):
             # チーム選択を PokemonEnv に通知して待機
             await self._env._battle_queue.put(battle)
             message = await self._env._action_queue.get()
+            print(f"チーム選択を送信 {message}")
         else:
             if maybe_default_order:
                 self._trying_again.set()
@@ -55,5 +56,6 @@ class EnvPlayer(Player):
             if isinstance(choice, Awaitable):
                 choice = await choice
             message = choice.message
+        
 
         await self.ps_client.send_message(message, battle.battle_tag)
