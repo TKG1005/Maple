@@ -27,13 +27,13 @@
 
 * 手順
   1. `reset()` で `play_against()` を呼び、対戦を開始
-  2. `PokemonEnv`は`reset()`内で`EnvPlayer`から`teampreview`の`request`が来るのを待機
-  3. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求
+  2. `PokemonEnv`は`reset()`内で`EnvPlayer`から`|teampreview|`のメッセージが来るのを待機
+  3. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求(この時点ではBattleオブジェクトは空である)
   4. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にteampreview要求)
   5. `Agent`は`info`の情報からチーム選択を実行して`step(team)`を実行
   6. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   7. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
-  6. `request`が発生したら`EnvPlaer`は`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する
+  6. `request`が発生したら`EnvPlaer`は`battle`オブジェクトを更新し、`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する(ここで初めてbattleオブジェクトが更新)
   7. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルと、`action_helper.py`の`get_available_actions_with_details`で作成した選択可能な行動マッピングを送信する。
   8. `Agent`はアルゴリズムに基づいて行動を決定し、`step(action)`を実行
   9. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
