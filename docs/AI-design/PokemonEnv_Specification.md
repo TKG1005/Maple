@@ -26,6 +26,7 @@
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
 
 * 手順
+  1. 非同期処理はpoke-envの`POKE_LOOP`を利用する
   1. `reset()` で `battle_against()` を呼び、対戦を開始
   2. `PokemonEnv`は`reset()`内で`EnvPlayer`から`|teampreview|`のメッセージが来るのを待機
   3. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求(この時点ではBattleオブジェクトは空である)
