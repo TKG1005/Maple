@@ -5,4 +5,4 @@
 .env
 .docs
 __pycache__/
-src\env\__pychache__\
+src/env/__pycache__/
