@@ -152,15 +152,20 @@ class PokemonEnv(gym.Env):
         )
         self._battle_thread.start()
 
-        # バトルオブジェクトが生成されるまで待機
+        # バトル生成を待った後、チーム選択リクエストを待機
         while not self._env_player.battles:
             time.sleep(0.1)
 
-        # 開始したばかりのバトルオブジェクトを取得
-        battle = next(iter(self._env_player.battles.values()))
+        while self._battle_queue.empty():
+            time.sleep(0.1)
+
+        battle = self._battle_queue.get_nowait()
         observation = self.state_observer.observe(battle)
 
-        info: dict = {"battle_tag": battle.battle_tag}
+        info: dict = {
+            "battle_tag": battle.battle_tag,
+            "request_teampreview": True,
+        }
         return observation, info
 
     def step(self, action: Any) -> Tuple[Any, dict, float, bool, dict]:
