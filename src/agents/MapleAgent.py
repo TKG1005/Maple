@@ -14,9 +14,22 @@ class MapleAgent:
         if hasattr(self.env, "register_agent"):
             self.env.register_agent(self)
 
-    def teampreview(self, battle: Any) -> None:
-        """Hook for team preview phase. Override in subclasses."""
-        pass
+    def teampreview(self, battle: Any) -> str:
+        """Return a team selection string for the team preview phase.
+
+        This default implementation randomly selects three Pokémon from
+        ``battle.team`` and returns a ``"/team"`` command string.  Subclasses
+        can override this method to implement a custom selection strategy.
+        """
+
+        team_size = len(getattr(battle, "team", [])) if battle else 0
+        if team_size <= 0:
+            return "/team 123"  # フォールバック
+
+        num_to_select = min(3, team_size)
+        indices = self.env.rng.choice(team_size, size=num_to_select, replace=False)
+        indices = sorted(int(i) + 1 for i in indices)
+        return "/team " + "".join(str(i) for i in indices)
 
     def select_action(self, observation: Any, action_mapping: Any) -> int:
         """Select a random valid action and execute ``env.step``.
@@ -44,7 +57,7 @@ class MapleAgent:
 
         return action_idx
 
-    def play_until_done(self, observation: Any, action_mapping: Any) -> None:
+    def play_until_done(self, observation: Any, action_mapping: Any, info: dict | None = None) -> None:
         """Keep calling :meth:`PokemonEnv.step` until ``done`` becomes ``True``.
 
         Parameters
@@ -53,11 +66,19 @@ class MapleAgent:
             Initial observation vector returned by ``env.reset``.
         action_mapping : Any
             Mapping of available actions corresponding to ``observation``.
+        ``info`` may include ``"request_teampreview"``.  When this flag is
+        present and ``True``, a team selection is performed automatically before
+        entering the main loop.
         """
 
         done = False
         current_obs = observation
         current_map = action_mapping
+
+        if info and info.get("request_teampreview"):
+            battle = info.get("battle")
+            team_order = self.teampreview(battle)
+            current_obs, current_map, _, done, info = self.env.step(team_order)
 
         while not done:
             if current_map:
