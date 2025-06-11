@@ -35,7 +35,9 @@ class PokemonEnv(gym.Env):
         self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
 
         # Step10: 非同期アクションキューを導入
-        self._action_queue: asyncio.Queue[int] = asyncio.Queue()
+        # 数値アクションだけでなく、チーム選択コマンドなどの文字列も
+        # 取り扱えるよう ``Any`` 型のキューを使用する
+        self._action_queue: asyncio.Queue[Any] = asyncio.Queue()
         # EnvPlayer から受け取る battle オブジェクト用キュー
         self._battle_queue: asyncio.Queue[Any] = asyncio.Queue()
 
@@ -94,8 +96,8 @@ class PokemonEnv(gym.Env):
         super().reset(seed=seed)
 
         # 前回エピソードのキューをクリア
-        self._action_queue = asyncio.Queue()
-        self._battle_queue = asyncio.Queue()
+        self._action_queue: asyncio.Queue[Any] = asyncio.Queue()
+        self._battle_queue: asyncio.Queue[Any] = asyncio.Queue()
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -171,8 +173,11 @@ class PokemonEnv(gym.Env):
     def step(self, action: Any) -> Tuple[Any, dict, float, bool, dict]:
         """Send ``action`` to :class:`EnvPlayer` and wait for the next state."""
 
-        # アクションインデックスをキューへ投入
-        self._action_queue.put_nowait(int(action))
+        # アクション (行動インデックスまたはチーム選択文字列) をキューへ投入
+        if isinstance(action, str):
+            self._action_queue.put_nowait(action)
+        else:
+            self._action_queue.put_nowait(int(action))
 
         # EnvPlayer から次の battle オブジェクトが届くまで待機
         while self._battle_queue.empty():

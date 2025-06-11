@@ -22,10 +22,14 @@ class EnvPlayer(Player):
         
 
         # PokemonEnv.step からアクションが投入されるまで待機
-        action_idx: int = await self._env._action_queue.get()
+        action_data = await self._env._action_queue.get()
+
+        # choose_move は行動インデックスのみを想定する
+        if not isinstance(action_data, int):
+            raise ValueError("Expected action index from PokemonEnv")
 
         # 取得したインデックスを BattleOrder に変換して返す
-        return self._env.action_helper.action_index_to_order(self, battle, action_idx)
+        return self._env.action_helper.action_index_to_order(self, battle, action_data)
 
     #Playerクラスの_handle_battle_requestをオーバーライド
     async def _handle_battle_request(
