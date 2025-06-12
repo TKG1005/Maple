@@ -29,9 +29,9 @@
   1. 非同期処理は poke-env が保持する `POKE_LOOP` イベントループを利用し、同期 API からは `asyncio.run_coroutine_threadsafe(coro, POKE_LOOP)` でタスクを登録し `future.result()` で待機する
   2. バトル開始待ちや状態待ちは `asyncio.Queue.get()` や `asyncio.Event.wait()` を `asyncio.wait_for()` と組み合わせて実施し、ビジーウェイトを行わない
   3. `reset()` で `battle_against()` を呼び、対戦を開始
-  4. `PokemonEnv`は`reset()`内で`EnvPlayer`から`|teampreview|`のメッセージが来るのを待機
-  5. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`teampreview`を要求(この時点ではBattleオブジェクトは空である)
-  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にteampreview要求)
+  4. `PokemonEnv`は`reset()`内で`EnvPlayer`からメッセージが来るのを待機
+  5. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`my_team: List`と`opp_team: List`を渡して、チーム選択を要求(この時点ではBattleオブジェクトは空である)
+  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にteampreview要求。現時点でstateは未実装なのでダミーを渡す。)
   7. `Agent`は`info`の情報からチーム選択が呼び出されたことを理解して、`step(teampreview(state))`を実行
   8. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   9. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
