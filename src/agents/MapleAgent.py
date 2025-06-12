@@ -83,6 +83,7 @@ class MapleAgent:
 
         while not done:
             action_idx = self.select_action(current_obs, current_map)
+            print(f"Agent select /move {action_idx}")
             current_obs, current_map, _, done, _ = self.env.step(action_idx)
 
 

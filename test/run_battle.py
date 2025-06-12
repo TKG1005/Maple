@@ -22,6 +22,7 @@ from src.env.pokemon_env import PokemonEnv
 from src.state.state_observer import StateObserver
 from src.action import action_helper
 from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
+from poke_env.player.random_player import RandomPlayer
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
 try:
@@ -33,8 +34,8 @@ except OSError:
 def run_single_battle() -> dict:
     """Play one battle using :class:`PokemonEnv` against :class:`RuleBasedPlayer`."""
 
-    opponent = RuleBasedPlayer(
-        battle_format="gen9ou",
+    opponent = RandomPlayer(
+        battle_format="gen9bssregi",
         server_configuration=LocalhostServerConfiguration,
         team=TEAM,
     )

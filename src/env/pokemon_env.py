@@ -133,7 +133,7 @@ class PokemonEnv(gym.Env):
 
             self._env_player = EnvPlayer(
                 self,
-                battle_format="gen9ou",
+                battle_format="gen9bssregi",
                 server_configuration=LocalhostServerConfiguration,
                 team=team,
                 log_level=logging.WARNING,
