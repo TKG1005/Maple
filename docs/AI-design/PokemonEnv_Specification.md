@@ -31,8 +31,8 @@
   3. `reset()` で `battle_against()` を呼び、対戦を開始
   4. `PokemonEnv`は`reset()`内で`EnvPlayer`からメッセージが来るのを待機
   5. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`my_team: List`と`opp_team: List`を渡して、チーム選択を要求(この時点ではBattleオブジェクトは空である)
-  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にteampreview要求。現時点でstateは未実装なのでダミーを渡す。)
-  7. `Agent`は`info`の情報からチーム選択が呼び出されたことを理解して、`step(teampreview(state))`を実行
+  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にチームプレビュー要求。現時点でstateは未実装なのでダミーを渡す。)
+  7. `Agent`は`info`の情報からチーム選択が呼び出されたことを理解して、`step(choose_team(state))`を実行
   8. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   9. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
   10. `request`が発生したら`EnvPlaer`は`battle`オブジェクトを更新し、`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する(ここで初めてbattleオブジェクトが更新)
@@ -128,7 +128,7 @@ sequenceDiagram
 
 * **遅延インポート**: `poke_env` は `reset()` 内でインポート
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
-* **チームプレビュー**: `Agent.teampreview()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
+* **チームプレビュー**: `Agent.choose_team()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
 * **step 待機処理**: `asyncio.wait_for(queue.get(), timeout)` を用いて待ち合わせ、ビジーウェイトを避ける
 * **close() 実装**: `POKE_LOOP` 上のタスクをキャンセルし、キューの `join()` 後にリソースを解放する

@@ -14,21 +14,17 @@ class MapleAgent:
         if hasattr(self.env, "register_agent"):
             self.env.register_agent(self)
 
-    def teampreview(self, battle: Any) -> str:
+    def choose_team(self, observation: Any) -> str:
         """Return a team selection string for the team preview phase.
 
-        This default implementation randomly selects three Pokémon from
-        ``battle.team`` and returns a ``"/team"`` command string.  Subclasses
-        can override this method to implement a custom selection strategy.
+        The base implementation ignores ``observation`` and simply selects
+        three random Pokémon assuming a team size of six.  Subclasses can
+        override this method to implement a custom selection strategy.
         """
-        
+
         print("チームプレビューリクエスト確認")
 
-        team_size = len(getattr(battle, "team", [])) if battle else 0
-        if team_size <= 0:
-            
-            return "/team 123"  # フォールバック
-
+        team_size = 6
         num_to_select = min(3, team_size)
         indices = self.env.rng.choice(team_size, size=num_to_select, replace=False)
         indices = sorted(int(i) + 1 for i in indices)
@@ -70,8 +66,8 @@ class MapleAgent:
         action_mapping : Any
             Mapping of available actions corresponding to ``observation``.
         ``info`` may include ``"request_teampreview"``.  When this flag is
-        present and ``True``, a team selection is performed automatically before
-        entering the main loop.
+        present and ``True``, a team selection is performed automatically by
+        calling :meth:`choose_team` before entering the main loop.
 
         The selected index from :meth:`select_action` is passed to
         :meth:`PokemonEnv.step` each iteration.
@@ -82,8 +78,7 @@ class MapleAgent:
         current_map = action_mapping
 
         if info and info.get("request_teampreview"):
-            battle = info.get("battle")
-            team_order = self.teampreview(battle)
+            team_order = self.choose_team(current_obs)
             current_obs, current_map, _, done, info = self.env.step(team_order)
 
         while not done:
