@@ -35,7 +35,7 @@ class MapleAgent:
         return "/team " + "".join(str(i) for i in indices)
 
     def select_action(self, observation: Any, action_mapping: Any) -> int:
-        """Select a random valid action and execute ``env.step``.
+        """Return a random valid action index.
 
         Parameters
         ----------
@@ -44,6 +44,10 @@ class MapleAgent:
         action_mapping : Any
             Mapping of available action indices as provided by
             ``action_helper.get_available_actions_with_details``.
+        Returns
+        -------
+        int
+            Selected action index.
         """
 
         # ``action_mapping`` は ``action_helper.get_available_actions_with_details``
@@ -54,14 +58,10 @@ class MapleAgent:
         else:
             action_idx = int(self.env.action_space.sample())
 
-        # ランダムに選んだ行動を即座に環境へ反映させる
-        # ``step`` の戻り値はここでは利用しない
-        self.env.step(action_idx)
-
         return action_idx
 
     def play_until_done(self, observation: Any, action_mapping: Any, info: dict | None = None) -> None:
-        """Keep calling :meth:`PokemonEnv.step` until ``done`` becomes ``True``.
+        """Keep acting until ``done`` becomes ``True``.
 
         Parameters
         ----------
@@ -72,6 +72,9 @@ class MapleAgent:
         ``info`` may include ``"request_teampreview"``.  When this flag is
         present and ``True``, a team selection is performed automatically before
         entering the main loop.
+
+        The selected index from :meth:`select_action` is passed to
+        :meth:`PokemonEnv.step` each iteration.
         """
 
         done = False
@@ -84,11 +87,7 @@ class MapleAgent:
             current_obs, current_map, _, done, info = self.env.step(team_order)
 
         while not done:
-            if current_map:
-                action_idx = int(self.env.rng.choice(list(current_map.keys())))
-            else:
-                action_idx = int(self.env.action_space.sample())
-
+            action_idx = self.select_action(current_obs, current_map)
             current_obs, current_map, _, done, _ = self.env.step(action_idx)
 
 
