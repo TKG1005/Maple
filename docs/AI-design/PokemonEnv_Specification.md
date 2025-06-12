@@ -1,7 +1,7 @@
 # PokemonEnv 技術仕様書 — Maple Project
 
 ## 1. 目的
-本ドキュメントは、Maple プロジェクトの `pokemon_env.py` に定義された **PokemonEnv** クラスの技術仕様を、LLM がコード生成・補完の際に参照できる形式でまとめたものです。
+本ドキュメントは、Maple プロジェクトの `pokemon_env.py` に定義された **PokemonEnv (Multi‑Agent Edition)** の技術仕様を、LLM がコード生成・補完の際に参照できる形式でまとめたものです。
 
 ---
 
@@ -12,7 +12,7 @@
 | 接続方式 | **WebSocket** (`ws://localhost:8000`) |
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
-| 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)` |
+| 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)`を2インスタンス同時に起動し、両エージェントを対戦状態にする |
 | メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.EnvPlayer(PSClient)はメッセージを解析してbattleオブジェクトを更新して、PokemonEnvにフラグ付きで送信 3.EnvPlayerはPokemonEnvから帰ってきたコマンドをサーバに送信 4.サーバが結果を返す |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがあるs
@@ -24,6 +24,7 @@
 
 * 外部: `poke_env` は **asyncio**‐ベースで WebSocket を管理  
 * PokemonEnv API: **同期的** (`reset()`, `step()`)  
+ * Multi‑Agent 対応に伴い、`step()` は dict 形式を返す*
 
 * 手順
   1. 非同期処理は poke-env が保持する `POKE_LOOP` イベントループを利用し、同期 API からは `asyncio.run_coroutine_threadsafe(coro, POKE_LOOP)` でタスクを登録し `future.result()` で待機する
@@ -62,13 +63,16 @@
 * 次元数: `StateObserver.get_observation_dimension()` で算出  
 
 ```text
-observation = concat(
+observation = {
+  "player_0": concat(
     own_active_stats,
     own_bench_1, own_bench_2,
     opp_active_stats,
     ...,
     global_field_info
-)
+  )
+  "player_1":concat(...) #2p目線で計算
+}
 ```
 
 ---
@@ -76,7 +80,10 @@ observation = concat(
 ## 5. 行動空間
 
 ```
-gymnasium.spaces.Discrete(10)  # index 0‑9
+action_spaces = {
+    "player_0": Discrete(10), # index 0‑9
+    "player_1": Discrete(10)
+}  
 ```
 
 | Index | 意味 | 備考 |
@@ -95,31 +102,33 @@ gymnasium.spaces.Discrete(10)  # index 0‑9
 
 ```mermaid
 sequenceDiagram
-    participant Agent
+ 
+    participant Agent0 as Agent‑0
+    participant Agent1 as Agent‑1
     participant PokemonEnv
-    participant poke-env/EnvPlayer
+    participant poke-env/P0
+    participant poke-env/P1
     participant Showdown
-    Agent->>PokemonEnv: reset()
-    PokemonEnv->>poke-env: create EnvPlayer()
-    poke-env->>Showdown: play_against()
-    Showdown->>EnvPlayer: request
-    EnvPlayer->>PokemonEnv: battle
-    PokemonEnv->>Agent: observation, info
-    Agent->>PokemonEnv: step(action=choose_move(observation))
-    PokemonEnv->>EnvPlayer: action queue
-    EnvPlayer->>Showdown: action
-    Showdonw->>EnvPlayer: request
+    Agent0->>PokemonEnv: reset()
+    Agent1->>PokemonEnv: reset()
+    Agent0->>PokemonEnv: step()
+    Agent1->>PokemonEnv: step()
+    PokemonEnv->>Agent0: choose_move(observe, action_mask, done, info)
+    PokemonEnv->>Agent1: choose_move(observe, action_mask, done, info)
+    Agent0->>PokemonEnv: step()
+    Agent1->>PokemonEnv: step()    
+    …
 ```
 
 ---
 
 ## 7. 報酬・エピソード終了
 
-| 状況 | `terminated` | `reward` |
+| 状況 | terminated["player_0"] | terminated["player_1"] | reward["player_0"] | reward["player_1"] |
 | --- | --- | --- |
 | 自分が勝利 | True | +1 |
-| 自分が敗北 | True | -1 |
-| ターン > `MAX_TURNS` | True (`truncated`) | 0 |
+| 相手が勝利 | True | -1 | +1 |
+| ターン > MAX_TURNS | True (truncated) | 0 | 0 |
 | 途中ターン | False | 0 |
 
 ---
@@ -133,6 +142,8 @@ sequenceDiagram
 * **step 待機処理**: `asyncio.wait_for(queue.get(), timeout)` を用いて待ち合わせ、ビジーウェイトを避ける
 * **close() 実装**: `POKE_LOOP` 上のタスクをキャンセルし、キューの `join()` 後にリソースを解放する
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
+* **Multi‑Agent dict API**: 観測・行動・報酬・terminated/truncated・info はすべて `"player_0"`, `"player_1"` キー付き dict
+* **対戦組み合わせ**: 同一 MapleAgent の重み共有 or スナップショット固定など、訓練シナリオに応じて差し替え可能
 
 ---
 
