@@ -39,7 +39,7 @@ def run_single_battle() -> dict:
         battle_format="gen9bssregi",
         server_configuration=LocalhostServerConfiguration,
         team=TEAM,
-        log_level=logging.WARNING,
+        log_level=logging.DEBUG,
     )
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
