@@ -23,22 +23,34 @@ class MapleAgentPlayer(Player):
         self._helper = action_helper
 
     def choose_move(self, battle: Battle) -> Any:
+        print(
+            f"[DBG_STOP] MapleAgentPlayer.choose_move start tp={battle.teampreview} turn={battle.turn}"
+        )
         # battle から状態ベクトルと利用可能アクションを取得
         state = self._observer.observe(battle)
         mask, mapping = self._helper.get_available_actions(battle)
+        print(f"[DBG_STOP] MapleAgentPlayer available mapping {mapping}")
 
         # MapleAgent で行動インデックスを選択
         idx = self.maple_agent.select_action(state, mask)
 
         # インデックスを BattleOrder に変換
-        order = self._helper.action_index_to_order(self, battle, idx)
+        try:
+            order = self._helper.action_index_to_order(self, battle, idx)
+        except Exception as e:
+            print(
+                f"[DBG_STOP] MapleAgentPlayer action conversion error idx={idx} mapping={mapping} error={e}"
+            )
+            raise
         return order
 
     async def choose_team(self, battle) -> str:
         """チームプレビューに応答し、先頭3匹を選出する。"""
 
         # TODO: MapleAgent.choose_team に差し替え予定
-        return "/team 123"
+        team = "/team 123"
+        print(f"[DBG_STOP] MapleAgentPlayer.choose_team -> {team}")
+        return team
 
 
 __all__ = ["MapleAgentPlayer"]
