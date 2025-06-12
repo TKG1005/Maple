@@ -36,10 +36,10 @@
   8. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   9. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
   10. `request`が発生したら`EnvPlaer`は`battle`オブジェクトを更新し、`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する(ここで初めてbattleオブジェクトが更新)
-  11. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルと、`action_helper.py`の`get_available_actions_with_details`で作成した選択可能な行動マッピングを送信する。
-  12. `Agent`はアルゴリズムに基づいて行動を決定し、`step(action = choose_move(state,mapping))`を実行
+  11. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルと、`action_helper.py`の`get_available_actions_with_details`で作成した選択可能な行動マスクを送信する。
+  12. `Agent`は`choose_move(state,mask)`で行動を選択して、`step(action)`を呼ぶ
   13. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
-  14. `EnvPlayer`(`poke-env`)は`action`をShowdownサーバに送信する
+  14. `EnvPlayer`(`poke-env`)は`action`を`battleorder`に変換してShowdownサーバに送信して、次の`request`を待つ
   15. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
   16. `PokemonEnv`は`step(action)`の戻り値として`Agent`に`state(observation)`と`reward`,`done`(エピソード終了判定),`info`(未実装)を返す
   17. `Agent`は`受け取った情報から行動を選択して次の`step(action)`を呼ぶ

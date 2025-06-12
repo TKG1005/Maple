@@ -77,13 +77,15 @@ class MapleAgent:
         current_obs = observation
         current_map = action_mapping
 
-        if info and info.get("request_teampreview"):
-            team_order = self.choose_team(current_obs)
-            current_obs, current_map, _, done, info = self.env.step(team_order)
+
 
         while not done:
-            action_idx = self.select_action(current_obs, current_map)
-            print(f"Agent select /move {action_idx}")
-            current_obs, current_map, _, done, _ = self.env.step(action_idx)
+            if info and info.get("request_teampreview"):
+                team_order = self.choose_team(current_obs)
+                current_obs, current_map, _, done, info = self.env.step(team_order)
+            else:
+                action_idx = self.select_action(current_obs, current_map)
+                print(f"Agent select /move {action_idx}")
+                current_obs, current_map, _, done, _ = self.env.step(action_idx)
 
 

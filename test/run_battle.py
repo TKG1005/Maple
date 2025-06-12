@@ -15,6 +15,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 import time
+import logging
 
 from src.agents.MapleAgent import MapleAgent
 from src.agents.rule_based_player import RuleBasedPlayer
@@ -38,6 +39,7 @@ def run_single_battle() -> dict:
         battle_format="gen9bssregi",
         server_configuration=LocalhostServerConfiguration,
         team=TEAM,
+        log_level=logging.WARNING,
     )
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
