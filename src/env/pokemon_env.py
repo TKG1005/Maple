@@ -108,9 +108,7 @@ class PokemonEnv(gym.Env):
         observation = self.state_observer.observe(battle)
 
         # battle 情報から利用可能な行動マスクを生成
-        action_mask, _ = self.action_helper.get_available_actions_with_details(
-            battle
-        )
+        action_mask, _ = self.action_helper.get_available_actions_with_details(battle)
 
         action_idx = self._agent.select_action(observation, action_mask)
         return int(action_idx)
@@ -164,7 +162,10 @@ class PokemonEnv(gym.Env):
 
         # 対戦開始処理を poke-env のイベントループで同期実行
         self._battle_task = asyncio.run_coroutine_threadsafe(
-            self._env_player.battle_against(self.opponent_player, n_battles=1),
+            asyncio.gather(
+                self._env_player.play_against(self.opponent_player, n_battles=1),
+                self.opponent_player.play_against(self._env_player, n_battles=1),
+            ),
             POKE_LOOP,
         )
 
@@ -180,7 +181,12 @@ class PokemonEnv(gym.Env):
             "battle_tag": battle.battle_tag,
             "request_teampreview": True,
         }
-        return observation, info
+
+        if hasattr(self, "single_agent_mode"):
+            return observation, info
+
+        observations = {agent_id: observation for agent_id in self.agent_ids}
+        return observations, info
 
     def step(self, action: Any) -> Tuple[Any, dict, float, bool, dict]:
         """Send ``action`` to :class:`EnvPlayer` and wait for the next state."""
@@ -203,9 +209,7 @@ class PokemonEnv(gym.Env):
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
 
         observation = self.state_observer.observe(battle)
-        action_mask, _ = self.action_helper.get_available_actions_with_details(
-            battle
-        )
+        action_mask, _ = self.action_helper.get_available_actions_with_details(battle)
         reward = self._calc_reward(battle)
         done: bool = bool(getattr(battle, "finished", False))
         info: dict = {}
