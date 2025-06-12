@@ -8,6 +8,7 @@ from typing import Any, Tuple
 import numpy as np
 
 import gymnasium as gym
+from gymnasium.spaces import Dict
 import asyncio
 import logging
 from pathlib import Path
@@ -49,6 +50,9 @@ class PokemonEnv(gym.Env):
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
 
+        # マルチエージェント用のエージェントID
+        self.agent_ids = ("player_0", "player_1")
+
         # timeout 設定を config/env_config.yml から読み込む
         config_path = Path(__file__).resolve().parents[2] / "config" / "env_config.yml"
         try:
@@ -63,14 +67,27 @@ class PokemonEnv(gym.Env):
         # StateObserver is expected to expose a `get_observation_dimension`
         # method which returns the length of the state vector.
         state_dim = self.state_observer.get_observation_dimension()
-        self.observation_space = gym.spaces.Box(
+        single_obs_space = gym.spaces.Box(
             low=0,
             high=1,
             shape=(state_dim,),
             dtype=np.float32,
         )
-        # Action indices are represented as a discrete space.
-        self.action_space = gym.spaces.Discrete(self.ACTION_SIZE)
+        single_action_space = gym.spaces.Discrete(self.ACTION_SIZE)
+
+        # 各エージェント用の観測・行動・報酬空間を Dict で保持
+        self.observation_space = Dict(
+            {agent_id: single_obs_space for agent_id in self.agent_ids}
+        )
+        self.action_space = Dict(
+            {agent_id: single_action_space for agent_id in self.agent_ids}
+        )
+        self.reward_space = Dict(
+            {
+                agent_id: gym.spaces.Box(low=-1.0, high=1.0, shape=(), dtype=np.float32)
+                for agent_id in self.agent_ids
+            }
+        )
 
     # ------------------------------------------------------------------
     # Agent interaction utilities
