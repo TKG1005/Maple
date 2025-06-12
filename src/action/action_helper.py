@@ -63,6 +63,7 @@ def get_available_actions(battle: Battle) -> Tuple[np.ndarray, Dict[int, Tuple[s
     moves_sorted: List[Move] = [] if force_switch else sorted(battle.available_moves, key=lambda m: m.id)
     switches: List[Pokemon] = battle.available_switches
     can_tera: bool = (battle.can_tera is not None) and (not force_switch)
+    
 
     mask = generate_action_mask(moves_sorted, switches, can_tera, force_switch)
 
