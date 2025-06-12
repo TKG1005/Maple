@@ -156,6 +156,7 @@ class PokemonEnv(gym.Env):
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
         ).result()
+        POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
         observation = self.state_observer.observe(battle)
 
         info: dict = {
@@ -182,6 +183,7 @@ class PokemonEnv(gym.Env):
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
         ).result()
+        POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
 
         observation = self.state_observer.observe(battle)
         _, action_mapping = self.action_helper.get_available_actions_with_details(
@@ -214,13 +216,10 @@ class PokemonEnv(gym.Env):
         """Clean up resources used by the environment."""
         if hasattr(self, "_battle_task"):
             self._battle_task.cancel()
+            asyncio.run_coroutine_threadsafe(self._battle_task, POKE_LOOP).result()
         if hasattr(self, "_env_player"):
             asyncio.run_coroutine_threadsafe(
                 self._env_player.ps_client.stop_listening(), POKE_LOOP
             ).result()
-        asyncio.run_coroutine_threadsafe(
-            self._action_queue.join(), POKE_LOOP
-        ).result()
-        asyncio.run_coroutine_threadsafe(
-            self._battle_queue.join(), POKE_LOOP
-        ).result()
+        asyncio.run_coroutine_threadsafe(self._action_queue.join(), POKE_LOOP).result()
+        asyncio.run_coroutine_threadsafe(self._battle_queue.join(), POKE_LOOP).result()
