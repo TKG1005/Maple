@@ -9,9 +9,10 @@ import numpy as np
 
 import gymnasium as gym
 import asyncio
-import threading
-import time
 import logging
+from pathlib import Path
+import yaml
+from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
 
@@ -47,6 +48,15 @@ class PokemonEnv(gym.Env):
         self.state_observer = state_observer
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
+
+        # timeout 設定を config/env_config.yml から読み込む
+        config_path = Path(__file__).resolve().parents[2] / "config" / "env_config.yml"
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                cfg = yaml.safe_load(f)
+            self.timeout = float(cfg.get("queue_timeout", 5))
+        except Exception:
+            self.timeout = 5.0
 
         # Determine the dimension of the observation vector from the
         # provided StateObserver and create the observation space.  The
@@ -135,33 +145,17 @@ class PokemonEnv(gym.Env):
         if hasattr(self.opponent_player, "reset_battles"):
             self.opponent_player.reset_battles()
 
-        # 対戦を非同期で開始 (ローカルの Showdown サーバー使用)
-        async def start_battle() -> None:
-            await asyncio.gather(
-                self._env_player.send_challenges(
-                    self.opponent_player.username,
-                    n_challenges=1,
-                    to_wait=self.opponent_player.ps_client.logged_in,
-                ),
-                self.opponent_player.accept_challenges(
-                    self._env_player.username, n_challenges=1
-                ),
-            )
-
-        self._battle_thread = threading.Thread(
-            target=lambda: asyncio.run(start_battle()),
-            daemon=True,
+        # 対戦開始処理を poke-env のイベントループで同期実行
+        self._battle_task = asyncio.run_coroutine_threadsafe(
+            self._env_player.battle_against(self.opponent_player, n_battles=1),
+            POKE_LOOP,
         )
-        self._battle_thread.start()
 
-        # バトル生成を待った後、チーム選択リクエストを待機
-        while not self._env_player.battles:
-            time.sleep(0.1)
-
-        while self._battle_queue.empty():
-            time.sleep(0.1)
-
-        battle = self._battle_queue.get_nowait()
+        # チーム選択リクエストを待機
+        battle = asyncio.run_coroutine_threadsafe(
+            asyncio.wait_for(self._battle_queue.get(), self.timeout),
+            POKE_LOOP,
+        ).result()
         observation = self.state_observer.observe(battle)
 
         info: dict = {
@@ -175,15 +169,19 @@ class PokemonEnv(gym.Env):
 
         # アクション (行動インデックスまたはチーム選択文字列) をキューへ投入
         if isinstance(action, str):
-            self._action_queue.put_nowait(action)
+            asyncio.run_coroutine_threadsafe(
+                self._action_queue.put(action), POKE_LOOP
+            ).result()
         else:
-            self._action_queue.put_nowait(int(action))
+            asyncio.run_coroutine_threadsafe(
+                self._action_queue.put(int(action)), POKE_LOOP
+            ).result()
 
         # EnvPlayer から次の battle オブジェクトが届くまで待機
-        while self._battle_queue.empty():
-            time.sleep(0.1)
-
-        battle = self._battle_queue.get_nowait()
+        battle = asyncio.run_coroutine_threadsafe(
+            asyncio.wait_for(self._battle_queue.get(), self.timeout),
+            POKE_LOOP,
+        ).result()
 
         observation = self.state_observer.observe(battle)
         _, action_mapping = self.action_helper.get_available_actions_with_details(
@@ -214,4 +212,15 @@ class PokemonEnv(gym.Env):
 
     def close(self) -> None:
         """Clean up resources used by the environment."""
-        pass
+        if hasattr(self, "_battle_task"):
+            self._battle_task.cancel()
+        if hasattr(self, "_env_player"):
+            asyncio.run_coroutine_threadsafe(
+                self._env_player.ps_client.stop_listening(), POKE_LOOP
+            ).result()
+        asyncio.run_coroutine_threadsafe(
+            self._action_queue.join(), POKE_LOOP
+        ).result()
+        asyncio.run_coroutine_threadsafe(
+            self._battle_queue.join(), POKE_LOOP
+        ).result()
