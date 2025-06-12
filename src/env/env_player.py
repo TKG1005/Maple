@@ -43,6 +43,17 @@ class EnvPlayer(Player):
         maybe_default_order: bool = False,
     ):
 
+        # 最初のターンでは ``battle.available_moves`` が更新されるまで待機する
+        if battle.turn == 1 and not battle.available_moves:
+            async def _wait_moves() -> None:
+                while not battle.available_moves:
+                    await asyncio.sleep(0.1)
+
+            try:
+                await asyncio.wait_for(_wait_moves(), timeout=10.0)
+            except asyncio.TimeoutError as exc:
+                raise RuntimeError("No available moves after 10 seconds") from exc
+
         if maybe_default_order and (
             "illusion" in [p.ability for p in battle.team.values()]
             or random.random() < self.DEFAULT_CHOICE_CHANCE
