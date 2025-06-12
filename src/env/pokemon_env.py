@@ -163,10 +163,7 @@ class PokemonEnv(gym.Env):
 
         # 対戦開始処理を poke-env のイベントループで同期実行
         self._battle_task = asyncio.run_coroutine_threadsafe(
-            asyncio.gather(
-                self._env_player.battle_against(self.opponent_player, n_battles=1),
-                self.opponent_player.battle_against(self._env_player, n_battles=1),
-            ),
+            self._run_battle(),
             POKE_LOOP,
         )
 
@@ -189,6 +186,14 @@ class PokemonEnv(gym.Env):
 
         observations = {agent_id: observation for agent_id in self.agent_ids}
         return observations, info
+
+    async def _run_battle(self) -> None:
+        """Start the battle coroutines concurrently."""
+
+        await asyncio.gather(
+            self._env_player.battle_against(self.opponent_player, n_battles=1),
+            self.opponent_player.battle_against(self._env_player, n_battles=1),
+        )
 
     def step(self, action_dict: dict[str, int]):
         """マルチエージェント形式で1ステップ進める。"""
