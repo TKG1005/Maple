@@ -22,8 +22,6 @@ class MapleAgent:
         override this method to implement a custom selection strategy.
         """
 
-        print("チームプレビューリクエスト確認")
-
         team_size = 6
         num_to_select = min(3, team_size)
         indices = self.env.rng.choice(team_size, size=num_to_select, replace=False)
