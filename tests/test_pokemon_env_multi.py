@@ -142,3 +142,9 @@ def test_pokemon_env_multi(monkeypatch):
         )
         assert isinstance(observation, dict) and "player_0" in observation
     env.close()
+
+
+if __name__ == "__main__":
+    import pytest
+
+    raise SystemExit(pytest.main([__file__]))
