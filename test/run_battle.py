@@ -45,9 +45,14 @@ def run_single_battle() -> dict:
 
     observation, info = env.reset()
 
-    battle = next(iter(env._env_player.battles.values()))
-    _, mapping = action_helper.get_available_actions_with_details(battle)
-    agent.play_until_done(observation, mapping)
+    if info.get("request_teampreview"):
+        team_order = agent.choose_team(observation)
+        observation, mapping, _, _, info = env.step(team_order)
+    else:
+        battle = next(iter(env._env_player.battles.values()))
+        _, mapping = action_helper.get_available_actions_with_details(battle)
+
+    agent.play_until_done(observation, mapping, info)
 
     battle = next(iter(env._env_player.battles.values()))
 
