@@ -52,5 +52,12 @@ class MapleAgentPlayer(Player):
         print(f"[DBG_STOP] MapleAgentPlayer.choose_team -> {team}")
         return team
 
+    def teampreview(self, battle: Battle) -> str:
+        """チームプレビューでの選択を :class:`MapleAgent` に委譲する。"""
+
+        obs = self._observer.observe(battle)
+        team_cmd = self.maple_agent.choose_team(obs)
+        return team_cmd
+
 
 __all__ = ["MapleAgentPlayer"]
