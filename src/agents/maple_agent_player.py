@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
+from pathlib import Path
 
 from poke_env.player import Player
 from poke_env.environment.battle import Battle
 
 from .MapleAgent import MapleAgent
+from src.state.state_observer import StateObserver
+from src.action import action_helper
 
 
 class MapleAgentPlayer(Player):
@@ -14,12 +17,26 @@ class MapleAgentPlayer(Player):
     def __init__(self, maple_agent: "MapleAgent", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.maple_agent = maple_agent
+        # StateObserver と ActionHelper (モジュール) を保持
+        state_spec = Path(__file__).resolve().parents[2] / "config" / "state_spec.yml"
+        self._observer = StateObserver(str(state_spec))
+        self._helper = action_helper
 
     def choose_move(self, battle: Battle) -> Any:
-        pass
+        # battle から状態ベクトルと利用可能アクションを取得
+        state = self._observer.observe(battle)
+        mask, mapping = self._helper.get_available_actions(battle)
+
+        # MapleAgent で行動インデックスを選択
+        idx = self.maple_agent.select_action(state, mask)
+
+        # インデックスを BattleOrder に変換
+        order = self._helper.action_index_to_order(self, battle, idx)
+        return order
 
     def choose_team(self, battle: Battle) -> Any:
-        pass
+        state = self._observer.observe(battle)
+        return self.maple_agent.choose_team(state)
 
 
 __all__ = ["MapleAgentPlayer"]
