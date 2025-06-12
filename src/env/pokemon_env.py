@@ -219,17 +219,13 @@ class PokemonEnv(gym.Env):
         self._current_battle = battle
 
         observation = self.state_observer.observe(battle)
-        reward_val = self._calc_reward(battle)
+        rewards = self._compute_rewards(battle)
         terminated = bool(getattr(battle, "finished", False))
         truncated = getattr(battle, "turn", 0) > self.MAX_TURNS
         if truncated:
-            reward_val = 0.0
+            rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
         observations = {agent_id: observation for agent_id in self.agent_ids}
-        rewards = {
-            self.agent_ids[0]: reward_val,
-            self.agent_ids[1]: -reward_val,
-        }
         term_flags = {agent_id: terminated for agent_id in self.agent_ids}
         trunc_flags = {agent_id: truncated for agent_id in self.agent_ids}
         infos = {agent_id: {} for agent_id in self.agent_ids}
@@ -239,7 +235,13 @@ class PokemonEnv(gym.Env):
                 battle
             )
             done = terminated or truncated
-            return observation, action_mask, reward_val, done, infos[self.agent_ids[0]]
+            return (
+                observation,
+                action_mask,
+                rewards[self.agent_ids[0]],
+                done,
+                infos[self.agent_ids[0]],
+            )
 
         return observations, rewards, term_flags, trunc_flags, infos
 
@@ -255,6 +257,18 @@ class PokemonEnv(gym.Env):
         if getattr(battle, "won", False):
             return 1.0
         return -1.0
+
+    def _compute_rewards(self, battle: Any) -> dict[str, float]:
+        """Compute rewards for both agents based on battle state."""
+
+        if not getattr(battle, "finished", False):
+            return {agent_id: 0.0 for agent_id in self.agent_ids}
+
+        reward = 1.0 if getattr(battle, "won", False) else -1.0
+        return {
+            self.agent_ids[0]: reward,
+            self.agent_ids[1]: -reward,
+        }
 
     def render(self) -> None:
         """Render the environment if applicable."""
