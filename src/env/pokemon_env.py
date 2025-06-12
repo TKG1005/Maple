@@ -35,6 +35,7 @@ class PokemonEnv(gym.Env):
         super().__init__()
 
         self.ACTION_SIZE = 10  # "gen9ou"ルールでは行動空間は10で固定
+        self.MAX_TURNS = 100  # エピソードの最大ターン数
 
         # Step10: 非同期アクションキューを導入
         # 数値アクションだけでなく、チーム選択コマンドなどの文字列も
@@ -175,6 +176,7 @@ class PokemonEnv(gym.Env):
             POKE_LOOP,
         ).result()
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
+        self._current_battle = battle
         observation = self.state_observer.observe(battle)
 
         info: dict = {
@@ -188,33 +190,58 @@ class PokemonEnv(gym.Env):
         observations = {agent_id: observation for agent_id in self.agent_ids}
         return observations, info
 
-    def step(self, action: Any) -> Tuple[Any, dict, float, bool, dict]:
-        """Send ``action`` to :class:`EnvPlayer` and wait for the next state."""
+    def step(self, action_dict: dict[str, int]):
+        """マルチエージェント形式で1ステップ進める。"""
 
-        # アクション (行動インデックスまたはチーム選択文字列) をキューへ投入
-        if isinstance(action, str):
+        # 入力アクションをキューへ登録
+        player_action = action_dict.get("player_0")
+        if player_action is None:
+            raise ValueError("player_0 action required")
+
+        if isinstance(player_action, str):
             asyncio.run_coroutine_threadsafe(
-                self._action_queue.put(action), POKE_LOOP
+                self._action_queue.put(player_action), POKE_LOOP
             ).result()
         else:
+            order = self.action_helper.action_index_to_order(
+                self._env_player, self._current_battle, int(player_action)
+            )
             asyncio.run_coroutine_threadsafe(
-                self._action_queue.put(int(action)), POKE_LOOP
+                self._action_queue.put(order), POKE_LOOP
             ).result()
 
-        # EnvPlayer から次の battle オブジェクトが届くまで待機
+        # 次の状態を待機
         battle = asyncio.run_coroutine_threadsafe(
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
         ).result()
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
+        self._current_battle = battle
 
         observation = self.state_observer.observe(battle)
-        action_mask, _ = self.action_helper.get_available_actions_with_details(battle)
-        reward = self._calc_reward(battle)
-        done: bool = bool(getattr(battle, "finished", False))
-        info: dict = {}
+        reward_val = self._calc_reward(battle)
+        terminated = bool(getattr(battle, "finished", False))
+        truncated = getattr(battle, "turn", 0) > self.MAX_TURNS
+        if truncated:
+            reward_val = 0.0
 
-        return observation, action_mask, reward, done, info
+        observations = {agent_id: observation for agent_id in self.agent_ids}
+        rewards = {
+            self.agent_ids[0]: reward_val,
+            self.agent_ids[1]: -reward_val,
+        }
+        term_flags = {agent_id: terminated for agent_id in self.agent_ids}
+        trunc_flags = {agent_id: truncated for agent_id in self.agent_ids}
+        infos = {agent_id: {} for agent_id in self.agent_ids}
+
+        if hasattr(self, "single_agent_mode"):
+            action_mask, _ = self.action_helper.get_available_actions_with_details(
+                battle
+            )
+            done = terminated or truncated
+            return observation, action_mask, reward_val, done, infos[self.agent_ids[0]]
+
+        return observations, rewards, term_flags, trunc_flags, infos
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:
