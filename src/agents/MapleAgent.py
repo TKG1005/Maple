@@ -30,41 +30,46 @@ class MapleAgent:
         indices = sorted(int(i) + 1 for i in indices)
         return "/team " + "".join(str(i) for i in indices)
 
-    def select_action(self, observation: Any, action_mapping: Any) -> int:
+    def select_action(self, observation: Any, action_mask: Any) -> int:
         """Return a random valid action index.
 
         Parameters
         ----------
         observation : Any
             Observation vector generated from :class:`PokemonEnv`.
-        action_mapping : Any
-            Mapping of available action indices as provided by
-            ``action_helper.get_available_actions_with_details``.
+        action_mask : Any
+            Action availability mask vector as provided by
+            ``action_helper.get_available_actions``.
         Returns
         -------
         int
             Selected action index.
         """
 
-        # ``action_mapping`` は ``action_helper.get_available_actions_with_details``
-        # から得られる辞書で、キーに選択可能な行動 index が含まれている。マッピングが
-        # 空の場合は ``action_space`` 全体からサンプリングする。
-        if action_mapping:
-            action_idx = int(self.env.rng.choice(list(action_mapping.keys())))
+        # ``action_mask`` は ``action_helper.get_available_actions`` から得られる
+        # ベクトルで、値が 1 のインデックスが選択可能な行動を示す。マスクが無効な
+        # 場合は ``action_space`` 全体からサンプリングする。
+        try:
+            valid_indices = [i for i, flag in enumerate(action_mask) if flag]
+        except Exception:
+            valid_indices = []
+
+        if valid_indices:
+            action_idx = int(self.env.rng.choice(valid_indices))
         else:
             action_idx = int(self.env.action_space.sample())
 
         return action_idx
 
-    def play_until_done(self, observation: Any, action_mapping: Any, info: dict | None = None) -> None:
+    def play_until_done(self, observation: Any, action_mask: Any, info: dict | None = None) -> None:
         """Keep acting until ``done`` becomes ``True``.
 
         Parameters
         ----------
         observation : Any
             Initial observation vector returned by ``env.reset``.
-        action_mapping : Any
-            Mapping of available actions corresponding to ``observation``.
+        action_mask : Any
+            Action availability mask corresponding to ``observation``.
         ``info`` may include ``"request_teampreview"``.  When this flag is
         present and ``True``, a team selection is performed automatically by
         calling :meth:`choose_team` before entering the main loop.
@@ -75,17 +80,17 @@ class MapleAgent:
 
         done = False
         current_obs = observation
-        current_map = action_mapping
+        current_mask = action_mask
 
 
 
         while not done:
             if info and info.get("request_teampreview"):
                 team_order = self.choose_team(current_obs)
-                current_obs, current_map, _, done, info = self.env.step(team_order)
+                current_obs, current_mask, _, done, info = self.env.step(team_order)
             else:
-                action_idx = self.select_action(current_obs, current_map)
+                action_idx = self.select_action(current_obs, current_mask)
                 print(f"Agent select /move {action_idx}")
-                current_obs, current_map, _, done, _ = self.env.step(action_idx)
+                current_obs, current_mask, _, done, _ = self.env.step(action_idx)
 
 

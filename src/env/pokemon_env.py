@@ -80,9 +80,9 @@ class PokemonEnv(gym.Env):
         self._agent = agent
 
     def process_battle(self, battle: Any) -> int:
-        """Create an observation and available action mapping for ``battle``.
+        """Create an observation and available action mask for ``battle``.
 
-        The resulting state vector and action mapping are sent to the registered
+        The resulting state vector and action mask are sent to the registered
         :class:`MapleAgent` which returns an action index.
         """
         if self._agent is None:
@@ -90,12 +90,12 @@ class PokemonEnv(gym.Env):
 
         observation = self.state_observer.observe(battle)
 
-        # battle 情報から利用可能な行動マッピングを生成
-        _, action_mapping = self.action_helper.get_available_actions_with_details(
+        # battle 情報から利用可能な行動マスクを生成
+        action_mask, _ = self.action_helper.get_available_actions_with_details(
             battle
         )
 
-        action_idx = self._agent.select_action(observation, action_mapping)
+        action_idx = self._agent.select_action(observation, action_mask)
         return int(action_idx)
 
     def reset(
@@ -186,14 +186,14 @@ class PokemonEnv(gym.Env):
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
 
         observation = self.state_observer.observe(battle)
-        _, action_mapping = self.action_helper.get_available_actions_with_details(
+        action_mask, _ = self.action_helper.get_available_actions_with_details(
             battle
         )
         reward = self._calc_reward(battle)
         done: bool = bool(getattr(battle, "finished", False))
         info: dict = {}
 
-        return observation, action_mapping, reward, done, info
+        return observation, action_mask, reward, done, info
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:
