@@ -2,6 +2,7 @@
 ├── config
 │   ├── action_map.yml
 │   ├── battle_available_notes.md
+│   ├── env_config.yml
 │   ├── generate_yaml.py
 │   ├── move_catalog.md
 │   ├── moves_english_japanese.csv
@@ -575,4 +576,4 @@
     ├── run_battle.py
     └── simple_agent.py
 
-403 directories, 173 files
+403 directories, 174 files
