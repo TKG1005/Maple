@@ -164,8 +164,8 @@ class PokemonEnv(gym.Env):
         # 対戦開始処理を poke-env のイベントループで同期実行
         self._battle_task = asyncio.run_coroutine_threadsafe(
             asyncio.gather(
-                self._env_player.play_against(self.opponent_player, n_battles=1),
-                self.opponent_player.play_against(self._env_player, n_battles=1),
+                self._env_player.battle_against(self.opponent_player, n_battles=1),
+                self.opponent_player.battle_against(self._env_player, n_battles=1),
             ),
             POKE_LOOP,
         )
