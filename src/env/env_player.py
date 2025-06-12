@@ -70,7 +70,7 @@ class EnvPlayer(Player):
                 self._env._action_queue.get(), self._env.timeout
             )
             self._env._action_queue.task_done()
-            print(f"チーム選択を送信 {message}")
+            print(f"チーム選択を送信 {message}　プレイヤー＝{battle.player_username}")
         else:
             if maybe_default_order:
                 self._trying_again.set()
