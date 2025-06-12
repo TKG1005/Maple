@@ -20,7 +20,6 @@ class EnvPlayer(Player):
 
         # PokemonEnv に最新の battle オブジェクトを送信
         await self._env._battle_queue.put(battle)
-        
 
         # PokemonEnv.step からアクションが投入されるまで待機
         action_data = await asyncio.wait_for(
@@ -28,14 +27,14 @@ class EnvPlayer(Player):
         )
         self._env._action_queue.task_done()
 
-        # choose_move は行動インデックスのみを想定する
-        if not isinstance(action_data, int):
-            raise ValueError("Expected action index from PokemonEnv")
+        # 文字列はそのまま、整数は BattleOrder へ変換
+        if isinstance(action_data, int):
+            return self._env.action_helper.action_index_to_order(
+                self, battle, action_data
+            )
+        return action_data
 
-        # 取得したインデックスを BattleOrder に変換して返す
-        return self._env.action_helper.action_index_to_order(self, battle, action_data)
-
-    #Playerクラスの_handle_battle_requestをオーバーライド
+    # Playerクラスの_handle_battle_requestをオーバーライド
     async def _handle_battle_request(
         self,
         battle: AbstractBattle,
@@ -45,6 +44,7 @@ class EnvPlayer(Player):
 
         # 最初のターンでは ``battle.available_moves`` が更新されるまで待機する
         if battle.turn == 1 and not battle.available_moves:
+
             async def _wait_moves() -> None:
                 while not battle.available_moves:
                     await asyncio.sleep(0.1)
@@ -78,7 +78,6 @@ class EnvPlayer(Player):
             if isinstance(choice, Awaitable):
                 choice = await choice
             message = choice.message
-        
 
         await self.ps_client.send_message(
             message,
