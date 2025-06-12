@@ -34,9 +34,11 @@ class MapleAgentPlayer(Player):
         order = self._helper.action_index_to_order(self, battle, idx)
         return order
 
-    def choose_team(self, battle: Battle) -> Any:
-        state = self._observer.observe(battle)
-        return self.maple_agent.choose_team(state)
+    async def choose_team(self, battle) -> str:
+        """チームプレビューに応答し、先頭3匹を選出する。"""
+
+        # TODO: MapleAgent.choose_team に差し替え予定
+        return "/team 123"
 
 
 __all__ = ["MapleAgentPlayer"]
