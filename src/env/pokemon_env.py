@@ -58,6 +58,11 @@ class PokemonEnv(gym.Env):
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
 
+        # 各プレイヤーが次のターンでアクション入力を要求されているかどうか
+        self._need_action: dict[str, bool] = {
+            agent_id: True for agent_id in self.agent_ids
+        }
+
         # timeout 設定を config/env_config.yml から読み込む
         config_path = Path(__file__).resolve().parents[2] / "config" / "env_config.yml"
         try:
@@ -134,6 +139,8 @@ class PokemonEnv(gym.Env):
         # 前回エピソードのキューをクリア
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
+        # 新しいエピソードでは全プレイヤーが行動入力を求められている状態から始まる
+        self._need_action = {agent_id: True for agent_id in self.agent_ids}
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -237,6 +244,28 @@ class PokemonEnv(gym.Env):
             ),
         )
 
+    def _race_get(
+        self,
+        queue: asyncio.Queue[Any],
+        *events: asyncio.Event,
+    ) -> Any | None:
+        """Return queue item or ``None`` if any event is set first."""
+
+        async def _runner() -> Any | None:
+            get_task = asyncio.create_task(queue.get())
+            wait_tasks = [asyncio.create_task(e.wait()) for e in events]
+            done, pending = await asyncio.wait(
+                {get_task, *wait_tasks},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for p in pending:
+                p.cancel()
+            if get_task in done:
+                return get_task.result()
+            return None
+
+        return asyncio.run_coroutine_threadsafe(_runner(), POKE_LOOP).result()
+
     def step(self, action_dict: dict[str, int | str]):
         """マルチエージェント形式で1ステップ進める。"""
 
@@ -244,6 +273,9 @@ class PokemonEnv(gym.Env):
             if agent_id not in action_dict:
                 raise ValueError(f"{agent_id} action required")
             act = action_dict[agent_id]
+
+            if not self._need_action.get(agent_id, True):
+                continue
 
             if isinstance(act, str):
                 asyncio.run_coroutine_threadsafe(
@@ -266,14 +298,41 @@ class PokemonEnv(gym.Env):
                 raise exc
 
         battles: dict[str, Any] = {}
-        for pid in self.agent_ids:
-            battle = asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(self._battle_queues[pid].get(), self.timeout),
-                POKE_LOOP,
-            ).result()
-            POKE_LOOP.call_soon_threadsafe(self._battle_queues[pid].task_done)
-            self._current_battles[pid] = battle
-            battles[pid] = battle
+
+        b0 = self._race_get(
+            self._battle_queues["player_0"],
+            self._env_players["player_0"]._waiting,
+            self._env_players["player_1"]._trying_again,
+        )
+        b1 = self._race_get(
+            self._battle_queues["player_1"],
+            self._env_players["player_1"]._waiting,
+            self._env_players["player_0"]._trying_again,
+        )
+
+        self._env_players["player_0"]._waiting.clear()
+        self._env_players["player_1"]._waiting.clear()
+
+        if b0 is None:
+            self._env_players["player_1"]._trying_again.clear()
+            b0 = self._current_battles["player_0"]
+            self._need_action["player_0"] = False
+        else:
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
+            self._current_battles["player_0"] = b0
+            self._need_action["player_0"] = True
+
+        if b1 is None:
+            self._env_players["player_0"]._trying_again.clear()
+            b1 = self._current_battles["player_1"]
+            self._need_action["player_1"] = False
+        else:
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
+            self._current_battles["player_1"] = b1
+            self._need_action["player_1"] = True
+
+        battles["player_0"] = b0
+        battles["player_1"] = b1
 
         observation = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
