@@ -21,7 +21,7 @@
 |12| 報酬計算関数 | `_calc_reward(battle)` で勝敗に応じ ±1 を返す | 実際の対戦で +1 / -1 / 0 を確認 | 実践で確認 | poke-env Battle API |
 |13| 終了判定処理 | `terminated` と `truncated` のロジック実装 | `_check_episode_end()` で `battle.finished` または `turn > MAX_TURNS` を判定 | 実戦でフラグ確認 | Battle 属性参照 |
 |14| ターン同期機構 | `_race_get` を用いて最新 `request` を取得 | `rqid` 乱序でもターンが進む | 強制交代シナリオで確認 | asyncio, rqid 管理 |
-|15| step 出力整備 | 観測・報酬・終了判定を dict 形式で返す | ランダムエージェントで 1 戦完走 | `run_battle.py` 実行 | 全機能統合 |
+|15| step 出力整備 | observations, rewards, terminated, truncated, infosを player識別子(`player_0`,`player_1`)をキーとしたdictで返す | ランダムエージェントで 1 戦完走 | `run_battle.py` 実行 | 全機能統合 |
 |16| render 実装 | ターン情報をコンソール表示 | `env.render()` を呼んでも例外なし | 目視確認 | ロギング |
 |17| close 実装 | WebSocket とキューを安全に閉じる | `env.close()` 後にリーク無し | プロファイル確認 | poke-env `stop_listening` |
 |18| MapleAgent ベースライン | 乱択行動を返すシンプルエージェント | マスク内インデックスのみ選択 | ユニットテスト | numpy RNG |
