@@ -351,7 +351,13 @@ class PokemonEnv(gym.Env):
                 infos[self.agent_ids[0]],
             )
 
-        return observations, rewards, term_flags, trunc_flags, infos
+        return {
+            "observations": observations,
+            "rewards": rewards,
+            "terminated": term_flags,
+            "truncated": trunc_flags,
+            "infos": infos,
+        }
 
     # Step13: 終了判定ユーティリティ
     def _check_episode_end(self, battle: Any) -> tuple[bool, bool]:
