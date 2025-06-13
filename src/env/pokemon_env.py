@@ -25,9 +25,9 @@ class PokemonEnv(gym.Env):
 
     def __init__(
         self,
-        opponent_player: Any,
         state_observer: Any,
         action_helper: Any,
+        opponent_player: Any | None = None,
         *,
         seed: int | None = None,
         **kwargs: Any,
@@ -40,11 +40,15 @@ class PokemonEnv(gym.Env):
         # Step10: 非同期アクションキューを導入
         # 数値アクションだけでなく、チーム選択コマンドなどの文字列も
         # 取り扱えるよう ``Any`` 型のキューを使用する
-        self._action_queue: asyncio.Queue[Any] = asyncio.Queue()
+        self._action_queues: dict[str, asyncio.Queue[Any]] = {
+            agent_id: asyncio.Queue() for agent_id in ("player_0", "player_1")
+        }
         # EnvPlayer から受け取る battle オブジェクト用キュー
-        self._battle_queue: asyncio.Queue[Any] = asyncio.Queue()
+        self._battle_queues: dict[str, asyncio.Queue[Any]] = {
+            agent_id: asyncio.Queue() for agent_id in ("player_0", "player_1")
+        }
 
-        self._agent = None  # MapleAgent を後から登録するための保持先
+        self._agents: dict[str, Any] = {}
 
         self.opponent_player = opponent_player
         self.state_observer = state_observer
@@ -93,9 +97,11 @@ class PokemonEnv(gym.Env):
     # ------------------------------------------------------------------
     # Agent interaction utilities
     # ------------------------------------------------------------------
-    def register_agent(self, agent: Any) -> None:
-        """Register the controlling :class:`MapleAgent`."""
-        self._agent = agent
+    def register_agent(self, agent: Any, player_id: str = "player_0") -> None:
+        """Register the controlling :class:`MapleAgent` for a given player."""
+        if not hasattr(self, "_agents"):
+            self._agents: dict[str, Any] = {}
+        self._agents[player_id] = agent
 
     def process_battle(self, battle: Any) -> int:
         """Create an observation and available action mask for ``battle``.
@@ -103,7 +109,7 @@ class PokemonEnv(gym.Env):
         The resulting state vector and action mask are sent to the registered
         :class:`MapleAgent` which returns an action index.
         """
-        if self._agent is None:
+        if not hasattr(self, "_agents") or not self._agents:
             raise RuntimeError("Agent not registered")
 
         observation = self.state_observer.observe(battle)
@@ -111,7 +117,11 @@ class PokemonEnv(gym.Env):
         # battle 情報から利用可能な行動マスクを生成
         action_mask, _ = self.action_helper.get_available_actions_with_details(battle)
 
-        action_idx = self._agent.select_action(observation, action_mask)
+        # ここでは player_0 のエージェントを利用する
+        agent = self._agents.get("player_0")
+        if agent is None:
+            raise RuntimeError("Agent for player_0 not registered")
+        action_idx = agent.select_action(observation, action_mask)
         return int(action_idx)
 
     def reset(
@@ -122,8 +132,8 @@ class PokemonEnv(gym.Env):
         super().reset(seed=seed)
 
         # 前回エピソードのキューをクリア
-        self._action_queue: asyncio.Queue[Any] = asyncio.Queue()
-        self._battle_queue: asyncio.Queue[Any] = asyncio.Queue()
+        self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
+        self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -138,7 +148,7 @@ class PokemonEnv(gym.Env):
             ) from exc
 
         # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
-        if not hasattr(self, "_env_player"):
+        if not hasattr(self, "_env_players"):
             from pathlib import Path
 
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
@@ -147,18 +157,36 @@ class PokemonEnv(gym.Env):
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
-            self._env_player = EnvPlayer(
-                self,
-                battle_format="gen9bssregi",
-                server_configuration=LocalhostServerConfiguration,
-                team=team,
-                log_level=logging.DEBUG,
-            )
+            self._env_players = {
+                "player_0": EnvPlayer(
+                    self,
+                    "player_0",
+                    battle_format="gen9bssregi",
+                    server_configuration=LocalhostServerConfiguration,
+                    team=team,
+                    log_level=logging.DEBUG,
+                )
+            }
+            if self.opponent_player is None:
+                self._env_players["player_1"] = EnvPlayer(
+                    self,
+                    "player_1",
+                    battle_format="gen9bssregi",
+                    server_configuration=LocalhostServerConfiguration,
+                    team=team,
+                    log_level=logging.DEBUG,
+                )
+            else:
+                self._env_players["player_1"] = self.opponent_player
         else:
             # 既存プレイヤーのバトル履歴をクリア
-            self._env_player.reset_battles()
+            for p in self._env_players.values():
+                if hasattr(p, "reset_battles"):
+                    p.reset_battles()
 
-        if hasattr(self.opponent_player, "reset_battles"):
+        if self.opponent_player is not None and hasattr(
+            self.opponent_player, "reset_battles"
+        ):
             self.opponent_player.reset_battles()
 
         # 対戦開始処理を poke-env のイベントループで同期実行
@@ -168,54 +196,68 @@ class PokemonEnv(gym.Env):
         )
 
         # チーム選択リクエストを待機
-        battle = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(self._battle_queue.get(), self.timeout),
+        battle0 = asyncio.run_coroutine_threadsafe(
+            asyncio.wait_for(self._battle_queues["player_0"].get(), self.timeout),
             POKE_LOOP,
         ).result()
-        POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
-        self._current_battle = battle
-        observation = self.state_observer.observe(battle)
+        POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
+        battle1 = battle0
+        if "player_1" in self._env_players:
+            battle1 = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(self._battle_queues["player_1"].get(), self.timeout),
+                POKE_LOOP,
+            ).result()
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
+
+        self._current_battles = {"player_0": battle0, "player_1": battle1}
+        observation = {
+            "player_0": self.state_observer.observe(battle0),
+            "player_1": self.state_observer.observe(battle1),
+        }
 
         info: dict = {
-            "battle_tag": battle.battle_tag,
+            "battle_tag": battle0.battle_tag,
             "request_teampreview": True,
         }
 
         if hasattr(self, "single_agent_mode"):
-            return observation, info
+            return observation[self.agent_ids[0]], info
 
-        observations = {agent_id: observation for agent_id in self.agent_ids}
-        return observations, info
+        return observation, info
 
     async def _run_battle(self) -> None:
         """Start the battle coroutines concurrently."""
 
         await asyncio.gather(
-            self._env_player.battle_against(self.opponent_player, n_battles=1),
-            self.opponent_player.battle_against(self._env_player, n_battles=1),
+            self._env_players["player_0"].battle_against(
+                self._env_players["player_1"], n_battles=1
+            ),
+            self._env_players["player_1"].battle_against(
+                self._env_players["player_0"], n_battles=1
+            ),
         )
 
-    def step(self, action_dict: dict[str, int]):
+    def step(self, action_dict: dict[str, int | str]):
         """マルチエージェント形式で1ステップ進める。"""
 
-        # 入力アクションをキューへ登録
-        player_action = action_dict.get("player_0")
-        if player_action is None:
-            raise ValueError("player_0 action required")
+        for agent_id in self.agent_ids:
+            if agent_id not in action_dict:
+                raise ValueError(f"{agent_id} action required")
+            act = action_dict[agent_id]
 
-
-
-        if isinstance(player_action, str):
-            asyncio.run_coroutine_threadsafe(
-                self._action_queue.put(player_action), POKE_LOOP
-            ).result()
-        else:
-            order = self.action_helper.action_index_to_order(
-                self._env_player, self._current_battle, int(player_action)
-            )
-            asyncio.run_coroutine_threadsafe(
-                self._action_queue.put(order), POKE_LOOP
-            ).result()
+            if isinstance(act, str):
+                asyncio.run_coroutine_threadsafe(
+                    self._action_queues[agent_id].put(act), POKE_LOOP
+                ).result()
+            else:
+                order = self.action_helper.action_index_to_order(
+                    self._env_players[agent_id],
+                    self._current_battles[agent_id],
+                    int(act),
+                )
+                asyncio.run_coroutine_threadsafe(
+                    self._action_queues[agent_id].put(order), POKE_LOOP
+                ).result()
 
         # 次の状態を待機する前に対戦タスクの状態を確認
         if hasattr(self, "_battle_task") and self._battle_task.done():
@@ -223,32 +265,44 @@ class PokemonEnv(gym.Env):
             if exc is not None:
                 raise exc
 
-        battle = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(self._battle_queue.get(), self.timeout),
-            POKE_LOOP,
-        ).result()
-        POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
-        self._current_battle = battle
+        battles: dict[str, Any] = {}
+        for pid in self.agent_ids:
+            battle = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(self._battle_queues[pid].get(), self.timeout),
+                POKE_LOOP,
+            ).result()
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues[pid].task_done)
+            self._current_battles[pid] = battle
+            battles[pid] = battle
 
-        observation = self.state_observer.observe(battle)
-        rewards = self._compute_rewards(battle)
-        terminated = bool(getattr(battle, "finished", False))
-        truncated = getattr(battle, "turn", 0) > self.MAX_TURNS
-        if truncated:
+        observation = {
+            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
+        }
+        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
+        terminated = {
+            pid: bool(getattr(battles[pid], "finished", False))
+            for pid in self.agent_ids
+        }
+        truncated = {
+            pid: getattr(battles[pid], "turn", 0) > self.MAX_TURNS
+            for pid in self.agent_ids
+        }
+        if any(truncated.values()):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
-        observations = {agent_id: observation for agent_id in self.agent_ids}
-        term_flags = {agent_id: terminated for agent_id in self.agent_ids}
-        trunc_flags = {agent_id: truncated for agent_id in self.agent_ids}
+        observations = observation
+        term_flags = terminated
+        trunc_flags = truncated
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
         if hasattr(self, "single_agent_mode"):
+            battle_sa = battles[self.agent_ids[0]]
             action_mask, _ = self.action_helper.get_available_actions_with_details(
-                battle
+                battle_sa
             )
-            done = terminated or truncated
+            done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
-                observation,
+                observation[self.agent_ids[0]],
                 action_mask,
                 rewards[self.agent_ids[0]],
                 done,
@@ -270,18 +324,6 @@ class PokemonEnv(gym.Env):
             return 1.0
         return -1.0
 
-    def _compute_rewards(self, battle: Any) -> dict[str, float]:
-        """Compute rewards for both agents based on battle state."""
-
-        if not getattr(battle, "finished", False):
-            return {agent_id: 0.0 for agent_id in self.agent_ids}
-
-        reward = 1.0 if getattr(battle, "won", False) else -1.0
-        return {
-            self.agent_ids[0]: reward,
-            self.agent_ids[1]: -reward,
-        }
-
     def render(self) -> None:
         """Render the environment if applicable."""
         return None
@@ -290,10 +332,16 @@ class PokemonEnv(gym.Env):
         """Clean up resources used by the environment."""
         if hasattr(self, "_battle_task"):
             self._battle_task.cancel()
-            asyncio.run_coroutine_threadsafe(self._battle_task, POKE_LOOP).result()
-        if hasattr(self, "_env_player"):
-            asyncio.run_coroutine_threadsafe(
-                self._env_player.ps_client.stop_listening(), POKE_LOOP
-            ).result()
-        asyncio.run_coroutine_threadsafe(self._action_queue.join(), POKE_LOOP).result()
-        asyncio.run_coroutine_threadsafe(self._battle_queue.join(), POKE_LOOP).result()
+            try:
+                self._battle_task.result()
+            except Exception:
+                pass
+        if hasattr(self, "_env_players"):
+            for p in self._env_players.values():
+                asyncio.run_coroutine_threadsafe(
+                    p.ps_client.stop_listening(), POKE_LOOP
+                ).result()
+        for q in self._action_queues.values():
+            asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
+        for q in self._battle_queues.values():
+            asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
