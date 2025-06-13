@@ -267,13 +267,31 @@ class PokemonEnv(gym.Env):
 
         battles: dict[str, Any] = {}
         for pid in self.agent_ids:
-            battle = asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(self._battle_queues[pid].get(), self.timeout),
-                POKE_LOOP,
-            ).result()
-            POKE_LOOP.call_soon_threadsafe(self._battle_queues[pid].task_done)
-            self._current_battles[pid] = battle
-            battles[pid] = battle
+            while True:
+                battle = asyncio.run_coroutine_threadsafe(
+                    asyncio.wait_for(self._battle_queues[pid].get(), self.timeout),
+                    POKE_LOOP,
+                ).result()
+                POKE_LOOP.call_soon_threadsafe(self._battle_queues[pid].task_done)
+                self._current_battles[pid] = battle
+
+                if getattr(battle, "force_switch", False) or getattr(battle, "wait", False):
+                    obs = self.state_observer.observe(battle)
+                    action_mask, _ = self.action_helper.get_available_actions_with_details(battle)
+                    agent = self._agents.get(pid)
+                    if agent is None:
+                        raise RuntimeError(f"Agent for {pid} not registered")
+                    action_idx = agent.select_action(obs, action_mask)
+                    order = self.action_helper.action_index_to_order(
+                        self._env_players[pid], battle, int(action_idx)
+                    )
+                    asyncio.run_coroutine_threadsafe(
+                        self._action_queues[pid].put(order), POKE_LOOP
+                    ).result()
+                    continue
+
+                battles[pid] = battle
+                break
 
         observation = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
