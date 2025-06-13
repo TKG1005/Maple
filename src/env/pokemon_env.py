@@ -217,7 +217,12 @@ class PokemonEnv(gym.Env):
                 self._action_queue.put(order), POKE_LOOP
             ).result()
 
-        # 次の状態を待機
+        # 次の状態を待機する前に対戦タスクの状態を確認
+        if hasattr(self, "_battle_task") and self._battle_task.done():
+            exc = self._battle_task.exception()
+            if exc is not None:
+                raise exc
+
         battle = asyncio.run_coroutine_threadsafe(
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
