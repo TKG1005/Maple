@@ -19,17 +19,15 @@ class EnvPlayer(Player):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
 
         # PokemonEnv に最新の battle オブジェクトを送信
-        print("[DBG_STOP] EnvPlayer.choose_move put battle", battle.battle_tag, "turn", battle.turn)
         await self._env._battle_queue.put(battle)
 
         # PokemonEnv.step からアクションが投入されるまで待機
-        print("[DBG_STOP] EnvPlayer.choose_move wait action")
         action_data = await asyncio.wait_for(
             self._env._action_queue.get(), self._env.timeout
         )
         self._env._action_queue.task_done()
 
-        print("[DBG_STOP] EnvPlayer.choose_move got action", action_data)
+
 
         # 文字列はそのまま、整数は BattleOrder へ変換
         if isinstance(action_data, int):
@@ -46,9 +44,7 @@ class EnvPlayer(Player):
         maybe_default_order: bool = False,
     ):
 
-        print(
-            f"[DBG_STOP] EnvPlayer._handle_battle_request start tp={from_teampreview_request} turn={battle.turn} user={battle.player_username}"
-        )
+
 
         # 最初のターンでは ``battle.available_moves`` が更新されるまで待機する
         if battle.turn == 1 and not battle.available_moves:
@@ -91,4 +87,3 @@ class EnvPlayer(Player):
             message,
             battle.battle_tag,
         )
-        print("[DBG_STOP] EnvPlayer._handle_battle_request sent message", message)

@@ -30,9 +30,7 @@ class MapleAgentPlayer(Player):
     ):
         """Handle battle requests with additional debug output."""
 
-        print(
-            f"[DBG_STOP] MapleAgentPlayer._handle_battle_request tp={from_teampreview_request} battle_tp={battle.teampreview} turn={battle.turn}"
-        )
+
 
         if from_teampreview_request:
             message = self.teampreview(battle)
@@ -46,13 +44,9 @@ class MapleAgentPlayer(Player):
         )
 
     def choose_move(self, battle: Battle) -> Any:
-        print(
-            f"[DBG_STOP] MapleAgentPlayer.choose_move start tp={battle.teampreview} turn={battle.turn}"
-        )
         # battle から状態ベクトルと利用可能アクションを取得
         state = self._observer.observe(battle)
         mask, mapping = self._helper.get_available_actions(battle)
-        print(f"[DBG_STOP] MapleAgentPlayer available mapping {mapping}")
 
         # MapleAgent で行動インデックスを選択
         idx = self.maple_agent.select_action(state, mask)
@@ -61,9 +55,6 @@ class MapleAgentPlayer(Player):
         try:
             order = self._helper.action_index_to_order(self, battle, idx)
         except Exception as e:
-            print(
-                f"[DBG_STOP] MapleAgentPlayer action conversion error idx={idx} mapping={mapping} error={e}"
-            )
             raise
         return order
 
@@ -72,17 +63,12 @@ class MapleAgentPlayer(Player):
 
         # TODO: MapleAgent.choose_team に差し替え予定
         team = "/team 123"
-        print(f"[DBG_STOP] MapleAgentPlayer.choose_team -> {team}")
         return team
 
     def teampreview(self, battle: Battle) -> str:
         """チームプレビューでの選択を :class:`MapleAgent` に委譲する。"""
-        print(
-            f"[DBG_STOP] MapleAgentPlayer.teampreview battle_tp={battle.teampreview} turn={battle.turn}"
-        )
         obs = self._observer.observe(battle)
         team_cmd = self.maple_agent.choose_team(obs)
-        print(f"[DBG_STOP] MapleAgentPlayer.teampreview -> {team_cmd}")
         return team_cmd
 
 
