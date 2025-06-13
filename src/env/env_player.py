@@ -12,26 +12,27 @@ from poke_env.player import Player
 class EnvPlayer(Player):
     """poke_env Player subclass controlled via an action queue."""
 
-    def __init__(self, env: Any, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, env: Any, player_id: str, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._env = env
+        self.player_id = player_id
         self._logger = logging.getLogger(__name__)
 
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
 
         # PokemonEnv に最新の battle オブジェクトを送信
-        self._logger.debug("[DBG] player0 queue battle -> %s", battle.battle_tag)
-        await self._env._battle_queue.put(battle)
+        self._logger.debug(
+            "[DBG] %s queue battle -> %s", self.player_id, battle.battle_tag
+        )
+        await self._env._battle_queues[self.player_id].put(battle)
 
         # PokemonEnv.step からアクションが投入されるまで待機
         action_data = await asyncio.wait_for(
-            self._env._action_queue.get(), self._env.timeout
+            self._env._action_queues[self.player_id].get(), self._env.timeout
         )
-        self._env._action_queue.task_done()
-        self._logger.debug("[DBG] player0 action received %s", action_data)
-
-
+        self._env._action_queues[self.player_id].task_done()
+        self._logger.debug("[DBG] %s action received %s", self.player_id, action_data)
 
         # 文字列はそのまま、整数は BattleOrder へ変換
         if isinstance(action_data, int):
@@ -39,10 +40,13 @@ class EnvPlayer(Player):
                 self, battle, action_data
             )
             self._logger.debug(
-                "[DBG] player0 action index %s -> %s", action_data, order.message
+                "[DBG] %s action index %s -> %s",
+                self.player_id,
+                action_data,
+                order.message,
             )
             return order
-        self._logger.debug("[DBG] player0 direct order %s", action_data)
+        self._logger.debug("[DBG] %s direct order %s", self.player_id, action_data)
         return action_data
 
     # Playerクラスの_handle_battle_requestをオーバーライド
@@ -52,8 +56,6 @@ class EnvPlayer(Player):
         from_teampreview_request: bool = False,
         maybe_default_order: bool = False,
     ):
-
-
 
         # 最初のターンでは ``battle.available_moves`` が更新されるまで待機する
         if battle.turn == 1 and not battle.available_moves:
@@ -75,19 +77,24 @@ class EnvPlayer(Player):
         elif from_teampreview_request:
             # チーム選択を PokemonEnv に通知して待機
             self._logger.debug(
-                "[DBG] player0 send team preview request for %s", battle.battle_tag
+                "[DBG] %s send team preview request for %s",
+                self.player_id,
+                battle.battle_tag,
             )
             put_result = await asyncio.wait_for(
-                self._env._battle_queue.put(battle), self._env.timeout
+                self._env._battle_queues[self.player_id].put(battle),
+                self._env.timeout,
             )
             if put_result is not None:
-                self._env._battle_queue.task_done()
+                self._env._battle_queues[self.player_id].task_done()
             message = await asyncio.wait_for(
-                self._env._action_queue.get(), self._env.timeout
+                self._env._action_queues[self.player_id].get(),
+                self._env.timeout,
             )
-            self._env._action_queue.task_done()
+            self._env._action_queues[self.player_id].task_done()
             self._logger.debug(
-                "[DBG] player0 team preview message %s (%s)",
+                "[DBG] %s team preview message %s (%s)",
+                self.player_id,
                 message,
                 battle.player_username,
             )
@@ -100,6 +107,9 @@ class EnvPlayer(Player):
             message = choice.message
 
         self._logger.debug(
-            "[DBG] player0 send message '%s' to battle %s", message, battle.battle_tag
+            "[DBG] %s send message '%s' to battle %s",
+            self.player_id,
+            message,
+            battle.battle_tag,
         )
         await self.ps_client.send_message(message, battle.battle_tag)
