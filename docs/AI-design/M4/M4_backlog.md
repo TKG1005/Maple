@@ -18,7 +18,7 @@
 | 9 | step スケルトン実装 | `step(action)` が 5 要素タプルを返す形だけ用意 | ダミー値でも呼び出し可能 | `env.step(0)` を実行し例外無し | Gymnasium 仕様 |
 |10| 非同期アクションキュー | `asyncio.Queue` を導入し `choose_move` がキューから行動を取得 | キューへインデックスを投入すると `choose_move` が対応する `BattleOrder` を返す | 単体テストでキュー処理を検証 | asyncio.Queue, action_helper |
 |11| エピソード完走確認 | 対戦が最後まで実行できるか検証 | `python random_rollout.py --episodes 1` が完走する | ログに最終ターンが表示される | poke-env, asyncio |
-|12| 報酬計算関数 | `_calc_reward(battle)` で勝敗に応じ ±1 を返す | モック Battle で +1 / -1 / 0 を確認 | ユニットテスト | poke-env Battle API |
+|12| 報酬計算関数 | `_calc_reward(battle)` で勝敗に応じ ±1 を返す | 実際の対戦で +1 / -1 / 0 を確認 | 実践で確認 | poke-env Battle API |
 |13| 終了判定処理 | `terminated` と `truncated` のロジック実装 | `battle.finished` または `turn > MAX_TURNS` で正しく終了 | 実戦でフラグ確認 | Battle 属性参照 |
 |14| ターン同期機構 | `_race_get` を用いて最新 `request` を取得 | `rqid` 乱序でもターンが進む | 強制交代シナリオで確認 | asyncio, rqid 管理 |
 |15| step 出力整備 | 観測・報酬・終了判定を dict 形式で返す | ランダムエージェントで 1 戦完走 | `run_battle.py` 実行 | 全機能統合 |
