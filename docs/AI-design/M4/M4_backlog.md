@@ -18,26 +18,26 @@
 | 9 | step スケルトン実装 | `step(action)` が 5 要素タプルを返す形だけ用意 | ダミー値でも呼び出し可能 | `env.step(0)` を実行し例外無し | Gymnasium 仕様 |
 |10| 非同期アクションキュー | `asyncio.Queue` を導入し `choose_move` がキューから行動を取得 | キューへインデックスを投入すると `choose_move` が対応する `BattleOrder` を返す | 単体テストでキュー処理を検証 | asyncio.Queue, action_helper |
 |11| エピソード完走確認 | 対戦が最後まで実行できるか検証 | `python random_rollout.py --episodes 1` が完走する | ログに最終ターンが表示される | poke-env, asyncio |
-|12| 報酬計算関数 | 勝敗に応じて ±1 を返す `_calc_reward(battle)` を実装 | 終了時に勝利で +1, 敗北で -1, 途中は 0 | 模擬 Battle オブジェクトでテスト | poke-env Battle API |
-|13| 終了判定の追加 | `terminated`・`truncated` を判定するロジックを作成 | `battle.finished` または `turn > MAX_TURNS` でフラグが立つ | 実際に対戦を最後まで行いフラグ確認 | Battle 属性参照 |
-|14| ターン同期処理 | 行動送信後に最新 `rqid` の `request` が届くまで待機 | `rqid` が乱序でも次ターンへ正しく進む | 強制交代を含むテスト戦でターン数が正しく増加 | asyncio 待機, rqid 管理 |
-|15| step 結果生成 | 観測取得、報酬計算、終了判定をまとめて返す | `(obs, reward, terminated, truncated, info)` が正しく構築される | ランダムエージェントで 1 戦完走 | 全機能統合 |
-|16| render 実装 | ターン情報などをコンソール表示 | 任意のタイミングで `env.render()` を呼び出しても例外無し | 実行時の表示を目視 | ロギング |
-|17| close 実装 | WebSocket とスレッドを安全に閉じる | `env.close()` 後にプロセス終了してもリソースリーク無し | Python プロファイルで確認 | poke-env `stop_listening` |
-|18| ランダムエージェント | テスト用エージェントが `action_space.sample()` を返す | 範囲外のインデックスを返さない | 簡単なユニットテスト | numpy RNG |
-|19| 学習ループスクリプト | `random_rollout.py` で複数エピソードを回す雛形 | `python random_rollout.py --episodes 3` が完了 | コマンドライン引数の処理確認 | argparse, tqdm |
-|20| 進捗バー付きログ | ログを整形し `tqdm` で進捗表示 | エピソード10回実行時にバーが表示される | 実行結果を目視確認 | tqdm |
-|21| 報酬とターン数の集計 | 各エピソード終了時に報酬とターン数を記録 | 出力ログに `reward=X, turns=Y` が含まれる | スクリプト実行結果を確認 | logging |
-|22| PokemonEnv ユニットテスト | 基本 API の動作を自動テスト | `tests/test_pokemon_env.py` が全て PASS | `pytest -q` を実行 | pytest, unittest.mock |
-|23| 非同期メッセージテスト | メッセージ順不同や遅延に強いか検証 | artificial sleep を入れてもデッドロックしない | 遅延付きテストシナリオで正常終了 | asyncio, poke-env |
-|24| E2E 統合テスト | ランダムエージェント同士で 1 戦実行 | 終了フラグと報酬 ±1 を確認 | スクリプト上で対戦完了 | poke-env RandomPlayer |
-|25| 複数エピソード連続実行 | 10 エピソード連続でも安定 | 途中エラーやリークが無い | `random_rollout.py --episodes 10` を実行 | 長時間実行テスト |
-|26| ドキュメント更新 | M4 セットアップ手順をまとめる | `docs/M4_setup.md` 追加、README にリンク | Markdown のリンク切れを確認 | Markdown |
-|27| コード整形 & リファクタ | `black` と `ruff` でコードスタイル統一 | `black --check .` と `ruff .` がどちらもパス | フォーマット後にテスト実行 | black, ruff |
-|28| CI ワークフロー更新 | GitHub Actions で PokemonEnv テストを実行 | CI ジョブが Showdown サーバを起動し `pytest` を実行 | GitHub Actions の結果が緑 | GitHub Actions |
-|29| タイムアウト処理見直し | `asyncio.wait_for` で無限待機を防ぐ | 行動を送らずに放置すると TimeoutError が発生し環境がリセット | 専用テストで確認 | asyncio.wait_for |
-|30| 依存バージョン固定 | `requirements.txt` にバージョン指定を追加 | 新規環境でインストール後テストが全て PASS | `pytest -q` 実行 | pip, version pinning |
-|31| M4 完了レビュー | DoD を満たすことを総合確認 | 50 エピソード連続実行で安定、コードレビューで承認 | 実機テスト + レビュー | 総合確認 |
+|12| 報酬計算関数 | `_calc_reward(battle)` で勝敗に応じ ±1 を返す | モック Battle で +1 / -1 / 0 を確認 | ユニットテスト | poke-env Battle API |
+|13| 終了判定処理 | `terminated` と `truncated` のロジック実装 | `battle.finished` または `turn > MAX_TURNS` で正しく終了 | 実戦でフラグ確認 | Battle 属性参照 |
+|14| ターン同期機構 | `_race_get` を用いて最新 `request` を取得 | `rqid` 乱序でもターンが進む | 強制交代シナリオで確認 | asyncio, rqid 管理 |
+|15| step 出力整備 | 観測・報酬・終了判定を dict 形式で返す | ランダムエージェントで 1 戦完走 | `run_battle.py` 実行 | 全機能統合 |
+|16| render 実装 | ターン情報をコンソール表示 | `env.render()` を呼んでも例外なし | 目視確認 | ロギング |
+|17| close 実装 | WebSocket とキューを安全に閉じる | `env.close()` 後にリーク無し | プロファイル確認 | poke-env `stop_listening` |
+|18| MapleAgent ベースライン | 乱択行動を返すシンプルエージェント | マスク内インデックスのみ選択 | ユニットテスト | numpy RNG |
+|19| バトル実行スクリプト | `run_battle.py` で複数戦を処理 | `--n 3` で完走 | CLI 実行 | argparse, tqdm |
+|20| 進捗バー付きログ | `tqdm` で進捗バーを表示 | 10 戦実行でバーが動く | 実行結果を目視確認 | tqdm |
+|21| 戦績ログ集計 | 各戦の報酬とターン数をまとめる | 結果ログに平均値を出力 | スクリプト実行結果確認 | logging |
+|22| PokemonEnv ユニットテスト | reset/step/close の基本動作を検証 | `pytest -q` が PASS | 自動テスト | pytest |
+|23| 非同期メッセージテスト | メッセージ遅延や順序入替に耐性確認 | artificial sleep を挿入してもデッドロックしない | 遅延シナリオで確認 | asyncio, poke-env |
+|24| E2E 統合テスト | ランダムエージェント同士で 1 戦実施 | 終了フラグと報酬 ±1 を確認 | スクリプトで対戦完了 | poke-env RandomPlayer |
+|25| 複数エピソード試験 | 10 連戦以上でも安定動作 | `--n 10` で完走し例外無し | 長時間テスト | |
+|26| ドキュメント更新 | M4 セットアップ手順を記述 | `docs/M4_setup.md` 追加済み | Markdown リンクチェック | Markdown |
+|27| コード整形 & リファクタ | `black` と `ruff` を適用 | `black --check .` `ruff .` ともに PASS | フォーマット後テスト実行 | black, ruff |
+|28| CI ワークフロー更新 | GitHub Actions で自動テスト | CI が緑になる | PR 上で確認 | GitHub Actions |
+|29| タイムアウト処理改善 | `asyncio.wait_for` を適用してハング防止 | 行動せず待機すると TimeoutError 発生 | 専用テスト | asyncio.wait_for |
+|30| 依存バージョン固定 | `requirements.txt` にバージョン指定 | 新規環境で `pytest` 全て PASS | インストール確認 | pip version pinning |
+|31| M4 完了レビュー | Backlog 完了を総合確認 | 50 戦連続で安定しレビュー承認 | 実機テスト + レビュー | 総合確認 |
 
 > **備考**
 > - `PokemonEnv_Specification.md` のフロー図を常に参照して実装を進めること。
