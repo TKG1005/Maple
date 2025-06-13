@@ -22,6 +22,23 @@ class MapleAgentPlayer(Player):
         self._observer = StateObserver(str(state_spec))
         self._helper = action_helper
 
+    async def _handle_battle_request(
+        self,
+        battle: Battle,
+        from_teampreview_request: bool = False,
+        maybe_default_order: bool = False,
+    ):
+        """Add debug logging around :class:`Player._handle_battle_request`."""
+
+        print(
+            f"[DBG_STOP] MapleAgentPlayer._handle_battle_request tp={from_teampreview_request} battle_tp={battle.teampreview} turn={battle.turn}"
+        )
+        return await super()._handle_battle_request(
+            battle,
+            from_teampreview_request=from_teampreview_request,
+            maybe_default_order=maybe_default_order,
+        )
+
     def choose_move(self, battle: Battle) -> Any:
         print(
             f"[DBG_STOP] MapleAgentPlayer.choose_move start tp={battle.teampreview} turn={battle.turn}"
@@ -54,9 +71,12 @@ class MapleAgentPlayer(Player):
 
     def teampreview(self, battle: Battle) -> str:
         """チームプレビューでの選択を :class:`MapleAgent` に委譲する。"""
-
+        print(
+            f"[DBG_STOP] MapleAgentPlayer.teampreview battle_tp={battle.teampreview} turn={battle.turn}"
+        )
         obs = self._observer.observe(battle)
         team_cmd = self.maple_agent.choose_team(obs)
+        print(f"[DBG_STOP] MapleAgentPlayer.teampreview -> {team_cmd}")
         return team_cmd
 
 
