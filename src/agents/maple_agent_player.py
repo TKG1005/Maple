@@ -28,11 +28,17 @@ class MapleAgentPlayer(Player):
         from_teampreview_request: bool = False,
         maybe_default_order: bool = False,
     ):
-        """Add debug logging around :class:`Player._handle_battle_request`."""
+        """Handle battle requests with additional debug output."""
 
         print(
             f"[DBG_STOP] MapleAgentPlayer._handle_battle_request tp={from_teampreview_request} battle_tp={battle.teampreview} turn={battle.turn}"
         )
+
+        if from_teampreview_request:
+            message = self.teampreview(battle)
+            await self.ps_client.send_message(message, battle.battle_tag)
+            return
+
         return await super()._handle_battle_request(
             battle,
             from_teampreview_request=from_teampreview_request,
