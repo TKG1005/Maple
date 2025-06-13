@@ -92,7 +92,7 @@ action_spaces = {
     "player_1": Discrete(10)
 }
 ```
-`step()` には `{"player_0": idx0, "player_1": idx1}` の形で行動を渡す。
+`step()` には `{"player_0": action0, "player_1": action1}` の形で行動を渡す。`action` は整数インデックスまたはチーム選択等の文字列コマンドを許容する。
 
 | Index | 意味 | 備考 |
 | --- | --- | --- |
@@ -165,7 +165,8 @@ sequenceDiagram
 * **EnvPlayer**: 行動アルゴリズムは外部エージェントに委任
 * **チームプレビュー**: `Agent.choose_team()` でチーム選択を行い `/choose team` を送信（デフォルトはランダム3匹選出）
 * **再利用接続**: 各エピソード開始時に `reset_battles()`
-* **step 待機処理**: `asyncio.wait_for(queue.get(), timeout)` を用いて待ち合わせ、ビジーウェイトを避ける
+* **step 待機処理**: `_race_get()` ヘルパーで `queue.get()` と `Event.wait()` を競合させ、タイムアウト付きで次の `battle` を取得する
+* **行動要求フラグ**: `_need_action` で各プレイヤーの行動要否を管理し、`False` の場合は受け取った行動を無視して前ターンの `battle` を再利用
 * **close() 実装**: `POKE_LOOP` 上のタスクをキャンセルし、キューの `join()` 後にリソースを解放する
 * **依存**: `poke-env>=0.9`, Showdown server (localhost:8000)
 * **Multi‑Agent dict API**: 観測・行動・報酬・terminated/truncated・info はすべて `"player_0"`, `"player_1"` キー付き dict
@@ -194,5 +195,6 @@ next_state, reward, terminated, truncated, info = env.step({
 
 ### 変更履歴
 - 2025-06-12 Multi-Agent API 追加
+- 2025-06-13 `_race_get` と `_need_action` を実装しステップ処理を更新
 
 ### End of File
