@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Awaitable
 from pathlib import Path
 import logging
+import random
 
 from poke_env.player import Player
 from poke_env.environment.battle import Battle
@@ -34,19 +35,32 @@ class MapleAgentPlayer(Player):
 
 
 
-        if from_teampreview_request:
+        if maybe_default_order and (
+            "illusion" in [p.ability for p in battle.team.values()]
+            or random.random() < self.DEFAULT_CHOICE_CHANCE
+        ):
+            message = self.choose_default_move().message
+        elif battle.teampreview:
+            if not from_teampreview_request:
+                return
             message = self.teampreview(battle)
             self._logger.debug(
-                "[DBG] player1 send team preview %s for %s", message, battle.battle_tag
+                "[DBG] player1 send team preview %s for %s",
+                message,
+                battle.battle_tag,
             )
-            await self.ps_client.send_message(message, battle.battle_tag)
-            return
+        else:
+            if maybe_default_order:
+                self._trying_again.set()
+            choice = self.choose_move(battle)
+            if isinstance(choice, Awaitable):
+                choice = await choice
+            message = choice.message
 
-        return await super()._handle_battle_request(
-            battle,
-            from_teampreview_request=from_teampreview_request,
-            maybe_default_order=maybe_default_order,
+        self._logger.debug(
+            "[DBG] player1 send message '%s' to battle %s", message, battle.battle_tag
         )
+        await self.ps_client.send_message(message, battle.battle_tag)
 
     def choose_move(self, battle: Battle) -> Any:
         # battle から状態ベクトルと利用可能アクションを取得
