@@ -323,14 +323,12 @@ class PokemonEnv(gym.Env):
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
         }
         rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
-        terminated = {
-            pid: bool(getattr(battles[pid], "finished", False))
-            for pid in self.agent_ids
-        }
-        truncated = {
-            pid: getattr(battles[pid], "turn", 0) > self.MAX_TURNS
-            for pid in self.agent_ids
-        }
+        terminated = {}
+        truncated = {}
+        for pid in self.agent_ids:
+            term, trunc = self._check_episode_end(battles[pid])
+            terminated[pid] = term
+            truncated[pid] = trunc
         if any(truncated.values()):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
@@ -354,6 +352,14 @@ class PokemonEnv(gym.Env):
             )
 
         return observations, rewards, term_flags, trunc_flags, infos
+
+    # Step13: 終了判定ユーティリティ
+    def _check_episode_end(self, battle: Any) -> tuple[bool, bool]:
+        """Return ``(terminated, truncated)`` for ``battle``."""
+
+        terminated = bool(getattr(battle, "finished", False))
+        truncated = getattr(battle, "turn", 0) > self.MAX_TURNS
+        return terminated, truncated
 
     # Step11: 報酬計算ユーティリティ
     def _calc_reward(self, battle: Any) -> float:
