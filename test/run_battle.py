@@ -62,8 +62,14 @@ def run_single_battle() -> dict:
         battle1 = env._current_battles[env.agent_ids[1]]
         mask0, _ = action_helper.get_available_actions_with_details(battle0)
         mask1, _ = action_helper.get_available_actions_with_details(battle1)
-        action_idx0 = agent0.select_action(current_obs0, mask0)
-        action_idx1 = agent1.select_action(current_obs1, mask1)
+
+        action_idx0 = 0
+        action_idx1 = 0
+        if env._need_action[env.agent_ids[0]]:
+            action_idx0 = agent0.select_action(current_obs0, mask0)
+        if env._need_action[env.agent_ids[1]]:
+            action_idx1 = agent1.select_action(current_obs1, mask1)
+
         observations, rewards, terms, truncs, _ = env.step(
             {"player_0": action_idx0, "player_1": action_idx1}
         )

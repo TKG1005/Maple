@@ -56,7 +56,11 @@ class MapleAgent:
         if valid_indices:
             action_idx = int(self.env.rng.choice(valid_indices))
         else:
-            action_idx = int(self.env.action_space.sample())
+            # ``action_space`` は ``gym.spaces.Dict`` なので ``sample`` の
+            # 戻り値は辞書となる。ここでは単一エージェント分の離散
+            # 空間からサンプルする。
+            subspace = self.env.action_space[self.env.agent_ids[0]]
+            action_idx = int(subspace.sample())
 
         return action_idx
 
