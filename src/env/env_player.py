@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import asyncio
+import logging
 from typing import Any, Awaitable
 
 from poke_env.environment.abstract_battle import AbstractBattle
@@ -14,11 +15,13 @@ class EnvPlayer(Player):
     def __init__(self, env: Any, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._env = env
+        self._logger = logging.getLogger(__name__)
 
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
 
         # PokemonEnv に最新の battle オブジェクトを送信
+        self._logger.debug("[DBG] player0 queue battle -> %s", battle.battle_tag)
         await self._env._battle_queue.put(battle)
 
         # PokemonEnv.step からアクションが投入されるまで待機
@@ -26,14 +29,20 @@ class EnvPlayer(Player):
             self._env._action_queue.get(), self._env.timeout
         )
         self._env._action_queue.task_done()
+        self._logger.debug("[DBG] player0 action received %s", action_data)
 
 
 
         # 文字列はそのまま、整数は BattleOrder へ変換
         if isinstance(action_data, int):
-            return self._env.action_helper.action_index_to_order(
+            order = self._env.action_helper.action_index_to_order(
                 self, battle, action_data
             )
+            self._logger.debug(
+                "[DBG] player0 action index %s -> %s", action_data, order.message
+            )
+            return order
+        self._logger.debug("[DBG] player0 direct order %s", action_data)
         return action_data
 
     # Playerクラスの_handle_battle_requestをオーバーライド
@@ -65,6 +74,9 @@ class EnvPlayer(Player):
             message = self.choose_default_move().message
         elif from_teampreview_request:
             # チーム選択を PokemonEnv に通知して待機
+            self._logger.debug(
+                "[DBG] player0 send team preview request for %s", battle.battle_tag
+            )
             put_result = await asyncio.wait_for(
                 self._env._battle_queue.put(battle), self._env.timeout
             )
@@ -74,7 +86,11 @@ class EnvPlayer(Player):
                 self._env._action_queue.get(), self._env.timeout
             )
             self._env._action_queue.task_done()
-            print(f"チーム選択を送信 {message}　プレイヤー＝{battle.player_username}")
+            self._logger.debug(
+                "[DBG] player0 team preview message %s (%s)",
+                message,
+                battle.player_username,
+            )
         else:
             if maybe_default_order:
                 self._trying_again.set()
@@ -83,7 +99,7 @@ class EnvPlayer(Player):
                 choice = await choice
             message = choice.message
 
-        await self.ps_client.send_message(
-            message,
-            battle.battle_tag,
+        self._logger.debug(
+            "[DBG] player0 send message '%s' to battle %s", message, battle.battle_tag
         )
+        await self.ps_client.send_message(message, battle.battle_tag)

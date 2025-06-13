@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 from pathlib import Path
+import logging
 
 from poke_env.player import Player
 from poke_env.environment.battle import Battle
@@ -21,6 +22,7 @@ class MapleAgentPlayer(Player):
         state_spec = Path(__file__).resolve().parents[2] / "config" / "state_spec.yml"
         self._observer = StateObserver(str(state_spec))
         self._helper = action_helper
+        self._logger = logging.getLogger(__name__)
 
     async def _handle_battle_request(
         self,
@@ -34,6 +36,9 @@ class MapleAgentPlayer(Player):
 
         if from_teampreview_request:
             message = self.teampreview(battle)
+            self._logger.debug(
+                "[DBG] player1 send team preview %s for %s", message, battle.battle_tag
+            )
             await self.ps_client.send_message(message, battle.battle_tag)
             return
 
@@ -47,15 +52,18 @@ class MapleAgentPlayer(Player):
         # battle から状態ベクトルと利用可能アクションを取得
         state = self._observer.observe(battle)
         mask, mapping = self._helper.get_available_actions(battle)
+        self._logger.debug("[DBG] player1 mask=%s", mask)
 
         # MapleAgent で行動インデックスを選択
         idx = self.maple_agent.select_action(state, mask)
+        self._logger.debug("[DBG] player1 selected index %s", idx)
 
         # インデックスを BattleOrder に変換
         try:
             order = self._helper.action_index_to_order(self, battle, idx)
         except Exception as e:
             raise
+        self._logger.debug("[DBG] player1 order %s", order.message)
         return order
 
     async def choose_team(self, battle) -> str:
