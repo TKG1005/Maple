@@ -94,6 +94,11 @@ class PokemonEnv(gym.Env):
             }
         )
 
+        # Player ごとの行動要求フラグ
+        self._need_action: dict[str, bool] = {
+            agent_id: False for agent_id in self.agent_ids
+        }
+
     # ------------------------------------------------------------------
     # Agent interaction utilities
     # ------------------------------------------------------------------
@@ -134,6 +139,7 @@ class PokemonEnv(gym.Env):
         # 前回エピソードのキューをクリア
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
+        self._need_action = {agent_id: True for agent_id in self.agent_ids}
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -237,12 +243,42 @@ class PokemonEnv(gym.Env):
             ),
         )
 
+    def _race_get(
+        self,
+        queue: asyncio.Queue[Any],
+        *events: asyncio.Event,
+    ) -> Any | None:
+        """Return queue item or ``None`` if any event fires first."""
+
+        async def _race() -> Any | None:
+            get_task = asyncio.create_task(queue.get())
+            wait_tasks = [asyncio.create_task(e.wait()) for e in events]
+            done, pending = await asyncio.wait(
+                {get_task, *wait_tasks},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            for p in pending:
+                p.cancel()
+            if get_task in done:
+                return get_task.result()
+            return None
+
+        result = asyncio.run_coroutine_threadsafe(
+            asyncio.wait_for(_race(), self.timeout),
+            POKE_LOOP,
+        ).result()
+        if result is not None:
+            POKE_LOOP.call_soon_threadsafe(queue.task_done)
+        return result
+
     def step(self, action_dict: dict[str, int | str]):
         """マルチエージェント形式で1ステップ進める。"""
 
         for agent_id in self.agent_ids:
             if agent_id not in action_dict:
                 raise ValueError(f"{agent_id} action required")
+            if not self._need_action.get(agent_id, True):
+                continue
             act = action_dict[agent_id]
 
             if isinstance(act, str):
@@ -267,12 +303,20 @@ class PokemonEnv(gym.Env):
 
         battles: dict[str, Any] = {}
         for pid in self.agent_ids:
-            battle = asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(self._battle_queues[pid].get(), self.timeout),
-                POKE_LOOP,
-            ).result()
-            POKE_LOOP.call_soon_threadsafe(self._battle_queues[pid].task_done)
-            self._current_battles[pid] = battle
+            opp = "player_1" if pid == "player_0" else "player_0"
+            battle = self._race_get(
+                self._battle_queues[pid],
+                self._env_players[pid]._waiting,
+                self._env_players[opp]._trying_again,
+            )
+            self._env_players[pid]._waiting.clear()
+            if battle is None:
+                self._env_players[opp]._trying_again.clear()
+                battle = self._current_battles[pid]
+                self._need_action[pid] = False
+            else:
+                self._current_battles[pid] = battle
+                self._need_action[pid] = True
             battles[pid] = battle
 
         observation = {
