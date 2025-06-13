@@ -114,29 +114,34 @@ sequenceDiagram
     participant Agent0 as Agent-0
     participant Agent1 as Agent-1
     participant PokemonEnv
-    participant EnvP0 as poke-env/P0
-    participant EnvP1 as poke-env/P1
+    participant EnvP0 as EnvPlayer-0
+    participant EnvP1 as EnvPlayer-1
     participant Showdown
 
     Agent0->>PokemonEnv: reset()
     Agent1->>PokemonEnv: reset()
-    PokemonEnv->>EnvP0: play_against()
-    PokemonEnv->>EnvP1: play_against()
+    PokemonEnv->>EnvP0: battle_against()
+    PokemonEnv->>EnvP1: battle_against()
     Showdown-->>EnvP0: |request|
     Showdown-->>EnvP1: |request|
-    EnvP0->>PokemonEnv: battle update
-    EnvP1->>PokemonEnv: battle update
-    PokemonEnv->>Agent0: observe, mask
-    PokemonEnv->>Agent1: observe, mask
-    Agent0->>PokemonEnv: step(action0)
-    Agent1->>PokemonEnv: step(action1)
-    PokemonEnv->>EnvP0: battleorder0
-    PokemonEnv->>EnvP1: battleorder1
-    EnvP0->>Showdown: /choose
-    EnvP1->>Showdown: /choose
-    Showdown-->>EnvP0: |request|
-    Showdown-->>EnvP1: |request|
-    ...
+    EnvP0->>PokemonEnv: _battle_queue.put(battle)
+    EnvP1->>PokemonEnv: _battle_queue.put(battle)
+    PokemonEnv->>Agent0: observation, mask
+    PokemonEnv->>Agent1: observation, mask
+    loop per turn
+        Agent0->>PokemonEnv: step(action0)
+        Agent1->>PokemonEnv: step(action1)
+        PokemonEnv->>EnvP0: _action_queue.put(order0)
+        PokemonEnv->>EnvP1: _action_queue.put(order1)
+        EnvP0->>Showdown: /choose
+        EnvP1->>Showdown: /choose
+        Showdown-->>EnvP0: |request|
+        Showdown-->>EnvP1: |request|
+        EnvP0->>PokemonEnv: _battle_queue.put(battle)
+        EnvP1->>PokemonEnv: _battle_queue.put(battle)
+        PokemonEnv->>Agent0: reward, next obs
+        PokemonEnv->>Agent1: reward, next obs
+    end
 ```
 
 ---
