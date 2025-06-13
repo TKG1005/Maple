@@ -168,12 +168,10 @@ class PokemonEnv(gym.Env):
         )
 
         # チーム選択リクエストを待機
-        print("[DBG_STOP] PokemonEnv.reset waiting battle")
         battle = asyncio.run_coroutine_threadsafe(
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
         ).result()
-        print("[DBG_STOP] PokemonEnv.reset got battle", battle.battle_tag, "turn", getattr(battle, "turn", None))
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
         self._current_battle = battle
         observation = self.state_observer.observe(battle)
@@ -205,13 +203,12 @@ class PokemonEnv(gym.Env):
         if player_action is None:
             raise ValueError("player_0 action required")
 
-        print("[DBG_STOP] PokemonEnv.step action", player_action)
+
 
         if isinstance(player_action, str):
             asyncio.run_coroutine_threadsafe(
                 self._action_queue.put(player_action), POKE_LOOP
             ).result()
-            print("[DBG_STOP] PokemonEnv.step put team order", player_action)
         else:
             order = self.action_helper.action_index_to_order(
                 self._env_player, self._current_battle, int(player_action)
@@ -219,15 +216,12 @@ class PokemonEnv(gym.Env):
             asyncio.run_coroutine_threadsafe(
                 self._action_queue.put(order), POKE_LOOP
             ).result()
-            print("[DBG_STOP] PokemonEnv.step put order", order)
 
         # 次の状態を待機
-        print("[DBG_STOP] PokemonEnv.step waiting battle")
         battle = asyncio.run_coroutine_threadsafe(
             asyncio.wait_for(self._battle_queue.get(), self.timeout),
             POKE_LOOP,
         ).result()
-        print("[DBG_STOP] PokemonEnv.step got battle", battle.battle_tag, "turn", getattr(battle, "turn", None))
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
         self._current_battle = battle
 

@@ -27,7 +27,6 @@ class MapleAgent:
         indices = self.env.rng.choice(team_size, size=num_to_select, replace=False)
         indices = sorted(int(i) + 1 for i in indices)
         team_cmd = "/team " + "".join(str(i) for i in indices)
-        print(f"[DBG_STOP] MapleAgent.choose_team -> {team_cmd}")
         return team_cmd
 
     def select_action(self, observation: Any, action_mask: Any) -> int:
