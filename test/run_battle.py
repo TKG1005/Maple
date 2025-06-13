@@ -70,9 +70,16 @@ def run_single_battle() -> dict:
         if env._need_action[env.agent_ids[1]]:
             action_idx1 = agent1.select_action(current_obs1, mask1)
 
-        observations, rewards, terms, truncs, _ = env.step(
-            {"player_0": action_idx0, "player_1": action_idx1}
-        )
+        step_result = env.step({"player_0": action_idx0, "player_1": action_idx1})
+
+        if isinstance(step_result, dict):
+            observations = step_result["observations"]
+            rewards = step_result["rewards"]
+            terms = step_result["terminated"]
+            truncs = step_result["truncated"]
+        else:
+            observations, rewards, terms, truncs, _ = step_result
+
         current_obs0 = observations[env.agent_ids[0]]
         current_obs1 = observations[env.agent_ids[1]]
         done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
