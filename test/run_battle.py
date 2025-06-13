@@ -17,13 +17,13 @@ if str(ROOT_DIR) not in sys.path:
 import time
 import logging
 
+import numpy as np
+import gymnasium as gym
+
 from src.agents.MapleAgent import MapleAgent
-from src.agents.rule_based_player import RuleBasedPlayer
 from src.env.pokemon_env import PokemonEnv
 from src.state.state_observer import StateObserver
 from src.action import action_helper
-from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
-from poke_env.player.random_player import RandomPlayer
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
 try:
@@ -33,32 +33,46 @@ except OSError:
 
 
 def run_single_battle() -> dict:
-    """Play one battle using :class:`PokemonEnv` against :class:`RuleBasedPlayer`."""
-
-    opponent = RandomPlayer(
-        battle_format="gen9bssregi",
-        server_configuration=LocalhostServerConfiguration,
-        team=TEAM,
-    )
+    """Play one battle using :class:`PokemonEnv` with two :class:`MapleAgent`s."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
-    env = PokemonEnv(opponent_player=opponent, state_observer=observer, action_helper=action_helper)
-    agent = MapleAgent(env)
+    env = PokemonEnv(
+        opponent_player=None,
+        state_observer=observer,
+        action_helper=action_helper,
+    )
+    agent0 = MapleAgent(env)
+    agent1 = MapleAgent(env)
+    env.register_agent(agent1, "player_1")
 
-    observation, info = env.reset()
+    observations, info = env.reset()
+    current_obs0 = observations[env.agent_ids[0]]
+    current_obs1 = observations[env.agent_ids[1]]
 
     if info.get("request_teampreview"):
-        team_order = agent.choose_team(observation)
-        observation, mask, _, _, info = env.step(team_order)
-    else:
-        battle = next(iter(env._env_player.battles.values()))
-        mask, _ = action_helper.get_available_actions_with_details(battle)
+        order0 = agent0.choose_team(current_obs0)
+        order1 = agent1.choose_team(current_obs1)
+        observations, *_ = env.step({"player_0": order0, "player_1": order1})
+        current_obs0 = observations[env.agent_ids[0]]
+        current_obs1 = observations[env.agent_ids[1]]
 
-    agent.play_until_done(observation, mask, info)
+    done = False
+    while not done:
+        battle0 = env._current_battles[env.agent_ids[0]]
+        battle1 = env._current_battles[env.agent_ids[1]]
+        mask0, _ = action_helper.get_available_actions_with_details(battle0)
+        mask1, _ = action_helper.get_available_actions_with_details(battle1)
+        action_idx0 = agent0.select_action(current_obs0, mask0)
+        action_idx1 = agent1.select_action(current_obs1, mask1)
+        observations, rewards, terms, truncs, _ = env.step(
+            {"player_0": action_idx0, "player_1": action_idx1}
+        )
+        current_obs0 = observations[env.agent_ids[0]]
+        current_obs1 = observations[env.agent_ids[1]]
+        done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
-    battle = next(iter(env._env_player.battles.values()))
-
-    winner = "env" if env._env_player.n_won_battles == 1 else "opponent"
+    battle = env._current_battles[env.agent_ids[0]]
+    winner = "env0" if env._env_players["player_0"].n_won_battles == 1 else "env1"
     turns = getattr(battle, "turn", 0)
 
     return {"winner": winner, "turns": turns}

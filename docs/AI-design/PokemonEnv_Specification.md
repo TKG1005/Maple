@@ -13,9 +13,9 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)`を2インスタンス同時に起動し、両エージェントを対戦状態にする |
-| メッセージフロー | 1. サーバーが `|request|`で始まるメッセージを送信 2.EnvPlayer(PSClient)はメッセージを解析してbattleオブジェクトを更新して、PokemonEnvにフラグ付きで送信 3.EnvPlayerはPokemonEnvから帰ってきたコマンドをサーバに送信 4.サーバが結果を返す |
+| メッセージフロー | 1. サーバーが `|request|` で始まるメッセージを送信 2. 各 `EnvPlayer`(P0/P1) がメッセージを解析して `battle` を更新し、PokemonEnv へフラグ付きで送信 3. PokemonEnv は受け取った行動を `EnvPlayer` 経由でサーバへ送信 4. サーバが結果を返す |
 
-* 各 `request` には昇順の `rqid` が付与され、乱序で届くことがあるs
+* 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
 * 同一ターンに複数の `request` が送られることがある
 
 ---
@@ -23,8 +23,14 @@
 ## 3. 同期 / 非同期処理
 
 * 外部: `poke_env` は **asyncio**‐ベースで WebSocket を管理  
-* PokemonEnv API: **同期的** (`reset()`, `step()`)  
+* PokemonEnv API: **同期的** (`reset()`, `step()`)
  * Multi‑Agent 対応に伴い、`step()` は dict 形式を返す*
+  * 例:
+    ```python
+    obs = {"player_0": np.ndarray, "player_1": np.ndarray}
+    action = {"player_0": int, "player_1": int}
+    reward = {"player_0": float, "player_1": float}
+    ```
 
 * 手順
   1. 非同期処理は poke-env が保持する `POKE_LOOP` イベントループを利用し、同期 API からは `asyncio.run_coroutine_threadsafe(coro, POKE_LOOP)` でタスクを登録し `future.result()` で待機する
@@ -60,7 +66,8 @@
   * 技 1–4 の威力, タイプ一 hot, PP%  
   * 場の天候, フィールド, ターン数  
 * One‑Hot 化・線形スケーリングで 0‑1 に正規化  
-* 次元数: `StateObserver.get_observation_dimension()` で算出  
+* 次元数: `StateObserver.get_observation_dimension()` で算出
+* 観測は各プレイヤー視点で計算したベクトルを dict にまとめて返す
 
 ```text
 observation = {
@@ -83,8 +90,9 @@ observation = {
 action_spaces = {
     "player_0": Discrete(10), # index 0‑9
     "player_1": Discrete(10)
-}  
+}
 ```
+`step()` には `{"player_0": idx0, "player_1": idx1}` の形で行動を渡す。
 
 | Index | 意味 | 備考 |
 | --- | --- | --- |
@@ -102,22 +110,38 @@ action_spaces = {
 
 ```mermaid
 sequenceDiagram
- 
-    participant Agent0 as Agent‑0
-    participant Agent1 as Agent‑1
+
+    participant Agent0 as Agent-0
+    participant Agent1 as Agent-1
     participant PokemonEnv
-    participant poke-env/P0
-    participant poke-env/P1
+    participant EnvP0 as EnvPlayer-0
+    participant EnvP1 as EnvPlayer-1
     participant Showdown
+
     Agent0->>PokemonEnv: reset()
     Agent1->>PokemonEnv: reset()
-    Agent0->>PokemonEnv: step()
-    Agent1->>PokemonEnv: step()
-    PokemonEnv->>Agent0: choose_move(observe, action_mask, done, info)
-    PokemonEnv->>Agent1: choose_move(observe, action_mask, done, info)
-    Agent0->>PokemonEnv: step()
-    Agent1->>PokemonEnv: step()    
-    …
+    PokemonEnv->>EnvP0: battle_against()
+    PokemonEnv->>EnvP1: battle_against()
+    Showdown-->>EnvP0: |request|
+    Showdown-->>EnvP1: |request|
+    EnvP0->>PokemonEnv: _battle_queue.put(battle)
+    EnvP1->>PokemonEnv: _battle_queue.put(battle)
+    PokemonEnv->>Agent0: observation, mask
+    PokemonEnv->>Agent1: observation, mask
+    loop per turn
+        Agent0->>PokemonEnv: step(action0)
+        Agent1->>PokemonEnv: step(action1)
+        PokemonEnv->>EnvP0: _action_queue.put(order0)
+        PokemonEnv->>EnvP1: _action_queue.put(order1)
+        EnvP0->>Showdown: /choose
+        EnvP1->>Showdown: /choose
+        Showdown-->>EnvP0: |request|
+        Showdown-->>EnvP1: |request|
+        EnvP0->>PokemonEnv: _battle_queue.put(battle)
+        EnvP1->>PokemonEnv: _battle_queue.put(battle)
+        PokemonEnv->>Agent0: reward, next obs
+        PokemonEnv->>Agent1: reward, next obs
+    end
 ```
 
 ---
@@ -130,6 +154,8 @@ sequenceDiagram
 | 相手が勝利 | True | -1 | +1 |
 | ターン > MAX_TURNS | True (truncated) | 0 | 0 |
 | 途中ターン | False | 0 |
+
+報酬は `{"player_0": float, "player_1": float}` 形式で返る。
 
 ---
 
@@ -158,8 +184,15 @@ mask, mapping = action_helper.get_available_actions(battle)
 
 # 行動インデックス -> BattleOrder
 order = action_helper.action_index_to_order(env_player, battle, idx)
+next_state, reward, terminated, truncated, info = env.step({
+    "player_0": idx0,
+    "player_1": idx1,
+})
 ```
 
 ---
+
+### 変更履歴
+- 2025-06-12 Multi-Agent API 追加
 
 ### End of File
