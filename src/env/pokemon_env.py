@@ -206,8 +206,9 @@ class PokemonEnv(gym.Env):
 
 
         if isinstance(player_action, str):
+            order = player_action
             asyncio.run_coroutine_threadsafe(
-                self._action_queue.put(player_action), POKE_LOOP
+                self._action_queue.put(order), POKE_LOOP
             ).result()
         else:
             order = self.action_helper.action_index_to_order(
@@ -217,11 +218,23 @@ class PokemonEnv(gym.Env):
                 self._action_queue.put(order), POKE_LOOP
             ).result()
 
-        # 次の状態を待機
-        battle = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(self._battle_queue.get(), self.timeout),
-            POKE_LOOP,
-        ).result()
+        logging.debug(
+            "Waiting for next battle: order=%s, turn=%s",
+            order,
+            getattr(self._current_battle, "turn", None),
+        )
+
+        try:
+            battle_future = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(self._battle_queue.get(), self.timeout),
+                POKE_LOOP,
+            )
+            battle = battle_future.result()
+        except asyncio.TimeoutError as exc:
+            raise RuntimeError(
+                f"Timeout while waiting for battle after sending order {order}"
+            ) from exc
+
         POKE_LOOP.call_soon_threadsafe(self._battle_queue.task_done)
         self._current_battle = battle
 
