@@ -8,11 +8,23 @@ import sys
 from pathlib import Path
 from typing import List, Dict
 
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+
+    def tqdm(data, *args, **kwargs):  # type: ignore[return-type]
+        """Fallback if ``tqdm`` is not installed."""
+        return data
+
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+
+# Ensure bundled ``poke_env`` package is importable without installation
+POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
+if str(POKE_ENV_DIR) not in sys.path:
+    sys.path.insert(0, str(POKE_ENV_DIR))
 
 import time
 import logging
