@@ -54,6 +54,7 @@ class PokemonEnv(gym.Env):
         self.state_observer = state_observer
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
+        self._logger = logging.getLogger(__name__)
 
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
@@ -375,7 +376,30 @@ class PokemonEnv(gym.Env):
         return -1.0
 
     def render(self) -> None:
-        """Render the environment if applicable."""
+        """Render the current battle state to the console."""
+
+        battle = getattr(self, "_current_battles", {}).get("player_0")
+        if battle is None:
+            return None
+
+        try:
+            team_left = "".join("⦻" if m.fainted else "●" for m in battle.team.values())
+            team_right = "".join(
+                "⦻" if m.fainted else "●" for m in battle.opponent_team.values()
+            )
+            active = battle.active_pokemon
+            opp = battle.opponent_active_pokemon
+            active_hp = active.current_hp or 0
+            active_max = active.max_hp or 0
+            opp_hp = opp.current_hp or 0
+            log_line = (
+                f"  Turn {battle.turn:4d}. | [{team_left}][{active_hp:3d}/{active_max:3d}hp] "
+                f"{active.species:10.10s} - {opp.species:10.10s} [{opp_hp:3d}hp][{team_right}]"
+            )
+            self._logger.info(log_line)
+            print(log_line, end="\n" if battle.finished else "\r")
+        except Exception as exc:  # pragma: no cover - render failures shouldn't break
+            self._logger.debug("render error: %s", exc)
         return None
 
     def close(self) -> None:
