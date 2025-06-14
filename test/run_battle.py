@@ -26,16 +26,10 @@ POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
 if str(POKE_ENV_DIR) not in sys.path:
     sys.path.insert(0, str(POKE_ENV_DIR))
 
-import time
-import logging
-
-import numpy as np
-import gymnasium as gym
-
-from src.agents.MapleAgent import MapleAgent
-from src.env.pokemon_env import PokemonEnv
-from src.state.state_observer import StateObserver
-from src.action import action_helper
+from src.agents.MapleAgent import MapleAgent  # noqa: E402
+from src.env.pokemon_env import PokemonEnv  # noqa: E402
+from src.state.state_observer import StateObserver  # noqa: E402
+from src.action import action_helper  # noqa: E402
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
 try:
@@ -92,6 +86,8 @@ def run_single_battle() -> dict:
     battle = env._current_battles[env.agent_ids[0]]
     winner = "env0" if env._env_players["player_0"].n_won_battles == 1 else "env1"
     turns = getattr(battle, "turn", 0)
+
+    env.close()
 
     return {"winner": winner, "turns": turns}
 

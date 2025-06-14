@@ -403,19 +403,26 @@ class PokemonEnv(gym.Env):
         return None
 
     def close(self) -> None:
-        """Clean up resources used by the environment."""
+        """Terminate ongoing tasks and close WebSocket connections."""
+
         if hasattr(self, "_battle_task"):
             self._battle_task.cancel()
             try:
                 self._battle_task.result()
             except Exception:
                 pass
+            del self._battle_task
+
         if hasattr(self, "_env_players"):
             for p in self._env_players.values():
                 asyncio.run_coroutine_threadsafe(
                     p.ps_client.stop_listening(), POKE_LOOP
                 ).result()
+            self._env_players.clear()
+
         for q in self._action_queues.values():
             asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
         for q in self._battle_queues.values():
             asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
+        self._action_queues.clear()
+        self._battle_queues.clear()
