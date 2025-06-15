@@ -64,7 +64,9 @@ class MapleAgent:
 
         return action_idx
 
-    def play_until_done(self, observation: Any, action_mask: Any, info: dict | None = None) -> None:
+    def play_until_done(
+        self, observation: Any, action_mask: Any, info: dict | None = None
+    ) -> None:
         """Keep acting until ``done`` becomes ``True``.
 
         Parameters
@@ -85,8 +87,6 @@ class MapleAgent:
         current_obs = observation
         current_mask = action_mask
 
-
-
         while not done:
             if info and info.get("request_teampreview"):
                 team_order = self.choose_team(current_obs)
@@ -95,5 +95,3 @@ class MapleAgent:
                 action_idx = self.select_action(current_obs, current_mask)
                 print(f"Agent select /move {action_idx}")
                 current_obs, current_mask, _, done, _ = self.env.step(action_idx)
-
-

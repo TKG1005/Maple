@@ -4,4 +4,3 @@
 ACTION_SIZE = 10
 
 __all__ = ["ACTION_SIZE"]
-
