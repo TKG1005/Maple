@@ -5,6 +5,8 @@ import asyncio
 import logging
 from typing import Any, Awaitable
 
+from poke_env.concurrency import POKE_LOOP
+
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player import Player
 
@@ -48,6 +50,17 @@ class EnvPlayer(Player):
             return order
         self._logger.debug("[DBG] %s direct order %s", self.player_id, action_data)
         return action_data
+
+    def _battle_finished_callback(self, battle: AbstractBattle) -> None:
+        """Called when a battle ends to notify :class:`PokemonEnv`."""
+
+        self._logger.debug(
+            "[DBG] %s finished battle %s", self.player_id, battle.battle_tag
+        )
+        asyncio.run_coroutine_threadsafe(
+            self._env._battle_queues[self.player_id].put(battle),
+            POKE_LOOP,
+        )
 
     # Playerクラスの_handle_battle_requestをオーバーライド
     async def _handle_battle_request(
