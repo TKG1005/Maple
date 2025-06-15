@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 from typing import List, Dict
+import logging
 
 try:
     from tqdm import tqdm
@@ -18,6 +19,8 @@ except ModuleNotFoundError:  # pragma: no cover - optional dependency
 ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+
+logger = logging.getLogger(__name__)
 
 # Ensure bundled ``poke_env`` package is importable without installation
 POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
@@ -61,6 +64,7 @@ def run_single_battle() -> dict:
         current_obs1 = observations[env.agent_ids[1]]
 
     done = False
+    last_reward = 0.0
     while not done:
         battle0 = env._current_battles[env.agent_ids[0]]
         battle1 = env._current_battles[env.agent_ids[1]]
@@ -77,6 +81,7 @@ def run_single_battle() -> dict:
         observations, rewards, terms, truncs, _ = env.step(
             {"player_0": action_idx0, "player_1": action_idx1}
         )
+        last_reward = float(rewards[env.agent_ids[0]])
         current_obs0 = observations[env.agent_ids[0]]
         current_obs1 = observations[env.agent_ids[1]]
         done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
@@ -84,23 +89,33 @@ def run_single_battle() -> dict:
     battle = env._current_battles[env.agent_ids[0]]
     winner = "env0" if env._env_players["player_0"].n_won_battles == 1 else "env1"
     turns = getattr(battle, "turn", 0)
+    reward = last_reward
 
     env.close()
 
-    return {"winner": winner, "turns": turns}
+    logger.info("Battle result winner=%s reward=%.1f turns=%d", winner, reward, turns)
+
+    return {"winner": winner, "turns": turns, "reward": reward}
 
 
 def main(n: int = 1) -> dict:
-    results: List[Dict[str, int | str]] = []
+    results: List[Dict[str, float | int | str]] = []
     for _ in tqdm(range(n), desc="Battles"):
         result = run_single_battle()
         results.append(result)
 
     avg_turns = sum(r["turns"] for r in results) / n if n else 0
-    return {"results": results, "average_turns": avg_turns}
+    avg_reward = sum(r["reward"] for r in results) / n if n else 0
+    logger.info("Average reward=%.2f average turns=%.2f", avg_reward, avg_turns)
+    return {
+        "results": results,
+        "average_turns": avg_turns,
+        "average_reward": avg_reward,
+    }
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Run battles locally")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     args = parser.parse_args()
