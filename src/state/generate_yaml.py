@@ -11,9 +11,9 @@ generate_yaml.py
   （無い列は自動で既定値を補完します）
 """
 
-import pandas as pd        # 表計算を扱うライブラリ
-import yaml                # YAML の読み書き
-from pathlib import Path   # OS 依存しないパス操作
+import pandas as pd  # 表計算を扱うライブラリ
+import yaml  # YAML の読み書き
+from pathlib import Path  # OS 依存しないパス操作
 from poke_env.environment.move import Move
 from poke_env.environment.pokemon_type import PokemonType
 
@@ -21,10 +21,13 @@ from poke_env.environment.pokemon_type import PokemonType
 # ---------- 1. 入出力ファイルパス -----------------------------------------
 
 CURRENT_DIR = Path(__file__).resolve().parent
-SOURCE_XLSX = CURRENT_DIR / "state_feature_catalog_temp - シート1.csv"  # 入力: Excel 台帳
-TARGET_YAML = CURRENT_DIR / "state_spec.yml"        # 出力: YAML ファイル
+SOURCE_XLSX = (
+    CURRENT_DIR / "state_feature_catalog_temp - シート1.csv"
+)  # 入力: Excel 台帳
+TARGET_YAML = CURRENT_DIR / "state_spec.yml"  # 出力: YAML ファイル
 
 # ---------- 2. DataFrame → ネスト辞書 変換関数 ----------------------------
+
 
 def build_yaml(df: pd.DataFrame) -> dict:
     spec: dict = {}
@@ -56,54 +59,95 @@ def build_yaml(df: pd.DataFrame) -> dict:
                     entry["scale_to"] = eval(p.replace("scale_to:", ""))
 
         # --- 新規追加（classes 列） ---
-        classes_val = row.get("classes") # CSVの列名が'classes'であることを確認
-        if pd.notna(classes_val) and isinstance(classes_val, str) and classes_val.strip().startswith("[") and classes_val.strip().endswith("]"):
+        classes_val = row.get("classes")  # CSVの列名が'classes'であることを確認
+        if (
+            pd.notna(classes_val)
+            and isinstance(classes_val, str)
+            and classes_val.strip().startswith("[")
+            and classes_val.strip().endswith("]")
+        ):
             try:
                 # 文字列リテラルとして評価してリストに変換
                 evaluated_classes = eval(classes_val.strip())
                 if isinstance(evaluated_classes, list):
                     entry["classes"] = evaluated_classes
                 else:
-                    print(f"Warning: 'classes' for {cat}.{feat} ('{classes_val}') did not evaluate to a list.")
+                    print(
+                        f"Warning: 'classes' for {cat}.{feat} ('{classes_val}') did not evaluate to a list."
+                    )
             except Exception as e:
-                print(f"Warning: Could not parse 'classes' for {cat}.{feat} ('{classes_val}'). Error: {e}")
-        elif pd.notna(classes_val) and isinstance(classes_val, str) and classes_val.strip(): # 空文字列でない場合
-             # 単純なカンマ区切り文字列として扱う場合のフォールバック (オプション)
-             # entry["classes"] = [c.strip() for c in classes_val.split(',')]
-             # 今回は eval 前提なので、上記はコメントアウト。もし eval できない形式なら警告を出す。
-             if not (classes_val.strip().startswith("[") and classes_val.strip().endswith("]")):
-                print(f"Warning: 'classes' for {cat}.{feat} ('{classes_val}') is not in Python list format (e.g., \"['a','b']\").")
+                print(
+                    f"Warning: Could not parse 'classes' for {cat}.{feat} ('{classes_val}'). Error: {e}"
+                )
+        elif (
+            pd.notna(classes_val)
+            and isinstance(classes_val, str)
+            and classes_val.strip()
+        ):  # 空文字列でない場合
+            # 単純なカンマ区切り文字列として扱う場合のフォールバック (オプション)
+            # entry["classes"] = [c.strip() for c in classes_val.split(',')]
+            # 今回は eval 前提なので、上記はコメントアウト。もし eval できない形式なら警告を出す。
+            if not (
+                classes_val.strip().startswith("[")
+                and classes_val.strip().endswith("]")
+            ):
+                print(
+                    f"Warning: 'classes' for {cat}.{feat} ('{classes_val}') is not in Python list format (e.g., \"['a','b']\")."
+                )
 
         spec[cat][feat] = entry
 
     return spec
 
+
 # 取得したわざ一覧を固定順でソートする関数
 def get_sorted_moves(pokemon) -> list[Move]:
     return sorted(pokemon.moves.values(), key=lambda m: m.id)[:4]
 
+
 # ワンホットエンコーダの準備（タイプ）
-TYPE_LIST = [None,  # unknown
-    PokemonType.BUG, PokemonType.DARK, PokemonType.DRAGON,
-    PokemonType.ELECTRIC, PokemonType.FAIRY, PokemonType.FIGHTING,
-    PokemonType.FIRE, PokemonType.FLYING, PokemonType.GHOST,
-    PokemonType.GRASS, PokemonType.GROUND, PokemonType.ICE,
-    PokemonType.NORMAL, PokemonType.POISON, PokemonType.PSYCHIC,
-    PokemonType.ROCK, PokemonType.STEEL, PokemonType.WATER,
-    PokemonType.THREE_QUESTION_MARKS, PokemonType.STELLAR]
+TYPE_LIST = [
+    None,  # unknown
+    PokemonType.BUG,
+    PokemonType.DARK,
+    PokemonType.DRAGON,
+    PokemonType.ELECTRIC,
+    PokemonType.FAIRY,
+    PokemonType.FIGHTING,
+    PokemonType.FIRE,
+    PokemonType.FLYING,
+    PokemonType.GHOST,
+    PokemonType.GRASS,
+    PokemonType.GROUND,
+    PokemonType.ICE,
+    PokemonType.NORMAL,
+    PokemonType.POISON,
+    PokemonType.PSYCHIC,
+    PokemonType.ROCK,
+    PokemonType.STEEL,
+    PokemonType.WATER,
+    PokemonType.THREE_QUESTION_MARKS,
+    PokemonType.STELLAR,
+]
 TYPE_TO_IDX = {t: i for i, t in enumerate(TYPE_LIST)}
+
 
 def encode_type(t: PokemonType | None) -> list[int]:
     idx = TYPE_TO_IDX.get(t, 0)
     return [1 if i == idx else 0 for i in range(len(TYPE_LIST))]
+
 
 def encode_class(cls: str | None) -> list[int]:
     class_list = ["physical", "special", "status", "unk"]
     idx = class_list.index(cls) if cls in class_list else 3
     return [1 if i == idx else 0 for i in range(len(class_list))]
 
-def linear_scale(x: float, lo: float, hi: float, a: float = 0.0, b: float = 1.0) -> float:
+
+def linear_scale(
+    x: float, lo: float, hi: float, a: float = 0.0, b: float = 1.0
+) -> float:
     return (x - lo) * (b - a) / (hi - lo) + a
+
 
 def extract_move_features(move: Move | None) -> list:
     if move is None:
@@ -117,7 +161,10 @@ def extract_move_features(move: Move | None) -> list:
     pp_frac = move.current_pp / move.max_pp if move.max_pp else 0.0
 
     return type_vec + [power] + class_vec + [pp_frac]
+
+
 # ---------- 3. メイン処理 -------------------------------------------------
+
 
 def main() -> None:
     """Excel 読み込み → dict 生成 → YAML 書き出し"""
@@ -125,7 +172,7 @@ def main() -> None:
     df = pd.read_csv(SOURCE_XLSX)
 
     # 3‑B) DataFrame を辞書へ変換
-    df_mvp = df[df["MVP"] == True]
+    df_mvp = df[df["MVP"]]
     yaml_dict = build_yaml(df_mvp)
 
     # 3‑C) YAML ファイルとして保存（キー順は変更しない）
@@ -133,11 +180,12 @@ def main() -> None:
         yaml.safe_dump(
             yaml_dict,
             f,
-            allow_unicode=True,   # 日本語もそのまま書き出す
-            sort_keys=False       # 台帳の順序を保持
+            allow_unicode=True,  # 日本語もそのまま書き出す
+            sort_keys=False,  # 台帳の順序を保持
         )
 
     print(f"✅ YAML 生成完了: {TARGET_YAML}")
+
 
 # ---------- 4. スクリプト実行エントリポイント ----------------------------
 

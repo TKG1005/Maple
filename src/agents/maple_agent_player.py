@@ -32,8 +32,6 @@ class MapleAgentPlayer(Player):
     ):
         """Handle battle requests with additional debug output."""
 
-
-
         if from_teampreview_request:
             message = self.teampreview(battle)
             self._logger.debug(
@@ -61,7 +59,7 @@ class MapleAgentPlayer(Player):
         # インデックスを BattleOrder に変換
         try:
             order = self._helper.action_index_to_order(self, battle, idx)
-        except Exception as e:
+        except Exception:
             raise
         self._logger.debug("[DBG] player1 order %s", order.message)
         return order
