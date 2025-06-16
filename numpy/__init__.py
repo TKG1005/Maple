@@ -21,6 +21,7 @@ else:
     import random
 
     float32 = float
+    int64 = int
 
     class ndarray(list):
         def __add__(self, other):

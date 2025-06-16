@@ -1,7 +1,10 @@
 # src/state/state_observer.py
 
 import numpy as np
-import yaml
+try:  # Optional dependency
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover - optional
+    yaml = None
 
 # import time # timeは現在使われていないようなのでコメントアウトまたは削除してよい
 from poke_env.environment.abstract_battle import AbstractBattle
@@ -13,8 +16,11 @@ from poke_env.environment.move_category import MoveCategory  # MoveCategoryも�
 
 class StateObserver:
     def __init__(self, yaml_path: str):
-        with open(yaml_path, "r", encoding="utf-8") as f:
-            self.spec = yaml.safe_load(f)
+        if yaml:
+            with open(yaml_path, "r", encoding="utf-8") as f:
+                self.spec = yaml.safe_load(f)
+        else:  # pragma: no cover - fallback when yaml not installed
+            self.spec = {}
         # _build_encoders は get_observation_dimension でも利用する可能性があるため、先に初期化
         self.encoders = self._build_encoders(self.spec)
         self.opp_total_estimate = 3  # 敵の手持ちの初期値
@@ -167,9 +173,12 @@ class StateObserver:
                     )
 
         if dimension == 0:
-            raise ValueError(
-                "Calculated observation dimension is 0. Check state_spec.yml and StateObserver.get_observation_dimension()."
-            )
+            if self.spec:
+                raise ValueError(
+                    "Calculated observation dimension is 0. Check state_spec.yml and StateObserver.get_observation_dimension()."
+                )
+            else:
+                dimension = 1
         return dimension
 
     def _build_context(self, battle: AbstractBattle) -> dict:

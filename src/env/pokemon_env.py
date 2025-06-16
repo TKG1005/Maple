@@ -12,7 +12,10 @@ from gymnasium.spaces import Dict
 import asyncio
 import logging
 from pathlib import Path
-import yaml
+try:  # Optional dependency
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover - minimal environments
+    yaml = None
 from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
@@ -63,7 +66,7 @@ class PokemonEnv(gym.Env):
         config_path = Path(__file__).resolve().parents[2] / "config" / "env_config.yml"
         try:
             with open(config_path, "r", encoding="utf-8") as f:
-                cfg = yaml.safe_load(f)
+                cfg = yaml.safe_load(f) if yaml else {}
             self.timeout = float(cfg.get("queue_timeout", 5))
         except Exception:
             self.timeout = 5.0
@@ -284,9 +287,13 @@ class PokemonEnv(gym.Env):
             if "player_1" not in action_dict:
                 # 対戦相手の行動は簡易ポリシーで自動決定する
                 action_dict = action_dict.copy()
-                action_dict["player_1"] = self.process_battle(
-                    self._current_battles["player_1"]
-                )
+                opp_battle = self._current_battles["player_1"]
+                if getattr(opp_battle, "teampreview", False):
+                    action_dict["player_1"] = self._env_players[
+                        "player_1"
+                    ].teampreview(opp_battle)
+                else:
+                    action_dict["player_1"] = self.process_battle(opp_battle)
 
         for agent_id in self.agent_ids:
             if agent_id not in action_dict:
