@@ -68,11 +68,9 @@ def main(dry_run: bool = False, episodes: int = 1) -> None:
 
     env = init_env()
 
-    # For dry-run we only initialise the environment
-    observation, info = env.reset()
-    logger.info("Environment initialised")
-
     if dry_run:
+        env.reset()
+        logger.info("Environment initialised")
         env.close()
         logger.info("Dry run complete")
         return
