@@ -127,7 +127,10 @@ class PokemonEnv(gym.Env):
         agent = self._agents.get("player_0")
         if agent is None:
             raise RuntimeError("Agent for player_0 not registered")
-        action_idx = agent.select_action(observation, action_mask)
+        if hasattr(agent, "act"):
+            action_idx = agent.act(observation, action_mask)
+        else:
+            action_idx = agent.select_action(observation, action_mask)
         return int(action_idx)
 
     def reset(
