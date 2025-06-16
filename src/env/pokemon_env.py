@@ -275,6 +275,16 @@ class PokemonEnv(gym.Env):
     def step(self, action_dict: dict[str, int | str]):
         """マルチエージェント形式で1ステップ進める。"""
 
+        if hasattr(self, "single_agent_mode"):
+            if "player_0" not in action_dict:
+                raise ValueError("player_0 action required")
+            if "player_1" not in action_dict:
+                # 対戦相手の行動は簡易ポリシーで自動決定する
+                action_dict = action_dict.copy()
+                action_dict["player_1"] = self.process_battle(
+                    self._current_battles["player_1"]
+                )
+
         for agent_id in self.agent_ids:
             if agent_id not in action_dict:
                 raise ValueError(f"{agent_id} action required")
