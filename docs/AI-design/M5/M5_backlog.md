@@ -23,8 +23,8 @@
 |13| ランダムポリシーとの比較 | `MapleAgent`(ランダム行動) と対戦させ指標を記録 | 勝率が50%前後になることを確認 | run_battle.py, numpy |
 |14| 学習済みモデルの読み込みテスト | 保存済みファイルから `RLAgent` を復元 | `evaluate_rl.py --model saved.pt` がエラーなく実行 | PyTorch |
 |15| コマンドライン引数整備 | 主要オプション (`--episodes`, `--lr` 等) を追加 | `python train_rl.py --help` がオプション一覧を表示 | argparse |
-|16| 学習スクリプト自動テスト | エピソード数を絞った CI 用テストを追加 | `pytest -k test_train_one_episode` が PASS | pytest |
-|17| 評価スクリプト自動テスト | 1 戦だけ実行して終了するテストを作成 | `pytest -k test_evaluate_once` が PASS | pytest |
+|16| 学習スクリプト自動テスト | エピソード数を絞った CI 用テストを追加 | `pytest -k test_train_one_episode` と `python run_battle.py --n 1` が PASS | pytest, run_battle.py |
+|17| 評価スクリプト自動テスト | 1 戦だけ実行して終了するテストを作成 | `pytest -k test_evaluate_once` と `python run_battle.py --model model.pt --n 1` が PASS | pytest, run_battle.py |
 |18| ドキュメント更新 | M5 開始方法と学習手順を `docs/M5_setup.md` に記述 | ドキュメントを参照し手順通り実行できる | Markdown |
 |19| 実験ログ管理 | `logs/` ディレクトリを作り実験毎にファイル保存 | ログファイルに日時とパラメータが記録される | logging |
 |20| 乱数シード制御 | 学習・評価とも `--seed` オプションで再現性確保 | 同じシード指定で結果がほぼ一致 | numpy RNG |
@@ -38,3 +38,4 @@
 > - PokemonEnv_Specification.md の状態・行動取得 API を遵守して学習を行う。
 > - Showdown サーバは `npx pokemon-showdown` でローカル起動し、`config/my_team.txt` のパーティを使用する。
 > - 学習・評価スクリプトは長時間実行を避けるためエピソード数を小さく調整してテスト可能にする。
+> - ステップ5以降は `pytest` による自動テストと、`run_battle.py` を用いたローカル Showdown サーバでの統合テストを併用する。
