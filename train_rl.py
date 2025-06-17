@@ -21,6 +21,9 @@ from src.env.wrappers import SingleAgentCompatibilityWrapper  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
+from src.agents import PolicyNetwork, RLAgent, ReplayBuffer  # noqa: E402
+import torch  # noqa: E402
+from torch import optim  # noqa: E402
 
 
 def init_env() -> SingleAgentCompatibilityWrapper:
@@ -35,7 +38,24 @@ def init_env() -> SingleAgentCompatibilityWrapper:
     return SingleAgentCompatibilityWrapper(env)
 
 
-def main(dry_run: bool = False) -> None:
+def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> None:
+    """Perform a single policy gradient step using REINFORCE."""
+
+    obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
+    actions = torch.as_tensor(batch["actions"], dtype=torch.int64)
+    rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32)
+
+    logits = agent.model(obs)
+    log_probs = torch.log_softmax(logits, dim=-1)
+    selected = log_probs[torch.arange(len(actions)), actions]
+    loss = -(selected * rewards).mean()
+
+    agent.optimizer.zero_grad()
+    loss.backward()
+    agent.optimizer.step()
+
+
+def main(*, dry_run: bool = False, episodes: int = 1) -> None:
     """Entry point for RL training script."""
 
     env = init_env()
@@ -49,7 +69,37 @@ def main(dry_run: bool = False) -> None:
         logger.info("Dry run complete")
         return
 
-    # TODO: implement training loop
+    observation_dim = env.observation_space.shape
+    action_space = env.action_space
+
+    model = PolicyNetwork(env.observation_space, action_space)
+    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    agent = RLAgent(env, model, optimizer)
+    buffer = ReplayBuffer(capacity=1000, observation_shape=observation_dim)
+    batch_size = 32
+
+    for ep in range(episodes):
+        obs, info = env.reset()
+        if info.get("request_teampreview"):
+            team_cmd = agent.choose_team(obs)
+            obs, action_mask, reward, done, _ = env.step(team_cmd)
+        else:
+            battle = env.env._current_battles[env.env.agent_ids[0]]
+            action_mask, _ = action_helper.get_available_actions_with_details(battle)
+            done = False
+
+        total_reward = 0.0
+        while not done:
+            action = agent.act(obs, action_mask)
+            next_obs, action_mask, reward, done, _ = env.step(action)
+            buffer.add(obs, action, float(reward), done, next_obs)
+            if len(buffer) >= batch_size:
+                batch = buffer.sample(batch_size)
+                train_step(agent, batch)
+            obs = next_obs
+            total_reward += float(reward)
+
+        logger.info("Episode %d reward %.2f", ep + 1, total_reward)
 
     env.close()
 
@@ -62,6 +112,13 @@ if __name__ == "__main__":
         action="store_true",
         help="initialise environment and exit",
     )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        default=1,
+        help="number of training episodes",
+    )
     args = parser.parse_args()
 
-    main(dry_run=args.dry_run)
+    main(dry_run=args.dry_run, episodes=args.episodes)
+
