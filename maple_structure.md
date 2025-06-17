@@ -28,10 +28,12 @@
 │   └── copy_of_poke_env
 │       └── poke_env
 ├── docs
-│   └── AI-design
-│       ├── M2
-│       ├── M4
-│       └── PokemonEnv_Specification.md
+│   ├── AI-design
+│   │   ├── M2
+│   │   ├── M4
+│   │   ├── M5
+│   │   └── PokemonEnv_Specification.md
+│   └── M4_setup.md
 ├── maple_structure.md
 ├── poke_env
 ├── pokemon-showdown
@@ -537,8 +539,8 @@
 │   └── tsconfig.json
 ├── pytest.ini
 ├── requirements.txt
+├── run_battle.py
 ├── scripts
-│   └── step_skeleton_demo.py
 ├── src
 │   ├── __init__.py
 │   ├── __pycache__
@@ -550,30 +552,34 @@
 │   ├── agents
 │   │   ├── __init__.py
 │   │   ├── __pycache__
+│   │   ├── maple_agent_player.py
 │   │   ├── MapleAgent.py
 │   │   ├── my_simple_player.py
+│   │   ├── policy_network.py
+│   │   ├── RLAgent.py
 │   │   └── rule_based_player.py
 │   ├── env
 │   │   ├── __init__.py
 │   │   ├── __pycache__
 │   │   ├── env_player.py
-│   │   └── pokemon_env.py
-│   ├── run_local_battle.py
+│   │   ├── pokemon_env.py
+│   │   └── wrappers.py
 │   ├── state
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
 │   │   ├── state_feature_catalog_temp - シート1.csv
 │   │   └── state_observer.py
 │   └── util
-└── test
-    ├── __pycache__
-    │   ├── run_battle.cpython-312.pyc
-    │   ├── test_env.cpython-312-pytest-8.4.0.pyc
-    │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
-    │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
-    │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
-    │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
-    ├── run_battle.py
-    └── simple_agent.py
+├── test
+│   ├── __pycache__
+│   │   ├── run_battle.cpython-312.pyc
+│   │   ├── test_env.cpython-312-pytest-8.4.0.pyc
+│   │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
+│   │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
+│   │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
+│   │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
+│   ├── run_battle.py
+│   └── simple_agent.py
+└── train_rl.py
 
-403 directories, 174 files
+404 directories, 179 files
