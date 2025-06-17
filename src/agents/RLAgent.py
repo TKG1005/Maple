@@ -35,6 +35,8 @@ class RLAgent(MapleAgent):
 
     def act(self, observation: np.ndarray, action_mask: np.ndarray) -> int:
         """Sample an action index according to the policy."""
+        # Print the received mask to make debugging of invalid actions easier
+        print(f"available mask = {action_mask}")
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
         return int(rng.choice(len(probs), p=probs))
