@@ -24,6 +24,10 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
         # Enable single-agent mode in the underlying environment
         setattr(self.env, "single_agent_mode", True)
 
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute access to the underlying environment."""
+        return getattr(self.env, name)
+
     @property
     def action_space(self) -> gym.Space:
         return self.env.action_space[self.env.agent_ids[0]]
