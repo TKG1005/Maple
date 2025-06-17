@@ -7,6 +7,7 @@ import random
 from abc import ABC, abstractmethod
 from asyncio import Condition, Event, Queue, Semaphore
 from logging import Logger
+import logging
 from time import perf_counter
 from typing import Any, Awaitable, Dict, List, Optional, Union
 
@@ -36,6 +37,25 @@ from poke_env.ps_client.server_configuration import (
 )
 from poke_env.teambuilder.constant_teambuilder import ConstantTeambuilder
 from poke_env.teambuilder.teambuilder import Teambuilder
+
+
+def _configure_psclient_logger(username: str, log_level: Optional[int]) -> None:
+    """Set up logger for :class:`PSClient` instances.
+
+    Removes older stream handlers and disables propagation to avoid duplicate
+    log lines when the same username logger is reused.
+    """
+
+    logger = logging.getLogger(username)
+
+    if len(logger.handlers) > 1:
+        for handler in logger.handlers[:-1]:
+            logger.removeHandler(handler)
+
+    if log_level is not None:
+        logger.setLevel(log_level)
+
+    logger.propagate = False
 
 
 class Player(ABC):
@@ -132,6 +152,8 @@ class Player(ABC):
             ping_interval=ping_interval,
             ping_timeout=ping_timeout,
         )
+
+        _configure_psclient_logger(self.ps_client.username, log_level)
 
         self.ps_client._handle_battle_message = self._handle_battle_message  # type: ignore
         self.ps_client._update_challenges = self._update_challenges  # type: ignore
