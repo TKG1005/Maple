@@ -60,11 +60,10 @@ def main(*, dry_run: bool = False, episodes: int = 1) -> None:
 
     env = init_env()
 
-    # For dry-run we only initialise the environment
-    observation, info = env.reset()
-    logger.info("Environment initialised")
-
     if dry_run:
+        # 初期化のみ確認して即終了
+        env.reset()
+        logger.info("Environment initialised")
         env.close()
         logger.info("Dry run complete")
         return
@@ -82,7 +81,7 @@ def main(*, dry_run: bool = False, episodes: int = 1) -> None:
         obs, info = env.reset()
         if info.get("request_teampreview"):
             team_cmd = agent.choose_team(obs)
-            obs, action_mask, reward, done, _ = env.step(team_cmd)
+            obs, action_mask, _, done, _ = env.step(team_cmd)
         else:
             battle = env.env._current_battles[env.env.agent_ids[0]]
             action_mask, _ = action_helper.get_available_actions_with_details(battle)
