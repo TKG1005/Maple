@@ -55,7 +55,7 @@ def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> None:
     agent.optimizer.step()
 
 
-def main(*, dry_run: bool = False, episodes: int = 1) -> None:
+def main(*, dry_run: bool = False, episodes: int = 1, save_path: str | None = None) -> None:
     """Entry point for RL training script."""
 
     env = init_env()
@@ -102,6 +102,15 @@ def main(*, dry_run: bool = False, episodes: int = 1) -> None:
 
     env.close()
 
+    if save_path is not None:
+        path = Path(save_path)
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(model.state_dict(), path)
+            logger.info("Model saved to %s", path)
+        except OSError as exc:
+            logger.error("Failed to save model: %s", exc)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -117,7 +126,13 @@ if __name__ == "__main__":
         default=1,
         help="number of training episodes",
     )
+    parser.add_argument(
+        "--save",
+        type=str,
+        metavar="FILE",
+        help="path to save trained model (.pt)",
+    )
     args = parser.parse_args()
 
-    main(dry_run=args.dry_run, episodes=args.episodes)
+    main(dry_run=args.dry_run, episodes=args.episodes, save_path=args.save)
 
