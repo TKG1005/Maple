@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.agents.MapleAgent import MapleAgent
 
 import gymnasium as gym
 
@@ -27,6 +26,7 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
         setattr(self.env, "single_agent_mode", True)
 
         # 対戦相手としてランダム行動の ``MapleAgent`` を登録しておく
+        from src.agents.MapleAgent import MapleAgent
         opponent = MapleAgent(self.env)
         self.env.register_agent(opponent, "player_1")
         self._opponent = opponent
