@@ -114,6 +114,10 @@ class PokemonEnv(gym.Env):
             self._agents: dict[str, Any] = {}
         self._agents[player_id] = agent
 
+    def get_current_battle(self, agent_id: str = "player_0") -> Any | None:
+        """Return the latest :class:`Battle` object for ``agent_id``."""
+        return getattr(self, "_current_battles", {}).get(agent_id)
+
     def process_battle(self, battle: Any) -> int:
         """Create an observation and available action mask for ``battle``.
 

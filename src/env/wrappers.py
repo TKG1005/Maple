@@ -50,20 +50,20 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
     def step(self, action: Any):
         """Advance the environment one step with an automatic opponent."""
 
-        battle = self.env._current_battles.get(self.env.agent_ids[1])
-        if battle is not None:
-            if isinstance(action, str):
-                opp_action = self._opponent.choose_team(
-                    self.env.state_observer.observe(battle)
-                )
-            else:
-                mask, mapping = self.env.action_helper.get_available_actions(battle)
-                # マスク生成に使用したマッピングを環境にも共有しておく
-                self.env._action_mappings[self.env.agent_ids[1]] = mapping
-                obs = self.env.state_observer.observe(battle)
-                opp_action = self._opponent.select_action(obs, mask)
-        else:
-            opp_action = 0
+        opp_id = self.env.agent_ids[1]
+        opp_action = 0
+        if self.env._need_action.get(opp_id, False):
+            battle = self.env.get_current_battle(opp_id)
+            if battle is not None:
+                if isinstance(action, str):
+                    obs = self.env.state_observer.observe(battle)
+                    opp_action = self._opponent.choose_team(obs)
+                else:
+                    mask, mapping = self.env.action_helper.get_available_actions(battle)
+                    # マスク生成に使用したマッピングを環境にも共有しておく
+                    self.env._action_mappings[opp_id] = mapping
+                    obs = self.env.state_observer.observe(battle)
+                    opp_action = self._opponent.select_action(obs, mask)
 
         return self.env.step({"player_0": action, "player_1": opp_action})
 
