@@ -85,6 +85,8 @@ def main(
     episodes: int | None = None,
     save_path: str | None = None,
     tensorboard: bool = False,
+    checkpoint_interval: int = 0,
+    checkpoint_dir: str = "checkpoints",
 ) -> None:
     """Entry point for RL training script."""
 
@@ -120,6 +122,8 @@ def main(
     agent = RLAgent(env, model, optimizer)
     buffer = ReplayBuffer(capacity=buffer_capacity, observation_shape=observation_dim)
 
+    ckpt_dir = Path(checkpoint_dir)
+
     for ep in range(episodes):
         obs, info = env.reset()
         if info.get("request_teampreview"):
@@ -147,6 +151,15 @@ def main(
         logger.info("Episode %d reward %.2f", ep + 1, total_reward)
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
+
+        if checkpoint_interval and (ep + 1) % checkpoint_interval == 0:
+            try:
+                ckpt_dir.mkdir(parents=True, exist_ok=True)
+                ckpt_path = ckpt_dir / f"checkpoint_ep{ep + 1}.pt"
+                torch.save(model.state_dict(), ckpt_path)
+                logger.info("Checkpoint saved to %s", ckpt_path)
+            except OSError as exc:
+                logger.error("Failed to save checkpoint: %s", exc)
 
     env.close()
     if writer:
@@ -193,6 +206,18 @@ if __name__ == "__main__":
         action="store_true",
         help="enable TensorBoard logging to the runs/ directory",
     )
+    parser.add_argument(
+        "--checkpoint-interval",
+        type=int,
+        default=0,
+        help="save intermediate models every N episodes (0 to disable)",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default="checkpoints",
+        help="directory to store checkpoint files",
+    )
     args = parser.parse_args()
 
     main(
@@ -201,4 +226,6 @@ if __name__ == "__main__":
         episodes=args.episodes,
         save_path=args.save,
         tensorboard=args.tensorboard,
+        checkpoint_interval=args.checkpoint_interval,
+        checkpoint_dir=args.checkpoint_dir,
     )
