@@ -105,6 +105,14 @@ class PokemonEnv(gym.Env):
             agent_id: False for agent_id in self.agent_ids
         }
 
+        # チームプレビューで得た手持ちポケモン一覧と選択されたポケモン種別
+        self._team_rosters: dict[str, list[str]] = {
+            agent_id: [] for agent_id in self.agent_ids
+        }
+        self._selected_species: dict[str, set[str]] = {
+            agent_id: set() for agent_id in self.agent_ids
+        }
+
     # ------------------------------------------------------------------
     # Agent interaction utilities
     # ------------------------------------------------------------------
@@ -226,6 +234,12 @@ class PokemonEnv(gym.Env):
             ).result()
             POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
 
+        # 各プレイヤーの手持ちポケモン種別を保存しておく
+        self._team_rosters["player_0"] = [p.species for p in battle0.team.values()]
+        self._selected_species["player_0"] = set(self._team_rosters["player_0"])
+        self._team_rosters["player_1"] = [p.species for p in battle1.team.values()]
+        self._selected_species["player_1"] = set(self._team_rosters["player_1"])
+
         self._current_battles = {"player_0": battle0, "player_1": battle1}
         observation = {
             "player_0": self.state_observer.observe(battle0),
@@ -296,6 +310,14 @@ class PokemonEnv(gym.Env):
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(act), POKE_LOOP
                 ).result()
+                if act.startswith("/team"):
+                    import re
+
+                    indices = [int(x) - 1 for x in re.findall(r"\d", act)]
+                    roster = self._team_rosters.get(agent_id, [])
+                    self._selected_species[agent_id] = {
+                        roster[i] for i in indices if 0 <= i < len(roster)
+                    }
             else:
                 mapping = self._action_mappings.get(agent_id) or {}
                 if mapping:
@@ -338,7 +360,17 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
-            _, mapping = self.action_helper.get_available_actions(battle)
+            mask, mapping = self.action_helper.get_available_actions(battle)
+            selected = self._selected_species.get(pid)
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            mask[idx] = 0
             self._action_mappings[pid] = mapping
 
         observation = {
@@ -362,6 +394,16 @@ class PokemonEnv(gym.Env):
         if hasattr(self, "single_agent_mode"):
             battle_sa = battles[self.agent_ids[0]]
             action_mask, mapping = self.action_helper.get_available_actions(battle_sa)
+            selected = self._selected_species.get(self.agent_ids[0])
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle_sa.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            action_mask[idx] = 0
             self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
