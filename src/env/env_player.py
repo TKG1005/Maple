@@ -70,11 +70,15 @@ class EnvPlayer(Player):
         maybe_default_order: bool = False,
     ):
 
-        # 利用可能な行動が存在しない場合は更新されるまで待機する
+        # 利用可能な行動がない場合は更新されるまで待機する
         if not battle.available_moves:
 
             async def _wait_moves() -> None:
-                while not battle.available_moves and not battle.force_switch:
+                while (
+                    not battle.available_moves
+                    and not battle.force_switch
+                    and not battle.available_switches
+                ):
                     await asyncio.sleep(0.1)
 
             try:
