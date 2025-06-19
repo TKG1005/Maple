@@ -35,7 +35,7 @@ class PokemonEnv(gym.Env):
         super().__init__()
 
         self.ACTION_SIZE = 10  # "gen9bss"ルールでは行動空間は10で固定
-        self.MAX_TURNS = 200  # エピソードの最大ターン数
+        self.MAX_TURNS = 1000  # エピソードの最大ターン数
 
         # Step10: 非同期アクションキューを導入
         # 数値アクションだけでなく、チーム選択コマンドなどの文字列も
@@ -95,9 +95,22 @@ class PokemonEnv(gym.Env):
             }
         )
 
+        # 最後に生成した行動マッピングを保持しておく
+        self._action_mappings: dict[str, dict[int, tuple[str, int]]] = {
+            agent_id: {} for agent_id in self.agent_ids
+        }
+
         # Player ごとの行動要求フラグ
         self._need_action: dict[str, bool] = {
             agent_id: False for agent_id in self.agent_ids
+        }
+
+        # チームプレビューで得た手持ちポケモン一覧と選択されたポケモン種別
+        self._team_rosters: dict[str, list[str]] = {
+            agent_id: [] for agent_id in self.agent_ids
+        }
+        self._selected_species: dict[str, set[str]] = {
+            agent_id: set() for agent_id in self.agent_ids
         }
 
     # ------------------------------------------------------------------
@@ -108,6 +121,10 @@ class PokemonEnv(gym.Env):
         if not hasattr(self, "_agents"):
             self._agents: dict[str, Any] = {}
         self._agents[player_id] = agent
+
+    def get_current_battle(self, agent_id: str = "player_0") -> Any | None:
+        """Return the latest :class:`Battle` object for ``agent_id``."""
+        return getattr(self, "_current_battles", {}).get(agent_id)
 
     def process_battle(self, battle: Any) -> int:
         """Create an observation and available action mask for ``battle``.
@@ -141,6 +158,7 @@ class PokemonEnv(gym.Env):
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._need_action = {agent_id: True for agent_id in self.agent_ids}
+        self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -216,6 +234,12 @@ class PokemonEnv(gym.Env):
             ).result()
             POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
 
+        # 各プレイヤーの手持ちポケモン種別を保存しておく
+        self._team_rosters["player_0"] = [p.species for p in battle0.team.values()]
+        self._selected_species["player_0"] = set(self._team_rosters["player_0"])
+        self._team_rosters["player_1"] = [p.species for p in battle1.team.values()]
+        self._selected_species["player_1"] = set(self._team_rosters["player_1"])
+
         self._current_battles = {"player_0": battle0, "player_1": battle1}
         observation = {
             "player_0": self.state_observer.observe(battle0),
@@ -286,12 +310,29 @@ class PokemonEnv(gym.Env):
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(act), POKE_LOOP
                 ).result()
+                if act.startswith("/team"):
+                    import re
+
+                    indices = [int(x) - 1 for x in re.findall(r"\d", act)]
+                    roster = self._team_rosters.get(agent_id, [])
+                    self._selected_species[agent_id] = {
+                        roster[i] for i in indices if 0 <= i < len(roster)
+                    }
             else:
-                order = self.action_helper.action_index_to_order(
-                    self._env_players[agent_id],
-                    self._current_battles[agent_id],
-                    int(act),
-                )
+                mapping = self._action_mappings.get(agent_id) or {}
+                if mapping:
+                    order = self.action_helper.action_index_to_order_from_mapping(
+                        self._env_players[agent_id],
+                        self._current_battles[agent_id],
+                        int(act),
+                        mapping,
+                    )
+                else:
+                    order = self.action_helper.action_index_to_order(
+                        self._env_players[agent_id],
+                        self._current_battles[agent_id],
+                        int(act),
+                    )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()
@@ -319,6 +360,18 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
+            mask, mapping = self.action_helper.get_available_actions(battle)
+            selected = self._selected_species.get(pid)
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            mask[idx] = 0
+            self._action_mappings[pid] = mapping
 
         observation = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
@@ -340,9 +393,18 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "single_agent_mode"):
             battle_sa = battles[self.agent_ids[0]]
-            action_mask, _ = self.action_helper.get_available_actions_with_details(
-                battle_sa
-            )
+            action_mask, mapping = self.action_helper.get_available_actions(battle_sa)
+            selected = self._selected_species.get(self.agent_ids[0])
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle_sa.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            action_mask[idx] = 0
+            self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
                 observation[self.agent_ids[0]],

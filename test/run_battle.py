@@ -68,8 +68,8 @@ def run_single_battle() -> dict:
     done = False
     last_reward = 0.0
     while not done:
-        battle0 = env._current_battles[env.agent_ids[0]]
-        battle1 = env._current_battles[env.agent_ids[1]]
+        battle0 = env.get_current_battle(env.agent_ids[0])
+        battle1 = env.get_current_battle(env.agent_ids[1])
         mask0, _ = action_helper.get_available_actions_with_details(battle0)
         mask1, _ = action_helper.get_available_actions_with_details(battle1)
 
@@ -88,7 +88,7 @@ def run_single_battle() -> dict:
         current_obs1 = observations[env.agent_ids[1]]
         done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
-    battle = env._current_battles[env.agent_ids[0]]
+    battle = env.get_current_battle(env.agent_ids[0])
     winner = "env0" if env._env_players["player_0"].n_won_battles == 1 else "env1"
     turns = getattr(battle, "turn", 0)
     reward = last_reward
