@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+import yaml
 
 # Repository root path
 ROOT_DIR = Path(__file__).resolve().parent
@@ -11,6 +12,20 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 logger = logging.getLogger(__name__)
+
+
+def load_config(path: str) -> dict:
+    """Load training configuration from a YAML file."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        if not isinstance(data, dict):
+            raise TypeError("YAML root must be a mapping")
+        return data
+    except FileNotFoundError:
+        logger.warning("Config file %s not found, using defaults", path)
+        return {}
+
 
 # Ensure bundled poke_env package is importable
 POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
@@ -55,8 +70,20 @@ def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> None:
     agent.optimizer.step()
 
 
-def main(*, dry_run: bool = False, episodes: int = 1, save_path: str | None = None) -> None:
+def main(
+    *,
+    config_path: str = str(ROOT_DIR / "config" / "train_config.yml"),
+    dry_run: bool = False,
+    episodes: int | None = None,
+    save_path: str | None = None,
+) -> None:
     """Entry point for RL training script."""
+
+    cfg = load_config(config_path)
+    episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
+    lr = float(cfg.get("lr", 1e-3))
+    buffer_capacity = int(cfg.get("buffer_capacity", 1000))
+    batch_size = int(cfg.get("batch_size", 32))
 
     env = init_env()
 
@@ -72,10 +99,9 @@ def main(*, dry_run: bool = False, episodes: int = 1, save_path: str | None = No
     action_space = env.action_space
 
     model = PolicyNetwork(env.observation_space, action_space)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
     agent = RLAgent(env, model, optimizer)
-    buffer = ReplayBuffer(capacity=1000, observation_shape=observation_dim)
-    batch_size = 32
+    buffer = ReplayBuffer(capacity=buffer_capacity, observation_shape=observation_dim)
 
     for ep in range(episodes):
         obs, info = env.reset()
@@ -116,6 +142,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="RL training script")
     parser.add_argument(
+        "--config",
+        type=str,
+        default=str(ROOT_DIR / "config" / "train_config.yml"),
+        help="path to YAML config file",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="initialise environment and exit",
@@ -134,5 +166,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(dry_run=args.dry_run, episodes=args.episodes, save_path=args.save)
-
+    main(
+        config_path=args.config,
+        dry_run=args.dry_run,
+        episodes=args.episodes,
+        save_path=args.save,
+    )
