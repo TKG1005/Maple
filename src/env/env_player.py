@@ -70,11 +70,16 @@ class EnvPlayer(Player):
         maybe_default_order: bool = False,
     ):
 
-        # 最初のターンでは ``battle.available_moves`` が更新されるまで待機する
-        if battle.turn == 1 and not battle.available_moves:
+        # ``battle.available_moves`` が空の場合は更新を待機する
+        if not battle.available_moves:
 
             async def _wait_moves() -> None:
-                while not battle.available_moves:
+                while (
+                    not battle.available_moves
+                    and not battle.force_switch
+                    and not battle.move_on_next_request
+                    and not battle.teampreview
+                ):
                     await asyncio.sleep(0.1)
 
             try:

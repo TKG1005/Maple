@@ -83,7 +83,7 @@ def main(*, dry_run: bool = False, episodes: int = 1, save_path: str | None = No
             team_cmd = agent.choose_team(obs)
             obs, action_mask, _, done, _ = env.step(team_cmd)
         else:
-            battle = env.env._current_battles[env.env.agent_ids[0]]
+            battle = env.env.get_current_battle(env.env.agent_ids[0])
             action_mask, _ = action_helper.get_available_actions_with_details(battle)
             done = False
 
