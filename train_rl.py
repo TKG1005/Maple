@@ -60,56 +60,56 @@ def main(*, dry_run: bool = False, episodes: int = 1, save_path: str | None = No
 
     env = init_env()
 
-    if dry_run:
-        # 初期化のみ確認して即終了
-        env.reset()
-        logger.info("Environment initialised")
+    try:
+        if dry_run:
+            # 初期化のみ確認して即終了
+            env.reset()
+            logger.info("Environment initialised")
+            logger.info("Dry run complete")
+            return
+
+        observation_dim = env.observation_space.shape
+        action_space = env.action_space
+
+        model = PolicyNetwork(env.observation_space, action_space)
+        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        agent = RLAgent(env, model, optimizer)
+        buffer = ReplayBuffer(capacity=1000, observation_shape=observation_dim)
+        batch_size = 32
+
+        for ep in range(episodes):
+            obs, info = env.reset()
+            if info.get("request_teampreview"):
+                team_cmd = agent.choose_team(obs)
+                obs, action_mask, _, done, _ = env.step(team_cmd)
+            else:
+                battle = env.env._current_battles[env.env.agent_ids[0]]
+                action_mask, _ = action_helper.get_available_actions_with_details(battle)
+                done = False
+
+            total_reward = 0.0
+            while not done:
+                action = agent.act(obs, action_mask)
+                next_obs, action_mask, reward, done, _ = env.step(action)
+                buffer.add(obs, action, float(reward), done, next_obs)
+                if len(buffer) >= batch_size:
+                    batch = buffer.sample(batch_size)
+                    train_step(agent, batch)
+                obs = next_obs
+                total_reward += float(reward)
+
+            logger.info("Episode %d reward %.2f", ep + 1, total_reward)
+
+        if save_path is not None:
+            path = Path(save_path)
+            try:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                torch.save(model.state_dict(), path)
+                logger.info("Model saved to %s", path)
+            except OSError as exc:
+                logger.error("Failed to save model: %s", exc)
+    finally:
         env.close()
-        logger.info("Dry run complete")
-        return
-
-    observation_dim = env.observation_space.shape
-    action_space = env.action_space
-
-    model = PolicyNetwork(env.observation_space, action_space)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    agent = RLAgent(env, model, optimizer)
-    buffer = ReplayBuffer(capacity=1000, observation_shape=observation_dim)
-    batch_size = 32
-
-    for ep in range(episodes):
-        obs, info = env.reset()
-        if info.get("request_teampreview"):
-            team_cmd = agent.choose_team(obs)
-            obs, action_mask, _, done, _ = env.step(team_cmd)
-        else:
-            battle = env.env._current_battles[env.env.agent_ids[0]]
-            action_mask, _ = action_helper.get_available_actions_with_details(battle)
-            done = False
-
-        total_reward = 0.0
-        while not done:
-            action = agent.act(obs, action_mask)
-            next_obs, action_mask, reward, done, _ = env.step(action)
-            buffer.add(obs, action, float(reward), done, next_obs)
-            if len(buffer) >= batch_size:
-                batch = buffer.sample(batch_size)
-                train_step(agent, batch)
-            obs = next_obs
-            total_reward += float(reward)
-
-        logger.info("Episode %d reward %.2f", ep + 1, total_reward)
-
-    env.close()
-
-    if save_path is not None:
-        path = Path(save_path)
-        try:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(model.state_dict(), path)
-            logger.info("Model saved to %s", path)
-        except OSError as exc:
-            logger.error("Failed to save model: %s", exc)
 
 
 if __name__ == "__main__":

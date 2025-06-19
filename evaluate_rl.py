@@ -61,22 +61,24 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
 
 def main(model_path: str, n: int = 1) -> None:
     env = init_env()
-    model = PolicyNetwork(env.observation_space, env.action_space)
-    state_dict = torch.load(model_path, map_location="cpu")
-    model.load_state_dict(state_dict)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    agent = RLAgent(env, model, optimizer)
+    try:
+        model = PolicyNetwork(env.observation_space, env.action_space)
+        state_dict = torch.load(model_path, map_location="cpu")
+        model.load_state_dict(state_dict)
+        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        agent = RLAgent(env, model, optimizer)
 
-    wins = 0
-    total_reward = 0.0
-    for i in range(n):
-        won, reward = run_episode(agent)
-        wins += int(won)
-        total_reward += reward
-        logger.info("Battle %d reward=%.2f win=%s", i + 1, reward, won)
+        wins = 0
+        total_reward = 0.0
+        for i in range(n):
+            won, reward = run_episode(agent)
+            wins += int(won)
+            total_reward += reward
+            logger.info("Battle %d reward=%.2f win=%s", i + 1, reward, won)
 
-    env.close()
-    logger.info("Evaluation finished after %d battles", n)
+        logger.info("Evaluation finished after %d battles", n)
+    finally:
+        env.close()
 
 
 if __name__ == "__main__":
