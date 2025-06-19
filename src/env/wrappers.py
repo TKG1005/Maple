@@ -57,9 +57,9 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
                     self.env.state_observer.observe(battle)
                 )
             else:
-                mask, _ = self.env.action_helper.get_available_actions_with_details(
-                    battle
-                )
+                mask, mapping = self.env.action_helper.get_available_actions(battle)
+                # マスク生成に使用したマッピングを環境にも共有しておく
+                self.env._action_mappings[self.env.agent_ids[1]] = mapping
                 obs = self.env.state_observer.observe(battle)
                 opp_action = self._opponent.select_action(obs, mask)
         else:
