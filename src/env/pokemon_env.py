@@ -95,6 +95,11 @@ class PokemonEnv(gym.Env):
             }
         )
 
+        # 最後に生成した行動マッピングを保持しておく
+        self._action_mappings: dict[str, dict[int, tuple[str, int]]] = {
+            agent_id: {} for agent_id in self.agent_ids
+        }
+
         # Player ごとの行動要求フラグ
         self._need_action: dict[str, bool] = {
             agent_id: False for agent_id in self.agent_ids
@@ -141,6 +146,7 @@ class PokemonEnv(gym.Env):
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._need_action = {agent_id: True for agent_id in self.agent_ids}
+        self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -287,11 +293,20 @@ class PokemonEnv(gym.Env):
                     self._action_queues[agent_id].put(act), POKE_LOOP
                 ).result()
             else:
-                order = self.action_helper.action_index_to_order(
-                    self._env_players[agent_id],
-                    self._current_battles[agent_id],
-                    int(act),
-                )
+                mapping = self._action_mappings.get(agent_id) or {}
+                if mapping:
+                    order = self.action_helper.action_index_to_order_from_mapping(
+                        self._env_players[agent_id],
+                        self._current_battles[agent_id],
+                        int(act),
+                        mapping,
+                    )
+                else:
+                    order = self.action_helper.action_index_to_order(
+                        self._env_players[agent_id],
+                        self._current_battles[agent_id],
+                        int(act),
+                    )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()
@@ -319,6 +334,8 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
+            _, mapping = self.action_helper.get_available_actions(battle)
+            self._action_mappings[pid] = mapping
 
         observation = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
@@ -340,9 +357,8 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "single_agent_mode"):
             battle_sa = battles[self.agent_ids[0]]
-            action_mask, _ = self.action_helper.get_available_actions_with_details(
-                battle_sa
-            )
+            action_mask, mapping = self.action_helper.get_available_actions(battle_sa)
+            self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
                 observation[self.agent_ids[0]],

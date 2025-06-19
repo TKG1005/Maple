@@ -143,6 +143,44 @@ def get_available_actions_with_details(
     return mask, detailed
 
 
+def action_index_to_order_from_mapping(
+    player: Player,
+    battle: Battle,
+    action_index: int,
+    mapping: Dict[int, Tuple[str, int]],
+) -> BattleOrder:
+    """Translate ``action_index`` using a precomputed ``mapping``."""
+
+    moves_sorted: List[Move] = sorted(battle.available_moves, key=lambda m: m.id)
+    switches_list: List[Pokemon] = battle.available_switches
+
+    if action_index not in mapping:
+        raise ValueError(
+            f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
+        )
+
+    action_type, sub_idx = mapping[action_index]
+
+    if action_type == "move":
+        if sub_idx >= len(moves_sorted):
+            raise ValueError(f"Move index {sub_idx} out of range.")
+        return player.create_order(moves_sorted[sub_idx], terastallize=False)
+
+    if action_type == "terastal":
+        if not battle.can_tera:
+            raise ValueError("Terastallization not available.")
+        if sub_idx >= len(moves_sorted):
+            raise ValueError(f"Terastal move index {sub_idx} out of range.")
+        return player.create_order(moves_sorted[sub_idx], terastallize=True)
+
+    if action_type == "switch":
+        if sub_idx >= len(switches_list):
+            raise ValueError(f"Switch index {sub_idx} out of range.")
+        return player.create_order(switches_list[sub_idx])
+
+    raise ValueError(f"Unknown action_type: {action_type}")
+
+
 def action_index_to_order(
     player: Player, battle: Battle, action_index: int
 ) -> BattleOrder:
