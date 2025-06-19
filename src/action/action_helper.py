@@ -167,8 +167,11 @@ def action_index_to_order_from_mapping(
         return player.create_order(moves_sorted[sub_idx], terastallize=False)
 
     if action_type == "terastal":
-        if not battle.can_tera:
-            raise ValueError("Terastallization not available.")
+        if battle.can_tera is None:
+            # テラスタルが選択できない状態では通常の技として処理する
+            if sub_idx >= len(moves_sorted):
+                raise ValueError(f"Terastal move index {sub_idx} out of range.")
+            return player.create_order(moves_sorted[sub_idx], terastallize=False)
         if sub_idx >= len(moves_sorted):
             raise ValueError(f"Terastal move index {sub_idx} out of range.")
         return player.create_order(moves_sorted[sub_idx], terastallize=True)
@@ -206,8 +209,11 @@ def action_index_to_order(
         return player.create_order(moves_sorted[sub_idx], terastallize=False)
 
     if action_type == "terastal":
-        if not battle.can_tera:
-            raise ValueError("Terastallization not available.")
+        if battle.can_tera is None:
+            # テラスタル不可時はテラスタルなしで実行
+            if sub_idx >= len(moves_sorted):
+                raise ValueError(f"Terastal move index {sub_idx} out of range.")
+            return player.create_order(moves_sorted[sub_idx], terastallize=False)
         if sub_idx >= len(moves_sorted):
             raise ValueError(f"Terastal move index {sub_idx} out of range.")
         return player.create_order(moves_sorted[sub_idx], terastallize=True)
