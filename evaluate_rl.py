@@ -78,6 +78,10 @@ def main(model_path: str, n: int = 1) -> None:
     env.close()
     logger.info("Evaluation finished after %d battles", n)
 
+    win_rate = wins / n if n else 0.0
+    avg_reward = total_reward / n if n else 0.0
+    logger.info("win_rate: %.2f avg_reward: %.2f", win_rate, avg_reward)
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
