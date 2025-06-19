@@ -5,6 +5,7 @@ import logging
 import sys
 from pathlib import Path
 import yaml
+from torch.utils.tensorboard import SummaryWriter
 
 # Repository root path
 ROOT_DIR = Path(__file__).resolve().parent
@@ -53,8 +54,14 @@ def init_env() -> SingleAgentCompatibilityWrapper:
     return SingleAgentCompatibilityWrapper(env)
 
 
-def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> None:
-    """Perform a single policy gradient step using REINFORCE."""
+def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> float:
+    """Perform a single policy gradient step using REINFORCE.
+
+    Returns
+    -------
+    float
+        Training loss for the processed batch.
+    """
 
     obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
     actions = torch.as_tensor(batch["actions"], dtype=torch.int64)
@@ -68,6 +75,7 @@ def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> None:
     agent.optimizer.zero_grad()
     loss.backward()
     agent.optimizer.step()
+    return float(loss.detach())
 
 
 def main(
@@ -76,6 +84,7 @@ def main(
     dry_run: bool = False,
     episodes: int | None = None,
     save_path: str | None = None,
+    tensorboard: bool = False,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -85,6 +94,9 @@ def main(
     buffer_capacity = int(cfg.get("buffer_capacity", 1000))
     batch_size = int(cfg.get("batch_size", 32))
 
+    writer = None
+    global_step = 0
+
     env = init_env()
 
     if dry_run:
@@ -92,8 +104,13 @@ def main(
         env.reset()
         logger.info("Environment initialised")
         env.close()
+        if writer:
+            writer.close()
         logger.info("Dry run complete")
         return
+
+    if tensorboard:
+        writer = SummaryWriter()
 
     observation_dim = env.observation_space.shape
     action_space = env.action_space
@@ -120,13 +137,20 @@ def main(
             buffer.add(obs, action, float(reward), done, next_obs)
             if len(buffer) >= batch_size:
                 batch = buffer.sample(batch_size)
-                train_step(agent, batch)
+                loss = train_step(agent, batch)
+                if writer:
+                    writer.add_scalar("loss", loss, global_step)
+                global_step += 1
             obs = next_obs
             total_reward += float(reward)
 
         logger.info("Episode %d reward %.2f", ep + 1, total_reward)
+        if writer:
+            writer.add_scalar("reward", total_reward, ep + 1)
 
     env.close()
+    if writer:
+        writer.close()
 
     if save_path is not None:
         path = Path(save_path)
@@ -164,6 +188,11 @@ if __name__ == "__main__":
         metavar="FILE",
         help="path to save trained model (.pt)",
     )
+    parser.add_argument(
+        "--tensorboard",
+        action="store_true",
+        help="enable TensorBoard logging to the runs/ directory",
+    )
     args = parser.parse_args()
 
     main(
@@ -171,4 +200,5 @@ if __name__ == "__main__":
         dry_run=args.dry_run,
         episodes=args.episodes,
         save_path=args.save,
+        tensorboard=args.tensorboard,
     )
