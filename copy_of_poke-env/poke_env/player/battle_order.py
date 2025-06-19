@@ -42,7 +42,11 @@ class BattleOrder:
                 message += f" {self.move_target}"
             return message
         elif isinstance(self.order, Pokemon):
-            return f"/choose switch {self.order.species}"
+            # Use the Pokémon's display name rather than the lowercase species
+            # identifier to avoid mismatch issues when team preview trims the
+            # roster.  Showdown accepts nicknames or species names, so we use
+            # ``name`` which preserves capitalization.
+            return f"/choose switch {self.order.name}"
         else:
             return ""
 
