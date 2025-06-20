@@ -396,6 +396,8 @@ class PokemonEnv(gym.Env):
                 raise exc
 
         battles: dict[str, Any] = {}
+        masks: dict[str, np.ndarray] = {}
+        mappings: dict[str, dict[int, tuple[str, int]]] = {}
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
             battle = self._race_get(
@@ -413,9 +415,27 @@ class PokemonEnv(gym.Env):
                 self._need_action[pid] = True
             battles[pid] = battle
             mask, mapping = self.get_action_mask(pid)
+            if (
+                not mask.any()
+                and not getattr(battle, "finished", False)
+                and getattr(battle, "turn", 0) == 0
+            ):
+                extra = self._race_get(
+                    self._battle_queues[pid],
+                    self._env_players[pid]._waiting,
+                    self._env_players[opp]._trying_again,
+                )
+                if extra is not None:
+                    battle = extra
+                    self._current_battles[pid] = battle
+                    mask, mapping = self.get_action_mask(pid)
+                    self._need_action[pid] = True
+                    battles[pid] = battle
             self._logger.debug("available mask for %s: %s", pid, mask)
             self._logger.debug("available mapping for %s: %s", pid, mapping)
             self._action_mappings[pid] = mapping
+            masks[pid] = mask
+            mappings[pid] = mapping
 
         observation = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
@@ -436,15 +456,18 @@ class PokemonEnv(gym.Env):
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
         if hasattr(self, "single_agent_mode"):
-            action_mask, mapping = self.get_action_mask(self.agent_ids[0])
-            self._action_mappings[self.agent_ids[0]] = mapping
-            done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
+            pid = self.agent_ids[0]
+            action_mask = masks.get(pid)
+            if action_mask is None:
+                action_mask, mapping = self.get_action_mask(pid)
+                self._action_mappings[pid] = mapping
+            done = terminated[pid] or truncated[pid]
             return (
-                observation[self.agent_ids[0]],
+                observation[pid],
                 action_mask,
-                rewards[self.agent_ids[0]],
+                rewards[pid],
                 done,
-                infos[self.agent_ids[0]],
+                infos[pid],
             )
 
         return observations, rewards, term_flags, trunc_flags, infos
