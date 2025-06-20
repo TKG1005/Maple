@@ -311,30 +311,16 @@ class PokemonEnv(gym.Env):
     def _race_get(
         self,
         queue: asyncio.Queue[Any],
-        *events: asyncio.Event,
     ) -> Any | None:
         """Return queue item or ``None`` if any event fires first."""
 
-        async def _race() -> Any | None:
-            get_task = asyncio.create_task(queue.get())
-            wait_tasks = [asyncio.create_task(e.wait()) for e in events]
-            done, pending = await asyncio.wait(
-                {get_task, *wait_tasks},
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-            for p in pending:
-                p.cancel()
-            if get_task in done:
-                return get_task.result()
-            # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
-            if not queue.empty():
-                return await queue.get()
-            return None
+        async def _wait_queue() -> Any | None:
+            try:
+                return await asyncio.wait_for(queue.get(), timeout=self.timeout)
+            except asyncio.TimeoutError:
+                return None
 
-        result = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(_race(), self.timeout),
-            POKE_LOOP,
-        ).result()
+        result = asyncio.run_coroutine_threadsafe(_wait_queue(), POKE_LOOP).result()
         if result is not None:
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
@@ -391,11 +377,7 @@ class PokemonEnv(gym.Env):
         battles: dict[str, Any] = {}
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
-            battle = self._race_get(
-                self._battle_queues[pid],
-                self._env_players[pid]._waiting,
-                self._env_players[opp]._trying_again,
-            )
+            battle = self._race_get(self._battle_queues[pid])
             self._env_players[pid]._waiting.clear()
             if battle is None:
                 self._env_players[opp]._trying_again.clear()
