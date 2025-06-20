@@ -47,8 +47,9 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
         team_cmd = agent.choose_team(obs)
         obs, action_mask, _, done, _ = env.step(team_cmd)
     else:
-        battle = env.env.get_current_battle(env.env.agent_ids[0])
-        action_mask, _ = action_helper.get_available_actions_with_details(battle)
+        action_mask, _ = env.env.get_action_mask(
+            env.env.agent_ids[0], with_details=True
+        )
         done = False
     total_reward = 0.0
     while not done:
