@@ -329,6 +329,14 @@ class PokemonEnv(gym.Env):
             # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
             if not queue.empty():
                 return await queue.get()
+            # ---- 遅延対策 -------------------------------------------------
+            # _waiting イベントがトリガーされた直後にキューへバトルデータが
+            # 追加される場合がある。直後にチェックすると空のままになってしまい
+            # マスク生成に失敗するため、僅かに待機してから再確認する。
+            for _ in range(5):
+                await asyncio.sleep(0.05)  # タスク切り替えを促す
+                if not queue.empty():
+                    return await queue.get()
             return None
 
         result = asyncio.run_coroutine_threadsafe(
