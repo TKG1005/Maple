@@ -229,7 +229,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
-                    log_level=logging.WARNING,
+                    log_level=logging.DEBUG,
                 )
             }
             if self.opponent_player is None:
@@ -239,7 +239,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
-                    log_level=logging.WARNING,
+                    log_level=logging.DEBUG,
                 )
             else:
                 self._env_players["player_1"] = self.opponent_player
