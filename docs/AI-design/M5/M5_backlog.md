@@ -19,7 +19,7 @@
 | 9 | 勝率・平均報酬計算 | 評価結果から統計値を算出し表示 | 実行ログに `win_rate:` と `avg_reward:` が出力される | Python logging |
 |10| 学習パラメータ設定ファイル | ハイパーパラメータを YAML で管理 | `config/train_config.yml` 読み込み後、値が辞書として取得できる | PyYAML |
 |11| TensorBoard ログ出力 | 学習過程を可視化する | `--tensorboard` オプション指定で `runs/` ディレクトリにログ生成 | tensorboardX または SB3 built-in |
-|12| 途中経過チェックポイント | 一定エピソードごとにモデルを保存 | `--checkpoint-interval 10` で10エピソードごとにファイルが増える | PyTorch |
+|12| 途中経過チェックポイント | 一定エピソードごとにモデルを保存 | `--checkpoint-interval 10` で10エピソードごとに `checkpoints/` にファイルが増える | PyTorch |
 |13| ランダムポリシーとの比較 | `MapleAgent`(ランダム行動) と対戦させ指標を記録 | 勝率が50%前後になることを確認 | run_battle.py, numpy |
 |14| 学習済みモデルの読み込みテスト | 保存済みファイルから `RLAgent` を復元 | `evaluate_rl.py --model saved.pt` がエラーなく実行 | PyTorch |
 |15| コマンドライン引数整備 | 主要オプション (`--episodes`, `--lr` 等) を追加 | `python train_rl.py --help` がオプション一覧を表示 | argparse |
