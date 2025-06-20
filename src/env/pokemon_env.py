@@ -286,6 +286,9 @@ class PokemonEnv(gym.Env):
                 p.cancel()
             if get_task in done:
                 return get_task.result()
+            # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
+            if not queue.empty():
+                return await queue.get()
             return None
 
         result = asyncio.run_coroutine_threadsafe(
@@ -320,6 +323,8 @@ class PokemonEnv(gym.Env):
                     }
             else:
                 mapping = self._action_mappings.get(agent_id) or {}
+                self._logger.debug("received action %s for %s", act, agent_id)
+                self._logger.debug("current mapping for %s: %s", agent_id, mapping)
                 if mapping:
                     order = self.action_helper.action_index_to_order_from_mapping(
                         self._env_players[agent_id],
@@ -361,6 +366,8 @@ class PokemonEnv(gym.Env):
                 self._need_action[pid] = True
             battles[pid] = battle
             mask, mapping = self.action_helper.get_available_actions(battle)
+            self._logger.debug("available mask for %s: %s", pid, mask)
+            self._logger.debug("available mapping for %s: %s", pid, mapping)
             selected = self._selected_species.get(pid)
             if selected:
                 for idx, (atype, sub_idx) in mapping.items():

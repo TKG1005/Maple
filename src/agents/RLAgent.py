@@ -39,7 +39,9 @@ class RLAgent(MapleAgent):
         print(f"available mask = {action_mask}")
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
-        return int(rng.choice(len(probs), p=probs))
+        action = int(rng.choice(len(probs), p=probs))
+        print(f"chosen action = {action}")
+        return action
 
 
 __all__ = ["RLAgent"]
