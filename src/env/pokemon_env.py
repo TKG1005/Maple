@@ -355,9 +355,19 @@ class PokemonEnv(gym.Env):
             )
             self._env_players[pid]._waiting.clear()
             if battle is None:
-                self._env_players[opp]._trying_again.clear()
-                battle = self._current_battles[pid]
-                self._need_action[pid] = False
+                # ``_waiting`` may fire before the new battle object is queued.
+                # Try fetching once more without this event so we don't return
+                # a stale state to the agent.
+                battle = self._race_get(
+                    self._battle_queues[pid], self._env_players[opp]._trying_again
+                )
+                if battle is None:
+                    self._env_players[opp]._trying_again.clear()
+                    battle = self._current_battles[pid]
+                    self._need_action[pid] = False
+                else:
+                    self._current_battles[pid] = battle
+                    self._need_action[pid] = True
             else:
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
