@@ -52,7 +52,7 @@ class MapleAgent:
             valid_indices = [i for i, flag in enumerate(action_mask) if flag]
         except Exception:
             valid_indices = []
-        print(f"available mask = {action_mask}")
+        print(f"{self.__class__.__name__}: available mask = {action_mask}")
         if valid_indices:
             action_idx = int(self.env.rng.choice(valid_indices))
         else:
@@ -93,5 +93,5 @@ class MapleAgent:
                 current_obs, current_mask, _, done, info = self.env.step(team_order)
             else:
                 action_idx = self.select_action(current_obs, current_mask)
-                print(f"Agent select /move {action_idx}")
+                print(f"{self.__class__.__name__}: select /move {action_idx}")
                 current_obs, current_mask, _, done, _ = self.env.step(action_idx)
