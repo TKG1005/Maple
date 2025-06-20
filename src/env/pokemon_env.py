@@ -286,6 +286,9 @@ class PokemonEnv(gym.Env):
                 p.cancel()
             if get_task in done:
                 return get_task.result()
+            # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
+            if not queue.empty():
+                return await queue.get()
             return None
 
         result = asyncio.run_coroutine_threadsafe(
