@@ -1,12 +1,15 @@
 # src/action/action_helper.py
 from typing import List, Tuple, Dict, Union, TypedDict
 import numpy as np
+import logging
 
 from poke_env.environment.battle import Battle
 from poke_env.environment.move import Move
 from poke_env.environment.pokemon import Pokemon
 from poke_env.player.player import Player
 from poke_env.player.battle_order import BattleOrder
+
+logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
 # Mask generation utilities
@@ -155,6 +158,11 @@ def action_index_to_order_from_mapping(
     switches_list: List[Pokemon] = battle.available_switches
 
     if action_index not in mapping:
+        logger.error(
+            "Invalid or unavailable action index: %s. Available: %s",
+            action_index,
+            mapping,
+        )
         raise ValueError(
             f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
         )
