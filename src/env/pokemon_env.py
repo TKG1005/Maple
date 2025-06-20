@@ -351,6 +351,22 @@ class PokemonEnv(gym.Env):
                 self._env_players[pid]._waiting,
                 self._env_players[opp]._trying_again,
             )
+            # battle が行動選択可能な状態になるまで待機する
+            while (
+                battle is not None
+                and not battle.teampreview
+                and not battle.force_switch
+                and not getattr(battle, "move_on_next_request", False)
+                and not battle.available_moves
+            ):
+                next_battle = self._race_get(
+                    self._battle_queues[pid],
+                    self._env_players[pid]._waiting,
+                    self._env_players[opp]._trying_again,
+                )
+                if next_battle is None:
+                    break
+                battle = next_battle
             self._env_players[pid]._waiting.clear()
             if battle is None:
                 self._env_players[opp]._trying_again.clear()
