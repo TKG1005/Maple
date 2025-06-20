@@ -33,6 +33,9 @@ from src.agents.MapleAgent import MapleAgent  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
+from src.agents import PolicyNetwork, RLAgent  # noqa: E402
+import torch  # noqa: E402
+from torch import optim  # noqa: E402
 
 TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
 try:
@@ -41,8 +44,13 @@ except OSError:
     TEAM = None
 
 
-def run_single_battle() -> dict:
-    """Play one battle using :class:`PokemonEnv` with two :class:`MapleAgent`s."""
+def run_single_battle(model_path: str | None = None) -> dict:
+    """Play one battle using :class:`PokemonEnv`.
+
+    When ``model_path`` is provided, ``player_0`` will use an :class:`RLAgent`
+    loaded from the given file.  Otherwise both players act randomly using
+    :class:`MapleAgent`.
+    """
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -50,7 +58,17 @@ def run_single_battle() -> dict:
         state_observer=observer,
         action_helper=action_helper,
     )
-    agent0 = MapleAgent(env)
+    if model_path:
+        model = PolicyNetwork(
+            env.observation_space[env.agent_ids[0]],
+            env.action_space[env.agent_ids[0]],
+        )
+        state_dict = torch.load(model_path, map_location="cpu")
+        model.load_state_dict(state_dict)
+        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        agent0 = RLAgent(env, model, optimizer)
+    else:
+        agent0 = MapleAgent(env)
     agent1 = MapleAgent(env)
     env.register_agent(agent1, "player_1")
 
@@ -76,7 +94,10 @@ def run_single_battle() -> dict:
         action_idx0 = 0
         action_idx1 = 0
         if env._need_action[env.agent_ids[0]]:
-            action_idx0 = agent0.select_action(current_obs0, mask0)
+            if isinstance(agent0, RLAgent):
+                action_idx0 = agent0.act(current_obs0, mask0)
+            else:
+                action_idx0 = agent0.select_action(current_obs0, mask0)
         if env._need_action[env.agent_ids[1]]:
             action_idx1 = agent1.select_action(current_obs1, mask1)
 
@@ -100,19 +121,28 @@ def run_single_battle() -> dict:
     return {"winner": winner, "turns": turns, "reward": reward}
 
 
-def main(n: int = 1) -> dict:
+def main(n: int = 1, model_path: str | None = None) -> dict:
     results: List[Dict[str, float | int | str]] = []
     for _ in tqdm(range(n), desc="Battles"):
-        result = run_single_battle()
+        result = run_single_battle(model_path)
         results.append(result)
 
     avg_turns = sum(r["turns"] for r in results) / n if n else 0
     avg_reward = sum(r["reward"] for r in results) / n if n else 0
-    logger.info("Average reward=%.2f average turns=%.2f", avg_reward, avg_turns)
+    win_rate = (
+        sum(1 for r in results if r["winner"] == "env0") / n if n else 0.0
+    )
+    logger.info(
+        "win_rate=%.2f average reward=%.2f average turns=%.2f",
+        win_rate,
+        avg_reward,
+        avg_turns,
+    )
     return {
         "results": results,
         "average_turns": avg_turns,
         "average_reward": avg_reward,
+        "win_rate": win_rate,
     }
 
 
@@ -120,7 +150,13 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Run battles locally")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="path to trained model (.pt) for player_0",
+    )
     args = parser.parse_args()
 
-    result = main(args.n)
+    result = main(args.n, args.model)
     print(json.dumps(result, ensure_ascii=False))
