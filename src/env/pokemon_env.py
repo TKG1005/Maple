@@ -126,6 +126,27 @@ class PokemonEnv(gym.Env):
         """Return the latest :class:`Battle` object for ``agent_id``."""
         return getattr(self, "_current_battles", {}).get(agent_id)
 
+    def get_action_mask(self, agent_id: str) -> tuple[np.ndarray, dict[int, tuple[str, int]]]:
+        """Return available action mask and mapping for ``agent_id``."""
+
+        battle = self.get_current_battle(agent_id)
+        if battle is None:
+            raise ValueError(f"Battle for {agent_id} not available")
+
+        mask, mapping = self.action_helper.get_available_actions(battle)
+        selected = self._selected_species.get(agent_id)
+        if selected:
+            for idx, (atype, sub_idx) in mapping.items():
+                if atype == "switch":
+                    try:
+                        pkmn = battle.available_switches[sub_idx]
+                    except IndexError:  # pragma: no cover - safety
+                        continue
+                    if pkmn.species not in selected:
+                        mask[idx] = 0
+
+        return mask, mapping
+
     def process_battle(self, battle: Any) -> int:
         """Create an observation and available action mask for ``battle``.
 
@@ -365,19 +386,9 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
-            mask, mapping = self.action_helper.get_available_actions(battle)
+            mask, mapping = self.get_action_mask(pid)
             self._logger.debug("available mask for %s: %s", pid, mask)
             self._logger.debug("available mapping for %s: %s", pid, mapping)
-            selected = self._selected_species.get(pid)
-            if selected:
-                for idx, (atype, sub_idx) in mapping.items():
-                    if atype == "switch":
-                        try:
-                            pkmn = battle.available_switches[sub_idx]
-                        except IndexError:
-                            continue
-                        if pkmn.species not in selected:
-                            mask[idx] = 0
             self._action_mappings[pid] = mapping
 
         observation = {
@@ -400,17 +411,7 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "single_agent_mode"):
             battle_sa = battles[self.agent_ids[0]]
-            action_mask, mapping = self.action_helper.get_available_actions(battle_sa)
-            selected = self._selected_species.get(self.agent_ids[0])
-            if selected:
-                for idx, (atype, sub_idx) in mapping.items():
-                    if atype == "switch":
-                        try:
-                            pkmn = battle_sa.available_switches[sub_idx]
-                        except IndexError:
-                            continue
-                        if pkmn.species not in selected:
-                            action_mask[idx] = 0
+            action_mask, mapping = self.get_action_mask(self.agent_ids[0])
             self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (

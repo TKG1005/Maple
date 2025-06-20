@@ -86,10 +86,8 @@ def run_single_battle(model_path: str | None = None) -> dict:
     done = False
     last_reward = 0.0
     while not done:
-        battle0 = env.get_current_battle(env.agent_ids[0])
-        battle1 = env.get_current_battle(env.agent_ids[1])
-        mask0, _ = action_helper.get_available_actions_with_details(battle0)
-        mask1, _ = action_helper.get_available_actions_with_details(battle1)
+        mask0, _ = env.get_action_mask(env.agent_ids[0])
+        mask1, _ = env.get_action_mask(env.agent_ids[1])
 
         action_idx0 = 0
         action_idx1 = 0
