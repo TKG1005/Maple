@@ -286,6 +286,13 @@ class PokemonEnv(gym.Env):
                 p.cancel()
             if get_task in done:
                 return get_task.result()
+            # イベントが先に発火した場合でも、キューにアイテムが存在する
+            # 可能性があるため念のため取得を試みる
+            if not queue.empty():
+                try:
+                    return queue.get_nowait()
+                except asyncio.QueueEmpty:  # pragma: no cover - race condition
+                    pass
             return None
 
         result = asyncio.run_coroutine_threadsafe(
