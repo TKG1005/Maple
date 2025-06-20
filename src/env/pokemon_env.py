@@ -292,6 +292,8 @@ class PokemonEnv(gym.Env):
             asyncio.wait_for(_race(), self.timeout),
             POKE_LOOP,
         ).result()
+        if result is None and not queue.empty():
+            result = asyncio.run_coroutine_threadsafe(queue.get(), POKE_LOOP).result()
         if result is not None:
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
