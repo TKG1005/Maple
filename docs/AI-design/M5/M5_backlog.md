@@ -28,7 +28,7 @@
 |18| ドキュメント更新 | M5 開始方法と学習手順を `docs/M5_setup.md` に記述 | ドキュメントを参照し手順通り実行できる | Markdown |
 |19| 実験ログ管理 | `logs/` ディレクトリを作り実験毎にファイル保存 | ログファイルに日時とパラメータが記録される | logging |
 |20| 乱数シード制御 | 学習・評価とも `--seed` オプションで再現性確保 | 同じシード指定で結果がほぼ一致。Showdown サーバの PRNG は制御できないため完全な再現はできず、本ステップはスキップ | numpy RNG |
-|21| 学習結果の図示 | 勝率推移などを matplotlib でプロット | `python plot_results.py logs/run1.json` が図を保存 | matplotlib |
+|21| 学習結果の図示 | 勝率推移などを matplotlib でプロット | `python plot_results.py logs/run1.json` が図を保存（ログは UTF-16 で記録され、最終行の JSON を自動解析する） | matplotlib |
 |22| バトルリプレイ保存 | Showdown のリプレイログを保管 | 評価時に `replays/` フォルダへ HTML が出力される | poke-env `save_replay` |
 |23| 複数モデル比較機能 | 複数の重みファイルをロードし対戦させる | `evaluate_rl.py --models a.pt b.pt` が両者の勝率を表示 | Python CLI |
 |24| 学習時間計測 | 1 エピソード当たりの処理時間を計測 | ログに `time/episode:` が表示される | time, logging |
