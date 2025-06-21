@@ -50,11 +50,12 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, RLAgent, ReplayBuffer  # noqa: E402
+from src.utils import seed_everything  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env() -> SingleAgentCompatibilityWrapper:
+def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
     """Create :class:`PokemonEnv` wrapped for single-agent use."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
@@ -62,6 +63,7 @@ def init_env() -> SingleAgentCompatibilityWrapper:
         opponent_player=None,
         state_observer=observer,
         action_helper=action_helper,
+        seed=seed,
     )
     return SingleAgentCompatibilityWrapper(env)
 
@@ -99,6 +101,7 @@ def main(
     tensorboard: bool = False,
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
+    seed: int | None = None,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -111,11 +114,13 @@ def main(
     writer = None
     global_step = 0
 
-    env = init_env()
+    if seed is not None:
+        seed_everything(seed)
+    env = init_env(seed=seed)
 
     if dry_run:
         # 初期化のみ確認して即終了
-        env.reset()
+        env.reset(seed=seed)
         logger.info("Environment initialised")
         env.close()
         if writer:
@@ -137,7 +142,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
 
     for ep in range(episodes):
-        obs, info = env.reset()
+        obs, info = env.reset(seed=seed)
         if info.get("request_teampreview"):
             team_cmd = agent.choose_team(obs)
             obs, action_mask, _, done, _ = env.step(team_cmd)
@@ -229,6 +234,12 @@ if __name__ == "__main__":
         default="checkpoints",
         help="directory to store checkpoint files",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="random seed for reproducibility",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -241,4 +252,5 @@ if __name__ == "__main__":
         tensorboard=args.tensorboard,
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,
+        seed=args.seed,
     )

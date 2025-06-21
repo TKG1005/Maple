@@ -34,11 +34,12 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, RLAgent  # noqa: E402
+from src.utils import seed_everything  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env() -> SingleAgentCompatibilityWrapper:
+def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
     """Create :class:`PokemonEnv` wrapped for single-agent evaluation."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
@@ -46,15 +47,16 @@ def init_env() -> SingleAgentCompatibilityWrapper:
         opponent_player=None,
         state_observer=observer,
         action_helper=action_helper,
+        seed=seed,
     )
     return SingleAgentCompatibilityWrapper(env)
 
 
-def run_episode(agent: RLAgent) -> tuple[bool, float]:
+def run_episode(agent: RLAgent, *, seed: int | None = None) -> tuple[bool, float]:
     """Run one battle and return win flag and total reward."""
 
     env = agent.env
-    obs, info = env.reset()
+    obs, info = env.reset(seed=seed)
     if info.get("request_teampreview"):
         team_cmd = agent.choose_team(obs)
         obs, action_mask, _, done, _ = env.step(team_cmd)
@@ -70,8 +72,10 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     return won, total_reward
 
 
-def main(model_path: str, n: int = 1) -> None:
-    env = init_env()
+def main(model_path: str, n: int = 1, *, seed: int | None = None) -> None:
+    if seed is not None:
+        seed_everything(seed)
+    env = init_env(seed=seed)
     model = PolicyNetwork(env.observation_space, env.action_space)
     state_dict = torch.load(model_path, map_location="cpu")
     model.load_state_dict(state_dict)
@@ -81,7 +85,7 @@ def main(model_path: str, n: int = 1) -> None:
     wins = 0
     total_reward = 0.0
     for i in range(n):
-        won, reward = run_episode(agent)
+        won, reward = run_episode(agent, seed=seed)
         wins += int(won)
         total_reward += reward
         logger.info("Battle %d reward=%.2f win=%s", i + 1, reward, won)
@@ -99,8 +103,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
     parser.add_argument("--model", type=str, required=True, help="path to model file (.pt)")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="random seed for reproducibility",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
 
-    main(args.model, args.n)
+    main(args.model, args.n, seed=args.seed)
