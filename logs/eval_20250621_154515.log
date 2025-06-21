@@ -1,0 +1,13 @@
+2025-06-21 15:45:15,625 INFO Run parameters: {'model': 'model.pt', 'n': 10, 'seed': 125}
+2025-06-21 15:45:19,687 INFO Battle 1 reward=1.00 win=True
+2025-06-21 15:45:20,756 INFO Battle 2 reward=1.00 win=True
+2025-06-21 15:45:21,870 INFO Battle 3 reward=1.00 win=True
+2025-06-21 15:45:23,940 INFO Battle 4 reward=-1.00 win=False
+2025-06-21 15:45:25,007 INFO Battle 5 reward=1.00 win=True
+2025-06-21 15:45:26,083 INFO Battle 6 reward=1.00 win=True
+2025-06-21 15:45:28,149 INFO Battle 7 reward=-1.00 win=False
+2025-06-21 15:45:29,266 INFO Battle 8 reward=-1.00 win=False
+2025-06-21 15:45:30,395 INFO Battle 9 reward=1.00 win=True
+2025-06-21 15:45:32,256 INFO Battle 10 reward=1.00 win=True
+2025-06-21 15:45:32,259 INFO Evaluation finished after 10 battles
+2025-06-21 15:45:32,259 INFO win_rate: 0.70 avg_reward: 0.40
