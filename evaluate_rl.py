@@ -38,7 +38,7 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env() -> SingleAgentCompatibilityWrapper:
+def init_env(save_replays: bool | str = False) -> SingleAgentCompatibilityWrapper:
     """Create :class:`PokemonEnv` wrapped for single-agent evaluation."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
@@ -46,6 +46,7 @@ def init_env() -> SingleAgentCompatibilityWrapper:
         opponent_player=None,
         state_observer=observer,
         action_helper=action_helper,
+        save_replays=save_replays,
     )
     return SingleAgentCompatibilityWrapper(env)
 
@@ -70,8 +71,8 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     return won, total_reward
 
 
-def main(model_path: str, n: int = 1) -> None:
-    env = init_env()
+def main(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
+    env = init_env(save_replays=replay_dir)
     model = PolicyNetwork(env.observation_space, env.action_space)
     state_dict = torch.load(model_path, map_location="cpu")
     model.load_state_dict(state_dict)
@@ -99,8 +100,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
     parser.add_argument("--model", type=str, required=True, help="path to model file (.pt)")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
+    parser.add_argument(
+        "--replay-dir",
+        type=str,
+        default="replays",
+        help="directory to save battle replays",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
 
-    main(args.model, args.n)
+    main(args.model, args.n, args.replay_dir)
