@@ -51,6 +51,19 @@ def init_env(save_replays: bool | str = False) -> SingleAgentCompatibilityWrappe
     return SingleAgentCompatibilityWrapper(env)
 
 
+def init_env_multi(save_replays: bool | str = False) -> PokemonEnv:
+    """Create :class:`PokemonEnv` for two-agent evaluation."""
+
+    observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
+    env = PokemonEnv(
+        opponent_player=None,
+        state_observer=observer,
+        action_helper=action_helper,
+        save_replays=save_replays,
+    )
+    return env
+
+
 def run_episode(agent: RLAgent) -> tuple[bool, float]:
     """Run one battle and return win flag and total reward."""
 
@@ -71,7 +84,42 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     return won, total_reward
 
 
-def main(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
+def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, float, float]:
+    """Run one battle between two agents and return win flags and rewards."""
+
+    env = agent0.env
+    observations, info = env.reset()
+    obs0 = observations[env.agent_ids[0]]
+    obs1 = observations[env.agent_ids[1]]
+
+    if info.get("request_teampreview"):
+        order0 = agent0.choose_team(obs0)
+        order1 = agent1.choose_team(obs1)
+        observations, *_ = env.step({"player_0": order0, "player_1": order1})
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+
+    done = False
+    reward0 = 0.0
+    reward1 = 0.0
+    while not done:
+        mask0, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
+        mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
+        action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
+        action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
+        observations, rewards, terms, truncs, _ = env.step({"player_0": action0, "player_1": action1})
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+        reward0 += float(rewards[env.agent_ids[0]])
+        reward1 += float(rewards[env.agent_ids[1]])
+        done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+
+    win0 = env._env_players[env.agent_ids[0]].n_won_battles == 1
+    win1 = env._env_players[env.agent_ids[1]].n_won_battles == 1
+    return win0, win1, reward0, reward1
+
+
+def evaluate_single(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
     env = init_env(save_replays=replay_dir)
     model = PolicyNetwork(env.observation_space, env.action_space)
     state_dict = torch.load(model_path, map_location="cpu")
@@ -95,10 +143,58 @@ def main(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> Non
     logger.info("win_rate: %.2f avg_reward: %.2f", win_rate, avg_reward)
 
 
+def compare_models(model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
+    """Evaluate two models against each other and report win rates."""
+
+    env = init_env_multi(save_replays=replay_dir)
+
+    # Create player_1 agent first so that registration order is correct
+    model1 = PolicyNetwork(env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]])
+    state_dict1 = torch.load(model_b, map_location="cpu")
+    model1.load_state_dict(state_dict1)
+    opt1 = optim.Adam(model1.parameters(), lr=1e-3)
+    agent1 = RLAgent(env, model1, opt1)
+    env.register_agent(agent1, env.agent_ids[1])
+
+    model0 = PolicyNetwork(env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]])
+    state_dict0 = torch.load(model_a, map_location="cpu")
+    model0.load_state_dict(state_dict0)
+    opt0 = optim.Adam(model0.parameters(), lr=1e-3)
+    agent0 = RLAgent(env, model0, opt0)
+
+    wins0 = 0
+    wins1 = 0
+    total0 = 0.0
+    total1 = 0.0
+    for i in range(n):
+        win0, win1, reward0, reward1 = run_episode_multi(agent0, agent1)
+        wins0 += int(win0)
+        wins1 += int(win1)
+        total0 += reward0
+        total1 += reward1
+        logger.info(
+            "Battle %d P0_reward=%.2f win=%s P1_reward=%.2f win=%s",
+            i + 1,
+            reward0,
+            win0,
+            reward1,
+            win1,
+        )
+
+    env.close()
+    win_rate0 = wins0 / n if n else 0.0
+    win_rate1 = wins1 / n if n else 0.0
+    avg0 = total0 / n if n else 0.0
+    avg1 = total1 / n if n else 0.0
+    logger.info("modelA win_rate: %.2f avg_reward: %.2f", win_rate0, avg0)
+    logger.info("modelB win_rate: %.2f avg_reward: %.2f", win_rate1, avg1)
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
-    parser.add_argument("--model", type=str, required=True, help="path to model file (.pt)")
+    parser.add_argument("--model", type=str, help="path to model file (.pt)")
+    parser.add_argument("--models", nargs=2, metavar=("A", "B"), help="two model files for head-to-head evaluation")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     parser.add_argument(
         "--replay-dir",
@@ -110,4 +206,9 @@ if __name__ == "__main__":
 
     setup_logging("logs", vars(args))
 
-    main(args.model, args.n, args.replay_dir)
+    if args.models:
+        compare_models(args.models[0], args.models[1], args.n, args.replay_dir)
+    elif args.model:
+        evaluate_single(args.model, args.n, args.replay_dir)
+    else:
+        parser.error("--model or --models is required")
