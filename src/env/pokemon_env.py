@@ -30,6 +30,7 @@ class PokemonEnv(gym.Env):
         opponent_player: Any | None = None,
         *,
         seed: int | None = None,
+        battle_seed: int | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -54,6 +55,7 @@ class PokemonEnv(gym.Env):
         self.state_observer = state_observer
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
+        self.battle_seed = battle_seed
         self._logger = logging.getLogger(__name__)
 
         # マルチエージェント用のエージェントID
@@ -152,7 +154,10 @@ class PokemonEnv(gym.Env):
         if selected:
             if with_details:
                 for idx, detail in mapping.items():
-                    if detail.get("type") == "switch" and detail.get("id") not in selected:
+                    if (
+                        detail.get("type") == "switch"
+                        and detail.get("id") not in selected
+                    ):
                         mask[idx] = 0
             else:
                 for idx, (atype, sub_idx) in mapping.items():
@@ -260,7 +265,7 @@ class PokemonEnv(gym.Env):
 
         # 対戦開始処理を poke-env のイベントループで同期実行
         self._battle_task = asyncio.run_coroutine_threadsafe(
-            self._run_battle(),
+            self._run_battle(self.battle_seed),
             POKE_LOOP,
         )
 
@@ -300,15 +305,15 @@ class PokemonEnv(gym.Env):
 
         return observation, info
 
-    async def _run_battle(self) -> None:
+    async def _run_battle(self, battle_seed: int | None = None) -> None:
         """Start the battle coroutines concurrently."""
 
         await asyncio.gather(
             self._env_players["player_0"].battle_against(
-                self._env_players["player_1"], n_battles=1
+                self._env_players["player_1"], n_battles=1, battle_seed=battle_seed
             ),
             self._env_players["player_1"].battle_against(
-                self._env_players["player_0"], n_battles=1
+                self._env_players["player_0"], n_battles=1, battle_seed=battle_seed
             ),
         )
 

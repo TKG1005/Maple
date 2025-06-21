@@ -19,10 +19,15 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     log_path = Path(log_dir)
     log_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(log_path / f"eval_{timestamp}.log", encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    file_handler = logging.FileHandler(
+        log_path / f"eval_{timestamp}.log", encoding="utf-8"
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    )
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
+
 
 # Ensure bundled poke_env package is importable
 POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
@@ -39,7 +44,9 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
+def init_env(
+    seed: int | None = None, battle_seed: int | None = None
+) -> SingleAgentCompatibilityWrapper:
     """Create :class:`PokemonEnv` wrapped for single-agent evaluation."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
@@ -48,6 +55,7 @@ def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
         state_observer=observer,
         action_helper=action_helper,
         seed=seed,
+        battle_seed=battle_seed,
     )
     return SingleAgentCompatibilityWrapper(env)
 
@@ -61,7 +69,9 @@ def run_episode(agent: RLAgent, *, seed: int | None = None) -> tuple[bool, float
         team_cmd = agent.choose_team(obs)
         obs, action_mask, _, done, _ = env.step(team_cmd)
     else:
-        action_mask, _ = env.env.get_action_mask(env.env.agent_ids[0], with_details=True)
+        action_mask, _ = env.env.get_action_mask(
+            env.env.agent_ids[0], with_details=True
+        )
         done = False
     total_reward = 0.0
     while not done:
@@ -72,10 +82,16 @@ def run_episode(agent: RLAgent, *, seed: int | None = None) -> tuple[bool, float
     return won, total_reward
 
 
-def main(model_path: str, n: int = 1, *, seed: int | None = None) -> None:
+def main(
+    model_path: str,
+    n: int = 1,
+    *,
+    seed: int | None = None,
+    battle_seed: int | None = None,
+) -> None:
     if seed is not None:
         seed_everything(seed)
-    env = init_env(seed=seed)
+    env = init_env(seed=seed, battle_seed=battle_seed)
     model = PolicyNetwork(env.observation_space, env.action_space)
     state_dict = torch.load(model_path, map_location="cpu")
     model.load_state_dict(state_dict)
@@ -101,7 +117,9 @@ def main(model_path: str, n: int = 1, *, seed: int | None = None) -> None:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
-    parser.add_argument("--model", type=str, required=True, help="path to model file (.pt)")
+    parser.add_argument(
+        "--model", type=str, required=True, help="path to model file (.pt)"
+    )
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     parser.add_argument(
         "--seed",
@@ -109,8 +127,14 @@ if __name__ == "__main__":
         default=None,
         help="random seed for reproducibility",
     )
+    parser.add_argument(
+        "--battle-seed",
+        type=int,
+        default=None,
+        help="deterministic battle seed for Showdown",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
 
-    main(args.model, args.n, seed=args.seed)
+    main(args.model, args.n, seed=args.seed, battle_seed=args.battle_seed)

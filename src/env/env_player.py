@@ -20,6 +20,17 @@ class EnvPlayer(Player):
         self.player_id = player_id
         self._logger = logging.getLogger(__name__)
 
+    async def battle_against(
+        self,
+        *opponents: Player,
+        n_battles: int = 1,
+        battle_seed: int | None = None,
+    ):
+        """Wrapper to propagate ``battle_seed`` to :class:`Player`."""
+        return await super().battle_against(
+            *opponents, n_battles=n_battles, battle_seed=battle_seed
+        )
+
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
 

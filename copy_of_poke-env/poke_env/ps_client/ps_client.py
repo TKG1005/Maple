@@ -96,10 +96,19 @@ class PSClient:
         await self.set_team(packed_team)
         await self.send_message("/accept %s" % username)
 
-    async def challenge(self, username: str, format_: str, packed_team: Optional[str]):
+    async def challenge(
+        self,
+        username: str,
+        format_: str,
+        packed_team: Optional[str],
+        *,
+        seed: int | None = None,
+    ):
         assert self.logged_in.is_set(), f"Expected {self.username} to be logged in."
         await self.set_team(packed_team)
         await self.send_message(f"/challenge {username}, {format_}")
+        if seed is not None:
+            await self.send_message(f'>start {{"seed": {seed}}}')
 
     def _create_logger(self, log_level: Optional[int]) -> Logger:
         """Creates a logger for the client.

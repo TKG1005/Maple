@@ -733,7 +733,9 @@ class Player(ABC):
             perf_counter() - start_time,
         )
 
-    async def battle_against(self, *opponents: Player, n_battles: int = 1):
+    async def battle_against(
+        self, *opponents: Player, n_battles: int = 1, battle_seed: int | None = None
+    ):
         """Make the player play n_battles against the given opponents.
 
         This function is a wrapper around send_challenges and accept_challenges.
@@ -744,22 +746,31 @@ class Player(ABC):
         :type n_battles: int
         """
         await handle_threaded_coroutines(
-            self._battle_against(*opponents, n_battles=n_battles)
+            self._battle_against(
+                *opponents, n_battles=n_battles, battle_seed=battle_seed
+            )
         )
 
-    async def _battle_against(self, *opponents: Player, n_battles: int):
+    async def _battle_against(
+        self, *opponents: Player, n_battles: int, battle_seed: int | None = None
+    ):
         for opponent in opponents:
             await asyncio.gather(
                 self.send_challenges(
                     to_id_str(opponent.username),
                     n_battles,
                     to_wait=opponent.ps_client.logged_in,
+                    battle_seed=battle_seed,
                 ),
                 opponent.accept_challenges(to_id_str(self.username), n_battles),
             )
 
     async def send_challenges(
-        self, opponent: str, n_challenges: int, to_wait: Optional[Event] = None
+        self,
+        opponent: str,
+        n_challenges: int,
+        to_wait: Optional[Event] = None,
+        battle_seed: int | None = None,
     ):
         """Make the player send challenges to opponent.
 
@@ -778,11 +789,17 @@ class Player(ABC):
         :type to_wait: Event, optional.
         """
         await handle_threaded_coroutines(
-            self._send_challenges(opponent, n_challenges, to_wait)
+            self._send_challenges(
+                opponent, n_challenges, to_wait, battle_seed=battle_seed
+            )
         )
 
     async def _send_challenges(
-        self, opponent: str, n_challenges: int, to_wait: Optional[Event] = None
+        self,
+        opponent: str,
+        n_challenges: int,
+        to_wait: Optional[Event] = None,
+        battle_seed: int | None = None,
     ):
         await self.ps_client.logged_in.wait()
         self.logger.info("Event logged in received in send challenge")
@@ -793,7 +810,9 @@ class Player(ABC):
         start_time = perf_counter()
 
         for _ in range(n_challenges):
-            await self.ps_client.challenge(opponent, self._format, self.next_team)
+            await self.ps_client.challenge(
+                opponent, self._format, self.next_team, seed=battle_seed
+            )
             await self._battle_semaphore.acquire()
         await self._battle_count_queue.join()
         self.logger.info(

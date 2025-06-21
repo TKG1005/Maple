@@ -46,3 +46,13 @@ pytest -q
 
 - [M4 backlog](AI-design/M4/M4_backlog.md)
 - [PokemonEnv 技術仕様書](AI-design/PokemonEnv_Specification.md)
+
+## 8. バトルシードを固定する
+
+学習 (`train_rl.py`) や評価 (`evaluate_rl.py`) では `--battle-seed` を指定することで
+Showdown 側の乱数シードを固定できます。実験を再現したい場合に利用してください。
+
+```bash
+python train_rl.py --episodes 10 --battle-seed 123
+python evaluate_rl.py --model model.pt --battle-seed 123
+```

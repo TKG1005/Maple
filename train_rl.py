@@ -21,8 +21,12 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     log_path = Path(log_dir)
     log_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(log_path / f"train_{timestamp}.log", encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    file_handler = logging.FileHandler(
+        log_path / f"train_{timestamp}.log", encoding="utf-8"
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    )
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
 
@@ -55,7 +59,9 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
+def init_env(
+    seed: int | None = None, battle_seed: int | None = None
+) -> SingleAgentCompatibilityWrapper:
     """Create :class:`PokemonEnv` wrapped for single-agent use."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
@@ -64,6 +70,7 @@ def init_env(seed: int | None = None) -> SingleAgentCompatibilityWrapper:
         state_observer=observer,
         action_helper=action_helper,
         seed=seed,
+        battle_seed=battle_seed,
     )
     return SingleAgentCompatibilityWrapper(env)
 
@@ -102,6 +109,7 @@ def main(
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
     seed: int | None = None,
+    battle_seed: int | None = None,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -116,7 +124,7 @@ def main(
 
     if seed is not None:
         seed_everything(seed)
-    env = init_env(seed=seed)
+    env = init_env(seed=seed, battle_seed=battle_seed)
 
     if dry_run:
         # 初期化のみ確認して即終了
@@ -147,7 +155,9 @@ def main(
             team_cmd = agent.choose_team(obs)
             obs, action_mask, _, done, _ = env.step(team_cmd)
         else:
-            action_mask, _ = env.env.get_action_mask(env.env.agent_ids[0], with_details=True)
+            action_mask, _ = env.env.get_action_mask(
+                env.env.agent_ids[0], with_details=True
+            )
             done = False
 
         total_reward = 0.0
@@ -240,6 +250,12 @@ if __name__ == "__main__":
         default=None,
         help="random seed for reproducibility",
     )
+    parser.add_argument(
+        "--battle-seed",
+        type=int,
+        default=None,
+        help="deterministic battle seed for Showdown",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -253,4 +269,5 @@ if __name__ == "__main__":
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,
         seed=args.seed,
+        battle_seed=args.battle_seed,
     )
