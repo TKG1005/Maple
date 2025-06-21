@@ -5,6 +5,7 @@ import logging
 import sys
 from pathlib import Path
 from datetime import datetime
+import time
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 
@@ -137,6 +138,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
 
     for ep in range(episodes):
+        start_time = time.perf_counter()
         obs, info = env.reset()
         if info.get("request_teampreview"):
             team_cmd = agent.choose_team(obs)
@@ -159,9 +161,16 @@ def main(
             obs = next_obs
             total_reward += float(reward)
 
-        logger.info("Episode %d reward %.2f", ep + 1, total_reward)
+        duration = time.perf_counter() - start_time
+        logger.info(
+            "Episode %d reward %.2f time/episode: %.3f",
+            ep + 1,
+            total_reward,
+            duration,
+        )
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
+            writer.add_scalar("time/episode", duration, ep + 1)
 
         if checkpoint_interval and (ep + 1) % checkpoint_interval == 0:
             try:
