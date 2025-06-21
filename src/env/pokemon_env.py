@@ -30,6 +30,7 @@ class PokemonEnv(gym.Env):
         opponent_player: Any | None = None,
         *,
         seed: int | None = None,
+        save_replays: bool | str = False,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -54,6 +55,7 @@ class PokemonEnv(gym.Env):
         self.state_observer = state_observer
         self.action_helper = action_helper
         self.rng = np.random.default_rng(seed)
+        self.save_replays = save_replays
         self._logger = logging.getLogger(__name__)
 
         # マルチエージェント用のエージェントID
@@ -230,6 +232,7 @@ class PokemonEnv(gym.Env):
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
                     log_level=logging.DEBUG,
+                    save_replays=self.save_replays,
                 )
             }
             if self.opponent_player is None:
@@ -240,6 +243,7 @@ class PokemonEnv(gym.Env):
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
                     log_level=logging.DEBUG,
+                    save_replays=self.save_replays,
                 )
             else:
                 self._env_players["player_1"] = self.opponent_player
