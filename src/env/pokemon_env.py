@@ -193,6 +193,10 @@ class PokemonEnv(gym.Env):
         """Reset the environment and start a new battle."""
 
         super().reset(seed=seed)
+        if seed is not None:
+            # When a seed is provided, reinitialize the NumPy RNG so that
+            # agents depending on ``env.rng`` behave deterministically.
+            self.rng = np.random.default_rng(seed)
 
         # 前回エピソードのキューをクリア
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
