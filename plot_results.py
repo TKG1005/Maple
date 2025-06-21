@@ -21,11 +21,16 @@ def load_results(path: str) -> List[dict]:
     if text is None:
         raise UnicodeDecodeError("utf-8", b"", 0, 1, "Unable to decode log file")
 
-    start_idx = text.rfind("{")
-    if start_idx == -1:
+    json_text = None
+    for line in reversed(text.splitlines()):
+        stripped = line.strip()
+        if stripped.startswith("{") and stripped.endswith("}"):
+            json_text = stripped
+            break
+    if json_text is None:
         raise ValueError("No JSON object found in log")
 
-    data = json.loads(text[start_idx:])
+    data = json.loads(json_text)
     results = data.get("results")
     if not isinstance(results, list):
         raise ValueError("Invalid log format: 'results' list missing")
