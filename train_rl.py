@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from datetime import datetime
 import yaml
 from torch.utils.tensorboard import SummaryWriter
 
@@ -13,6 +14,17 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_dir: str, params: dict[str, object]) -> None:
+    """Set up file logging under ``log_dir`` and record parameters."""
+    log_path = Path(log_dir)
+    log_path.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_handler = logging.FileHandler(log_path / f"train_{timestamp}.log", encoding="utf-8")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logging.getLogger().addHandler(file_handler)
+    logging.info("Run parameters: %s", params)
 
 
 def load_config(path: str) -> dict:
@@ -218,6 +230,8 @@ if __name__ == "__main__":
         help="directory to store checkpoint files",
     )
     args = parser.parse_args()
+
+    setup_logging("logs", vars(args))
 
     main(
         config_path=args.config,
