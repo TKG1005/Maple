@@ -7,9 +7,25 @@ import matplotlib.pyplot as plt
 
 
 def load_results(path: str) -> List[dict]:
-    """Load battle results list from a JSON file."""
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    """Load battle results list from a log file containing JSON output."""
+
+    encodings = ["utf-8", "utf-8-sig", "utf-16"]
+    text: str | None = None
+    for enc in encodings:
+        try:
+            with open(path, "r", encoding=enc) as f:
+                text = f.read()
+            break
+        except UnicodeDecodeError:  # pragma: no cover - fallback
+            continue
+    if text is None:
+        raise UnicodeDecodeError("utf-8", b"", 0, 1, "Unable to decode log file")
+
+    start_idx = text.rfind("{")
+    if start_idx == -1:
+        raise ValueError("No JSON object found in log")
+
+    data = json.loads(text[start_idx:])
     results = data.get("results")
     if not isinstance(results, list):
         raise ValueError("Invalid log format: 'results' list missing")
