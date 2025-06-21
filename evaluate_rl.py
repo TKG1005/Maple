@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from datetime import datetime
 
 # Repository root path
 ROOT_DIR = Path(__file__).resolve().parent
@@ -11,6 +12,17 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 logger = logging.getLogger(__name__)
+
+
+def setup_logging(log_dir: str, params: dict[str, object]) -> None:
+    """Set up file logging and write parameters."""
+    log_path = Path(log_dir)
+    log_path.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_handler = logging.FileHandler(log_path / f"eval_{timestamp}.log", encoding="utf-8")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logging.getLogger().addHandler(file_handler)
+    logging.info("Run parameters: %s", params)
 
 # Ensure bundled poke_env package is importable
 POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
@@ -88,5 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, required=True, help="path to model file (.pt)")
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     args = parser.parse_args()
+
+    setup_logging("logs", vars(args))
 
     main(args.model, args.n)
