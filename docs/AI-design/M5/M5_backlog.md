@@ -27,7 +27,7 @@
 |17| 評価スクリプト自動テスト | 1 戦だけ実行して終了するテストを作成 | `pytest -k test_evaluate_once` と `python run_battle.py --model model.pt --n 1` が PASS | pytest, run_battle.py |
 |18| ドキュメント更新 | M5 開始方法と学習手順を `docs/M5_setup.md` に記述 | ドキュメントを参照し手順通り実行できる | Markdown |
 |19| 実験ログ管理 | `logs/` ディレクトリを作り実験毎にファイル保存 | ログファイルに日時とパラメータが記録される | logging |
-|20| 乱数シード制御 | 学習・評価とも `--seed` オプションで再現性確保 | 同じシード指定で結果がほぼ一致 | numpy RNG |
+|20| 乱数シード制御 | 学習・評価とも `--seed` オプションで再現性確保 | 同じシード指定で結果がほぼ一致。Showdown サーバの PRNG は制御できないため完全な再現はできず、本ステップはスキップ | numpy RNG |
 |21| 学習結果の図示 | 勝率推移などを matplotlib でプロット | `python plot_results.py logs/run1.json` が図を保存 | matplotlib |
 |22| バトルリプレイ保存 | Showdown のリプレイログを保管 | 評価時に `replays/` フォルダへ HTML が出力される | poke-env `save_replay` |
 |23| 複数モデル比較機能 | 複数の重みファイルをロードし対戦させる | `evaluate_rl.py --models a.pt b.pt` が両者の勝率を表示 | Python CLI |
