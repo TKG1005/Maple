@@ -15,12 +15,14 @@ class RLAgent(MapleAgent):
     def __init__(
         self,
         env: PokemonEnv,
-        model: nn.Module,
+        policy_net: nn.Module,
+        value_net: nn.Module,
         optimizer: torch.optim.Optimizer,
         algorithm: BaseAlgorithm | None = None,
     ) -> None:
         super().__init__(env)
-        self.model = model
+        self.policy_net = policy_net
+        self.value_net = value_net
         self.optimizer = optimizer
         self.algorithm = algorithm or ReinforceAlgorithm()
 
@@ -29,7 +31,7 @@ class RLAgent(MapleAgent):
     ) -> np.ndarray:
         """Return action probabilities respecting ``action_mask``."""
         obs_tensor = torch.as_tensor(observation, dtype=torch.float32)
-        logits = self.model(obs_tensor)
+        logits = self.policy_net(obs_tensor)
         mask_tensor = torch.as_tensor(action_mask, dtype=torch.bool)
         masked_logits = logits.clone()
         if mask_tensor.any():
@@ -51,7 +53,7 @@ class RLAgent(MapleAgent):
 
     def update(self, batch: dict[str, torch.Tensor]) -> float:
         """Delegate a training update to the underlying algorithm."""
-        return self.algorithm.update(self.model, self.optimizer, batch)
+        return self.algorithm.update(self.policy_net, self.optimizer, batch)
 
 
 __all__ = ["RLAgent"]

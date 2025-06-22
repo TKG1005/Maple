@@ -33,7 +33,7 @@ from src.agents.MapleAgent import MapleAgent  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
-from src.agents import PolicyNetwork, RLAgent  # noqa: E402
+from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -59,14 +59,16 @@ def run_single_battle(model_path: str | None = None) -> dict:
         action_helper=action_helper,
     )
     if model_path:
-        model = PolicyNetwork(
+        policy = PolicyNetwork(
             env.observation_space[env.agent_ids[0]],
             env.action_space[env.agent_ids[0]],
         )
+        value = ValueNetwork(env.observation_space[env.agent_ids[0]])
         state_dict = torch.load(model_path, map_location="cpu")
-        model.load_state_dict(state_dict)
-        optimizer = optim.Adam(model.parameters(), lr=1e-3)
-        agent0 = RLAgent(env, model, optimizer)
+        policy.load_state_dict(state_dict)
+        params = list(policy.parameters()) + list(value.parameters())
+        optimizer = optim.Adam(params, lr=1e-3)
+        agent0 = RLAgent(env, policy, value, optimizer)
     else:
         agent0 = MapleAgent(env)
     agent1 = MapleAgent(env)
