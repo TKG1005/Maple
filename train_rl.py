@@ -100,6 +100,10 @@ def main(
     tensorboard: bool = False,
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
+    clip: float | None = None,
+    gae_lambda: float | None = None,
+    ppo_epochs: int | None = None,
+    value_coef: float | None = None,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -108,6 +112,10 @@ def main(
     lr = float(cfg.get("lr", 1e-3))
     buffer_capacity = int(cfg.get("buffer_capacity", 1000))
     batch_size = int(cfg.get("batch_size", 32))
+    clip = clip if clip is not None else float(cfg.get("clip", 0.0))
+    gae_lambda = gae_lambda if gae_lambda is not None else float(cfg.get("gae_lambda", 1.0))
+    ppo_epochs = ppo_epochs if ppo_epochs is not None else int(cfg.get("ppo_epochs", 1))
+    value_coef = value_coef if value_coef is not None else float(cfg.get("value_coef", 0.0))
 
     writer = None
     global_step = 0
@@ -238,6 +246,31 @@ if __name__ == "__main__":
         default="checkpoints",
         help="directory to store checkpoint files",
     )
+    parser.add_argument(
+        "--clip",
+        type=float,
+        default=None,
+        help="PPO clipping ratio",
+    )
+    parser.add_argument(
+        "--gae-lambda",
+        type=float,
+        default=None,
+        metavar="LAMBDA",
+        help="GAE lambda parameter",
+    )
+    parser.add_argument(
+        "--ppo-epochs",
+        type=int,
+        default=None,
+        help="number of PPO update epochs",
+    )
+    parser.add_argument(
+        "--value-coef",
+        type=float,
+        default=None,
+        help="coefficient for value loss",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -250,4 +283,8 @@ if __name__ == "__main__":
         tensorboard=args.tensorboard,
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,
+        clip=args.clip,
+        gae_lambda=args.gae_lambda,
+        ppo_epochs=args.ppo_epochs,
+        value_coef=args.value_coef,
     )
