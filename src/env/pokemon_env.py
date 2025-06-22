@@ -295,10 +295,7 @@ class PokemonEnv(gym.Env):
             "request_teampreview": True,
         }
 
-        if hasattr(self, "single_agent_mode"):
-            return observation[self.agent_ids[0]], info
-
-        return observation, info
+        return {"obs": observation, "info": info}
 
     async def _run_battle(self) -> None:
         """Start the battle coroutines concurrently."""
@@ -435,24 +432,15 @@ class PokemonEnv(gym.Env):
         if any(truncated.values()):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
-        observations = observation
-        term_flags = terminated
-        trunc_flags = truncated
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
-        if hasattr(self, "single_agent_mode"):
-            action_mask, mapping = self.get_action_mask(self.agent_ids[0])
-            self._action_mappings[self.agent_ids[0]] = mapping
-            done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
-            return (
-                observation[self.agent_ids[0]],
-                action_mask,
-                rewards[self.agent_ids[0]],
-                done,
-                infos[self.agent_ids[0]],
-            )
-
-        return observations, rewards, term_flags, trunc_flags, infos
+        return {
+            "obs": observation,
+            "rewards": rewards,
+            "terminated": terminated,
+            "truncated": truncated,
+            "info": infos,
+        }
 
     # Step13: 終了判定ユーティリティ
     def _check_episode_end(self, battle: Any) -> tuple[bool, bool]:

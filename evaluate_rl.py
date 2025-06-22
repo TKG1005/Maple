@@ -88,14 +88,17 @@ def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, flo
     """Run one battle between two agents and return win flags and rewards."""
 
     env = agent0.env
-    observations, info = env.reset()
+    data = env.reset()
+    observations = data["obs"]
+    info = data["info"]
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
 
     if info.get("request_teampreview"):
         order0 = agent0.choose_team(obs0)
         order1 = agent1.choose_team(obs1)
-        observations, *_ = env.step({"player_0": order0, "player_1": order1})
+        step_result = env.step({"player_0": order0, "player_1": order1})
+        observations = step_result["obs"]
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
 
@@ -107,7 +110,11 @@ def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, flo
         mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
         action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
         action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
-        observations, rewards, terms, truncs, _ = env.step({"player_0": action0, "player_1": action1})
+        step_result = env.step({"player_0": action0, "player_1": action1})
+        observations = step_result["obs"]
+        rewards = step_result["rewards"]
+        terms = step_result["terminated"]
+        truncs = step_result["truncated"]
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
         reward0 += float(rewards[env.agent_ids[0]])

@@ -72,14 +72,17 @@ def run_single_battle(model_path: str | None = None) -> dict:
     agent1 = MapleAgent(env)
     env.register_agent(agent1, "player_1")
 
-    observations, info = env.reset()
+    data = env.reset()
+    observations = data["obs"]
+    info = data["info"]
     current_obs0 = observations[env.agent_ids[0]]
     current_obs1 = observations[env.agent_ids[1]]
 
     if info.get("request_teampreview"):
         order0 = agent0.choose_team(current_obs0)
         order1 = agent1.choose_team(current_obs1)
-        observations, *_ = env.step({"player_0": order0, "player_1": order1})
+        step_result = env.step({"player_0": order0, "player_1": order1})
+        observations = step_result["obs"]
         current_obs0 = observations[env.agent_ids[0]]
         current_obs1 = observations[env.agent_ids[1]]
 
@@ -99,9 +102,11 @@ def run_single_battle(model_path: str | None = None) -> dict:
         if env._need_action[env.agent_ids[1]]:
             action_idx1 = agent1.select_action(current_obs1, mask1)
 
-        observations, rewards, terms, truncs, _ = env.step(
-            {"player_0": action_idx0, "player_1": action_idx1}
-        )
+        step_result = env.step({"player_0": action_idx0, "player_1": action_idx1})
+        observations = step_result["obs"]
+        rewards = step_result["rewards"]
+        terms = step_result["terminated"]
+        truncs = step_result["truncated"]
         last_reward = float(rewards[env.agent_ids[0]])
         current_obs0 = observations[env.agent_ids[0]]
         current_obs1 = observations[env.agent_ids[1]]

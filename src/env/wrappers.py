@@ -44,7 +44,9 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
         return self.env.observation_space[self.env.agent_ids[0]]
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
-        observation, info = self.env.reset(seed=seed, options=options)
+        data = self.env.reset(seed=seed, options=options)
+        observation = data["obs"][self.env.agent_ids[0]]
+        info = data["info"]
         return observation, info
 
     def step(self, action: Any):
@@ -65,7 +67,14 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
                     obs = self.env.state_observer.observe(battle)
                     opp_action = self._opponent.select_action(obs, mask)
 
-        return self.env.step({"player_0": action, "player_1": opp_action})
+        result = self.env.step({"player_0": action, "player_1": opp_action})
+        obs = result["obs"][self.env.agent_ids[0]]
+        reward = result["rewards"][self.env.agent_ids[0]]
+        done = result["terminated"][self.env.agent_ids[0]] or result["truncated"][self.env.agent_ids[0]]
+        info = result["info"][self.env.agent_ids[0]]
+        mask, mapping = self.env.get_action_mask(self.env.agent_ids[0])
+        self.env._action_mappings[self.env.agent_ids[0]] = mapping
+        return obs, mask, reward, done, info
 
 
 def make_single_agent_env(**kwargs: Any) -> gym.Env:
