@@ -303,13 +303,13 @@ class PokemonEnv(gym.Env):
     async def _run_battle(self) -> None:
         """Start the battle coroutines concurrently."""
 
-        await asyncio.gather(
-            self._env_players["player_0"].battle_against(
-                self._env_players["player_1"], n_battles=1
-            ),
-            self._env_players["player_1"].battle_against(
-                self._env_players["player_0"], n_battles=1
-            ),
+        # Only one side should issue the challenge.  Calling ``battle_against``
+        # on both players simultaneously results in overlapping challenges and
+        # neither battle will properly start.  ``battle_against`` already handles
+        # sending the challenge and waiting for the opponent to accept, so we
+        # launch it from ``player_0`` only and pass ``player_1`` as the opponent.
+        await self._env_players["player_0"].battle_against(
+            self._env_players["player_1"], n_battles=1
         )
 
     def _race_get(
