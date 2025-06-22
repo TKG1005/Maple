@@ -12,6 +12,7 @@ from gymnasium.spaces import Dict
 import asyncio
 import logging
 from pathlib import Path
+import os
 import yaml
 from poke_env.concurrency import POKE_LOOP
 
@@ -154,7 +155,10 @@ class PokemonEnv(gym.Env):
         if selected:
             if with_details:
                 for idx, detail in mapping.items():
-                    if detail.get("type") == "switch" and detail.get("id") not in selected:
+                    if (
+                        detail.get("type") == "switch"
+                        and detail.get("id") not in selected
+                    ):
                         mask[idx] = 0
             else:
                 for idx, (atype, sub_idx) in mapping.items():
@@ -224,6 +228,16 @@ class PokemonEnv(gym.Env):
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
+            from poke_env.ps_client.account_configuration import AccountConfiguration
+
+            username0 = os.getenv("PS_USERNAME0")
+            password0 = os.getenv("PS_PASSWORD0")
+            ac0 = AccountConfiguration(username0, password0) if username0 else None
+
+            username1 = os.getenv("PS_USERNAME1")
+            password1 = os.getenv("PS_PASSWORD1")
+            ac1 = AccountConfiguration(username1, password1) if username1 else None
+
             self._env_players = {
                 "player_0": EnvPlayer(
                     self,
@@ -233,6 +247,7 @@ class PokemonEnv(gym.Env):
                     team=team,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
+                    account_configuration=ac0,
                 )
             }
             if self.opponent_player is None:
@@ -244,6 +259,7 @@ class PokemonEnv(gym.Env):
                     team=team,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
+                    account_configuration=ac1,
                 )
             else:
                 self._env_players["player_1"] = self.opponent_player
@@ -423,12 +439,9 @@ class PokemonEnv(gym.Env):
             self._action_mappings[pid] = mapping
 
         observations = {
-            pid: self.state_observer.observe(battles[pid])
-            for pid in self.agent_ids
+            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
         }
-        rewards = {
-            pid: self._calc_reward(battles[pid]) for pid in self.agent_ids
-        }
+        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
         terminated: dict[str, bool] = {}
         truncated: dict[str, bool] = {}
         for pid in self.agent_ids:

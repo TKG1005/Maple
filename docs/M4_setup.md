@@ -36,6 +36,11 @@ pip install -r requirements.txt
 npx pokemon-showdown
 ```
 
+Showdown サーバの設定によっては、未登録ユーザーからのバトルメッセージを拒否
+する場合があります。その際は環境変数 `PS_USERNAME0`/`PS_PASSWORD0` と
+`PS_USERNAME1`/`PS_PASSWORD1` を設定して、登録済みアカウントでログインして
+ください。
+
 ## 6. テストの実行
 
 ```bash
