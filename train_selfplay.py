@@ -25,8 +25,12 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     log_path = Path(log_dir)
     log_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(log_path / f"train_{timestamp}.log", encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    file_handler = logging.FileHandler(
+        log_path / f"train_{timestamp}.log", encoding="utf-8"
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    )
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
 
@@ -88,7 +92,10 @@ def main(
 
     env = init_env()
 
-    policy_net = PolicyNetwork(env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]])
+    policy_net = PolicyNetwork(
+        env.observation_space[env.agent_ids[0]],
+        env.action_space[env.agent_ids[0]],
+    )
     value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
@@ -97,6 +104,10 @@ def main(
     agent0 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
     agent1 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
     env.register_agent(agent1, env.agent_ids[1])
+
+    init_obs: np.ndarray | None = None
+    init_mask: np.ndarray | None = None
+    init_probs: np.ndarray | None = None
 
     for ep in range(episodes):
         start_time = time.perf_counter()
@@ -107,9 +118,16 @@ def main(
         if info.get("request_teampreview"):
             order0 = agent0.choose_team(obs0)
             order1 = agent1.choose_team(obs1)
-            observations, *_ = env.step({env.agent_ids[0]: order0, env.agent_ids[1]: order1})
+            observations, *_ = env.step(
+                {env.agent_ids[0]: order0, env.agent_ids[1]: order1}
+            )
             obs0 = observations[env.agent_ids[0]]
             obs1 = observations[env.agent_ids[1]]
+
+        if ep == 0:
+            init_obs = obs0.copy()
+            init_mask, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
+            init_probs = agent0.select_action(init_obs, init_mask)
 
         done = False
         traj: List[dict] = []
@@ -131,13 +149,15 @@ def main(
             reward = float(rewards[env.agent_ids[0]])
             done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
-            traj.append({
-                "obs": obs0,
-                "action": act0,
-                "log_prob": logp0,
-                "value": val0,
-                "reward": reward,
-            })
+            traj.append(
+                {
+                    "obs": obs0,
+                    "action": act0,
+                    "log_prob": logp0,
+                    "value": val0,
+                    "reward": reward,
+                }
+            )
 
             obs0 = observations[env.agent_ids[0]]
             obs1 = observations[env.agent_ids[1]]
@@ -171,6 +191,13 @@ def main(
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
 
+    if init_obs is not None and init_mask is not None and init_probs is not None:
+        updated_probs = agent0.select_action(init_obs, init_mask)
+        diff = updated_probs - init_probs
+        logger.info("Initial probs: %s", np.array2string(init_probs, precision=3))
+        logger.info("Updated probs: %s", np.array2string(updated_probs, precision=3))
+        logger.info("Prob change: %s", np.array2string(diff, precision=3))
+
     env.close()
     if writer:
         writer.close()
@@ -194,9 +221,15 @@ if __name__ == "__main__":
         help="path to YAML config file",
     )
     parser.add_argument("--episodes", type=int, default=1, help="number of episodes")
-    parser.add_argument("--save", type=str, metavar="FILE", help="path to save model (.pt)")
-    parser.add_argument("--tensorboard", action="store_true", help="enable TensorBoard logging")
-    parser.add_argument("--ppo-epochs", type=int, default=4, help="PPO update epochs per episode")
+    parser.add_argument(
+        "--save", type=str, metavar="FILE", help="path to save model (.pt)"
+    )
+    parser.add_argument(
+        "--tensorboard", action="store_true", help="enable TensorBoard logging"
+    )
+    parser.add_argument(
+        "--ppo-epochs", type=int, default=4, help="PPO update epochs per episode"
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
