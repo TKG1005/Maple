@@ -1,169 +1,300 @@
-# Maple Project M6 Backlog – 自己対戦学習環境構築
+# Maple Project M6 Backlog – PPO導入と強化学習アルゴリズムの汎用化
 
 ## 目的
-- **PokemonEnv** 上で複数エージェント（モデル）による自己対戦を **安定動作 & 長時間実行** できるようにする  
-- 対戦環境の **安定性・拡張性・自動実行性・高速性** を高め、学習アルゴリズム改良 (M7) が乗る基盤を構築  
-- PokemonEnv 技術仕様書準拠の **マルチエージェント API**（`dict[player_id]` で観測・行動を管理）を守り、**ランダム AI / 学習済みモデル** など多様な組み合わせに対応  
+
+- 現行の REINFORCE 手法による強化学習エージェントをベースに、近接方策最適化 (PPO) アルゴリズムを導入して学習性能・安定性を向上させる  
+- 新旧アルゴリズム（REINFORCE vs PPO）の学習結果を比較評価し、改善効果を検証する  
+- 強化学習エージェント周辺の設計を見直し、将来的に A2C や SAC など他のアルゴリズムにも容易に差し替え可能な柔軟性を持つ基盤を構築する  
+- 全体として、学習アルゴリズムを設定に応じて切り替えられる拡張性・保守性の高いフレームワークを実現する  
+
+## バックログ（全 18 ステップ）
+
+各ステップは「Goal (WHAT) ▸ Done (DONE) ▸ Test (HOW) ▸ Tech (WITH)」で整理しています。
 
 ---
 
-## バックログ（全 19 ステップ）
+### Step 1 : 環境インタフェース整理
 
-> 各ステップは「Goal (WHAT) ▸ Done (DONE) ▸ Test (HOW) ▸ Tech (WITH)」で整理しています。
+- **Goal**  
+  強化学習環境 PokemonEnv の観測・報酬・終了フラグのインタフェースを見直し、エージェント側で一貫して利用できるよう整備する  
 
-### Step 1 : 自己対戦学習スクリプト雛形作成
-- **Goal** `train_selfplay.py` を新規作成し、環境 & エージェント初期化フローを実装  
-- **Done** `python train_selfplay.py --dry-run` で環境だけ初期化して即終了  
-- **Test** スクリプト内で `PokemonEnv()` をインスタンス化後、正常終了すること  
-- **Tech** Gymnasium / PokemonEnv / Python
+- **Done**  
+  `env.reset()` や `env.step()` で得られる各プレイヤーの観測・報酬・終了情報が仕様書通りの形式（例： `obs`, `rewards`, `terminated`, `info` の dict 構造）で取得可能  
 
----
+- **Test**  
+  `train_selfplay.py --dry-run` 実行時に環境初期化から終了まで一連の情報が欠損なく得られ、ログに各プレイヤーのキーが正しく含まれることを確認  
 
-### Step 2 : 2エージェント初期化
-- **Goal** `PokemonEnv` をマルチエージェントモードで起動し、`player_0`・`player_1` 用に 2 × `RLAgent` を生成  
-- **Done** 両 `RLAgent` がエラーなく初期化・モデル保持  
-- **Test** `env.agent_ids == ("player_0","player_1")` にそれぞれ紐付くか検証  
-- **Tech** PokemonEnv / RLAgent
+- **Tech**  
+  Gymnasium / PokemonEnv / Python  
 
 ---
 
-### Step 3 : 重み共有オプション
-- **Goal** 両プレイヤーが同じ **PolicyNetwork** を共有する `--shared-policy` モードを実装  
-- **Done** 共有時、片方で重み更新 ⇒ もう片方にも反映  
-- **Test** オブジェクト ID が一致するか・学習 1 step 後に推論結果が変わるか確認  
-- **Tech** PyTorch / PolicyNetwork
+### Step 2 : アルゴリズム切替機構設計
+
+- **Goal**  
+  強化学習アルゴリズム（REINFORCE, PPO など）を切り替えて適用できるコード構造にリファクタリングする  
+
+- **Done**  
+  RLAgent や学習スクリプトの構成がアルゴリズムごとの処理を抽象化した設計に変更され、新しいアルゴリズムクラスを追加しても既存コードの大部分を修正せず利用可能  
+
+- **Test**  
+  簡易的なダミーアルゴリズム実装をプラグインして学習ループを実行し、環境との入出力処理を共通コードで再利用できることをコードレビューで確認  
+
+- **Tech**  
+  コード設計 / リファクタリング  
 
 ---
 
-### Step 4 : チームプレビュー処理実装
-- **Goal** 対戦開始前の **Team Preview** に対応し、`choose_team` を呼び出す  
-- **Done** `info["request_teampreview"] == True` 時に 3 体選出し、`env.step()` に渡る  
-- **Test** `--dry-run` でチーム選択が発生・初期観測を取得できること  
-- **Tech** poke-env (EnvPlayer) / MapleAgent (`choose_team`)
+### Step 3 : 方策・価値ネットワーク構造分離
+
+- **Goal**  
+  PPO 導入に備え、方策を出力する `PolicyNetwork` と状態価値を推定する `ValueNetwork` をそれぞれ実装し、エージェント内で管理する  
+
+- **Done**  
+  `PolicyNetwork(observation_space, action_space)` および `ValueNetwork(observation_space)` がインスタンス化でき、前者は行動の確率分布を、後者は与えられた観測の価値Vをそれぞれ出力可能  
+
+- **Test**  
+  `RLAgent` 初期化時に両ネットワークが正しく生成・保持されること、かつダミー観測に対して `policy_net.forward(obs)`, `value_net.forward(obs)` を呼び出し期待どおりのサイズの出力（確率ベクトル・スカラー値）が得られることを確認  
+
+- **Tech**  
+  PyTorch / numpy  
 
 ---
 
-### Step 5 : ターンごとの行動ループ実装
-- **Goal** `while not done:` ループで両エージェントが行動を選択し `env.step()`  
-- **Done** ランダム AI 同士などで 1 エピソード完走  
-- **Test** 行動が毎ターン環境へ渡り、終了時 `done == True`  
-- **Tech** Gymnasium ループ同期処理
+### Step 4 : GAE（一般化アドバンテージ推定）導入
+
+- **Goal**  
+  エピソード終了後の報酬系列から方策勾配の分散低減のための Advantage 値を計算する処理を追加する（GAE: Generalized Advantage Estimation の実装）  
+
+- **Done**  
+  各エピソードの全ステップについて、割引報酬と `ValueNetwork` 出力を用いて `Advantage` を算出できる関数が実装される（例： `compute_gae(rewards, values)` が各時刻の Advantage 配列を返す）  
+
+- **Test**  
+  簡単な報酬シーケンスを入力した場合に `Advantage` 計算結果が手計算と一致することをユニットテストで確認（例：割引率1.0・λ=1.0の場合、通常のモンテカルロ法による累積報酬差分と一致）  
+
+- **Tech**  
+  Python（数学計算） / NumPy  
 
 ---
 
-### Step 6 : 遷移保存とリプレイバッファ
-- **Goal** (観測, 行動, 報酬, 次状態, 終了) を経験リプレイに蓄積（両プレイヤー分）  
-- **Done** ターン数 N の対戦で **2 × N 件** の遷移が保存  
-- **Test** `len(replay_buffer)` が期待値に一致し、`player_0/1` のデータ構造を持つ  
-- **Tech** NumPy / ReplayBuffer クラス
+### Step 5 : PPOクリップ損失関数実装
+
+- **Goal**  
+  PPOアルゴリズムの方策勾配損失を計算する処理を実装する（確率比のクリッピング対応を含む）  
+
+- **Done**  
+  古い方策確率と新しい方策確率、および `Advantage` を入力として、クリップ付近で勾配が飽和するクリップ付き目的関数が計算される。価値関数の損失とエントロピー項も組み合わせて最終的な損失を算出可能  
+
+- **Test**  
+  事前に用意した遷移データについて、クリッピング有無で損失計算結果が変化することを確認。例えば、ある行動の確率が大きく変動した場合でもクリップ範囲内では `Advantage` 符号に応じて損失が減少し、範囲を超える変動では損失に大差がないことをロギングで検証  
+
+- **Tech**  
+  PyTorch（autograd） / 数式実装  
+
+### Step 6 : PPOエージェント学習ループ実装
+
+- **Goal**  
+  自己対戦学習スクリプトに PPO 更新処理を組み込み、一定ステップ分のデータ収集後に複数エポックにわたりネットワーク更新を行う学習ループを実装する  
+
+- **Done**  
+  `train_selfplay.py` 実行時にエピソードごとの軌跡データをバッファに蓄積し、エピソード終了ごとに設定したエポック数だけ Step5の損失関数でネットワークを更新する処理が追加される  
+  （例： `--ppo-epochs 4` 指定時に各エピソードで4回のパラメータ更新を実施）  
+
+- **Test**  
+  PPOモードで数エピソード学習させた際に、ログ上で各エピソードに複数回の更新が行われていること（損失値やネットワークパラメータがエポックごとに変化していること）を確認。学習前後で方策の出力分布に変化が生じていることを簡易評価する  
+
+- **Tech**  
+  Python ループ制御 / PyTorch Optimizer  
 
 ---
 
-### Step 7 : ネットワーク更新処理
-- **Goal** バッファからサンプルして **PolicyNetwork** を更新  
-- **Done** 学習後にパラメータ変化・損失が減少傾向  
-- **Test** 学習前後で予測が変わるか／損失ログ確認  
-- **Tech** PyTorch (autograd / optimizer) / NumPy
+### Step 7 : ハイパーパラメータ設定拡張（PPO）
+
+- **Goal**  
+  PPOアルゴリズム用のハイパーパラメータを設定ファイルやコマンドライン引数から指定できるようにする（例：クリップ率・GAE λ・更新エポック数・価値関数係数など）  
+
+- **Done**  
+  `config/train_config.yml` や `train_selfplay.py --help` に PPO 固有の主要パラメータが追加され、ユーザが値を変更可能。既定値は REINFORCE 相当の挙動（例：クリップ無効化など）になるよう設定  
+
+- **Test**  
+  各パラメータを極端な値に変更して学習を実行し、挙動が変化することを確認（例： `--clip 0.0` でクリッピングを無効化した場合に方策が大きく更新されやすくなる、 `--gae-lambda 0.0` で Advantage が単純割引和になる 等）  
+
+- **Tech**  
+  argparse / PyYAML  
 
 ---
 
-### Step 8 : エピソード反復と終了条件
-- **Goal** `--episodes N` 指定で N エピソード自己対戦を繰り返し、終了時に環境を `close()`  
-- **Done** 例: `--episodes 5` で 5 戦実行・終了時に全資源解放  
-- **Test** バックグラウンド接続が残らないか確認  
-- **Tech** Python / PokemonEnv `.close()`
+### Step 8 : 並列環境対応（PPOサンプル収集）
+
+- **Goal**  
+  PPO学習のサンプル効率を高めるため、複数の対戦環境を並行実行してデータを収集する仕組みを導入する  
+
+- **Done**  
+  `--parallel N` のようなオプションで同時に N 試合を進行させ、各環境から遷移を収集してまとめて学習更新を行えるようになる。例えば2並列環境でエピソードあたりの実行時間がシングル環境より短縮される  
+
+- **Test**  
+  `--parallel 2` を指定して10エピソード学習した際の実行時間が、 `--parallel 1` （デフォルト）に比べておおむね半分程度になることをログのタイムスタンプや外部計測で確認。学習結果（損失の傾向や報酬）は並列・非並列で大きな差異がないことを確認する  
+
+- **Tech**  
+  マルチスレッド / Gymnasium VectorEnv / 非同期処理  
 
 ---
 
-### Step 9 : 自己対戦設定項目追加
-- **Goal** ハイパーパラメータ (エピソード数・学習率・`--shared-policy` 等) を CLI / YAML で設定可能に  
-- **Done** `python train_selfplay.py --help` で主要オプションが表示  
-- **Test** 引数変更で動作が切替わるか検証  
-- **Tech** argparse / 設定ファイル
+### Step 9 : モデル保存・読み込み拡張
+
+- **Goal**  
+  PPO 導入に伴い増えたネットワーク構成（ポリシー＋価値ネット）を適切に永続化できるようモデル保存機能を拡張する  
+
+- **Done**  
+  `train_selfplay.py --save model.pt` 実行時に方策ネットワークと価値ネットワークの重みが両方保存される（例：1つの `.pt` ファイルに辞書形式で2ネットワーク分の `state_dict` を格納）。また `evaluate_rl.py` 側でも保存ファイルから両ネットワークを読み込み、推論用に方策ネットワークを復元できる  
+
+- **Test**  
+  PPO モードで学習→保存したモデルファイルを用い、従来の RLAgent （または新たなPPO対応のエージェントクラス）でロードして自己対戦を1エピソード実行し、エラー無く動作することを確認。保存前後で同一入力に対する方策の出力が一致することをアサートする  
+
+- **Tech**  
+  PyTorch `torch.save` / `torch.load` / ファイル入出力  
 
 ---
 
-### Step 10 : モデル保存処理
-- **Goal** 学習後に重みを `best_model.pt` などで保存・再利用可能に  
-- **Done** `--save best_model.pt` でファイル生成、再ロードで対戦 OK  
-- **Test** `evaluate_rl.py` で読み込み対戦  
-- **Tech** PyTorch `torch.save / load`
+### Step 10 : アルゴリズム選択オプション追加
+
+- **Goal**  
+  学習スクリプト実行時に使用するアルゴリズムを選択できるオプションを追加する  
+
+- **Done**  
+  `train_selfplay.py` 実行時に `--algo reinforce` や `--algo ppo` の引数でアルゴリズムを切り替え可能。指定された値に応じて、従来のモンテカルロ方策勾配（REINFORCE）か新実装の PPO 手法で学習が行われる  
+
+- **Test**  
+  各アルゴリズムを1エピソードずつ実行し、ログや学習挙動が切り替わっていることを確認  
+  （例：REINFORCEでは毎エピソード終了時に1度だけ更新、PPOでは複数エポック更新や Advantage 利用が行われている旨のログが出力される）  
+
+- **Tech**  
+  Python CLI / argparse  
+
+### Step 11 : 評価スクリプト拡張（PPO対応）
+
+- **Goal**  
+  対戦評価用スクリプト evaluate_rl.py を拡張し、PPO で学習したエージェントのモデルも読み込んで対戦評価できるようにする  
+
+- **Done**  
+  `python evaluate_rl.py --model my_ppo_model.pt --n 5` のように PPOエージェントの重みファイルを指定して実行した場合でも、内部で適切に PolicyNetwork が復元されて自己対戦または対戦相手とのバトルが最後まで完了する  
+
+- **Test**  
+  上記コマンドで5戦実行し、勝敗結果や平均報酬が従来と同様に表示されることを確認。PPO 学習済みモデル vs ランダムエージェント等の組み合わせで対戦させ、エラー無く動作することを検証する  
+
+- **Tech**  
+  PokemonEnv / RLAgent / MapleAgent (Random)  
 
 ---
 
-### Step 11 : チェックポイント保存
-- **Goal** 長時間学習向けに `--checkpoint-interval K` ごと保存 (`checkpoints/ checkpoint_10.pt` …)  
-- **Done** 間隔通りにファイル増加・再開可能  
-- **Test** 中間モデルで `evaluate_rl.py` が動作  
-- **Tech** PyTorch / ファイル I/O
+### Step 12 : 学習スクリプト自動テスト（PPO）
+
+- **Goal**  
+  CI（pytest）にて PPOアルゴリズムで1エピソード学習 するテストケースを追加し、基本的な学習処理がエラー無く完了することを保証する  
+
+- **Done**  
+  `pytest -k test_train_selfplay_one_episode_ppo` のようなテストが新設され、 subprocess 経由で `train_selfplay.py --algo ppo --episodes 1` を実行して正常終了（コード0）することを確認する  
+
+- **Test**  
+  CI上で上記テストが PASS し、ログに1エピソード分の学習完了メッセージ（損失値や対戦結果の出力など）が含まれることを確認。REINFORCE 用のテストと併せて両アルゴリズムでテスト網羅できていることを担保する  
+
+- **Tech**  
+  pytest / subprocess / GitHub Actions  
 
 ---
 
-### Step 12 : 自己対戦スクリプト自動テスト
-- **Goal** CI (pytest) で **1 エピソード学習** が PASS するケースを追加  
-- **Done** `pytest -k test_train_selfplay_one_episode` が成功  
-- **Test** `subprocess` で `train_selfplay.py --episodes 1` 実行・コード 0  
-- **Tech** pytest / GitHub Actions
+### Step 13 : PPOエージェント対戦検証
+
+- **Goal**  
+  PPOで学習したエージェントを用いた対戦が期待通り進行し、報酬や終了判定が正しく機能することを検証する  
+
+- **Done**  
+  例として PPO学習済みモデル vs ランダムエージェント で5戦対戦させ、全試合が正常終了する。勝者には +1、敗者に -1 の報酬が与えられ、引き分け時は双方0になるなど、報酬・終了処理が既定どおりであることを確認  
+
+- **Test**  
+  `evaluate_rl.py --model ppo_model.pt --opponent random --n 5` を実行し、終了後に出力される各試合の勝敗結果および rewards ・ terminated の内容が正当な値になっていることをアサートする（ログ中に勝率や平均報酬が算出される場合はその値も確認）  
+
+- **Tech**  
+  PokemonEnv / MapleAgent (Random) / RLAgent  
 
 ---
 
-### Step 13 : 二エージェント対戦統合テスト
-- **Goal** ランダム NN 方策 2 体で自己対戦し、終了判定 & 報酬を検証  
-- **Done** 勝者:+1 / 敗者:-1 (引分:0)、`terminated` フラグが正しく設定  
-- **Test** 各 dict (`rewards`, `terminated`) の一貫性をアサート  
-- **Tech** PokemonEnv / RLAgent
+### Step 14 : REINFORCE vs PPO比較実験
+
+- **Goal**  
+  現行のREINFORCEアルゴリズムと新実装のPPOアルゴリズムの性能を比較評価するため、同条件で学習実験を行いデータを収集する  
+
+- **Done**  
+  それぞれのアルゴリズムで一定エピソード学習を実行し、エピソードごとの報酬や最終的な勝率など主要な指標を記録する（例：各エピソードの平均報酬をログ出力する機能を追加し、学習曲線データを保存）。両者の結果データが揃う  
+
+- **Test**  
+  REINFORCE・PPO各方式で例えば100エピソードずつ学習を走らせ、ログファイルや `logs/` ディレクトリにそれぞれの報酬推移データが記録されていることを確認。同一環境・条件下で両アルゴリズムの学習結果データを取得できていることを担保する  
+
+- **Tech**  
+  logging / 実験管理  
 
 ---
 
-### Step 14 : 異種エージェント対戦検証
-- **Goal** 例: 学習済みモデル vs ランダムエージェント を検証  
-- **Done** 双方の行動ログが記録され、対戦結果取得  
-- **Test** `evaluate_rl.py --opponent random` で 5 戦完走  
-- **Tech** PokemonEnv / MapleAgent / RLAgent
+### Step 15 : 比較結果の図示
+
+- **Goal**  
+  ステップ14で取得したログデータを分析し、両アルゴリズムの学習曲線や最終性能を可視化して比較する  
+
+- **Done**  
+  REINFORCE vs PPO のエピソードごとの平均報酬や勝率推移を1つのグラフにプロットし、傾向の違いを示す図を作成する。必要に応じてエージェント同士の直接対戦結果などもまとめ、考察を加える  
+
+- **Test**  
+  生成されたグラフ画像において、例えば PPO 手法の曲線が REINFORCE より早期に収束している、最終的な勝率が高い、あるいは分散が小さい等の特徴が読み取れることを確認。分析結果をレビューし、アルゴリズム改良の効果が妥当であると評価される  
+
+- **Tech**  
+  Matplotlib / Jupyter Notebook（分析） / Markdown（レポート）  
+
+### Step 16 : 他アルゴリズム対応設計
+
+- **Goal**  
+  今後 A2C（Advantage Actor-Critic）や SAC（Soft Actor-Critic）など他の強化学習アルゴリズムにも対応できるよう、必要な拡張点を整理・設計する  
+
+- **Done**  
+  同期型のActor-Critic手法（例：A2C）やオフポリシー手法（例：SAC）の導入にあたり、共通化すべきインタフェースや再利用できるコンポーネント（リプレイバッファ、ネットワーク構造など）が明確になる。例えば、離散/連続行動やオンポリシー/オフポリシーの違いを吸収できるクラス設計の草案が作成される  
+
+- **Test**  
+  設計レビューにて、新アルゴリズム追加時の変更箇所が最小限に抑えられていることを確認。仮に AlgorithmBase のサブクラスとして A2C を実装する想定を立てた場合に、環境やエージェントの既存コードを大きく変更せず組み込めることを説明できる  
+
+- **Tech**  
+  設計検討 / アーキテクチャレビュー  
 
 ---
 
-### Step 15 : 並列対戦環境対応
-- **Goal** スレッド・プロセス・Gymnasium VectorEnv などで複数環境を並列実行  
-- **Done** 2 並列で独立対戦し、シングルより実行時間短縮  
-- **Test** 壁時計時間を比較し、速度向上を確認  
-- **Tech** Multithreading / VectorEnv / WebSocket
+### Step 17 : ドキュメント更新
+
+- **Goal**  
+  本フェーズ（M7）での強化学習アルゴリズム拡張に関する手順や使用方法をドキュメントに反映する  
+
+- **Done**  
+  新たに `docs/M7_setup.md` が作成され、PPOアルゴリズムで学習を行う手順、アルゴリズム選択オプションの説明、並列実行の方法、比較実験の結果サマリなどが追記される。併せて `README` や既存ドキュメント中の該当部分も最新の内容に更新される  
+
+- **Test**  
+  ドキュメントの手順に従って環境構築～PPO学習・評価まで一通り実行できることを第三者が検証し、必要な情報が漏れなく記載されているとレビューで承認される  
+
+- **Tech**  
+  Markdown / 図表作成  
 
 ---
 
-### Step 16 : 並列実行速度評価
-- **Goal** シングル vs 並列 (例 10 戦) の 1 エピソード処理速度を比較  
-- **Done** 理想スケーリングに近い時間短縮・CPU 分散  
-- **Test** `time.time()` で計測しログ出力  
-- **Tech** Python `time` / logging
+### Step 18 : M7 完了レビュー
 
----
+- **Goal**  
+  上記すべてのステップ完了後、強化学習基盤が複数アルゴリズムを柔軟に切り替えて運用できることを最終確認する  
 
-### Step 17 : 長時間安定性テスト
-- **Goal** 100 連戦・数時間連続実行でメモリリーク／接続切れが無いか検証  
-- **Done** エラー・ハング無し、メモリ使用量が安定  
-- **Test** OS モニタでメモリ推移観察、再接続ログが無いことを確認  
-- **Tech** 長時間ベンチ／手動監視
+- **Done**  
+  全ての単体・統合テストが PASS し、REINFORCE・PPO 双方で安定して自己対戦学習・評価が可能であることをチームレビューで承認。作成した比較レポートをもとに、「Maple の強化学習エージェントはアルゴリズムモジュールを差し替えて性能向上を図れる」 状態を実証する  
 
----
+- **Test**  
+  コードリーディングおよびデモ実行により、アルゴリズム切替オプションやPPO学習の動作、他アルゴリズム拡張の見通しについてチェックリスト全項目を満たすことを確認し、M7 の成果物を承認する  
 
-### Step 18 : ドキュメント更新
-- **Goal** `docs/M6_setup.md` に環境構築・Showdown 起動・並列実行方法などを記載  
-- **Done** ドキュメントどおりに再現可能  
-- **Tech** Markdown
+- **Tech**  
+  総合レビュー / 関係者合意  
 
----
-
-### Step 19 : M6 完了レビュー
-- **Goal** 全テスト PASS、100 連戦 & 並列実行 OK、レビュー承認で M6 完了  
-- **Done** 「様々なモデル同士の自己対戦が安定・高速に実行可能」な環境を実証  
-- **Test** コードリーディング・動作デモでチェックリスト合格  
-- **Tech** 総合レビュー
-
----
-
-## 参考リポジトリ・仕様書
-- [`PokemonEnv_Specification.md`](https://github.com/TKG1005/Maple/blob/af7948de455ed5f2d09222c90d3958f4f9e0f771/docs/AI-design/PokemonEnv_Specification.md)  
-- [`RLAgent.py`](https://github.com/TKG1005/Maple/blob/af7948de455ed5f2d09222c90d3958f4f9e0f771/src/agents/RLAgent.py)  
-- [`pokemon_env.py`](https://github.com/TKG1005/Maple/blob/af7948de455ed5f2d09222c90d3958f4f9e0f771/src/env/pokemon_env.py)
-
+### 参考リポジトリ・資料
+- RLAgent.py(https://github.com/TKG1005/Maple/blob/af7948de455ed5f2d09222c90d3958f4f9e0f771/src/agents/RLAgent.py) – 強化学習エージェントクラス（方策・学習処理を実装）
+- Stable-Baselines3 PPO(https://github.com/DLR-RM/stable-baselines3) 実装 – オープンソース実装による PPO アルゴリズムの参考資料 
