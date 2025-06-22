@@ -6,17 +6,23 @@ import torch.nn as nn
 
 from .MapleAgent import MapleAgent
 from src.env.pokemon_env import PokemonEnv
+from src.algorithms import BaseAlgorithm, ReinforceAlgorithm
 
 
 class RLAgent(MapleAgent):
     """Reinforcement learning agent holding a model and optimizer."""
 
     def __init__(
-        self, env: PokemonEnv, model: nn.Module, optimizer: torch.optim.Optimizer
+        self,
+        env: PokemonEnv,
+        model: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        algorithm: BaseAlgorithm | None = None,
     ) -> None:
         super().__init__(env)
         self.model = model
         self.optimizer = optimizer
+        self.algorithm = algorithm or ReinforceAlgorithm()
 
     def select_action(
         self, observation: np.ndarray, action_mask: np.ndarray
@@ -42,6 +48,10 @@ class RLAgent(MapleAgent):
         action = int(rng.choice(len(probs), p=probs))
         print(f"{self.__class__.__name__}: chosen action = {action}")
         return action
+
+    def update(self, batch: dict[str, torch.Tensor]) -> float:
+        """Delegate a training update to the underlying algorithm."""
+        return self.algorithm.update(self.model, self.optimizer, batch)
 
 
 __all__ = ["RLAgent"]
