@@ -422,12 +422,15 @@ class PokemonEnv(gym.Env):
             self._logger.debug("available mapping for %s: %s", pid, mapping)
             self._action_mappings[pid] = mapping
 
-        observation = {
-            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
+        observations = {
+            pid: self.state_observer.observe(battles[pid])
+            for pid in self.agent_ids
         }
-        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
-        terminated = {}
-        truncated = {}
+        rewards = {
+            pid: self._calc_reward(battles[pid]) for pid in self.agent_ids
+        }
+        terminated: dict[str, bool] = {}
+        truncated: dict[str, bool] = {}
         for pid in self.agent_ids:
             term, trunc = self._check_episode_end(battles[pid])
             terminated[pid] = term
@@ -435,9 +438,6 @@ class PokemonEnv(gym.Env):
         if any(truncated.values()):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
-        observations = observation
-        term_flags = terminated
-        trunc_flags = truncated
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
         if hasattr(self, "single_agent_mode"):
@@ -445,14 +445,14 @@ class PokemonEnv(gym.Env):
             self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
-                observation[self.agent_ids[0]],
+                observations[self.agent_ids[0]],
                 action_mask,
                 rewards[self.agent_ids[0]],
                 done,
                 infos[self.agent_ids[0]],
             )
 
-        return observations, rewards, term_flags, trunc_flags, infos
+        return observations, rewards, terminated, truncated, infos
 
     # Step13: 終了判定ユーティリティ
     def _check_episode_end(self, battle: Any) -> tuple[bool, bool]:
