@@ -50,7 +50,7 @@ from src.env.wrappers import SingleAgentCompatibilityWrapper  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
-from src.agents import PolicyNetwork, RLAgent, ReplayBuffer  # noqa: E402
+from src.agents import PolicyNetwork, ValueNetwork, RLAgent, ReplayBuffer  # noqa: E402
 from src.algorithms import (
     BaseAlgorithm,
     ReinforceAlgorithm,
@@ -112,10 +112,12 @@ def main(
     observation_dim = env.observation_space.shape
     action_space = env.action_space
 
-    model = PolicyNetwork(env.observation_space, action_space)
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    policy_net = PolicyNetwork(env.observation_space, action_space)
+    value_net = ValueNetwork(env.observation_space)
+    params = list(policy_net.parameters()) + list(value_net.parameters())
+    optimizer = optim.Adam(params, lr=lr)
     algorithm = algorithm or ReinforceAlgorithm()
-    agent = RLAgent(env, model, optimizer, algorithm=algorithm)
+    agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
     buffer = ReplayBuffer(capacity=buffer_capacity, observation_shape=observation_dim)
 
     ckpt_dir = Path(checkpoint_dir)
@@ -159,7 +161,7 @@ def main(
             try:
                 ckpt_dir.mkdir(parents=True, exist_ok=True)
                 ckpt_path = ckpt_dir / f"checkpoint_ep{ep + 1}.pt"
-                torch.save(model.state_dict(), ckpt_path)
+                torch.save(policy_net.state_dict(), ckpt_path)
                 logger.info("Checkpoint saved to %s", ckpt_path)
             except OSError as exc:
                 logger.error("Failed to save checkpoint: %s", exc)
@@ -172,7 +174,7 @@ def main(
         path = Path(save_path)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(model.state_dict(), path)
+            torch.save(policy_net.state_dict(), path)
             logger.info("Model saved to %s", path)
         except OSError as exc:
             logger.error("Failed to save model: %s", exc)
