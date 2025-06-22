@@ -154,7 +154,10 @@ class PokemonEnv(gym.Env):
         if selected:
             if with_details:
                 for idx, detail in mapping.items():
-                    if detail.get("type") == "switch" and detail.get("id") not in selected:
+                    if (
+                        detail.get("type") == "switch"
+                        and detail.get("id") not in selected
+                    ):
                         mask[idx] = 0
             else:
                 for idx, (atype, sub_idx) in mapping.items():
@@ -472,7 +475,15 @@ class PokemonEnv(gym.Env):
 
         # battle.won が True なら勝利、False なら敗北とみなす
         if getattr(battle, "won", False):
-            return 1.0
+            reward = 1.0
+            # 自分の残りHP割合の合計が1.5以上ならボーナスを付与
+            try:
+                remain_hp = sum(p.current_hp_fraction for p in battle.team.values())
+                if remain_hp >= 1.5:
+                    reward += 0.05
+            except Exception:
+                pass
+            return reward
         return -1.0
 
     def render(self) -> None:

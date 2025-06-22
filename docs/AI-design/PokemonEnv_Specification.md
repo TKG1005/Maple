@@ -156,6 +156,7 @@ sequenceDiagram
 | 途中ターン | False | 0 |
 
 報酬は `{"player_0": float, "player_1": float}` 形式で返る。
+勝利した際、チームの残りHP割合合計が1.5以上なら報酬に0.05を追加する。
 
 ---
 
