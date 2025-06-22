@@ -51,6 +51,11 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, RLAgent, ReplayBuffer  # noqa: E402
+from src.algorithms import (
+    BaseAlgorithm,
+    ReinforceAlgorithm,
+    DummyAlgorithm,
+)  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -67,30 +72,6 @@ def init_env() -> SingleAgentCompatibilityWrapper:
     return SingleAgentCompatibilityWrapper(env)
 
 
-def train_step(agent: RLAgent, batch: dict[str, torch.Tensor]) -> float:
-    """Perform a single policy gradient step using REINFORCE.
-
-    Returns
-    -------
-    float
-        Training loss for the processed batch.
-    """
-
-    obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
-    actions = torch.as_tensor(batch["actions"], dtype=torch.int64)
-    rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32)
-
-    logits = agent.model(obs)
-    log_probs = torch.log_softmax(logits, dim=-1)
-    selected = log_probs[torch.arange(len(actions)), actions]
-    loss = -(selected * rewards).mean()
-
-    agent.optimizer.zero_grad()
-    loss.backward()
-    agent.optimizer.step()
-    return float(loss.detach())
-
-
 def main(
     *,
     config_path: str = str(ROOT_DIR / "config" / "train_config.yml"),
@@ -100,6 +81,7 @@ def main(
     tensorboard: bool = False,
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
+    algorithm: BaseAlgorithm | None = None,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -132,7 +114,8 @@ def main(
 
     model = PolicyNetwork(env.observation_space, action_space)
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    agent = RLAgent(env, model, optimizer)
+    algorithm = algorithm or ReinforceAlgorithm()
+    agent = RLAgent(env, model, optimizer, algorithm=algorithm)
     buffer = ReplayBuffer(capacity=buffer_capacity, observation_shape=observation_dim)
 
     ckpt_dir = Path(checkpoint_dir)
@@ -154,7 +137,7 @@ def main(
             buffer.add(obs, action, float(reward), done, next_obs)
             if len(buffer) >= batch_size:
                 batch = buffer.sample(batch_size)
-                loss = train_step(agent, batch)
+                loss = agent.update(batch)
                 if writer:
                     writer.add_scalar("loss", loss, global_step)
                 global_step += 1
