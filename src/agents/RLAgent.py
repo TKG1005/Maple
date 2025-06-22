@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 import torch.nn as nn
+import logging
 
 from .MapleAgent import MapleAgent
 from src.env.pokemon_env import PokemonEnv
@@ -25,6 +26,8 @@ class RLAgent(MapleAgent):
         self.value_net = value_net
         self.optimizer = optimizer
         self.algorithm = algorithm or ReinforceAlgorithm()
+        self._logger = logging.getLogger(__name__)
+        self._logger.setLevel(logging.DEBUG)
 
     def select_action(
         self, observation: np.ndarray, action_mask: np.ndarray
@@ -43,12 +46,12 @@ class RLAgent(MapleAgent):
 
     def act(self, observation: np.ndarray, action_mask: np.ndarray) -> int:
         """Sample an action index according to the policy."""
-        # Print the received mask to make debugging of invalid actions easier
-        print(f"{self.__class__.__name__}: available mask = {action_mask}")
+        # Show the received mask to make debugging of invalid actions easier
+        self._logger.debug("%s: available mask = %s", self.__class__.__name__, action_mask)
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
         action = int(rng.choice(len(probs), p=probs))
-        print(f"{self.__class__.__name__}: chosen action = {action}")
+        self._logger.debug("%s: chosen action = %s", self.__class__.__name__, action)
         return action
 
     def update(self, batch: dict[str, torch.Tensor]) -> float:
