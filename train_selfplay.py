@@ -158,6 +158,7 @@ def main(
 
         for i in range(ppo_epochs):
             loss = agent0.update(batch)
+            logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
             if writer:
                 writer.add_scalar("loss", loss, ep * ppo_epochs + i)
 
