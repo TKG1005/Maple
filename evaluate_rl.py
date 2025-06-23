@@ -19,10 +19,15 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     log_path = Path(log_dir)
     log_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_handler = logging.FileHandler(log_path / f"eval_{timestamp}.log", encoding="utf-8")
-    file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    file_handler = logging.FileHandler(
+        log_path / f"eval_{timestamp}.log", encoding="utf-8"
+    )
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    )
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
+
 
 # Ensure bundled poke_env package is importable
 POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
@@ -38,8 +43,8 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env(save_replays: bool | str = False) -> SingleAgentCompatibilityWrapper:
-    """Create :class:`PokemonEnv` wrapped for single-agent evaluation."""
+def init_env(*, save_replays: bool | str = False, single: bool = True):
+    """Create ``PokemonEnv`` for evaluation."""
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -48,19 +53,8 @@ def init_env(save_replays: bool | str = False) -> SingleAgentCompatibilityWrappe
         action_helper=action_helper,
         save_replays=save_replays,
     )
-    return SingleAgentCompatibilityWrapper(env)
-
-
-def init_env_multi(save_replays: bool | str = False) -> PokemonEnv:
-    """Create :class:`PokemonEnv` for two-agent evaluation."""
-
-    observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
-    env = PokemonEnv(
-        opponent_player=None,
-        state_observer=observer,
-        action_helper=action_helper,
-        save_replays=save_replays,
-    )
+    if single:
+        return SingleAgentCompatibilityWrapper(env)
     return env
 
 
@@ -73,7 +67,9 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
         team_cmd = agent.choose_team(obs)
         obs, action_mask, _, done, _ = env.step(team_cmd)
     else:
-        action_mask, _ = env.env.get_action_mask(env.env.agent_ids[0], with_details=True)
+        action_mask, _ = env.env.get_action_mask(
+            env.env.agent_ids[0], with_details=True
+        )
         done = False
     total_reward = 0.0
     while not done:
@@ -84,7 +80,9 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     return won, total_reward
 
 
-def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, float, float]:
+def run_episode_multi(
+    agent0: RLAgent, agent1: RLAgent
+) -> tuple[bool, bool, float, float]:
     """Run one battle between two agents and return win flags and rewards."""
 
     env = agent0.env
@@ -107,7 +105,9 @@ def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, flo
         mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
         action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
         action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
-        observations, rewards, terms, truncs, _ = env.step({"player_0": action0, "player_1": action1})
+        observations, rewards, terms, truncs, _ = env.step(
+            {"player_0": action0, "player_1": action1}
+        )
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
         reward0 += float(rewards[env.agent_ids[0]])
@@ -119,8 +119,10 @@ def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, flo
     return win0, win1, reward0, reward1
 
 
-def evaluate_single(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
-    env = init_env(save_replays=replay_dir)
+def evaluate_single(
+    model_path: str, n: int = 1, replay_dir: str | bool = "replays"
+) -> None:
+    env = init_env(save_replays=replay_dir, single=True)
     policy_net = PolicyNetwork(env.observation_space, env.action_space)
     value_net = ValueNetwork(env.observation_space)
     state_dict = torch.load(model_path, map_location="cpu")
@@ -145,13 +147,17 @@ def evaluate_single(model_path: str, n: int = 1, replay_dir: str | bool = "repla
     logger.info("win_rate: %.2f avg_reward: %.2f", win_rate, avg_reward)
 
 
-def compare_models(model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
+def compare_models(
+    model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays"
+) -> None:
     """Evaluate two models against each other and report win rates."""
 
-    env = init_env_multi(save_replays=replay_dir)
+    env = init_env(save_replays=replay_dir, single=False)
 
     # Create player_1 agent first so that registration order is correct
-    policy1 = PolicyNetwork(env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]])
+    policy1 = PolicyNetwork(
+        env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]]
+    )
     value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
     state_dict1 = torch.load(model_b, map_location="cpu")
     policy1.load_state_dict(state_dict1)
@@ -160,7 +166,9 @@ def compare_models(model_a: str, model_b: str, n: int = 1, replay_dir: str | boo
     agent1 = RLAgent(env, policy1, value1, opt1)
     env.register_agent(agent1, env.agent_ids[1])
 
-    policy0 = PolicyNetwork(env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]])
+    policy0 = PolicyNetwork(
+        env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+    )
     value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
     state_dict0 = torch.load(model_a, map_location="cpu")
     policy0.load_state_dict(state_dict0)
@@ -200,7 +208,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
     parser.add_argument("--model", type=str, help="path to model file (.pt)")
-    parser.add_argument("--models", nargs=2, metavar=("A", "B"), help="two model files for head-to-head evaluation")
+    parser.add_argument(
+        "--models",
+        nargs=2,
+        metavar=("A", "B"),
+        help="two model files for head-to-head evaluation",
+    )
     parser.add_argument("--n", type=int, default=1, help="number of battles")
     parser.add_argument(
         "--replay-dir",
