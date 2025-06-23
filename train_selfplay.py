@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
@@ -5,6 +7,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import List
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import yaml
@@ -71,6 +74,85 @@ def init_env() -> PokemonEnv:
     return env
 
 
+def run_episode(
+    env: PokemonEnv,
+    agent0: RLAgent,
+    agent1: RLAgent,
+    value_net: torch.nn.Module,
+    gamma: float,
+    lam: float,
+    record_init: bool = False,
+) -> tuple[dict[str, np.ndarray], float, tuple[np.ndarray, np.ndarray, np.ndarray] | None]:
+    """Run one self-play episode and return batch data and total reward."""
+
+    observations, info = env.reset()
+    obs0 = observations[env.agent_ids[0]]
+    obs1 = observations[env.agent_ids[1]]
+
+    init_tuple: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
+    if info.get("request_teampreview"):
+        order0 = agent0.choose_team(obs0)
+        order1 = agent1.choose_team(obs1)
+        observations, *_ = env.step({env.agent_ids[0]: order0, env.agent_ids[1]: order1})
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+
+    if record_init:
+        init_obs = obs0.copy()
+        init_mask, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
+        init_probs = agent0.select_action(init_obs, init_mask)
+        init_tuple = (init_obs, init_mask, init_probs)
+
+    done = False
+    traj: List[dict] = []
+
+    while not done:
+        mask0, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
+        mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
+
+        probs0 = agent0.select_action(obs0, mask0)
+        probs1 = agent1.select_action(obs1, mask1)
+        rng = env.rng
+        act0 = int(rng.choice(len(probs0), p=probs0))
+        act1 = int(rng.choice(len(probs1), p=probs1))
+        logp0 = float(np.log(probs0[act0] + 1e-8))
+        val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
+
+        actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
+        observations, rewards, terms, truncs, _ = env.step(actions)
+        reward = float(rewards[env.agent_ids[0]])
+        done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+
+        traj.append(
+            {
+                "obs": obs0,
+                "action": act0,
+                "log_prob": logp0,
+                "value": val0,
+                "reward": reward,
+            }
+        )
+
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+
+    rewards = [t["reward"] for t in traj]
+    values = [t["value"] for t in traj]
+    adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
+    returns = [a + v for a, v in zip(adv, values)]
+
+    batch = {
+        "observations": np.stack([t["obs"] for t in traj]),
+        "actions": np.array([t["action"] for t in traj], dtype=np.int64),
+        "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
+        "advantages": np.array(adv, dtype=np.float32),
+        "returns": np.array(returns, dtype=np.float32),
+        "values": np.array(values, dtype=np.float32),
+    }
+
+    return batch, sum(rewards), init_tuple
+
+
 def main(
     *,
     config_path: str = str(ROOT_DIR / "config" / "train_config.yml"),
@@ -83,8 +165,15 @@ def main(
     value_coef: float = 0.0,
     entropy_coef: float = 0.0,
     gamma: float = 0.99,
+    parallel: int = 1,
 ) -> None:
-    """Entry point for self-play PPO training."""
+    """Entry point for self-play PPO training.
+
+    Parameters
+    ----------
+    parallel : int
+        Number of environments to run simultaneously.
+    """
 
     cfg = load_config(config_path)
     episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
@@ -98,13 +187,14 @@ def main(
 
     writer = SummaryWriter() if tensorboard else None
 
-    env = init_env()
+    envs = [init_env() for _ in range(max(1, parallel))]
 
+    sample_env = envs[0]
     policy_net = PolicyNetwork(
-        env.observation_space[env.agent_ids[0]],
-        env.action_space[env.agent_ids[0]],
+        sample_env.observation_space[sample_env.agent_ids[0]],
+        sample_env.action_space[sample_env.agent_ids[0]],
     )
-    value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
+    value_net = ValueNetwork(sample_env.observation_space[sample_env.agent_ids[0]])
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
     algorithm = PPOAlgorithm(
@@ -113,9 +203,12 @@ def main(
         entropy_coef=entropy_coef,
     )
 
-    agent0 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
-    agent1 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
-    env.register_agent(agent1, env.agent_ids[1])
+    agents: list[tuple[RLAgent, RLAgent]] = []
+    for env in envs:
+        a0 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+        a1 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+        env.register_agent(a1, env.agent_ids[1])
+        agents.append((a0, a1))
 
     init_obs: np.ndarray | None = None
     init_mask: np.ndarray | None = None
@@ -123,94 +216,63 @@ def main(
 
     for ep in range(episodes):
         start_time = time.perf_counter()
-        observations, info = env.reset()
-        obs0 = observations[env.agent_ids[0]]
-        obs1 = observations[env.agent_ids[1]]
+        with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+            futures = [
+                executor.submit(
+                    run_episode,
+                    envs[i],
+                    agents[i][0],
+                    agents[i][1],
+                    value_net,
+                    gamma,
+                    lam,
+                    record_init=(ep == 0 and i == 0),
+                )
+                for i in range(len(envs))
+            ]
+            results = [f.result() for f in futures]
 
-        if info.get("request_teampreview"):
-            order0 = agent0.choose_team(obs0)
-            order1 = agent1.choose_team(obs1)
-            observations, *_ = env.step(
-                {env.agent_ids[0]: order0, env.agent_ids[1]: order1}
-            )
-            obs0 = observations[env.agent_ids[0]]
-            obs1 = observations[env.agent_ids[1]]
+        batches = [res[0] for res in results]
+        reward_list = [res[1] for res in results]
 
-        if ep == 0:
-            init_obs = obs0.copy()
-            init_mask, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
-            init_probs = agent0.select_action(init_obs, init_mask)
+        if ep == 0 and results[0][2] is not None:
+            init_obs, init_mask, init_probs = results[0][2]
 
-        done = False
-        traj: List[dict] = []
-
-        while not done:
-            mask0, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
-            mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
-
-            probs0 = agent0.select_action(obs0, mask0)
-            probs1 = agent1.select_action(obs1, mask1)
-            rng = env.rng
-            act0 = int(rng.choice(len(probs0), p=probs0))
-            act1 = int(rng.choice(len(probs1), p=probs1))
-            logp0 = float(np.log(probs0[act0] + 1e-8))
-            val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
-
-            actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
-            observations, rewards, terms, truncs, _ = env.step(actions)
-            reward = float(rewards[env.agent_ids[0]])
-            done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
-
-            traj.append(
-                {
-                    "obs": obs0,
-                    "action": act0,
-                    "log_prob": logp0,
-                    "value": val0,
-                    "reward": reward,
-                }
-            )
-
-            obs0 = observations[env.agent_ids[0]]
-            obs1 = observations[env.agent_ids[1]]
-
-        rewards = [t["reward"] for t in traj]
-        values = [t["value"] for t in traj]
-        adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
-        returns = [a + v for a, v in zip(adv, values)]
-
-        batch = {
-            "observations": np.stack([t["obs"] for t in traj]),
-            "actions": np.array([t["action"] for t in traj], dtype=np.int64),
-            "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
-            "advantages": np.array(adv, dtype=np.float32),
-            "returns": np.array(returns, dtype=np.float32),
-            "values": np.array(values, dtype=np.float32),
-        }
+        combined = {}
+        for key in batches[0].keys():
+            arrays = [b[key] for b in batches]
+            if hasattr(np, "concatenate"):
+                combined[key] = np.concatenate(arrays, axis=0)
+            else:  # fallback for test stubs
+                combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
         for i in range(ppo_epochs):
-            loss = agent0.update(batch)
+            loss = agents[0][0].update(combined)
             logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
             if writer:
                 writer.add_scalar("loss", loss, ep * ppo_epochs + i)
 
-        total_reward = sum(rewards)
+        total_reward = sum(reward_list)
         duration = time.perf_counter() - start_time
         logger.info(
-            "Episode %d reward %.2f time/episode: %.3f", ep + 1, total_reward, duration
+            "Episode %d reward %.2f time/episode: %.3f",
+            ep + 1,
+            total_reward,
+            duration,
         )
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
 
     if init_obs is not None and init_mask is not None and init_probs is not None:
-        updated_probs = agent0.select_action(init_obs, init_mask)
+        updated_probs = agents[0][0].select_action(init_obs, init_mask)
         diff = updated_probs - init_probs
         logger.info("Initial probs: %s", np.array2string(init_probs, precision=3))
         logger.info("Updated probs: %s", np.array2string(updated_probs, precision=3))
         logger.info("Prob change: %s", np.array2string(diff, precision=3))
 
-    env.close()
+    for env in envs:
+        env.close()
     if writer:
         writer.close()
     if save_path is not None:
@@ -247,6 +309,7 @@ if __name__ == "__main__":
     parser.add_argument("--value-coef", type=float, help="value loss coefficient")
     parser.add_argument("--entropy-coef", type=float, help="entropy bonus coefficient")
     parser.add_argument("--gamma", type=float, help="discount factor")
+    parser.add_argument("--parallel", type=int, default=1, help="number of parallel environments")
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -262,4 +325,5 @@ if __name__ == "__main__":
         value_coef=args.value_coef if args.value_coef is not None else 0.0,
         entropy_coef=args.entropy_coef if args.entropy_coef is not None else 0.0,
         gamma=args.gamma if args.gamma is not None else 0.99,
+        parallel=args.parallel,
     )
