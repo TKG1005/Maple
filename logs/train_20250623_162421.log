@@ -1,0 +1,46 @@
+2025-06-23 16:24:21,576 INFO Run parameters: {'config': 'C:\\Users\\こう\\Documents\\GitHub\\Maple\\Maple\\config\\train_config.yml', 'episodes': 20, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': 0.0, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None}
+2025-06-23 16:24:23,555 INFO Starting listening to showdown websocket
+2025-06-23 16:24:29,418 INFO Episode 1 epoch 1 loss -0.5335
+2025-06-23 16:24:29,419 INFO Episode 1 reward 1.00 time/episode: 5.872
+2025-06-23 16:24:31,435 INFO Episode 2 epoch 1 loss -0.5799
+2025-06-23 16:24:31,435 INFO Episode 2 reward 1.00 time/episode: 2.016
+2025-06-23 16:24:32,949 INFO Episode 3 epoch 1 loss -0.6686
+2025-06-23 16:24:32,949 INFO Episode 3 reward 1.00 time/episode: 1.513
+2025-06-23 16:24:34,918 INFO Episode 4 epoch 1 loss -0.6902
+2025-06-23 16:24:34,919 INFO Episode 4 reward 1.00 time/episode: 1.969
+2025-06-23 16:24:36,414 INFO Episode 5 epoch 1 loss 0.8002
+2025-06-23 16:24:36,414 INFO Episode 5 reward -1.00 time/episode: 1.495
+2025-06-23 16:24:37,418 INFO Episode 6 epoch 1 loss 0.8498
+2025-06-23 16:24:37,418 INFO Episode 6 reward -1.00 time/episode: 1.004
+2025-06-23 16:24:38,534 INFO Episode 7 epoch 1 loss -0.9367
+2025-06-23 16:24:38,535 INFO Episode 7 reward 1.00 time/episode: 1.116
+2025-06-23 16:24:40,325 INFO Episode 8 epoch 1 loss -0.7790
+2025-06-23 16:24:40,325 INFO Episode 8 reward 1.00 time/episode: 1.791
+2025-06-23 16:24:42,090 INFO Episode 9 epoch 1 loss -0.7194
+2025-06-23 16:24:42,090 INFO Episode 9 reward 1.00 time/episode: 1.765
+2025-06-23 16:24:42,873 INFO Episode 10 epoch 1 loss 0.7923
+2025-06-23 16:24:42,873 INFO Episode 10 reward -1.00 time/episode: 0.782
+2025-06-23 16:24:44,735 INFO Episode 11 epoch 1 loss 0.5464
+2025-06-23 16:24:44,736 INFO Episode 11 reward -1.00 time/episode: 1.862
+2025-06-23 16:24:46,741 INFO Episode 12 epoch 1 loss 0.7694
+2025-06-23 16:24:46,741 INFO Episode 12 reward -1.00 time/episode: 2.006
+2025-06-23 16:24:48,731 INFO Episode 13 epoch 1 loss 0.8541
+2025-06-23 16:24:48,731 INFO Episode 13 reward -1.00 time/episode: 1.989
+2025-06-23 16:24:50,334 INFO Episode 14 epoch 1 loss -0.8734
+2025-06-23 16:24:50,334 INFO Episode 14 reward 1.00 time/episode: 1.604
+2025-06-23 16:24:52,220 INFO Episode 15 epoch 1 loss 0.7470
+2025-06-23 16:24:52,220 INFO Episode 15 reward -1.00 time/episode: 1.885
+2025-06-23 16:24:53,583 INFO Episode 16 epoch 1 loss -0.8350
+2025-06-23 16:24:53,584 INFO Episode 16 reward 1.00 time/episode: 1.363
+2025-06-23 16:24:55,562 INFO Episode 17 epoch 1 loss -0.7862
+2025-06-23 16:24:55,562 INFO Episode 17 reward 1.00 time/episode: 1.979
+2025-06-23 16:24:57,108 INFO Episode 18 epoch 1 loss 0.7428
+2025-06-23 16:24:57,108 INFO Episode 18 reward -1.00 time/episode: 1.546
+2025-06-23 16:24:59,035 INFO Episode 19 epoch 1 loss 0.7699
+2025-06-23 16:24:59,036 INFO Episode 19 reward -1.00 time/episode: 1.928
+2025-06-23 16:25:00,964 INFO Episode 20 epoch 1 loss -0.8348
+2025-06-23 16:25:00,964 INFO Episode 20 reward 1.00 time/episode: 1.928
+2025-06-23 16:25:00,965 INFO Initial probs: [0.058 0.241 0.061 0.107 0.155 0.064 0.05  0.08  0.087 0.098]
+2025-06-23 16:25:00,965 INFO Updated probs: [0.1   0.444 0.091 0.262 0.009 0.008 0.003 0.012 0.06  0.011]
+2025-06-23 16:25:00,966 INFO Prob change: [ 0.042  0.203  0.031  0.155 -0.147 -0.055 -0.047 -0.068 -0.026 -0.087]
+2025-06-23 16:25:00,975 INFO Model saved to model2.pt

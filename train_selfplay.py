@@ -77,16 +77,24 @@ def main(
     episodes: int | None = None,
     save_path: str | None = None,
     tensorboard: bool = False,
-    ppo_epochs: int = 4,
+    ppo_epochs: int = 1,
+    clip_range: float = 0.0,
+    gae_lambda: float = 1.0,
+    value_coef: float = 0.0,
+    entropy_coef: float = 0.0,
+    gamma: float = 0.99,
 ) -> None:
     """Entry point for self-play PPO training."""
 
     cfg = load_config(config_path)
     episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
     lr = float(cfg.get("lr", 1e-3))
-    gamma = float(cfg.get("gamma", 0.99))
-    lam = float(cfg.get("gae_lambda", 0.95))
+    gamma = float(cfg.get("gamma", gamma))
+    lam = float(cfg.get("gae_lambda", gae_lambda))
     ppo_epochs = int(cfg.get("ppo_epochs", ppo_epochs))
+    clip_range = float(cfg.get("clip_range", clip_range))
+    value_coef = float(cfg.get("value_coef", value_coef))
+    entropy_coef = float(cfg.get("entropy_coef", entropy_coef))
 
     writer = SummaryWriter() if tensorboard else None
 
@@ -99,7 +107,11 @@ def main(
     value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
-    algorithm = PPOAlgorithm()
+    algorithm = PPOAlgorithm(
+        clip_range=clip_range,
+        value_coef=value_coef,
+        entropy_coef=entropy_coef,
+    )
 
     agent0 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
     agent1 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
@@ -220,7 +232,7 @@ if __name__ == "__main__":
         default=str(ROOT_DIR / "config" / "train_config.yml"),
         help="path to YAML config file",
     )
-    parser.add_argument("--episodes", type=int, default=1, help="number of episodes")
+    parser.add_argument("--episodes", type=int, help="number of episodes")
     parser.add_argument(
         "--save", type=str, metavar="FILE", help="path to save model (.pt)"
     )
@@ -228,8 +240,13 @@ if __name__ == "__main__":
         "--tensorboard", action="store_true", help="enable TensorBoard logging"
     )
     parser.add_argument(
-        "--ppo-epochs", type=int, default=4, help="PPO update epochs per episode"
+        "--ppo-epochs", type=int, help="PPO update epochs per episode"
     )
+    parser.add_argument("--clip", type=float, help="PPO clipping range")
+    parser.add_argument("--gae-lambda", type=float, help="GAE lambda")
+    parser.add_argument("--value-coef", type=float, help="value loss coefficient")
+    parser.add_argument("--entropy-coef", type=float, help="entropy bonus coefficient")
+    parser.add_argument("--gamma", type=float, help="discount factor")
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -239,5 +256,10 @@ if __name__ == "__main__":
         episodes=args.episodes,
         save_path=args.save,
         tensorboard=args.tensorboard,
-        ppo_epochs=args.ppo_epochs,
+        ppo_epochs=args.ppo_epochs if args.ppo_epochs is not None else 1,
+        clip_range=args.clip if args.clip is not None else 0.0,
+        gae_lambda=args.gae_lambda if args.gae_lambda is not None else 1.0,
+        value_coef=args.value_coef if args.value_coef is not None else 0.0,
+        entropy_coef=args.entropy_coef if args.entropy_coef is not None else 0.0,
+        gamma=args.gamma if args.gamma is not None else 0.99,
     )
