@@ -154,10 +154,7 @@ class PokemonEnv(gym.Env):
         if selected:
             if with_details:
                 for idx, detail in mapping.items():
-                    if (
-                        detail.get("type") == "switch"
-                        and detail.get("id") not in selected
-                    ):
+                    if detail.get("type") == "switch" and detail.get("id") not in selected:
                         mask[idx] = 0
             else:
                 for idx, (atype, sub_idx) in mapping.items():
@@ -425,12 +422,15 @@ class PokemonEnv(gym.Env):
             self._logger.debug("available mapping for %s: %s", pid, mapping)
             self._action_mappings[pid] = mapping
 
-        observation = {
-            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
+        observations = {
+            pid: self.state_observer.observe(battles[pid])
+            for pid in self.agent_ids
         }
-        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
-        terminated = {}
-        truncated = {}
+        rewards = {
+            pid: self._calc_reward(battles[pid]) for pid in self.agent_ids
+        }
+        terminated: dict[str, bool] = {}
+        truncated: dict[str, bool] = {}
         for pid in self.agent_ids:
             term, trunc = self._check_episode_end(battles[pid])
             terminated[pid] = term
@@ -438,9 +438,6 @@ class PokemonEnv(gym.Env):
         if any(truncated.values()):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
-        observations = observation
-        term_flags = terminated
-        trunc_flags = truncated
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
         if hasattr(self, "single_agent_mode"):
@@ -448,14 +445,14 @@ class PokemonEnv(gym.Env):
             self._action_mappings[self.agent_ids[0]] = mapping
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
             return (
-                observation[self.agent_ids[0]],
+                observations[self.agent_ids[0]],
                 action_mask,
                 rewards[self.agent_ids[0]],
                 done,
                 infos[self.agent_ids[0]],
             )
 
-        return observations, rewards, term_flags, trunc_flags, infos
+        return observations, rewards, terminated, truncated, infos
 
     # Step13: 終了判定ユーティリティ
     def _check_episode_end(self, battle: Any) -> tuple[bool, bool]:
@@ -475,15 +472,7 @@ class PokemonEnv(gym.Env):
 
         # battle.won が True なら勝利、False なら敗北とみなす
         if getattr(battle, "won", False):
-            reward = 1.0
-            # 自分の残りHP割合の合計が1.5以上ならボーナスを付与
-            try:
-                remain_hp = sum(p.current_hp_fraction for p in battle.team.values())
-                if remain_hp >= 1.5:
-                    reward += 0.05
-            except Exception:
-                pass
-            return reward
+            return 1.0
         return -1.0
 
     def render(self) -> None:

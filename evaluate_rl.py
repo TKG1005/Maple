@@ -33,7 +33,7 @@ from src.env.wrappers import SingleAgentCompatibilityWrapper  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
-from src.agents import PolicyNetwork, RLAgent  # noqa: E402
+from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -121,11 +121,13 @@ def run_episode_multi(agent0: RLAgent, agent1: RLAgent) -> tuple[bool, bool, flo
 
 def evaluate_single(model_path: str, n: int = 1, replay_dir: str | bool = "replays") -> None:
     env = init_env(save_replays=replay_dir)
-    model = PolicyNetwork(env.observation_space, env.action_space)
+    policy_net = PolicyNetwork(env.observation_space, env.action_space)
+    value_net = ValueNetwork(env.observation_space)
     state_dict = torch.load(model_path, map_location="cpu")
-    model.load_state_dict(state_dict)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    agent = RLAgent(env, model, optimizer)
+    policy_net.load_state_dict(state_dict)
+    params = list(policy_net.parameters()) + list(value_net.parameters())
+    optimizer = optim.Adam(params, lr=1e-3)
+    agent = RLAgent(env, policy_net, value_net, optimizer)
 
     wins = 0
     total_reward = 0.0
@@ -149,18 +151,22 @@ def compare_models(model_a: str, model_b: str, n: int = 1, replay_dir: str | boo
     env = init_env_multi(save_replays=replay_dir)
 
     # Create player_1 agent first so that registration order is correct
-    model1 = PolicyNetwork(env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]])
+    policy1 = PolicyNetwork(env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]])
+    value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
     state_dict1 = torch.load(model_b, map_location="cpu")
-    model1.load_state_dict(state_dict1)
-    opt1 = optim.Adam(model1.parameters(), lr=1e-3)
-    agent1 = RLAgent(env, model1, opt1)
+    policy1.load_state_dict(state_dict1)
+    params1 = list(policy1.parameters()) + list(value1.parameters())
+    opt1 = optim.Adam(params1, lr=1e-3)
+    agent1 = RLAgent(env, policy1, value1, opt1)
     env.register_agent(agent1, env.agent_ids[1])
 
-    model0 = PolicyNetwork(env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]])
+    policy0 = PolicyNetwork(env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]])
+    value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
     state_dict0 = torch.load(model_a, map_location="cpu")
-    model0.load_state_dict(state_dict0)
-    opt0 = optim.Adam(model0.parameters(), lr=1e-3)
-    agent0 = RLAgent(env, model0, opt0)
+    policy0.load_state_dict(state_dict0)
+    params0 = list(policy0.parameters()) + list(value0.parameters())
+    opt0 = optim.Adam(params0, lr=1e-3)
+    agent0 = RLAgent(env, policy0, value0, opt0)
 
     wins0 = 0
     wins1 = 0
