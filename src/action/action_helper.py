@@ -159,8 +159,11 @@ def action_index_to_order_from_mapping(
 
     if action_index not in mapping:
         logger.error(
-            "Invalid or unavailable action index: %s. Available: %s",
+            "Invalid or unavailable action index: %s for %s at turn %s in %s. Available: %s",
             action_index,
+            getattr(player, 'username', '?'),
+            getattr(battle, 'turn', '?'),
+            getattr(battle, 'battle_tag', '?'),
             mapping,
         )
         raise ValueError(
