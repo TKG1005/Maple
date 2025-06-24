@@ -201,6 +201,7 @@ class PokemonEnv(gym.Env):
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._need_action = {agent_id: True for agent_id in self.agent_ids}
         self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
+        self._logger.debug("environment reset: cleared action queues and mappings")
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。

@@ -34,6 +34,7 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     file_handler.setFormatter(
         logging.Formatter("%(asctime)s %(levelname)s %(message)s")
     )
+    file_handler.setLevel(logging.DEBUG)
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
 
@@ -286,8 +287,13 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Self-play PPO training script")
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        help="logging level (DEBUG, INFO, etc.)",
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -312,6 +318,8 @@ if __name__ == "__main__":
     parser.add_argument("--parallel", type=int, default=1, help="number of parallel environments")
     args = parser.parse_args()
 
+    level = getattr(logging, args.log_level.upper(), logging.INFO)
+    logging.basicConfig(level=level, format="%(message)s")
     setup_logging("logs", vars(args))
 
     main(
