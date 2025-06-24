@@ -320,7 +320,7 @@ class PokemonEnv(gym.Env):
     ) -> Any | None:
         """Return queue item or ``None`` if any event fires first."""
 
-        async def _race() -> Any | None:
+        async def _race() -> tuple[Any | None, int]:
             get_task = asyncio.create_task(queue.get())
             wait_tasks = [asyncio.create_task(e.wait()) for e in events]
             done, pending = await asyncio.wait(
@@ -330,19 +330,35 @@ class PokemonEnv(gym.Env):
             for p in pending:
                 p.cancel()
             if get_task in done:
-                return get_task.result()
-            # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
-            if not queue.empty():
-                return await queue.get()
-            # ---- 遅延対策 -------------------------------------------------
-            # _waiting イベントがトリガーされた直後にキューへバトルデータが
-            # 追加される場合がある。直後にチェックすると空のままになってしまい
-            # マスク生成に失敗するため、僅かに待機してから再確認する。
-            for _ in range(5):
-                await asyncio.sleep(0.05)  # タスク切り替えを促す
+                result = get_task.result()
+                count = 1
+            else:
+                # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
                 if not queue.empty():
-                    return await queue.get()
-            return None
+                    result = await queue.get()
+                    count = 1
+                else:
+                    # ---- 遅延対策 ---------------------------------------------
+                    # _waiting イベントがトリガーされた直後にキューへバトルデータが
+                    # 追加される場合がある。直後にチェックすると空のままになってしまい
+                    # マスク生成に失敗するため、僅かに待機してから再確認する。
+                    for _ in range(5):
+                        await asyncio.sleep(0.05)  # タスク切り替えを促す
+                        if not queue.empty():
+                            result = await queue.get()
+                            count = 1
+                            break
+                    else:
+                        result = None
+                        count = 0
+
+                if result is None:
+                    return None
+
+            while not queue.empty():
+                result = await queue.get()
+                count += 1
+            return result, count
 
         self._logger.debug(
             "[DBG] race_get start qsize=%d events=%s", 
@@ -350,7 +366,7 @@ class PokemonEnv(gym.Env):
             [e.is_set() for e in events],
         )
         try:
-            result = asyncio.run_coroutine_threadsafe(
+            result, count = asyncio.run_coroutine_threadsafe(
                 asyncio.wait_for(_race(), self.timeout),
                 POKE_LOOP,
             ).result()
@@ -365,7 +381,7 @@ class PokemonEnv(gym.Env):
         self._logger.debug(
             "[DBG] race_get done result=%s qsize=%d", result, queue.qsize()
         )
-        if result is not None:
+        for _ in range(count):
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
 

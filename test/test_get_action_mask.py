@@ -86,6 +86,12 @@ class DummyBattle:
         self.available_switches = [SimpleNamespace(species="pika"), SimpleNamespace(species="bulba")]
 
 
+class DummyBattleForce(DummyBattle):
+    def __init__(self):
+        super().__init__()
+        self.force_switch = True
+
+
 
 def make_env():
     return PokemonEnv(state_observer=DummyObserver(), action_helper=DummyActionHelper(), opponent_player=None)
@@ -110,4 +116,14 @@ def test_get_action_mask_with_details():
     assert mask[9] == 0
     assert details[8]["type"] == "switch"
     assert details[9]["id"] == "bulba"
+
+
+def test_get_action_mask_force_switch():
+    env = make_env()
+    env._current_battles = {"player_0": DummyBattleForce()}
+    env._selected_species["player_0"] = {"pika", "bulba"}
+    mask, mapping = env.get_action_mask("player_0")
+    assert mask[8] == 1
+    assert mask[9] == 1
+    assert mapping == {8: ("switch", 0), 9: ("switch", 1)}
 
