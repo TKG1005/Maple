@@ -166,6 +166,9 @@ class PokemonEnv(gym.Env):
                         if pkmn.species not in selected:
                             mask[idx] = 0
 
+        # 保存したマッピングを step で利用できるよう保持しておく
+        self._action_mappings[player_id] = mapping
+
         return mask, mapping
 
     def process_battle(self, battle: Any) -> int:
