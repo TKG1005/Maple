@@ -62,19 +62,16 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     """Run one battle and return win flag and total reward."""
 
     env = agent.env
-    obs, info = env.reset()
+    obs, info, action_mask = env.reset(return_masks=True)
     if info.get("request_teampreview"):
         team_cmd = agent.choose_team(obs)
-        obs, action_mask, _, done, _ = env.step(team_cmd)
+        obs, action_mask, _, done, _ = env.step(team_cmd, return_masks=True)
     else:
-        action_mask, _ = env.env.get_action_mask(
-            env.env.agent_ids[0], with_details=True
-        )
         done = False
     total_reward = 0.0
     while not done:
         action = agent.act(obs, action_mask)
-        obs, action_mask, reward, done, _ = env.step(action)
+        obs, action_mask, reward, done, _ = env.step(action, return_masks=True)
         total_reward += float(reward)
     won = env.env._env_players[env.env.agent_ids[0]].n_won_battles == 1
     return won, total_reward
@@ -86,28 +83,31 @@ def run_episode_multi(
     """Run one battle between two agents and return win flags and rewards."""
 
     env = agent0.env
-    observations, info = env.reset()
+    observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
+    mask0, mask1 = masks
 
     if info.get("request_teampreview"):
         order0 = agent0.choose_team(obs0)
         order1 = agent1.choose_team(obs1)
-        observations, *_ = env.step({"player_0": order0, "player_1": order1})
+        observations, *_ , masks = env.step(
+            {"player_0": order0, "player_1": order1}, return_masks=True
+        )
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
+        mask0, mask1 = masks
 
     done = False
     reward0 = 0.0
     reward1 = 0.0
     while not done:
-        mask0, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
-        mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
         action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
         action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
-        observations, rewards, terms, truncs, _ = env.step(
-            {"player_0": action0, "player_1": action1}
+        observations, rewards, terms, truncs, _, masks = env.step(
+            {"player_0": action0, "player_1": action1}, return_masks=True
         )
+        mask0, mask1 = masks
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
         reward0 += float(rewards[env.agent_ids[0]])

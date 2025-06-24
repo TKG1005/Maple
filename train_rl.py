@@ -102,7 +102,7 @@ def main(
 
     if dry_run:
         # 初期化のみ確認して即終了
-        env.reset()
+        env.reset(return_masks=True)
         logger.info("Environment initialised")
         env.close()
         if writer:
@@ -128,18 +128,17 @@ def main(
 
     for ep in range(episodes):
         start_time = time.perf_counter()
-        obs, info = env.reset()
+        obs, info, action_mask = env.reset(return_masks=True)
         if info.get("request_teampreview"):
             team_cmd = agent.choose_team(obs)
-            obs, action_mask, _, done, _ = env.step(team_cmd)
+            obs, action_mask, _, done, _ = env.step(team_cmd, return_masks=True)
         else:
-            action_mask, _ = env.env.get_action_mask(env.env.agent_ids[0], with_details=True)
             done = False
 
         total_reward = 0.0
         while not done:
             action = agent.act(obs, action_mask)
-            next_obs, action_mask, reward, done, _ = env.step(action)
+            next_obs, action_mask, reward, done, _ = env.step(action, return_masks=True)
             buffer.add(obs, action, float(reward), done, next_obs)
             if len(buffer) >= batch_size:
                 batch = buffer.sample(batch_size)
