@@ -1,7 +1,0 @@
-2025-06-24 08:41:13,117 INFO Run parameters: {'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 10, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 2}
-2025-06-24 08:41:16,806 INFO Episode 1 epoch 1 loss 0.3741
-2025-06-24 08:41:16,806 INFO Episode 1 reward 0.00 time/episode: 2.811
-2025-06-24 08:41:18,822 INFO Episode 2 epoch 1 loss 0.0772
-2025-06-24 08:41:18,822 INFO Episode 2 reward 0.00 time/episode: 2.016
-2025-06-24 08:41:18,981 ERROR Invalid or unavailable action index: 2. Available: {8: ('switch', 0), 9: ('switch', 1)}
-2025-06-24 08:41:20,495 ERROR Invalid or unavailable action index: 1. Available: {8: ('switch', 0)}
