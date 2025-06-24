@@ -343,10 +343,27 @@ class PokemonEnv(gym.Env):
                     return await queue.get()
             return None
 
-        result = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(_race(), self.timeout),
-            POKE_LOOP,
-        ).result()
+        self._logger.debug(
+            "[DBG] race_get start qsize=%d events=%s", 
+            queue.qsize(),
+            [e.is_set() for e in events],
+        )
+        try:
+            result = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(_race(), self.timeout),
+                POKE_LOOP,
+            ).result()
+        except Exception as exc:
+            self._logger.error(
+                "[TIMEOUT] race_get queue=%d events=%s exc=%s",
+                queue.qsize(),
+                [e.is_set() for e in events],
+                exc,
+            )
+            raise
+        self._logger.debug(
+            "[DBG] race_get done result=%s qsize=%d", result, queue.qsize()
+        )
         if result is not None:
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result

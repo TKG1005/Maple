@@ -30,11 +30,28 @@ class EnvPlayer(Player):
         await self._env._battle_queues[self.player_id].put(battle)
 
         # PokemonEnv.step からアクションが投入されるまで待機
-        action_data = await asyncio.wait_for(
-            self._env._action_queues[self.player_id].get(), self._env.timeout
-        )
-        self._env._action_queues[self.player_id].task_done()
-        self._logger.debug("[DBG] %s action received %s", self.player_id, action_data)
+        try:
+            self._logger.debug(
+                "[DBG] %s waiting action (qsize=%d)", 
+                self.player_id,
+                self._env._action_queues[self.player_id].qsize(),
+            )
+            action_data = await asyncio.wait_for(
+                self._env._action_queues[self.player_id].get(), self._env.timeout
+            )
+            self._env._action_queues[self.player_id].task_done()
+            self._logger.debug(
+                "[DBG] %s action received %s", self.player_id, action_data
+            )
+        except asyncio.TimeoutError:
+            self._logger.error(
+                "[TIMEOUT] %s action queue empty=%s waiting=%s trying_again=%s",
+                self.player_id,
+                self._env._action_queues[self.player_id].empty(),
+                self._waiting.is_set(),
+                self._trying_again.is_set(),
+            )
+            raise
 
         # 文字列はそのまま、整数は BattleOrder へ変換
         if isinstance(action_data, int):
@@ -99,23 +116,36 @@ class EnvPlayer(Player):
                 self.player_id,
                 battle.battle_tag,
             )
-            put_result = await asyncio.wait_for(
-                self._env._battle_queues[self.player_id].put(battle),
-                self._env.timeout,
-            )
-            if put_result is not None:
-                self._env._battle_queues[self.player_id].task_done()
-            message = await asyncio.wait_for(
-                self._env._action_queues[self.player_id].get(),
-                self._env.timeout,
-            )
-            self._env._action_queues[self.player_id].task_done()
-            self._logger.debug(
-                "[DBG] %s team preview message %s (%s)",
-                self.player_id,
-                message,
-                battle.player_username,
-            )
+            try:
+                put_result = await asyncio.wait_for(
+                    self._env._battle_queues[self.player_id].put(battle),
+                    self._env.timeout,
+                )
+                if put_result is not None:
+                    self._env._battle_queues[self.player_id].task_done()
+                self._logger.debug(
+                    "[DBG] %s waiting team preview action (qsize=%d)",
+                    self.player_id,
+                    self._env._action_queues[self.player_id].qsize(),
+                )
+                message = await asyncio.wait_for(
+                    self._env._action_queues[self.player_id].get(),
+                    self._env.timeout,
+                )
+                self._env._action_queues[self.player_id].task_done()
+                self._logger.debug(
+                    "[DBG] %s team preview message %s (%s)",
+                    self.player_id,
+                    message,
+                    battle.player_username,
+                )
+            except asyncio.TimeoutError:
+                self._logger.error(
+                    "[TIMEOUT] %s team preview action queue size=%d",
+                    self.player_id,
+                    self._env._action_queues[self.player_id].qsize(),
+                )
+                raise
         else:
             if maybe_default_order:
                 self._trying_again.set()
