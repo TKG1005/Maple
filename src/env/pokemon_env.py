@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any, Tuple
+import warnings
 
 
 import numpy as np
@@ -133,11 +134,20 @@ class PokemonEnv(gym.Env):
     ) -> tuple[np.ndarray, dict[int, Any]]:
         """Return an action mask for ``player_id``.
 
+        ``get_action_mask`` は非推奨です。基本的には ``step``/``reset`` の
+        ``return_masks`` 機能を利用してください。
+
         When ``with_details`` is ``True`` the mapping contains human readable
         details provided by ``action_helper.get_available_actions_with_details``.
         The mask is filtered using ``_selected_species`` so that switches to
         unselected Pokémon become unavailable.
         """
+
+        warnings.warn(
+            "get_action_mask() is deprecated; use step(..., return_masks=True) instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
         battle = self.get_current_battle(player_id)
         if battle is None:
@@ -147,26 +157,18 @@ class PokemonEnv(gym.Env):
             mask, mapping = self.action_helper.get_available_actions_with_details(
                 battle
             )
-        else:
-            mask, mapping = self.action_helper.get_available_actions(battle)
-
-        selected = self._selected_species.get(player_id)
-        if selected:
-            if with_details:
+            selected = self._selected_species.get(player_id)
+            if selected:
                 for idx, detail in mapping.items():
                     if detail.get("type") == "switch" and detail.get("id") not in selected:
                         mask[idx] = 0
-            else:
-                for idx, (atype, sub_idx) in mapping.items():
-                    if atype == "switch":
-                        try:
-                            pkmn = battle.available_switches[sub_idx]
-                        except IndexError:
-                            continue
-                        if pkmn.species not in selected:
-                            mask[idx] = 0
+            self._action_mappings[player_id] = mapping
+            return mask, mapping
 
-        return mask, mapping
+        # without details use internal computation routine
+        masks = self._compute_all_masks()
+        idx = self.agent_ids.index(player_id)
+        return masks[idx], self._action_mappings[player_id]
 
     def process_battle(self, battle: Any) -> int:
         """Create an observation and available action mask for ``battle``.
@@ -190,9 +192,12 @@ class PokemonEnv(gym.Env):
         return int(action_idx)
 
     def reset(
-        self, *, seed: int | None = None, options: dict | None = None
-    ) -> Tuple[Any, dict]:
-        """Reset the environment and start a new battle."""
+        self, *, seed: int | None = None, options: dict | None = None, return_masks: bool = True
+    ) -> Tuple[Any, dict] | Tuple[Any, dict, Tuple[np.ndarray, np.ndarray]]:
+        """Reset the environment and start a new battle.
+
+        ``return_masks`` が ``True`` の場合、初期状態の行動マスクも返す。
+        """
 
         super().reset(seed=seed)
 
@@ -296,9 +301,15 @@ class PokemonEnv(gym.Env):
             "request_teampreview": True,
         }
 
+        masks = self._compute_all_masks()
+
         if hasattr(self, "single_agent_mode"):
+            if return_masks:
+                return observation[self.agent_ids[0]], info, masks[0]
             return observation[self.agent_ids[0]], info
 
+        if return_masks:
+            return observation, info, masks
         return observation, info
 
     async def _run_battle(self) -> None:
@@ -369,8 +380,41 @@ class PokemonEnv(gym.Env):
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
 
-    def step(self, action_dict: dict[str, int | str]):
-        """マルチエージェント形式で1ステップ進める。"""
+    def _compute_all_masks(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Return current legal action masks for both players."""
+
+        masks: list[np.ndarray] = []
+        for pid in self.agent_ids:
+            battle = self.get_current_battle(pid)
+            if battle is None:
+                masks.append(np.zeros(self.ACTION_SIZE, dtype=np.int8))
+                self._action_mappings[pid] = {}
+                continue
+
+            mask, mapping = self.action_helper.get_available_actions(battle)
+
+            selected = self._selected_species.get(pid)
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            mask[idx] = 0
+
+            self._action_mappings[pid] = mapping
+            masks.append(mask)
+
+        return tuple(masks)  # type: ignore[return-value]
+
+    def step(self, action_dict: dict[str, int | str], *, return_masks: bool = True):
+        """マルチエージェント形式で1ステップ進める。
+
+        ``return_masks`` を ``True`` にすると、戻り値の末尾に各プレイヤーの
+        行動マスクを含むタプルを追加で返す。
+        """
 
         for agent_id in self.agent_ids:
             if agent_id not in action_dict:
@@ -435,10 +479,8 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
-            mask, mapping = self.get_action_mask(pid)
-            self._logger.debug("available mask for %s: %s", pid, mask)
-            self._logger.debug("available mapping for %s: %s", pid, mapping)
-            self._action_mappings[pid] = mapping
+
+        masks = self._compute_all_masks()
 
         observations = {
             pid: self.state_observer.observe(battles[pid])
@@ -459,17 +501,25 @@ class PokemonEnv(gym.Env):
         infos = {agent_id: {} for agent_id in self.agent_ids}
 
         if hasattr(self, "single_agent_mode"):
-            action_mask, mapping = self.get_action_mask(self.agent_ids[0])
-            self._action_mappings[self.agent_ids[0]] = mapping
+            mask0 = masks[0]
             done = terminated[self.agent_ids[0]] or truncated[self.agent_ids[0]]
+            if return_masks:
+                return (
+                    observations[self.agent_ids[0]],
+                    mask0,
+                    rewards[self.agent_ids[0]],
+                    done,
+                    infos[self.agent_ids[0]],
+                )
             return (
                 observations[self.agent_ids[0]],
-                action_mask,
                 rewards[self.agent_ids[0]],
                 done,
                 infos[self.agent_ids[0]],
             )
 
+        if return_masks:
+            return observations, rewards, terminated, truncated, infos, masks
         return observations, rewards, terminated, truncated, infos
 
     # Step13: 終了判定ユーティリティ
