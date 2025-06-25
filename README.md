@@ -1,7 +1,8 @@
 # Maple
 
-TODO: 詳細な説明を書く
+PokemonEnv を利用したポケモンバトル強化学習フレームワークです。
 
 ## 変更履歴
 
-- TODO: `PokemonEnv.step()` と `reset()` が行動マスクを返すように変更 (要更新)
+- 2025-06-13 `PokemonEnv.reset()` と `step()` に `return_masks` オプションを追加し、
+  観測とあわせて利用可能な行動マスクを返すよう更新
