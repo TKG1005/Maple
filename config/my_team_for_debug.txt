@@ -1,17 +1,19 @@
+Glimmora  
+Ability: Toxic Debris  
+Tera Type: Rock  
+EVs: 252 Spe  
+- Explosion  
+
 Alomomola @ Rocky Helmet  
 Ability: Regenerator  
 Tera Type: Water  
 EVs: 252 Def / 252 SpD  
 IVs: 0 Atk  
-- Healing Wish
+- Healing Wish  
 
 Garganacl  
 Ability: Purifying Salt  
 Tera Type: Rock  
-- Explosion
+EVs: 252 SpD  
+- Explosion  
 
-Hydreigon  
-Ability: Levitate  
-Tera Type: Dark  
-- U-turn  
-- Head Smash

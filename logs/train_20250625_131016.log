@@ -1,0 +1,156 @@
+2025-06-25 13:10:16,218 INFO Run parameters: {'log_level': 'DEBUG', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 1000, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1}
+2025-06-25 13:10:16,792 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 13:10:16,798 DEBUG = connection is CONNECTING
+2025-06-25 13:10:16,799 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 13:10:16,799 DEBUG > Host: localhost:8000
+2025-06-25 13:10:16,799 DEBUG > Upgrade: websocket
+2025-06-25 13:10:16,799 DEBUG > Connection: Upgrade
+2025-06-25 13:10:16,799 DEBUG > Sec-WebSocket-Key: ofrGepNFFylqSSff7w6XNg==
+2025-06-25 13:10:16,799 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 13:10:16,799 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 13:10:16,799 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 13:10:16,799 DEBUG = connection is CONNECTING
+2025-06-25 13:10:16,799 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 13:10:16,799 DEBUG > Host: localhost:8000
+2025-06-25 13:10:16,799 DEBUG > Upgrade: websocket
+2025-06-25 13:10:16,799 DEBUG > Connection: Upgrade
+2025-06-25 13:10:16,799 DEBUG > Sec-WebSocket-Key: IA8fpA8zCgXQ4EUmwRd2FA==
+2025-06-25 13:10:16,800 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 13:10:16,800 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 13:10:16,800 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 13:10:16,800 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 13:10:16,800 DEBUG < Upgrade: websocket
+2025-06-25 13:10:16,800 DEBUG < Connection: Upgrade
+2025-06-25 13:10:16,800 DEBUG < Sec-WebSocket-Accept: Xjvom+imxEUv0r9zVoKRAsIYaac=
+2025-06-25 13:10:16,800 DEBUG = connection is OPEN
+2025-06-25 13:10:16,801 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 13:10:16,801 DEBUG < Upgrade: websocket
+2025-06-25 13:10:16,801 DEBUG < Connection: Upgrade
+2025-06-25 13:10:16,801 DEBUG < Sec-WebSocket-Accept: PiqNFFDae4r4eIzDBAtiPuq3se4=
+2025-06-25 13:10:16,801 DEBUG = connection is OPEN
+2025-06-25 13:10:16,804 DEBUG < TEXT '|updateuser| Guest 4|0|101|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-06-25 13:10:16,805 DEBUG < TEXT '|challstr|4|ae13f017d0b04ccba51a0f45f91feb5de29...4c4c3cf75546971b574769b' [268 bytes]
+2025-06-25 13:10:16,805 DEBUG > TEXT '|/trn EnvPlayer 1,0,' [20 bytes]
+2025-06-25 13:10:16,814 DEBUG < TEXT '|updateuser| Guest 5|0|2|{"blockChallenges":fal...c|[Gen 1] Custom Game,c' [8020 bytes]
+2025-06-25 13:10:16,815 DEBUG < TEXT '|challstr|4|1c38b1a9ca583525092b18fcd58fc64f2dc...7149cdf3a453fda3193fcd8' [268 bytes]
+2025-06-25 13:10:16,815 DEBUG > TEXT '|/trn EnvPlayer 2,0,' [20 bytes]
+2025-06-25 13:10:16,815 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 13:10:16,815 DEBUG < TEXT '|updateuser| EnvPlayer 1|1|2|{"blockChallenges"...:false,"language":null}' [352 bytes]
+2025-06-25 13:10:16,815 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 13:10:16,816 DEBUG < TEXT '>battle-gen9bssregi-7988\n|init|battle\n|title|...yer|p1|EnvPlayer 1|2|\n' [2860 bytes]
+2025-06-25 13:10:16,816 DEBUG < TEXT '>battle-gen9bssregi-7988\n|request|{"active":[{...ntchoice|move explosion' [1247 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '|updateuser| EnvPlayer 2|1|2|{"blockChallenges"...:false,"language":null}' [352 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '>battle-gen9bssregi-7988\n|init|battle\n|title|...yer|p2|EnvPlayer 2|2|\n' [2902 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '>battle-gen9bssregi-7988\n|request|{"active":[{...lized":""}]},"rqid":29}' [1305 bytes]
+2025-06-25 13:10:16,846 DEBUG < TEXT '>battle-gen9bssregi-7988\n|player|p1|EnvPlayer 1|2|\n|j|☆EnvPlayer 2' [68 bytes]
+2025-06-25 13:10:16,847 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 13:10:16,847 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 13:10:16,847 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 13:10:16,847 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 13:10:16,856 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
+2025-06-25 13:10:16,857 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
+2025-06-25 13:10:16,947 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-7988
+2025-06-25 13:10:16,947 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 13:10:16,947 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-7988
+2025-06-25 13:10:16,947 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 13:10:16,954 DEBUG [DBG] player_0 team preview message /team 234 (EnvPlayer 1)
+2025-06-25 13:10:16,954 DEBUG [DBG] player_0 send message '/team 234' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,954 DEBUG > TEXT 'battle-gen9bssregi-7988|/team 234' [33 bytes]
+2025-06-25 13:10:16,955 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,955 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 13:10:16,955 DEBUG [DBG] player_1 team preview message /team 125 (EnvPlayer 2)
+2025-06-25 13:10:16,955 DEBUG [DBG] player_1 send message '/team 125' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,955 DEBUG > TEXT 'battle-gen9bssregi-7988|/team 125' [33 bytes]
+2025-06-25 13:10:16,955 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,955 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 13:10:16,955 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,956 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x117de3880> qsize=0
+2025-06-25 13:10:16,956 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,956 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1209403f0> qsize=0
+2025-06-25 13:10:16,961 DEBUG < TEXT '>battle-gen9bssregi-7988\n|player|p2|EnvPlayer 2|2|' [50 bytes]
+2025-06-25 13:10:16,961 DEBUG < TEXT ">battle-gen9bssregi-7988\n|error|[Invalid choic...in a Team Preview phase" [114 bytes]
+2025-06-25 13:10:16,961 DEBUG < TEXT '>battle-gen9bssregi-7988\n|player|p2|EnvPlayer 2|2|' [50 bytes]
+2025-06-25 13:10:16,961 DEBUG < TEXT ">battle-gen9bssregi-7988\n|error|[Invalid choic...in a Team Preview phase" [114 bytes]
+2025-06-25 13:10:16,962 DEBUG received action 0 for player_0
+2025-06-25 13:10:16,963 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 13:10:16,963 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 13:10:16,963 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 13:10:16,963 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,963 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move explosion' [46 bytes]
+2025-06-25 13:10:16,963 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,963 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 13:10:16,963 DEBUG received action 0 for player_1
+2025-06-25 13:10:16,963 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 13:10:16,963 DEBUG [DBG] player_1 action received /choose move headsmash
+2025-06-25 13:10:16,963 DEBUG [DBG] player_1 direct order /choose move headsmash
+2025-06-25 13:10:16,964 DEBUG [DBG] player_1 send message '/choose move headsmash' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,964 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move headsmash' [46 bytes]
+2025-06-25 13:10:16,964 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,964 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 13:10:16,964 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,964 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x117de3880> qsize=0
+2025-06-25 13:10:16,964 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,964 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1209403f0> qsize=0
+2025-06-25 13:10:16,969 DEBUG received action 0 for player_0
+2025-06-25 13:10:16,969 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 13:10:16,970 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 13:10:16,970 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 13:10:16,970 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,970 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move explosion' [46 bytes]
+2025-06-25 13:10:16,970 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,970 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 13:10:16,970 DEBUG received action 1 for player_1
+2025-06-25 13:10:16,970 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 13:10:16,970 DEBUG [DBG] player_1 action received /choose move uturn
+2025-06-25 13:10:16,970 DEBUG [DBG] player_1 direct order /choose move uturn
+2025-06-25 13:10:16,970 DEBUG [DBG] player_1 send message '/choose move uturn' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,970 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move uturn' [42 bytes]
+2025-06-25 13:10:16,971 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,971 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 13:10:16,971 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,971 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x117de3880> qsize=0
+2025-06-25 13:10:16,971 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 13:10:16,971 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1209403f0> qsize=0
+2025-06-25 13:10:16,976 DEBUG < TEXT '>battle-gen9bssregi-7988\n|error|[Invalid choic...urn has already started' [124 bytes]
+2025-06-25 13:10:16,976 DEBUG < TEXT '>battle-gen9bssregi-7988\n|\n|t:|1750824616\n|m...cl\n|\n|win|EnvPlayer 2' [283 bytes]
+2025-06-25 13:10:16,976 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 13:10:16,976 DEBUG < TEXT '>battle-gen9bssregi-7988\n|error|[Invalid choic...urn has already started' [124 bytes]
+2025-06-25 13:10:16,976 DEBUG < TEXT '>battle-gen9bssregi-7988\n|\n|t:|1750824616\n|m...cl\n|\n|win|EnvPlayer 2' [283 bytes]
+2025-06-25 13:10:16,976 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 13:10:16,977 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,977 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,978 DEBUG received action 0 for player_0
+2025-06-25 13:10:16,978 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 13:10:16,978 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 13:10:16,978 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 13:10:16,978 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,978 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move explosion' [46 bytes]
+2025-06-25 13:10:16,978 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,978 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 13:10:16,978 DEBUG received action 0 for player_1
+2025-06-25 13:10:16,978 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 13:10:16,978 DEBUG [DBG] player_1 action received /choose move headsmash
+2025-06-25 13:10:16,978 DEBUG [DBG] player_1 direct order /choose move headsmash
+2025-06-25 13:10:16,978 DEBUG [DBG] player_1 send message '/choose move headsmash' to battle battle-gen9bssregi-7988
+2025-06-25 13:10:16,978 DEBUG > TEXT 'battle-gen9bssregi-7988|/choose move headsmash' [46 bytes]
+2025-06-25 13:10:16,978 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-7988
+2025-06-25 13:10:16,978 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 13:10:16,979 DEBUG [DBG] race_get start qsize=2 events=[False, False]
+2025-06-25 13:10:16,979 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x117de3880> qsize=1
+2025-06-25 13:10:16,979 DEBUG [DBG] race_get start qsize=2 events=[False, False]
+2025-06-25 13:10:16,979 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1209403f0> qsize=1
+2025-06-25 13:10:16,983 DEBUG < TEXT ">battle-gen9bssregi-7988\n|error|[Invalid choic...ere's nothing to choose" [74 bytes]
+2025-06-25 13:10:16,983 DEBUG < TEXT ">battle-gen9bssregi-7988\n|error|[Invalid choic...ere's nothing to choose" [74 bytes]
+2025-06-25 13:10:16,995 INFO Episode 1 epoch 1 loss 1.1542
+2025-06-25 13:10:16,995 INFO Episode 1 reward -1.00 time/episode: 0.203
+2025-06-25 13:10:16,995 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 13:10:16,995 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 13:10:16,996 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 13:10:16,996 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 13:10:16,996 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 13:10:17,002 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
+2025-06-25 13:10:17,002 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
+2025-06-25 13:10:21,980 ERROR [TIMEOUT] player_0 action queue empty=True waiting=False trying_again=False
+2025-06-25 13:10:21,990 ERROR [TIMEOUT] player_1 action queue empty=True waiting=False trying_again=False

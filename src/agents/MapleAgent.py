@@ -21,13 +21,17 @@ class MapleAgent:
         three random Pokémon assuming a team size of six.  Subclasses can
         override this method to implement a custom selection strategy.
         """
-
+        
+        """debug
+        
         team_size = 6
         num_to_select = min(3, team_size)
         indices = self.env.rng.choice(team_size, size=num_to_select, replace=False)
         indices = sorted(int(i) + 1 for i in indices)
         team_cmd = "/team " + "".join(str(i) for i in indices)
         return team_cmd
+        """
+        return "/team 123" # デバッグ用に先頭３匹を選出
 
     def select_action(self, observation: Any, action_mask: Any) -> int:
         """Return a random valid action index.
