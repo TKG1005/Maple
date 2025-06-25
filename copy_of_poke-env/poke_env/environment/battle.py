@@ -33,6 +33,23 @@ class Battle(AbstractBattle):
         self._maybe_trapped: bool = False
         self._trapped: bool = False
 
+    def _log_team_state(self, label: str) -> None:
+        """Log each team Pokemon's active and fainted status for debugging."""
+        if self.logger is None:
+            return
+        try:
+            info = [
+                f"{ident}: active={mon.active}, fainted={mon.fainted}"
+                for ident, mon in self.team.items()
+            ]
+            self.logger.debug(
+                "[DBG] %s %s team_state: %s", self.battle_tag, label, info
+            )
+        except Exception as exc:  # pragma: no cover - debug helper
+            self.logger.debug(
+                "[DBG] failed to log team_state %s: %s", label, exc
+            )
+
     def clear_all_boosts(self):
         if self.active_pokemon is not None:
             self.active_pokemon.clear_boosts()
@@ -134,6 +151,8 @@ class Battle(AbstractBattle):
                     if not pokemon.active:
                         self._available_switches.append(pokemon)
 
+        self._log_team_state("after parse_request")
+
     def switch(self, pokemon_str: str, details: str, hp_status: str):
         identifier = pokemon_str.split(":")[0][:2]
 
@@ -148,6 +167,8 @@ class Battle(AbstractBattle):
 
         pokemon.switch_in(details=details)
         pokemon.set_hp_status(hp_status)
+
+        self._log_team_state("after switch")
 
     @property
     def active_pokemon(self) -> Optional[Pokemon]:
