@@ -1,1 +1,0 @@
-2025-06-24 08:58:43,711 INFO Run parameters: {'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 20, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1}

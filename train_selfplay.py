@@ -86,21 +86,25 @@ def run_episode(
 ) -> tuple[dict[str, np.ndarray], float, tuple[np.ndarray, np.ndarray, np.ndarray] | None]:
     """Run one self-play episode and return batch data and total reward."""
 
-    observations, info = env.reset()
+    observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
+    mask0, mask1 = masks
 
     init_tuple: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
     if info.get("request_teampreview"):
         order0 = agent0.choose_team(obs0)
         order1 = agent1.choose_team(obs1)
-        observations, *_ = env.step({env.agent_ids[0]: order0, env.agent_ids[1]: order1})
+        observations, *_ , masks = env.step(
+            {env.agent_ids[0]: order0, env.agent_ids[1]: order1}, return_masks=True
+        )
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
+        mask0, mask1 = masks
 
     if record_init:
         init_obs = obs0.copy()
-        init_mask, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
+        init_mask = mask0.copy()
         init_probs = agent0.select_action(init_obs, init_mask)
         init_tuple = (init_obs, init_mask, init_probs)
 
@@ -108,9 +112,6 @@ def run_episode(
     traj: List[dict] = []
 
     while not done:
-        mask0, _ = env.get_action_mask(env.agent_ids[0], with_details=True)
-        mask1, _ = env.get_action_mask(env.agent_ids[1], with_details=True)
-
         probs0 = agent0.select_action(obs0, mask0)
         probs1 = agent1.select_action(obs1, mask1)
         rng = env.rng
@@ -120,7 +121,7 @@ def run_episode(
         val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
-        observations, rewards, terms, truncs, _ = env.step(actions)
+        observations, rewards, terms, truncs, _, next_masks = env.step(actions, return_masks=True)
         reward = float(rewards[env.agent_ids[0]])
         done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
@@ -136,6 +137,7 @@ def run_episode(
 
         obs0 = observations[env.agent_ids[0]]
         obs1 = observations[env.agent_ids[1]]
+        mask0, mask1 = next_masks
 
     rewards = [t["reward"] for t in traj]
     values = [t["value"] for t in traj]
