@@ -393,6 +393,17 @@ class PokemonEnv(gym.Env):
 
             mask, mapping = self.action_helper.get_available_actions(battle)
 
+            switches_info = [
+                f"{getattr(p, 'species', '?')}"
+                f"(HP:{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%"
+                f", fainted={getattr(p, 'fainted', False)}"
+                f", active={getattr(p, 'active', False)})"
+                for p in getattr(battle, 'available_switches', [])
+            ]
+            self._logger.debug(
+                "[DBG] %s available_switches: %s", pid, switches_info
+            )
+
             selected = self._selected_species.get(pid)
             if selected:
                 for idx, (atype, sub_idx) in mapping.items():
