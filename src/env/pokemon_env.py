@@ -393,6 +393,14 @@ class PokemonEnv(gym.Env):
 
             mask, mapping = self.action_helper.get_available_actions(battle)
 
+            self._logger.debug(
+                "[DBG] %s: %d moves, %d switches (force_switch=%s)",
+                pid,
+                len(getattr(battle, "available_moves", [])),
+                len(getattr(battle, "available_switches", [])),
+                getattr(battle, "force_switch", False),
+            )
+
             switches_info = [
                 f"{getattr(p, 'species', '?')}"
                 f"(HP:{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%"
