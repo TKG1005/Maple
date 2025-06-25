@@ -38,7 +38,7 @@
   3. `reset()` で `battle_against()` を呼び、対戦を開始
   4. `PokemonEnv`は`reset()`内で`EnvPlayer`からメッセージが来るのを待機
   5. `EnvPlayer`は`|teampreview|`のメッセージが届いたら`PokeonEnv`に`my_team: List`と`opp_team: List`を渡して、チーム選択を要求(この時点ではBattleオブジェクトは空である)
-  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`を`Agent`にわたす(`info`で`Agent`にチームプレビュー要求。現時点でstateは未実装なのでダミーを渡す。)
+  6. `PokemonEnv`は`reset()`の戻り値として`state`と`info`、必要に応じて行動マスクを返す。
   7. `Agent`は`info`の情報からチーム選択が呼び出されたことを理解して、`step(choose_team(state))`を実行
   8. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   9. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
@@ -48,7 +48,7 @@
   13. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
   14. `EnvPlayer`(`poke-env`)は`action`を`battleorder`に変換してShowdownサーバに送信して、次の`request`を待つ
   15. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
-  16. `PokemonEnv`は`step(action)`の戻り値として`Agent`に`state(observation)`と`reward`,`done`(エピソード終了判定),`info`(未実装)を返す
+ 16. `PokemonEnv`は`step(action)`の戻り値として`state(observation)`、`reward`、`terminated`/`truncated` 判定、`info` を返し、`return_masks=True` のときは次の行動マスクも返す
   17. `Agent`は`受け取った情報から行動を選択して次の`step(action)`を呼ぶ
 
 * 注意
@@ -185,10 +185,13 @@ mask, mapping = action_helper.get_available_actions(battle)
 
 # 行動インデックス -> BattleOrder
 order = action_helper.action_index_to_order(env_player, battle, idx)
-next_state, reward, terminated, truncated, info = env.step({
-    "player_0": idx0,
-    "player_1": idx1,
-})
+next_obs, reward, terminated, truncated, info, masks = env.step(
+    {
+        "player_0": idx0,
+        "player_1": idx1,
+    },
+    return_masks=True,
+)
 ```
 
 ---
