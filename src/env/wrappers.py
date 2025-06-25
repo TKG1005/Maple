@@ -44,8 +44,10 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
         return self.env.observation_space[self.env.agent_ids[0]]
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
-        observation, info = self.env.reset(seed=seed, options=options)
-        return observation, info
+        observation, info, mask = self.env.reset(
+            seed=seed, options=options, return_masks=True
+        )
+        return observation, info, mask
 
     def step(self, action: Any):
         """Advance the environment one step with an automatic opponent."""
@@ -65,7 +67,9 @@ class SingleAgentCompatibilityWrapper(GymWrapper):
                     obs = self.env.state_observer.observe(battle)
                     opp_action = self._opponent.select_action(obs, mask)
 
-        return self.env.step({"player_0": action, "player_1": opp_action})
+        return self.env.step(
+            {"player_0": action, "player_1": opp_action}, return_masks=True
+        )
 
 
 def make_single_agent_env(**kwargs: Any) -> gym.Env:

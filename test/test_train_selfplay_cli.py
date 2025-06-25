@@ -59,16 +59,21 @@ class DummyEnv:
         self.rng = default_rng()
     def register_agent(self, agent, id):
         pass
-    def reset(self):
-        return {'player_0': DummyArray([0]), 'player_1': DummyArray([0])}, {'request_teampreview': False}
+    def reset(self, *a, return_masks=True, **k):
+        return (
+            {'player_0': DummyArray([0]), 'player_1': DummyArray([0])},
+            {'request_teampreview': False},
+            (DummyArray([1]), DummyArray([1])),
+        )
     def get_action_mask(self, id, with_details=False):
         return DummyArray([1]), {0: ('move', 0)}
-    def step(self, actions):
+    def step(self, actions, return_masks=True):
         obs = {'player_0': DummyArray([0]), 'player_1': DummyArray([0])}
         rewards = {'player_0': 0.0, 'player_1': 0.0}
         terms = {'player_0': True, 'player_1': True}
         truncs = {'player_0': False, 'player_1': False}
-        return obs, rewards, terms, truncs, {}
+        masks = (DummyArray([1]), DummyArray([1]))
+        return obs, rewards, terms, truncs, {}, masks
     def close(self):
         pass
 penv.PokemonEnv = DummyEnv
