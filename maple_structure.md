@@ -1,4 +1,15 @@
 /Users/takagikouichi/Documents/GitHub/Maple
+├── checkpoints
+│   ├── checkpoint_ep100.pt
+│   ├── checkpoint_ep1000.pt
+│   ├── checkpoint_ep200.pt
+│   ├── checkpoint_ep300.pt
+│   ├── checkpoint_ep400.pt
+│   ├── checkpoint_ep500.pt
+│   ├── checkpoint_ep600.pt
+│   ├── checkpoint_ep700.pt
+│   ├── checkpoint_ep800.pt
+│   └── checkpoint_ep900.pt
 ├── config
 │   ├── action_map.yml
 │   ├── battle_available_notes.md
@@ -33,11 +44,22 @@
 │   │   ├── M2
 │   │   ├── M4
 │   │   ├── M5
+│   │   ├── M6
 │   │   └── PokemonEnv_Specification.md
-│   └── M4_setup.md
+│   ├── M4_setup.md
+│   └── train_usage.md
 ├── evaluate_rl.py
+├── logs
+│   ├── run1.json
+│   ├── train_20250625_163222.log
+│   ├── train_20250625_164000.log
+│   ├── train_20250625_164017.log
+│   └── train_20250625_164102.log
 ├── maple_structure.md
 ├── model.pt
+├── model1.pt
+├── model2.pt
+├── plot_results.py
 ├── pokemon-showdown
 │   ├── ARCHITECTURE.md
 │   ├── build
@@ -540,12 +562,15 @@
 │   │   └── turkish
 │   └── tsconfig.json
 ├── pytest.ini
+├── README.md
 ├── requirements.txt
 ├── runs
 │   ├── Jun20_08-50-01_MacBook-Pro.local
 │   │   └── events.out.tfevents.1750377001.MacBook-Pro.local.12077.0
-│   └── Jun20_08-51-16_MacBook-Pro.local
-│       └── events.out.tfevents.1750377076.MacBook-Pro.local.12271.0
+│   ├── Jun20_08-51-16_MacBook-Pro.local
+│   │   └── events.out.tfevents.1750377076.MacBook-Pro.local.12271.0
+│   └── Jun20_15-51-18_MacBook-Pro.local
+│       └── events.out.tfevents.1750402278.MacBook-Pro.local.27369.0
 ├── scripts
 ├── src
 │   ├── __init__.py
@@ -564,7 +589,16 @@
 │   │   ├── policy_network.py
 │   │   ├── replay_buffer.py
 │   │   ├── RLAgent.py
-│   │   └── rule_based_player.py
+│   │   ├── rule_based_player.py
+│   │   └── value_network.py
+│   ├── algorithms
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── base.py
+│   │   ├── dummy.py
+│   │   ├── gae.py
+│   │   ├── ppo.py
+│   │   └── reinforce.py
 │   ├── env
 │   │   ├── __init__.py
 │   │   ├── __pycache__
@@ -587,7 +621,11 @@
 │   │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
 │   ├── run_battle.py
 │   ├── simple_agent.py
-│   └── test_get_action_mask.py
-└── train_rl.py
+│   ├── test_compute_gae.py
+│   ├── test_get_action_mask.py
+│   ├── test_ppo_loss.py
+│   └── test_train_selfplay_cli.py
+├── train_rl.py
+└── train_selfplay.py
 
-406 directories, 185 files
+412 directories, 217 files
