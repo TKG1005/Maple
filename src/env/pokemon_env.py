@@ -455,22 +455,22 @@ class PokemonEnv(gym.Env):
                         roster[i] for i in indices if 0 <= i < len(roster)
                     }
             else:
-                mapping = self._action_mappings.get(agent_id) or {}
-                self._logger.debug("received action %s for %s", act, agent_id)
-                self._logger.debug("current mapping for %s: %s", agent_id, mapping)
-                if mapping:
-                    order = self.action_helper.action_index_to_order_from_mapping(
-                        self._env_players[agent_id],
-                        self._current_battles[agent_id],
-                        int(act),
-                        mapping,
-                    )
-                else:
-                    order = self.action_helper.action_index_to_order(
-                        self._env_players[agent_id],
-                        self._current_battles[agent_id],
-                        int(act),
-                    )
+                battle = self.get_current_battle(agent_id)
+                if battle is None:
+                    raise ValueError(f"No current battle for {agent_id}")
+
+                mask, mapping = self.action_helper.get_available_actions(battle)
+                self._action_mappings[agent_id] = mapping
+
+                order = self.action_helper.action_index_to_order_from_mapping(
+                    self._env_players[agent_id],
+                    battle,
+                    int(act),
+                    mapping,
+                )
+                self._logger.debug(
+                    "received action %s for %s using mapping %s", act, agent_id, mapping
+                )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()
