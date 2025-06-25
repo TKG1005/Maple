@@ -232,7 +232,7 @@ class PokemonEnv(gym.Env):
             from pathlib import Path
 
             team_path = (
-                Path(__file__).resolve().parents[2] / "config" / "my_team_for_debug.txt"
+                Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             )
             try:
                 team = team_path.read_text()
