@@ -4,12 +4,12 @@ Tera Type: Rock
 EVs: 252 Spe  
 - Explosion  
 
-Alomomola @ Rocky Helmet  
-Ability: Regenerator  
-Tera Type: Water  
-EVs: 252 Def / 252 SpD  
-IVs: 0 Atk  
-- Healing Wish  
+Metagross  
+Ability: Clear Body  
+Tera Type: Steel  
+EVs: 252 Spe  
+- Explosion  
+- Earthquake  
 
 Garganacl  
 Ability: Purifying Salt  

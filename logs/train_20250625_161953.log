@@ -1,0 +1,1175 @@
+2025-06-25 16:19:53,456 INFO Run parameters: {'log_level': 'DEBUG', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 5, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1}
+2025-06-25 16:19:54,049 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 16:19:54,055 DEBUG = connection is CONNECTING
+2025-06-25 16:19:54,055 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 16:19:54,055 DEBUG > Host: localhost:8000
+2025-06-25 16:19:54,055 DEBUG > Upgrade: websocket
+2025-06-25 16:19:54,055 DEBUG > Connection: Upgrade
+2025-06-25 16:19:54,055 DEBUG > Sec-WebSocket-Key: KqfGZs19IIQI6DwhLBwc6g==
+2025-06-25 16:19:54,055 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 16:19:54,055 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 16:19:54,055 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 16:19:54,057 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 16:19:54,057 DEBUG < Upgrade: websocket
+2025-06-25 16:19:54,057 DEBUG < Connection: Upgrade
+2025-06-25 16:19:54,057 DEBUG < Sec-WebSocket-Accept: 7vSPNEnvCuWhunex5XLplVTb5mk=
+2025-06-25 16:19:54,057 DEBUG = connection is OPEN
+2025-06-25 16:19:54,058 DEBUG = connection is CONNECTING
+2025-06-25 16:19:54,058 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 16:19:54,058 DEBUG > Host: localhost:8000
+2025-06-25 16:19:54,058 DEBUG > Upgrade: websocket
+2025-06-25 16:19:54,058 DEBUG > Connection: Upgrade
+2025-06-25 16:19:54,058 DEBUG > Sec-WebSocket-Key: ncsUXGLXL04w9tZjPJ/mtA==
+2025-06-25 16:19:54,058 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 16:19:54,058 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 16:19:54,058 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 16:19:54,059 DEBUG < TEXT '|updateuser| Guest 5|0|102|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-06-25 16:19:54,062 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 16:19:54,062 DEBUG < Upgrade: websocket
+2025-06-25 16:19:54,062 DEBUG < Connection: Upgrade
+2025-06-25 16:19:54,062 DEBUG < Sec-WebSocket-Accept: uU6a36/RaF0Bsb2wBofGPVf5ggU=
+2025-06-25 16:19:54,063 DEBUG = connection is OPEN
+2025-06-25 16:19:54,063 DEBUG < TEXT '|challstr|4|3817e6f1a6bf76cf5725967b0a190e6b525...2dc4284b9bad8da432cd69e' [268 bytes]
+2025-06-25 16:19:54,063 DEBUG > TEXT '|/trn EnvPlayer 1,0,' [20 bytes]
+2025-06-25 16:19:54,066 DEBUG < TEXT '|updateuser| Guest 6|0|170|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-06-25 16:19:54,066 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,066 DEBUG < TEXT '|updateuser| EnvPlayer 1|1|101|{"blockChallenge...:false,"language":null}' [354 bytes]
+2025-06-25 16:19:54,066 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,067 DEBUG < TEXT '|challstr|4|917e8bbb70dd7c780ab462f5c7f6c5d9815...51988b06f2d712b893c587c' [268 bytes]
+2025-06-25 16:19:54,067 DEBUG > TEXT '|/trn EnvPlayer 2,0,' [20 bytes]
+2025-06-25 16:19:54,071 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,071 DEBUG < TEXT '|updateuser| EnvPlayer 2|1|2|{"blockChallenges"...:false,"language":null}' [352 bytes]
+2025-06-25 16:19:54,072 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,072 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:54,072 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 16:19:54,072 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:54,072 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/log EnvPlayer 2 wants to battle!' [63 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge' [40 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|init|battle\n|title|...er 1\n|j|☆EnvPlayer 2\n' [91 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|j|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/log EnvPlayer 2 wants to battle!' [63 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge' [40 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|init|battle\n|title|...er 2\n|j|☆EnvPlayer 1\n' [109 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|t:|1750835994\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|player|p1|EnvPlayer 2|2|' [50 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|player|p2|EnvPlayer ...L50, M|\n|teampreview|3' [388 bytes]
+2025-06-25 16:19:54,082 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"teamPrevie...llized":""}]},"rqid":3}' [1138 bytes]
+2025-06-25 16:19:54,083 DEBUG < TEXT '>battle-gen9bssregi-9296\n|t:|1750835994\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:54,083 DEBUG < TEXT '>battle-gen9bssregi-9296\n|player|p1|EnvPlayer 2|2|' [50 bytes]
+2025-06-25 16:19:54,083 DEBUG < TEXT '>battle-gen9bssregi-9296\n|player|p2|EnvPlayer ...L50, M|\n|teampreview|3' [388 bytes]
+2025-06-25 16:19:54,083 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"teamPrevie...llized":""}]},"rqid":2}' [1138 bytes]
+2025-06-25 16:19:54,114 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:54,114 DEBUG > TEXT '|/accept envplayer2' [19 bytes]
+2025-06-25 16:19:54,114 DEBUG < TEXT '|popup|envplayer2 is not challenging you. Maybe...ed before you accepted?' [83 bytes]
+2025-06-25 16:19:54,214 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-9296
+2025-06-25 16:19:54,214 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 16:19:54,214 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-9296
+2025-06-25 16:19:54,214 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 16:19:54,221 DEBUG [DBG] player_0 team preview message /team 123 (EnvPlayer 1)
+2025-06-25 16:19:54,221 DEBUG [DBG] player_0 send message '/team 123' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,221 DEBUG > TEXT 'battle-gen9bssregi-9296|/team 123' [33 bytes]
+2025-06-25 16:19:54,221 DEBUG [DBG] player_1 team preview message /team 123 (EnvPlayer 2)
+2025-06-25 16:19:54,221 DEBUG [DBG] player_1 send message '/team 123' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,221 DEBUG > TEXT 'battle-gen9bssregi-9296|/team 123' [33 bytes]
+2025-06-25 16:19:54,221 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:54,224 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...L50, M|100/100\n|turn|1' [150 bytes]
+2025-06-25 16:19:54,224 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...L50, M|158/158\n|turn|1' [150 bytes]
+2025-06-25 16:19:54,224 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...llized":""}]},"rqid":5}' [1240 bytes]
+2025-06-25 16:19:54,225 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...llized":""}]},"rqid":4}' [1240 bytes]
+2025-06-25 16:19:54,225 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,225 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:54,225 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,225 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:54,226 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:54,226 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:54,226 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:54,233 DEBUG received action 8 for player_0
+2025-06-25 16:19:54,233 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:54,233 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:19:54,233 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:19:54,233 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,233 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:54,233 DEBUG received action 4 for player_1
+2025-06-25 16:19:54,233 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:54,234 DEBUG [DBG] player_1 action received /choose move explosion terastallize
+2025-06-25 16:19:54,234 DEBUG [DBG] player_1 direct order /choose move explosion terastallize
+2025-06-25 16:19:54,234 DEBUG [DBG] player_1 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,234 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:54,234 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:54,239 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...a: Glimmora\n|\n|upkeep' [254 bytes]
+2025-06-25 16:19:54,239 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"forceSwitc...oCancel":true,"rqid":6}' [1132 bytes]
+2025-06-25 16:19:54,239 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...a: Glimmora\n|\n|upkeep' [255 bytes]
+2025-06-25 16:19:54,239 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"wait":true...llized":""}]},"rqid":7}' [1109 bytes]
+2025-06-25 16:19:54,239 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,239 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:54,753 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:54,753 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:54,754 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:54,769 DEBUG received action 9 for player_1
+2025-06-25 16:19:54,769 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:54,769 DEBUG [DBG] player_1 action received /choose switch garganacl
+2025-06-25 16:19:54,769 DEBUG [DBG] player_1 direct order /choose switch garganacl
+2025-06-25 16:19:54,769 DEBUG [DBG] player_1 send message '/choose switch garganacl' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,769 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:54,770 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:54,774 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...L50, M|175/175\n|turn|2' [98 bytes]
+2025-06-25 16:19:54,774 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...llized":""}]},"rqid":8}' [1213 bytes]
+2025-06-25 16:19:54,775 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|s...L50, M|100/100\n|turn|2' [98 bytes]
+2025-06-25 16:19:54,775 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...llized":""}]},"rqid":9}' [1340 bytes]
+2025-06-25 16:19:54,775 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,776 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:54,878 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,879 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:54,880 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:54,880 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:54,881 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:54,886 DEBUG received action 0 for player_0
+2025-06-25 16:19:54,886 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:54,886 DEBUG [DBG] player_0 action received /choose move earthquake
+2025-06-25 16:19:54,886 DEBUG [DBG] player_0 direct order /choose move earthquake
+2025-06-25 16:19:54,886 DEBUG [DBG] player_0 send message '/choose move earthquake' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,886 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:54,887 DEBUG received action 0 for player_1
+2025-06-25 16:19:54,887 DEBUG current mapping for player_1: {0: ('move', 0), 8: ('switch', 0)}
+2025-06-25 16:19:54,887 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:19:54,887 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:19:54,887 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:54,887 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move explosion' [46 bytes]
+2025-06-25 16:19:54,887 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:54,891 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|m...: Garganacl\n|\n|upkeep' [286 bytes]
+2025-06-25 16:19:54,891 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835994\n|m...: Garganacl\n|\n|upkeep' [286 bytes]
+2025-06-25 16:19:54,891 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"wait":true...lized":""}]},"rqid":11}' [1109 bytes]
+2025-06-25 16:19:54,891 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"forceSwitc...Cancel":true,"rqid":10}' [1131 bytes]
+2025-06-25 16:19:54,892 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:54,892 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:55,408 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:55,408 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:55,408 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:55,413 DEBUG received action 8 for player_1
+2025-06-25 16:19:55,413 DEBUG current mapping for player_1: {8: ('switch', 0)}
+2025-06-25 16:19:55,413 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:19:55,413 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:19:55,413 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:55,413 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:55,413 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:55,415 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835995\n|s...s, L50|155/155\n|turn|3' [95 bytes]
+2025-06-25 16:19:55,415 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835995\n|s...s, L50|100/100\n|turn|3' [95 bytes]
+2025-06-25 16:19:55,415 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:55,415 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:55,416 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":12}' [1311 bytes]
+2025-06-25 16:19:55,416 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":13}' [1340 bytes]
+2025-06-25 16:19:55,516 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:55,516 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:55,517 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:55,517 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:55,517 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:55,521 DEBUG received action 1 for player_0
+2025-06-25 16:19:55,521 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:55,521 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:55,521 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:55,521 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:55,521 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move explosion' [46 bytes]
+2025-06-25 16:19:55,521 DEBUG received action 0 for player_1
+2025-06-25 16:19:55,521 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:55,521 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:55,522 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:55,522 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:55,522 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:55,522 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:55,524 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835995\n|m...: Metagross\n|\n|upkeep' [255 bytes]
+2025-06-25 16:19:55,524 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835995\n|m...: Metagross\n|\n|upkeep' [255 bytes]
+2025-06-25 16:19:55,524 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"forceSwitc...Cancel":true,"rqid":15}' [1133 bytes]
+2025-06-25 16:19:55,524 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"wait":true...lized":""}]},"rqid":14}' [1105 bytes]
+2025-06-25 16:19:55,525 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:55,525 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:55,525 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:55,525 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:19:56,039 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:56,052 DEBUG received action 8 for player_0
+2025-06-25 16:19:56,052 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:56,052 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:19:56,052 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:19:56,053 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,053 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:56,053 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,057 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...L50, M|100/100\n|turn|4' [96 bytes]
+2025-06-25 16:19:56,057 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":16}' [1310 bytes]
+2025-06-25 16:19:56,058 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...L50, M|158/158\n|turn|4' [96 bytes]
+2025-06-25 16:19:56,058 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":17}' [1239 bytes]
+2025-06-25 16:19:56,059 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,059 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:56,060 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:56,060 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,160 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,160 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:56,160 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:56,168 DEBUG received action 8 for player_0
+2025-06-25 16:19:56,168 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0)}
+2025-06-25 16:19:56,168 DEBUG [DBG] player_0 action received /choose switch garganacl
+2025-06-25 16:19:56,168 DEBUG [DBG] player_0 direct order /choose switch garganacl
+2025-06-25 16:19:56,168 DEBUG [DBG] player_0 send message '/choose switch garganacl' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,168 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:56,168 DEBUG received action 0 for player_1
+2025-06-25 16:19:56,168 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:56,169 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:56,169 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:56,169 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,169 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:56,169 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,174 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...00\n|\n|upkeep\n|turn|5' [218 bytes]
+2025-06-25 16:19:56,174 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...75\n|\n|upkeep\n|turn|5' [218 bytes]
+2025-06-25 16:19:56,174 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,174 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:56,174 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":18}' [1310 bytes]
+2025-06-25 16:19:56,174 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,174 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:56,175 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":19}' [1238 bytes]
+2025-06-25 16:19:56,175 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:56,175 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:56,175 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:56,181 DEBUG received action 4 for player_0
+2025-06-25 16:19:56,181 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0)}
+2025-06-25 16:19:56,182 DEBUG [DBG] player_0 action received /choose move explosion terastallize
+2025-06-25 16:19:56,182 DEBUG [DBG] player_0 direct order /choose move explosion terastallize
+2025-06-25 16:19:56,182 DEBUG [DBG] player_0 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,182 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:56,182 DEBUG received action 0 for player_1
+2025-06-25 16:19:56,182 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:56,182 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:56,182 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:56,182 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,182 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:56,182 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,186 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|-...: Garganacl\n|\n|upkeep' [320 bytes]
+2025-06-25 16:19:56,186 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"wait":true...lized":""}]},"rqid":20}' [1105 bytes]
+2025-06-25 16:19:56,186 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|-...: Garganacl\n|\n|upkeep' [320 bytes]
+2025-06-25 16:19:56,186 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"forceSwitc...Cancel":true,"rqid":21}' [1131 bytes]
+2025-06-25 16:19:56,187 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,187 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:56,187 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:56,187 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:19:56,704 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:56,709 DEBUG received action 8 for player_0
+2025-06-25 16:19:56,709 DEBUG current mapping for player_0: {8: ('switch', 0)}
+2025-06-25 16:19:56,709 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:19:56,709 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:19:56,709 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,709 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:56,709 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,711 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...L50, M|100/100\n|turn|6' [96 bytes]
+2025-06-25 16:19:56,712 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|s...L50, M|158/158\n|turn|6' [96 bytes]
+2025-06-25 16:19:56,712 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,712 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:56,712 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":22}' [1310 bytes]
+2025-06-25 16:19:56,712 DEBUG < TEXT '>battle-gen9bssregi-9296\n|request|{"active":[{...lized":""}]},"rqid":23}' [1212 bytes]
+2025-06-25 16:19:56,712 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:56,713 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,813 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9296
+2025-06-25 16:19:56,813 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:56,813 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:56,820 DEBUG received action 0 for player_0
+2025-06-25 16:19:56,820 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 16:19:56,820 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:56,820 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:56,820 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,820 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move explosion' [46 bytes]
+2025-06-25 16:19:56,821 DEBUG received action 0 for player_1
+2025-06-25 16:19:56,821 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:56,821 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:56,821 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:56,821 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,821 DEBUG > TEXT 'battle-gen9bssregi-9296|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:56,821 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,825 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|m...ra\n|\n|win|EnvPlayer 2' [205 bytes]
+2025-06-25 16:19:56,826 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:56,826 DEBUG < TEXT '>battle-gen9bssregi-9296\n|\n|t:|1750835996\n|m...ra\n|\n|win|EnvPlayer 2' [205 bytes]
+2025-06-25 16:19:56,826 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:56,826 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,826 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-9296
+2025-06-25 16:19:56,827 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:56,827 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:56,827 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:56,847 INFO Episode 1 epoch 1 loss 0.8231
+2025-06-25 16:19:56,847 INFO Episode 1 reward -1.00 time/episode: 2.798
+2025-06-25 16:19:56,847 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 16:19:56,848 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:56,848 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 16:19:56,848 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:56,848 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 16:19:56,852 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:56,852 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:56,852 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:56,852 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:56,852 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:56,853 DEBUG > TEXT '|/accept envplayer1' [19 bytes]
+2025-06-25 16:19:56,856 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:56,856 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:56,856 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '>battle-gen9bssregi-9297\n|init|battle\n|title|...er 2\n|j|☆EnvPlayer 1\n' [91 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '>battle-gen9bssregi-9297\n|j|☆EnvPlayer 2' [42 bytes]
+2025-06-25 16:19:56,857 DEBUG < TEXT '>battle-gen9bssregi-9297\n|init|battle\n|title|...er 1\n|j|☆EnvPlayer 2\n' [109 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|t:|1750835996\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|t:|1750835996\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|player|p2|EnvPlayer ...L50, M|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|player|p2|EnvPlayer ...L50, M|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:56,860 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"teamPrevie...llized":""}]},"rqid":2}' [1138 bytes]
+2025-06-25 16:19:56,861 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"teamPrevie...llized":""}]},"rqid":3}' [1138 bytes]
+2025-06-25 16:19:56,961 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-9297
+2025-06-25 16:19:56,961 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 16:19:56,961 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-9297
+2025-06-25 16:19:56,962 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 16:19:56,968 DEBUG [DBG] player_0 team preview message /team 123 (EnvPlayer 1)
+2025-06-25 16:19:56,968 DEBUG [DBG] player_0 send message '/team 123' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:56,968 DEBUG > TEXT 'battle-gen9bssregi-9297|/team 123' [33 bytes]
+2025-06-25 16:19:56,968 DEBUG [DBG] player_1 team preview message /team 123 (EnvPlayer 2)
+2025-06-25 16:19:56,968 DEBUG [DBG] player_1 send message '/team 123' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:56,968 DEBUG > TEXT 'battle-gen9bssregi-9297|/team 123' [33 bytes]
+2025-06-25 16:19:56,969 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,970 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835996\n|s...L50, M|100/100\n|turn|1' [150 bytes]
+2025-06-25 16:19:56,971 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835996\n|s...L50, M|158/158\n|turn|1' [150 bytes]
+2025-06-25 16:19:56,971 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:56,971 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:56,971 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...llized":""}]},"rqid":5}' [1240 bytes]
+2025-06-25 16:19:56,971 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...llized":""}]},"rqid":4}' [1240 bytes]
+2025-06-25 16:19:56,971 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:56,971 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:56,972 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:56,972 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:56,972 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:56,978 DEBUG received action 9 for player_0
+2025-06-25 16:19:56,978 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:56,978 DEBUG [DBG] player_0 action received /choose switch garganacl
+2025-06-25 16:19:56,978 DEBUG [DBG] player_0 direct order /choose switch garganacl
+2025-06-25 16:19:56,978 DEBUG [DBG] player_0 send message '/choose switch garganacl' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:56,978 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:56,978 DEBUG received action 4 for player_1
+2025-06-25 16:19:56,979 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:56,979 DEBUG [DBG] player_1 action received /choose move explosion terastallize
+2025-06-25 16:19:56,979 DEBUG [DBG] player_1 direct order /choose move explosion terastallize
+2025-06-25 16:19:56,979 DEBUG [DBG] player_1 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:56,979 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:56,979 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:56,981 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835996\n|s...a: Glimmora\n|\n|upkeep' [258 bytes]
+2025-06-25 16:19:56,981 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835996\n|s...a: Glimmora\n|\n|upkeep' [257 bytes]
+2025-06-25 16:19:56,981 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"forceSwitc...oCancel":true,"rqid":7}' [1132 bytes]
+2025-06-25 16:19:56,981 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"wait":true...llized":""}]},"rqid":6}' [1109 bytes]
+2025-06-25 16:19:56,982 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:56,982 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:57,492 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:57,492 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:57,493 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:57,498 DEBUG received action 8 for player_1
+2025-06-25 16:19:57,498 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:57,498 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:19:57,498 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:19:57,498 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:57,499 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:57,499 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:57,503 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835997\n|s...s, L50|100/100\n|turn|2' [95 bytes]
+2025-06-25 16:19:57,504 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835997\n|s...s, L50|155/155\n|turn|2' [95 bytes]
+2025-06-25 16:19:57,504 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...llized":""}]},"rqid":9}' [1312 bytes]
+2025-06-25 16:19:57,504 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...llized":""}]},"rqid":8}' [1240 bytes]
+2025-06-25 16:19:57,504 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:57,504 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:57,605 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:57,605 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:57,606 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:57,606 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:57,606 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:57,611 DEBUG received action 4 for player_0
+2025-06-25 16:19:57,611 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:57,612 DEBUG [DBG] player_0 action received /choose move explosion terastallize
+2025-06-25 16:19:57,612 DEBUG [DBG] player_0 direct order /choose move explosion terastallize
+2025-06-25 16:19:57,612 DEBUG [DBG] player_0 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:57,612 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:57,612 DEBUG received action 0 for player_1
+2025-06-25 16:19:57,612 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:57,612 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:57,612 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:57,612 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:57,612 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:57,613 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:57,616 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835997\n|-...: Garganacl\n|\n|upkeep' [321 bytes]
+2025-06-25 16:19:57,616 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"forceSwitc...Cancel":true,"rqid":10}' [1133 bytes]
+2025-06-25 16:19:57,616 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835997\n|-...: Garganacl\n|\n|upkeep' [322 bytes]
+2025-06-25 16:19:57,616 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"wait":true...lized":""}]},"rqid":11}' [1108 bytes]
+2025-06-25 16:19:57,617 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:57,617 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:57,617 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:57,617 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:19:58,131 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:58,140 DEBUG received action 8 for player_0
+2025-06-25 16:19:58,141 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:58,141 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:19:58,141 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:19:58,141 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,141 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:58,141 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,145 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...s, L50|155/155\n|turn|3' [95 bytes]
+2025-06-25 16:19:58,145 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":12}' [1313 bytes]
+2025-06-25 16:19:58,145 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...s, L50|100/100\n|turn|3' [95 bytes]
+2025-06-25 16:19:58,145 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":13}' [1313 bytes]
+2025-06-25 16:19:58,146 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,146 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:58,147 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:58,147 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,248 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,248 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:58,248 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:58,255 DEBUG received action 8 for player_0
+2025-06-25 16:19:58,255 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:58,255 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:19:58,255 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:19:58,256 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,256 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:58,256 DEBUG received action 0 for player_1
+2025-06-25 16:19:58,256 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:58,256 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:58,256 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:58,256 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,256 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:58,256 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,260 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...a: Glimmora\n|\n|upkeep' [319 bytes]
+2025-06-25 16:19:58,260 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...a: Glimmora\n|\n|upkeep' [319 bytes]
+2025-06-25 16:19:58,260 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"wait":true...lized":""}]},"rqid":15}' [1108 bytes]
+2025-06-25 16:19:58,261 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"forceSwitc...Cancel":true,"rqid":14}' [1131 bytes]
+2025-06-25 16:19:58,262 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,262 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:58,262 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:58,262 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:19:58,787 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:58,800 DEBUG received action 8 for player_0
+2025-06-25 16:19:58,800 DEBUG current mapping for player_0: {8: ('switch', 0)}
+2025-06-25 16:19:58,801 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:19:58,801 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:19:58,801 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,801 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:58,801 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,809 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...s, L50|155/155\n|turn|4' [95 bytes]
+2025-06-25 16:19:58,809 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":16}' [1311 bytes]
+2025-06-25 16:19:58,809 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|s...s, L50|100/100\n|turn|4' [95 bytes]
+2025-06-25 16:19:58,809 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":17}' [1313 bytes]
+2025-06-25 16:19:58,809 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,809 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:58,810 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:58,810 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,911 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,912 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:58,912 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:58,925 DEBUG received action 0 for player_0
+2025-06-25 16:19:58,925 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:58,926 DEBUG [DBG] player_0 action received /choose move earthquake
+2025-06-25 16:19:58,926 DEBUG [DBG] player_0 direct order /choose move earthquake
+2025-06-25 16:19:58,926 DEBUG [DBG] player_0 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,926 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:58,926 DEBUG received action 0 for player_1
+2025-06-25 16:19:58,926 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:58,926 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:58,926 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:58,926 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,926 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:58,927 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,933 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|m...00\n|\n|upkeep\n|turn|5' [279 bytes]
+2025-06-25 16:19:58,933 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|m...55\n|\n|upkeep\n|turn|5' [279 bytes]
+2025-06-25 16:19:58,934 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":19}' [1312 bytes]
+2025-06-25 16:19:58,934 DEBUG < TEXT '>battle-gen9bssregi-9297\n|request|{"active":[{...lized":""}]},"rqid":18}' [1310 bytes]
+2025-06-25 16:19:58,934 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,934 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:58,935 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9297
+2025-06-25 16:19:58,935 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:58,935 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:58,935 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:58,936 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:58,944 DEBUG received action 0 for player_0
+2025-06-25 16:19:58,944 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1)}
+2025-06-25 16:19:58,945 DEBUG [DBG] player_0 action received /choose move earthquake
+2025-06-25 16:19:58,945 DEBUG [DBG] player_0 direct order /choose move earthquake
+2025-06-25 16:19:58,945 DEBUG [DBG] player_0 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,945 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:58,946 DEBUG received action 0 for player_1
+2025-06-25 16:19:58,946 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:58,946 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:19:58,946 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:19:58,946 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,946 DEBUG > TEXT 'battle-gen9bssregi-9297|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:58,946 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:58,949 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|m...ss\n|\n|win|EnvPlayer 2' [213 bytes]
+2025-06-25 16:19:58,949 DEBUG < TEXT '>battle-gen9bssregi-9297\n|\n|t:|1750835998\n|m...ss\n|\n|win|EnvPlayer 2' [213 bytes]
+2025-06-25 16:19:58,949 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,949 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-9297
+2025-06-25 16:19:58,950 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:58,950 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:58,950 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:58,950 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:58,951 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:58,957 INFO Episode 2 epoch 1 loss 0.8345
+2025-06-25 16:19:58,957 INFO Episode 2 reward -1.00 time/episode: 2.110
+2025-06-25 16:19:58,957 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 16:19:58,958 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:58,958 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 16:19:58,958 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:58,958 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 16:19:58,964 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:58,964 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:58,964 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:58,964 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:58,964 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:58,964 DEBUG > TEXT '|/accept envplayer1' [19 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '>battle-gen9bssregi-9298\n|init|battle\n|title|...er 1\n|j|☆EnvPlayer 2\n' [109 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '>battle-gen9bssregi-9298\n|init|battle\n|title|...er 2\n|j|☆EnvPlayer 1\n' [91 bytes]
+2025-06-25 16:19:58,969 DEBUG < TEXT '>battle-gen9bssregi-9298\n|j|☆EnvPlayer 2' [42 bytes]
+2025-06-25 16:19:58,975 DEBUG < TEXT '>battle-gen9bssregi-9298\n|t:|1750835998\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:58,975 DEBUG < TEXT '>battle-gen9bssregi-9298\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:58,975 DEBUG < TEXT '>battle-gen9bssregi-9298\n|t:|1750835998\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:58,975 DEBUG < TEXT '>battle-gen9bssregi-9298\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:58,976 DEBUG < TEXT '>battle-gen9bssregi-9298\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:58,976 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"teamPrevie...llized":""}]},"rqid":3}' [1138 bytes]
+2025-06-25 16:19:58,976 DEBUG < TEXT '>battle-gen9bssregi-9298\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:58,976 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"teamPrevie...llized":""}]},"rqid":2}' [1138 bytes]
+2025-06-25 16:19:59,077 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-9298
+2025-06-25 16:19:59,078 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 16:19:59,078 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-9298
+2025-06-25 16:19:59,078 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 16:19:59,087 DEBUG [DBG] player_0 team preview message /team 123 (EnvPlayer 1)
+2025-06-25 16:19:59,087 DEBUG [DBG] player_0 send message '/team 123' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,087 DEBUG > TEXT 'battle-gen9bssregi-9298|/team 123' [33 bytes]
+2025-06-25 16:19:59,088 DEBUG [DBG] player_1 team preview message /team 123 (EnvPlayer 2)
+2025-06-25 16:19:59,088 DEBUG [DBG] player_1 send message '/team 123' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,088 DEBUG > TEXT 'battle-gen9bssregi-9298|/team 123' [33 bytes]
+2025-06-25 16:19:59,088 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,092 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...L50, M|100/100\n|turn|1' [150 bytes]
+2025-06-25 16:19:59,092 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...L50, M|158/158\n|turn|1' [150 bytes]
+2025-06-25 16:19:59,093 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,093 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,093 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,093 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,093 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,094 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,094 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,101 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...llized":""}]},"rqid":4}' [1240 bytes]
+2025-06-25 16:19:59,102 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...llized":""}]},"rqid":5}' [1240 bytes]
+2025-06-25 16:19:59,103 DEBUG received action 9 for player_0
+2025-06-25 16:19:59,103 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,103 DEBUG [DBG] player_0 action received /choose switch garganacl
+2025-06-25 16:19:59,103 DEBUG [DBG] player_0 direct order /choose switch garganacl
+2025-06-25 16:19:59,103 DEBUG [DBG] player_0 send message '/choose switch garganacl' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,103 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:59,103 DEBUG received action 9 for player_1
+2025-06-25 16:19:59,103 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,103 DEBUG [DBG] player_1 action received /choose switch garganacl
+2025-06-25 16:19:59,103 DEBUG [DBG] player_1 direct order /choose switch garganacl
+2025-06-25 16:19:59,104 DEBUG [DBG] player_1 send message '/choose switch garganacl' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,104 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:59,104 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,107 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...75\n|\n|upkeep\n|turn|2' [157 bytes]
+2025-06-25 16:19:59,107 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...llized":""}]},"rqid":6}' [1240 bytes]
+2025-06-25 16:19:59,107 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...00\n|\n|upkeep\n|turn|2' [157 bytes]
+2025-06-25 16:19:59,107 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...llized":""}]},"rqid":7}' [1240 bytes]
+2025-06-25 16:19:59,107 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,107 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,108 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,108 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,108 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,108 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,108 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,115 DEBUG received action 0 for player_0
+2025-06-25 16:19:59,115 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,115 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:59,115 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:59,115 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,115 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,115 DEBUG received action 0 for player_1
+2025-06-25 16:19:59,115 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,116 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:19:59,116 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:19:59,116 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,116 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,116 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,119 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|m...: Garganacl\n|\n|upkeep' [276 bytes]
+2025-06-25 16:19:59,119 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|m...: Garganacl\n|\n|upkeep' [277 bytes]
+2025-06-25 16:19:59,120 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"forceSwitc...llized":""}]},"rqid":9}' [1116 bytes]
+2025-06-25 16:19:59,120 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"forceSwitc...llized":""}]},"rqid":8}' [1116 bytes]
+2025-06-25 16:19:59,120 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,120 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,120 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,120 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,121 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,121 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,121 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,127 DEBUG received action 8 for player_0
+2025-06-25 16:19:59,127 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,127 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:19:59,127 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:19:59,127 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,127 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:59,127 DEBUG received action 9 for player_1
+2025-06-25 16:19:59,127 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,128 DEBUG [DBG] player_1 action received /choose switch glimmora
+2025-06-25 16:19:59,128 DEBUG [DBG] player_1 direct order /choose switch glimmora
+2025-06-25 16:19:59,128 DEBUG [DBG] player_1 send message '/choose switch glimmora' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,128 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:59,128 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,129 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...s, L50|155/155\n|turn|3' [142 bytes]
+2025-06-25 16:19:59,129 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...s, L50|100/100\n|turn|3' [142 bytes]
+2025-06-25 16:19:59,129 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...lized":""}]},"rqid":10}' [1339 bytes]
+2025-06-25 16:19:59,129 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...lized":""}]},"rqid":11}' [1239 bytes]
+2025-06-25 16:19:59,129 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,129 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,130 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,130 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,130 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,130 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,130 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,136 DEBUG received action 5 for player_0
+2025-06-25 16:19:59,136 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0)}
+2025-06-25 16:19:59,136 DEBUG [DBG] player_0 action received /choose move explosion terastallize
+2025-06-25 16:19:59,136 DEBUG [DBG] player_0 direct order /choose move explosion terastallize
+2025-06-25 16:19:59,136 DEBUG [DBG] player_0 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,136 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:59,136 DEBUG received action 0 for player_1
+2025-06-25 16:19:59,136 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0)}
+2025-06-25 16:19:59,137 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:19:59,137 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:19:59,137 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,137 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,137 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,140 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|-...: Metagross\n|\n|upkeep' [310 bytes]
+2025-06-25 16:19:59,140 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"forceSwitc...lized":""}]},"rqid":12}' [1115 bytes]
+2025-06-25 16:19:59,140 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|-...: Metagross\n|\n|upkeep' [309 bytes]
+2025-06-25 16:19:59,140 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"forceSwitc...lized":""}]},"rqid":13}' [1115 bytes]
+2025-06-25 16:19:59,140 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,140 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,141 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,141 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,141 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,141 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,141 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,146 DEBUG received action 8 for player_0
+2025-06-25 16:19:59,146 DEBUG current mapping for player_0: {8: ('switch', 0)}
+2025-06-25 16:19:59,147 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:19:59,147 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:19:59,147 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,147 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:59,147 DEBUG received action 8 for player_1
+2025-06-25 16:19:59,147 DEBUG current mapping for player_1: {8: ('switch', 0)}
+2025-06-25 16:19:59,147 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:19:59,147 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:19:59,147 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,147 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:59,147 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,151 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...L50, M|158/158\n|turn|4' [142 bytes]
+2025-06-25 16:19:59,151 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|s...L50, M|100/100\n|turn|4' [142 bytes]
+2025-06-25 16:19:59,151 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...lized":""}]},"rqid":15}' [1337 bytes]
+2025-06-25 16:19:59,151 DEBUG < TEXT '>battle-gen9bssregi-9298\n|request|{"active":[{...lized":""}]},"rqid":14}' [1212 bytes]
+2025-06-25 16:19:59,152 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,152 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,152 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9298
+2025-06-25 16:19:59,152 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,152 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,152 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,153 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,158 DEBUG received action 0 for player_0
+2025-06-25 16:19:59,158 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 16:19:59,158 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:59,158 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:59,158 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,158 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,158 DEBUG received action 5 for player_1
+2025-06-25 16:19:59,158 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1)}
+2025-06-25 16:19:59,159 DEBUG [DBG] player_1 action received /choose move explosion terastallize
+2025-06-25 16:19:59,159 DEBUG [DBG] player_1 direct order /choose move explosion terastallize
+2025-06-25 16:19:59,159 DEBUG [DBG] player_1 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,159 DEBUG > TEXT 'battle-gen9bssregi-9298|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:59,159 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,161 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|-...ra\n|\n|win|EnvPlayer 2' [219 bytes]
+2025-06-25 16:19:59,161 DEBUG < TEXT '>battle-gen9bssregi-9298\n|\n|t:|1750835999\n|-...ra\n|\n|win|EnvPlayer 2' [220 bytes]
+2025-06-25 16:19:59,161 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:59,162 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:59,162 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,162 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-9298
+2025-06-25 16:19:59,162 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:19:59,163 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,163 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:19:59,169 INFO Episode 3 epoch 1 loss 0.8621
+2025-06-25 16:19:59,169 INFO Episode 3 reward -1.00 time/episode: 0.212
+2025-06-25 16:19:59,169 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 16:19:59,170 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:59,170 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 16:19:59,170 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:59,170 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 16:19:59,175 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:59,175 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '>battle-gen9bssregi-9299\n|init|battle\n|title|...er 2\n|j|☆EnvPlayer 1\n' [91 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '>battle-gen9bssregi-9299\n|j|☆EnvPlayer 2' [42 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:19:59,176 DEBUG < TEXT '>battle-gen9bssregi-9299\n|init|battle\n|title|...er 1\n|j|☆EnvPlayer 2\n' [109 bytes]
+2025-06-25 16:19:59,176 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:19:59,177 DEBUG > TEXT '|/accept envplayer1' [19 bytes]
+2025-06-25 16:19:59,177 DEBUG < TEXT '|popup|envplayer1 is not challenging you. Maybe...ed before you accepted?' [83 bytes]
+2025-06-25 16:19:59,180 DEBUG < TEXT '>battle-gen9bssregi-9299\n|t:|1750835999\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:59,180 DEBUG < TEXT '>battle-gen9bssregi-9299\n|t:|1750835999\n|gametype|singles' [57 bytes]
+2025-06-25 16:19:59,180 DEBUG < TEXT '>battle-gen9bssregi-9299\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:59,180 DEBUG < TEXT '>battle-gen9bssregi-9299\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:19:59,180 DEBUG < TEXT '>battle-gen9bssregi-9299\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:59,181 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"teamPrevie...llized":""}]},"rqid":2}' [1138 bytes]
+2025-06-25 16:19:59,181 DEBUG < TEXT '>battle-gen9bssregi-9299\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:19:59,181 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"teamPrevie...llized":""}]},"rqid":3}' [1138 bytes]
+2025-06-25 16:19:59,282 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-9299
+2025-06-25 16:19:59,282 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 16:19:59,283 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-9299
+2025-06-25 16:19:59,283 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 16:19:59,288 DEBUG [DBG] player_0 team preview message /team 123 (EnvPlayer 1)
+2025-06-25 16:19:59,288 DEBUG [DBG] player_0 send message '/team 123' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,289 DEBUG > TEXT 'battle-gen9bssregi-9299|/team 123' [33 bytes]
+2025-06-25 16:19:59,289 DEBUG [DBG] player_1 team preview message /team 123 (EnvPlayer 2)
+2025-06-25 16:19:59,289 DEBUG [DBG] player_1 send message '/team 123' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,289 DEBUG > TEXT 'battle-gen9bssregi-9299|/team 123' [33 bytes]
+2025-06-25 16:19:59,289 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,291 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...L50, M|100/100\n|turn|1' [150 bytes]
+2025-06-25 16:19:59,292 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...llized":""}]},"rqid":4}' [1240 bytes]
+2025-06-25 16:19:59,292 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...L50, M|158/158\n|turn|1' [150 bytes]
+2025-06-25 16:19:59,292 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...llized":""}]},"rqid":5}' [1240 bytes]
+2025-06-25 16:19:59,292 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,292 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,292 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,292 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,293 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,293 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,293 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,299 DEBUG received action 9 for player_0
+2025-06-25 16:19:59,299 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,299 DEBUG [DBG] player_0 action received /choose switch garganacl
+2025-06-25 16:19:59,299 DEBUG [DBG] player_0 direct order /choose switch garganacl
+2025-06-25 16:19:59,299 DEBUG [DBG] player_0 send message '/choose switch garganacl' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,299 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:59,300 DEBUG received action 8 for player_1
+2025-06-25 16:19:59,300 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,300 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:19:59,300 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:19:59,300 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,300 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:59,300 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,303 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...75\n|\n|upkeep\n|turn|2' [154 bytes]
+2025-06-25 16:19:59,303 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...llized":""}]},"rqid":6}' [1240 bytes]
+2025-06-25 16:19:59,303 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...00\n|\n|upkeep\n|turn|2' [154 bytes]
+2025-06-25 16:19:59,303 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...llized":""}]},"rqid":7}' [1340 bytes]
+2025-06-25 16:19:59,304 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,304 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,304 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,304 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,304 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,304 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,305 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,310 DEBUG received action 0 for player_0
+2025-06-25 16:19:59,310 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,310 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:59,310 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:59,310 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,310 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,311 DEBUG received action 8 for player_1
+2025-06-25 16:19:59,311 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,311 DEBUG [DBG] player_1 action received /choose switch glimmora
+2025-06-25 16:19:59,311 DEBUG [DBG] player_1 direct order /choose switch glimmora
+2025-06-25 16:19:59,311 DEBUG [DBG] player_1 send message '/choose switch glimmora' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,311 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:59,311 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,314 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...: Garganacl\n|\n|upkeep' [314 bytes]
+2025-06-25 16:19:59,314 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"forceSwitc...oCancel":true,"rqid":8}' [1132 bytes]
+2025-06-25 16:19:59,314 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...: Garganacl\n|\n|upkeep' [315 bytes]
+2025-06-25 16:19:59,314 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"wait":true...llized":""}]},"rqid":9}' [1109 bytes]
+2025-06-25 16:19:59,315 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,315 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,315 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,315 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:19:59,827 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:19:59,835 DEBUG received action 9 for player_0
+2025-06-25 16:19:59,835 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,836 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:19:59,836 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:19:59,836 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,836 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch glimmora' [47 bytes]
+2025-06-25 16:19:59,836 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,839 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s... p1a: Glimmora\n|turn|3' [160 bytes]
+2025-06-25 16:19:59,840 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s... p1a: Glimmora\n|turn|3' [160 bytes]
+2025-06-25 16:19:59,840 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,840 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,840 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":10}' [1239 bytes]
+2025-06-25 16:19:59,840 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":11}' [1241 bytes]
+2025-06-25 16:19:59,841 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,841 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,942 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,942 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,942 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,952 DEBUG received action 0 for player_0
+2025-06-25 16:19:59,952 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0)}
+2025-06-25 16:19:59,952 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:59,953 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:59,953 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,953 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,953 DEBUG received action 4 for player_1
+2025-06-25 16:19:59,953 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,953 DEBUG [DBG] player_1 action received /choose move explosion terastallize
+2025-06-25 16:19:59,953 DEBUG [DBG] player_1 direct order /choose move explosion terastallize
+2025-06-25 16:19:59,953 DEBUG [DBG] player_1 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,954 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:19:59,954 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,966 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|-...a: Glimmora\n|\n|upkeep' [395 bytes]
+2025-06-25 16:19:59,966 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|-...a: Glimmora\n|\n|upkeep' [395 bytes]
+2025-06-25 16:19:59,966 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"forceSwitc...lized":""}]},"rqid":13}' [1117 bytes]
+2025-06-25 16:19:59,966 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"forceSwitc...lized":""}]},"rqid":12}' [1115 bytes]
+2025-06-25 16:19:59,967 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,967 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,967 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,967 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,967 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,968 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,968 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,973 DEBUG received action 8 for player_0
+2025-06-25 16:19:59,974 DEBUG current mapping for player_0: {8: ('switch', 0)}
+2025-06-25 16:19:59,974 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:19:59,974 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:19:59,974 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,974 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:59,974 DEBUG received action 9 for player_1
+2025-06-25 16:19:59,974 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:19:59,974 DEBUG [DBG] player_1 action received /choose switch garganacl
+2025-06-25 16:19:59,974 DEBUG [DBG] player_1 direct order /choose switch garganacl
+2025-06-25 16:19:59,974 DEBUG [DBG] player_1 send message '/choose switch garganacl' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,974 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch garganacl' [48 bytes]
+2025-06-25 16:19:59,974 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,977 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...L50, F|100/100\n|turn|4' [144 bytes]
+2025-06-25 16:19:59,977 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":14}' [1337 bytes]
+2025-06-25 16:19:59,977 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...L50, F|175/175\n|turn|4' [144 bytes]
+2025-06-25 16:19:59,977 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":15}' [1214 bytes]
+2025-06-25 16:19:59,978 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,978 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,978 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,978 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,978 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,978 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,978 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,984 DEBUG received action 0 for player_0
+2025-06-25 16:19:59,984 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1)}
+2025-06-25 16:19:59,984 DEBUG [DBG] player_0 action received /choose move earthquake
+2025-06-25 16:19:59,984 DEBUG [DBG] player_0 direct order /choose move earthquake
+2025-06-25 16:19:59,984 DEBUG [DBG] player_0 send message '/choose move earthquake' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,985 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move earthquake' [47 bytes]
+2025-06-25 16:19:59,985 DEBUG received action 8 for player_1
+2025-06-25 16:19:59,985 DEBUG current mapping for player_1: {0: ('move', 0), 8: ('switch', 0)}
+2025-06-25 16:19:59,985 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:19:59,985 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:19:59,985 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,985 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose switch metagross' [48 bytes]
+2025-06-25 16:19:59,985 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:19:59,990 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...00\n|\n|upkeep\n|turn|5' [215 bytes]
+2025-06-25 16:19:59,990 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750835999\n|s...55\n|\n|upkeep\n|turn|5' [215 bytes]
+2025-06-25 16:19:59,991 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,991 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:19:59,991 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":17}' [1312 bytes]
+2025-06-25 16:19:59,991 DEBUG < TEXT '>battle-gen9bssregi-9299\n|request|{"active":[{...lized":""}]},"rqid":16}' [1337 bytes]
+2025-06-25 16:19:59,991 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9299
+2025-06-25 16:19:59,991 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:19:59,992 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:19:59,992 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:19:59,992 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:19:59,998 DEBUG received action 1 for player_0
+2025-06-25 16:19:59,998 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1)}
+2025-06-25 16:19:59,998 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:19:59,998 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:19:59,998 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,998 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,998 DEBUG received action 1 for player_1
+2025-06-25 16:19:59,999 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 8: ('switch', 0)}
+2025-06-25 16:19:59,999 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:19:59,999 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:19:59,999 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9299
+2025-06-25 16:19:59,999 DEBUG > TEXT 'battle-gen9bssregi-9299|/choose move explosion' [46 bytes]
+2025-06-25 16:19:59,999 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,007 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750836000\n|m...ss\n|\n|win|EnvPlayer 2' [285 bytes]
+2025-06-25 16:20:00,007 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:00,007 DEBUG < TEXT '>battle-gen9bssregi-9299\n|\n|t:|1750836000\n|m...ss\n|\n|win|EnvPlayer 2' [285 bytes]
+2025-06-25 16:20:00,007 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:00,007 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-9299
+2025-06-25 16:20:00,008 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-9299
+2025-06-25 16:20:00,008 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a140790> qsize=0
+2025-06-25 16:20:00,008 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:00,009 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1405c0> qsize=0
+2025-06-25 16:20:00,015 INFO Episode 4 epoch 1 loss 0.8644
+2025-06-25 16:20:00,015 INFO Episode 4 reward -1.00 time/episode: 0.846
+2025-06-25 16:20:00,015 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 16:20:00,024 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:20:00,024 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 16:20:00,024 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:20:00,024 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 16:20:00,031 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:20:00,031 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:20:00,031 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-06-25 16:20:00,031 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-06-25 16:20:00,032 DEBUG > TEXT '|/utm Glimmora  |||toxicdebris|explosion||,,,,,...|,,,,252,|||||,,,,,Rock' [196 bytes]
+2025-06-25 16:20:00,032 DEBUG > TEXT '|/accept envplayer1' [19 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '>battle-gen9bssregi-9300\n|init|battle\n|title|...er 1\n|j|☆EnvPlayer 2\n' [109 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [93 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '>battle-gen9bssregi-9300\n|init|battle\n|title|...er 2\n|j|☆EnvPlayer 1\n' [91 bytes]
+2025-06-25 16:20:00,032 DEBUG < TEXT '>battle-gen9bssregi-9300\n|j|☆EnvPlayer 2' [42 bytes]
+2025-06-25 16:20:00,033 DEBUG < TEXT '|popup|envplayer1 is not challenging you. Maybe...ed before you accepted?' [83 bytes]
+2025-06-25 16:20:00,034 DEBUG < TEXT '>battle-gen9bssregi-9300\n|t:|1750836000\n|gametype|singles' [57 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"teamPrevie...llized":""}]},"rqid":2}' [1138 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|t:|1750836000\n|gametype|singles' [57 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|player|p1|EnvPlayer 1|101|' [52 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|player|p2|EnvPlayer ...L50, F|\n|teampreview|3' [386 bytes]
+2025-06-25 16:20:00,035 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"teamPrevie...llized":""}]},"rqid":3}' [1138 bytes]
+2025-06-25 16:20:00,137 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-9300
+2025-06-25 16:20:00,137 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-06-25 16:20:00,137 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-9300
+2025-06-25 16:20:00,137 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-06-25 16:20:00,144 DEBUG [DBG] player_0 team preview message /team 123 (EnvPlayer 1)
+2025-06-25 16:20:00,144 DEBUG [DBG] player_0 send message '/team 123' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,144 DEBUG > TEXT 'battle-gen9bssregi-9300|/team 123' [33 bytes]
+2025-06-25 16:20:00,144 DEBUG [DBG] player_1 team preview message /team 123 (EnvPlayer 2)
+2025-06-25 16:20:00,144 DEBUG [DBG] player_1 send message '/team 123' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,144 DEBUG > TEXT 'battle-gen9bssregi-9300|/team 123' [33 bytes]
+2025-06-25 16:20:00,145 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,149 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...L50, F|100/100\n|turn|1' [150 bytes]
+2025-06-25 16:20:00,149 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...llized":""}]},"rqid":4}' [1240 bytes]
+2025-06-25 16:20:00,149 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...L50, F|158/158\n|turn|1' [150 bytes]
+2025-06-25 16:20:00,149 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...llized":""}]},"rqid":5}' [1240 bytes]
+2025-06-25 16:20:00,149 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,149 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:00,150 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,150 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:00,150 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:00,150 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:00,150 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:00,155 DEBUG received action 8 for player_0
+2025-06-25 16:20:00,155 DEBUG current mapping for player_0: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,155 DEBUG [DBG] player_0 action received /choose switch metagross
+2025-06-25 16:20:00,155 DEBUG [DBG] player_0 direct order /choose switch metagross
+2025-06-25 16:20:00,155 DEBUG [DBG] player_0 send message '/choose switch metagross' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,155 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose switch metagross' [48 bytes]
+2025-06-25 16:20:00,155 DEBUG received action 9 for player_1
+2025-06-25 16:20:00,155 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,155 DEBUG [DBG] player_1 action received /choose switch garganacl
+2025-06-25 16:20:00,155 DEBUG [DBG] player_1 direct order /choose switch garganacl
+2025-06-25 16:20:00,155 DEBUG [DBG] player_1 send message '/choose switch garganacl' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,155 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose switch garganacl' [48 bytes]
+2025-06-25 16:20:00,155 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,159 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...00\n|\n|upkeep\n|turn|2' [154 bytes]
+2025-06-25 16:20:00,159 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...llized":""}]},"rqid":6}' [1340 bytes]
+2025-06-25 16:20:00,159 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...75\n|\n|upkeep\n|turn|2' [154 bytes]
+2025-06-25 16:20:00,159 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...llized":""}]},"rqid":7}' [1240 bytes]
+2025-06-25 16:20:00,159 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,159 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:00,160 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,160 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:00,160 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:00,160 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:00,160 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:00,164 DEBUG received action 0 for player_0
+2025-06-25 16:20:00,164 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,165 DEBUG [DBG] player_0 action received /choose move earthquake
+2025-06-25 16:20:00,165 DEBUG [DBG] player_0 direct order /choose move earthquake
+2025-06-25 16:20:00,165 DEBUG [DBG] player_0 send message '/choose move earthquake' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,165 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move earthquake' [47 bytes]
+2025-06-25 16:20:00,165 DEBUG received action 0 for player_1
+2025-06-25 16:20:00,165 DEBUG current mapping for player_1: {0: ('move', 0), 4: ('terastal', 0), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,165 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:20:00,165 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:20:00,165 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,165 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move explosion' [46 bytes]
+2025-06-25 16:20:00,165 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,179 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|m...: Garganacl\n|\n|upkeep' [287 bytes]
+2025-06-25 16:20:00,179 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"wait":true...llized":""}]},"rqid":8}' [1109 bytes]
+2025-06-25 16:20:00,179 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|m...: Garganacl\n|\n|upkeep' [286 bytes]
+2025-06-25 16:20:00,179 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"forceSwitc...oCancel":true,"rqid":9}' [1132 bytes]
+2025-06-25 16:20:00,180 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,180 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:00,693 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:20:00,693 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:00,693 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:00,697 DEBUG received action 8 for player_1
+2025-06-25 16:20:00,697 DEBUG current mapping for player_1: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,697 DEBUG [DBG] player_1 action received /choose switch metagross
+2025-06-25 16:20:00,697 DEBUG [DBG] player_1 direct order /choose switch metagross
+2025-06-25 16:20:00,697 DEBUG [DBG] player_1 send message '/choose switch metagross' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,697 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose switch metagross' [48 bytes]
+2025-06-25 16:20:00,697 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,699 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...s, L50|100/100\n|turn|3' [95 bytes]
+2025-06-25 16:20:00,699 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|s...s, L50|155/155\n|turn|3' [95 bytes]
+2025-06-25 16:20:00,700 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,700 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:00,700 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":10}' [1341 bytes]
+2025-06-25 16:20:00,700 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":11}' [1339 bytes]
+2025-06-25 16:20:00,801 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,801 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:00,801 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:00,801 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:00,801 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:00,806 DEBUG received action 5 for player_0
+2025-06-25 16:20:00,806 DEBUG current mapping for player_0: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:00,806 DEBUG [DBG] player_0 action received /choose move explosion terastallize
+2025-06-25 16:20:00,806 DEBUG [DBG] player_0 direct order /choose move explosion terastallize
+2025-06-25 16:20:00,806 DEBUG [DBG] player_0 send message '/choose move explosion terastallize' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,806 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move explosion terastallize' [59 bytes]
+2025-06-25 16:20:00,806 DEBUG received action 0 for player_1
+2025-06-25 16:20:00,806 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0)}
+2025-06-25 16:20:00,806 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:20:00,806 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:20:00,806 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:00,806 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move earthquake' [47 bytes]
+2025-06-25 16:20:00,807 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:00,812 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|-...: Metagross\n|\n|upkeep' [291 bytes]
+2025-06-25 16:20:00,812 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"forceSwitc...Cancel":true,"rqid":12}' [1133 bytes]
+2025-06-25 16:20:00,812 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836000\n|-...: Metagross\n|\n|upkeep' [291 bytes]
+2025-06-25 16:20:00,812 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"wait":true...lized":""}]},"rqid":13}' [1107 bytes]
+2025-06-25 16:20:00,812 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:00,812 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:00,813 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:00,813 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:20:01,327 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:20:01,341 DEBUG received action 9 for player_0
+2025-06-25 16:20:01,342 DEBUG current mapping for player_0: {8: ('switch', 0), 9: ('switch', 1)}
+2025-06-25 16:20:01,342 DEBUG [DBG] player_0 action received /choose switch garganacl
+2025-06-25 16:20:01,342 DEBUG [DBG] player_0 direct order /choose switch garganacl
+2025-06-25 16:20:01,342 DEBUG [DBG] player_0 send message '/choose switch garganacl' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:01,342 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose switch garganacl' [48 bytes]
+2025-06-25 16:20:01,343 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:01,354 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836001\n|s...L50, F|175/175\n|turn|4' [98 bytes]
+2025-06-25 16:20:01,354 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":14}' [1214 bytes]
+2025-06-25 16:20:01,354 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836001\n|s...L50, F|100/100\n|turn|4' [98 bytes]
+2025-06-25 16:20:01,354 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":15}' [1338 bytes]
+2025-06-25 16:20:01,355 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:01,355 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:01,356 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:01,356 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:01,456 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:01,458 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:01,458 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:01,464 DEBUG received action 0 for player_0
+2025-06-25 16:20:01,464 DEBUG current mapping for player_0: {0: ('move', 0), 8: ('switch', 0)}
+2025-06-25 16:20:01,464 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:20:01,464 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:20:01,464 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:01,464 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move explosion' [46 bytes]
+2025-06-25 16:20:01,465 DEBUG received action 0 for player_1
+2025-06-25 16:20:01,465 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0)}
+2025-06-25 16:20:01,465 DEBUG [DBG] player_1 action received /choose move earthquake
+2025-06-25 16:20:01,465 DEBUG [DBG] player_1 direct order /choose move earthquake
+2025-06-25 16:20:01,465 DEBUG [DBG] player_1 send message '/choose move earthquake' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:01,465 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move earthquake' [47 bytes]
+2025-06-25 16:20:01,465 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:01,468 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836001\n|m...: Garganacl\n|\n|upkeep' [286 bytes]
+2025-06-25 16:20:01,468 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"forceSwitc...Cancel":true,"rqid":16}' [1131 bytes]
+2025-06-25 16:20:01,468 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836001\n|m...: Garganacl\n|\n|upkeep' [286 bytes]
+2025-06-25 16:20:01,468 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"wait":true...lized":""}]},"rqid":17}' [1107 bytes]
+2025-06-25 16:20:01,469 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:01,469 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:01,470 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:01,470 DEBUG [DBG] race_get start qsize=0 events=[True, False]
+2025-06-25 16:20:01,988 DEBUG [DBG] race_get done result=None qsize=0
+2025-06-25 16:20:02,001 DEBUG received action 8 for player_0
+2025-06-25 16:20:02,001 DEBUG current mapping for player_0: {8: ('switch', 0)}
+2025-06-25 16:20:02,001 DEBUG [DBG] player_0 action received /choose switch glimmora
+2025-06-25 16:20:02,001 DEBUG [DBG] player_0 direct order /choose switch glimmora
+2025-06-25 16:20:02,001 DEBUG [DBG] player_0 send message '/choose switch glimmora' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:02,002 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose switch glimmora' [47 bytes]
+2025-06-25 16:20:02,002 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:02,012 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836002\n|s...L50, F|158/158\n|turn|5' [96 bytes]
+2025-06-25 16:20:02,013 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836002\n|s...L50, F|100/100\n|turn|5' [96 bytes]
+2025-06-25 16:20:02,013 DEBUG [DBG] player_0 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:02,013 DEBUG [DBG] player_0 waiting action (qsize=0)
+2025-06-25 16:20:02,014 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":18}' [1212 bytes]
+2025-06-25 16:20:02,014 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:02,014 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:02,015 DEBUG < TEXT '>battle-gen9bssregi-9300\n|request|{"active":[{...lized":""}]},"rqid":19}' [1338 bytes]
+2025-06-25 16:20:02,116 DEBUG [DBG] player_1 queue battle -> battle-gen9bssregi-9300
+2025-06-25 16:20:02,117 DEBUG [DBG] player_1 waiting action (qsize=0)
+2025-06-25 16:20:02,119 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:02,131 DEBUG received action 0 for player_0
+2025-06-25 16:20:02,131 DEBUG current mapping for player_0: {0: ('move', 0)}
+2025-06-25 16:20:02,132 DEBUG [DBG] player_0 action received /choose move explosion
+2025-06-25 16:20:02,132 DEBUG [DBG] player_0 direct order /choose move explosion
+2025-06-25 16:20:02,132 DEBUG [DBG] player_0 send message '/choose move explosion' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:02,132 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move explosion' [46 bytes]
+2025-06-25 16:20:02,133 DEBUG received action 1 for player_1
+2025-06-25 16:20:02,133 DEBUG current mapping for player_1: {0: ('move', 0), 1: ('move', 1), 4: ('terastal', 0), 5: ('terastal', 1), 8: ('switch', 0)}
+2025-06-25 16:20:02,133 DEBUG [DBG] player_1 action received /choose move explosion
+2025-06-25 16:20:02,133 DEBUG [DBG] player_1 direct order /choose move explosion
+2025-06-25 16:20:02,133 DEBUG [DBG] player_1 send message '/choose move explosion' to battle battle-gen9bssregi-9300
+2025-06-25 16:20:02,133 DEBUG > TEXT 'battle-gen9bssregi-9300|/choose move explosion' [46 bytes]
+2025-06-25 16:20:02,133 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-06-25 16:20:02,138 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836002\n|m...ra\n|\n|win|EnvPlayer 2' [183 bytes]
+2025-06-25 16:20:02,138 DEBUG < TEXT '>battle-gen9bssregi-9300\n|\n|t:|1750836002\n|m...ra\n|\n|win|EnvPlayer 2' [183 bytes]
+2025-06-25 16:20:02,138 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:02,138 DEBUG [DBG] player_0 finished battle battle-gen9bssregi-9300
+2025-06-25 16:20:02,139 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 16:20:02,139 DEBUG [DBG] player_1 finished battle battle-gen9bssregi-9300
+2025-06-25 16:20:02,139 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x10a1403f0> qsize=0
+2025-06-25 16:20:02,139 DEBUG [DBG] race_get start qsize=1 events=[False, False]
+2025-06-25 16:20:02,140 DEBUG [DBG] race_get done result=<poke_env.environment.battle.Battle object at 0x1094e3880> qsize=0
+2025-06-25 16:20:02,150 INFO Episode 5 epoch 1 loss 0.8461
+2025-06-25 16:20:02,150 INFO Episode 5 reward -1.00 time/episode: 2.134
+2025-06-25 16:20:02,150 INFO Initial probs: [0.249 0.    0.    0.    0.222 0.    0.    0.    0.248 0.281]
+2025-06-25 16:20:02,150 INFO Updated probs: [0.249 0.    0.    0.    0.222 0.    0.    0.    0.248 0.281]
+2025-06-25 16:20:02,151 INFO Prob change: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+2025-06-25 16:20:02,151 DEBUG > CLOSE 1000 (OK) [2 bytes]
+2025-06-25 16:20:02,151 DEBUG = connection is CLOSING
+2025-06-25 16:20:02,152 DEBUG < CLOSE 1000 (OK) [2 bytes]
+2025-06-25 16:20:02,152 DEBUG < EOF
+2025-06-25 16:20:02,152 DEBUG > EOF
+2025-06-25 16:20:02,152 DEBUG = connection is CLOSED
+2025-06-25 16:20:02,152 DEBUG x half-closing TCP connection
+2025-06-25 16:20:02,153 DEBUG > CLOSE 1000 (OK) [2 bytes]
+2025-06-25 16:20:02,153 DEBUG = connection is CLOSING
+2025-06-25 16:20:02,153 DEBUG < TEXT '>battle-gen9bssregi-9296\n|l|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:20:02,153 DEBUG < TEXT '>battle-gen9bssregi-9297\n|l|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:20:02,154 DEBUG < TEXT '>battle-gen9bssregi-9298\n|l|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:20:02,154 DEBUG < TEXT '>battle-gen9bssregi-9299\n|l|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:20:02,154 DEBUG < TEXT '>battle-gen9bssregi-9300\n|l|☆EnvPlayer 1' [42 bytes]
+2025-06-25 16:20:02,154 DEBUG < CLOSE 1000 (OK) [2 bytes]
+2025-06-25 16:20:02,154 DEBUG < EOF
+2025-06-25 16:20:02,154 DEBUG > EOF
+2025-06-25 16:20:02,154 DEBUG = connection is CLOSED
+2025-06-25 16:20:02,154 DEBUG x half-closing TCP connection
+2025-06-25 16:20:02,158 INFO Model saved to model2.pt
