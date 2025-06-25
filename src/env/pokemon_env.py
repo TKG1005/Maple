@@ -499,7 +499,51 @@ class PokemonEnv(gym.Env):
                 self._need_action[pid] = True
             battles[pid] = battle
 
-        masks = self._compute_all_masks()
+        # 最新の Battle 情報からマスクとマッピングを計算
+        mask_list: list[np.ndarray] = []
+        for pid in self.agent_ids:
+            battle = battles.get(pid)
+            if battle is None:
+                mask_list.append(np.zeros(self.ACTION_SIZE, dtype=np.int8))
+                self._action_mappings[pid] = {}
+                continue
+
+            mask, mapping = self.action_helper.get_available_actions(battle)
+
+            self._logger.debug(
+                "[DBG] %s: %d moves, %d switches (force_switch=%s)",
+                pid,
+                len(getattr(battle, "available_moves", [])),
+                len(getattr(battle, "available_switches", [])),
+                getattr(battle, "force_switch", False),
+            )
+
+            switches_info = [
+                f"{getattr(p, 'species', '?')}"
+                f"(HP:{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%"
+                f", fainted={getattr(p, 'fainted', False)}"
+                f", active={getattr(p, 'active', False)})"
+                for p in getattr(battle, 'available_switches', [])
+            ]
+            self._logger.debug(
+                "[DBG] %s available_switches: %s", pid, switches_info
+            )
+
+            selected = self._selected_species.get(pid)
+            if selected:
+                for idx, (atype, sub_idx) in mapping.items():
+                    if atype == "switch":
+                        try:
+                            pkmn = battle.available_switches[sub_idx]
+                        except IndexError:
+                            continue
+                        if pkmn.species not in selected:
+                            mask[idx] = 0
+
+            self._action_mappings[pid] = mapping
+            mask_list.append(mask)
+
+        masks = tuple(mask_list)  # type: ignore[assignment]
 
         observations = {
             pid: self.state_observer.observe(battles[pid])
