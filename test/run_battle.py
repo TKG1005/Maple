@@ -37,7 +37,7 @@ from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
-TEAM_FILE = ROOT_DIR / "config" / "my_team.txt"
+TEAM_FILE = ROOT_DIR / "config" / "my_team_for_debug.txt"
 try:
     TEAM = TEAM_FILE.read_text()
 except OSError:

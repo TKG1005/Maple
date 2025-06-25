@@ -224,7 +224,11 @@ class PokemonEnv(gym.Env):
         if not hasattr(self, "_env_players"):
             from pathlib import Path
 
-            team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
+            team_path = (
+                Path(__file__).resolve().parents[2]
+                / "config"
+                / "my_team_for_debug.txt"
+            )
             try:
                 team = team_path.read_text()
             except OSError:  # pragma: no cover - デバッグ用
