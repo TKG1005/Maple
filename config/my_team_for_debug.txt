@@ -1,53 +1,20 @@
-Glimmora (F) @ Focus Sash
-Ability: Toxic Debris
-EVs: 252 SpA / 4 SpD / 252 Spe
-Timid Nature
-- Mortal Spin
-- Stealth Rock
-- Power Gem
-- Sludge Wave
+Hydreigon  
+Ability: Levitate  
+Tera Type: Dark  
+EVs: 252 Spe  
+- U-turn  
+- Head Smash  
 
-Tornadus-Therian (M) @ Heavy-Duty Boots
-Ability: Regenerator
-EVs: 252 SpA / 4 SpD / 252 Spe
-Timid Nature
-- Bleakwind Storm
-- Grass Knot
-- U-turn
-- Nasty Plot
+Alomomola @ Rocky Helmet  
+Ability: Regenerator  
+Tera Type: Water  
+EVs: 252 Def / 252 SpD  
+IVs: 0 Atk  
+- Healing Wish  
 
-Gholdengo @ Choice Scarf
-Ability: Good as Gold
-EVs: 252 SpA / 4 SpD / 252 Spe
-Timid Nature
-- Make It Rain
-- Shadow Ball
-- Focus Blast
-- Trick
+Garganacl  
+Ability: Purifying Salt  
+Tera Type: Rock  
+EVs: 252 SpD  
+- Explosion  
 
-Dragonite (M) @ Live Orb
-Ability: Multiscale
-EVs: 252 Atk / 4 SpD / 252 Spe
-Adamant Nature
-- Dragon Dance
-- Extreme Speed
-- Earthquake
-- Ice Spinner
-
-Great Tusk @ Booster Energy
-Ability: Protosynthesis
-EVs: 252 Atk / 4 SpD / 252 Spe
-Adamant Nature
-- Headlong Rush
-- Close Combat
-- Ice Spinner
-- Rapid Spin
-
-Cinderace (M) @ Heavy-Duty Boots
-Ability: Libero
-EVs: 252 Atk / 4 SpD / 252 Spe
-Jolly Nature
-- Pyro Ball
-- U-turn
-- Court Change
-- Will-O-Wisp

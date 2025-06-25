@@ -1,0 +1,46 @@
+2025-06-25 12:59:14,118 INFO Run parameters: {'log_level': 'DEBUG', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 1000, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1}
+2025-06-25 12:59:15,048 DEBUG environment reset: cleared action queues and mappings
+2025-06-25 12:59:15,054 DEBUG = connection is CONNECTING
+2025-06-25 12:59:15,055 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 12:59:15,055 DEBUG > Host: localhost:8000
+2025-06-25 12:59:15,055 DEBUG > Upgrade: websocket
+2025-06-25 12:59:15,055 DEBUG > Connection: Upgrade
+2025-06-25 12:59:15,055 DEBUG > Sec-WebSocket-Key: OllEHz34UIVem/HOvllCnw==
+2025-06-25 12:59:15,055 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 12:59:15,055 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 12:59:15,055 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 12:59:15,057 DEBUG = connection is CONNECTING
+2025-06-25 12:59:15,057 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-06-25 12:59:15,057 DEBUG > Host: localhost:8000
+2025-06-25 12:59:15,057 DEBUG > Upgrade: websocket
+2025-06-25 12:59:15,057 DEBUG > Connection: Upgrade
+2025-06-25 12:59:15,057 DEBUG > Sec-WebSocket-Key: eJdEcOB4L4jcLi75m17wWQ==
+2025-06-25 12:59:15,057 DEBUG > Sec-WebSocket-Version: 13
+2025-06-25 12:59:15,057 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-06-25 12:59:15,057 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-06-25 12:59:15,059 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 12:59:15,060 DEBUG < Upgrade: websocket
+2025-06-25 12:59:15,060 DEBUG < Connection: Upgrade
+2025-06-25 12:59:15,060 DEBUG < Sec-WebSocket-Accept: 0BYhPPeLofoJW2IWGcarPtUmRvc=
+2025-06-25 12:59:15,060 DEBUG = connection is OPEN
+2025-06-25 12:59:15,064 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-06-25 12:59:15,064 DEBUG < Upgrade: websocket
+2025-06-25 12:59:15,064 DEBUG < Connection: Upgrade
+2025-06-25 12:59:15,065 DEBUG < Sec-WebSocket-Accept: EuwWzQkKP6JaAsiiJBptlL/fLG0=
+2025-06-25 12:59:15,065 DEBUG = connection is OPEN
+2025-06-25 12:59:15,070 DEBUG < TEXT '|updateuser| Guest 6|0|265|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-06-25 12:59:15,071 DEBUG < TEXT '|updateuser| Guest 7|0|1|{"blockChallenges":fal...c|[Gen 1] Custom Game,c' [8020 bytes]
+2025-06-25 12:59:15,071 DEBUG < TEXT '|challstr|4|5464cb3e811e65ca3a18650d031ea6ea4be...74fc020bf9f7633b89384c9' [268 bytes]
+2025-06-25 12:59:15,071 DEBUG < TEXT '|challstr|4|0bad8cc1b23108101537f59d6b5b862204a...9fa5cb6d574d5fbd1e1c1df' [268 bytes]
+2025-06-25 12:59:15,071 DEBUG > TEXT '|/trn EnvPlayer 2,0,' [20 bytes]
+2025-06-25 12:59:15,072 DEBUG > TEXT '|/trn EnvPlayer 1,0,' [20 bytes]
+2025-06-25 12:59:15,073 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 12:59:15,073 DEBUG < TEXT '|updateuser| EnvPlayer 2|1|1|{"blockChallenges"...:false,"language":null}' [352 bytes]
+2025-06-25 12:59:15,075 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-06-25 12:59:15,075 DEBUG < TEXT '|updateuser| EnvPlayer 1|1|265|{"blockChallenge...:false,"language":null}' [354 bytes]
+2025-06-25 12:59:15,075 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 12:59:15,075 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-06-25 12:59:15,076 DEBUG > TEXT '|/utm Alomomola||rockyhelmet|regenerator|healin...adsmash|||||||,,,,,Dark' [195 bytes]
+2025-06-25 12:59:15,076 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-06-25 12:59:15,095 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
+2025-06-25 12:59:15,095 DEBUG < TEXT "|popup|Your team was rejected for the following...t it wasn't a mistake)." [440 bytes]
