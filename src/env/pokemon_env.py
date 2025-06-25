@@ -160,7 +160,10 @@ class PokemonEnv(gym.Env):
             selected = self._selected_species.get(player_id)
             if selected:
                 for idx, detail in mapping.items():
-                    if detail.get("type") == "switch" and detail.get("id") not in selected:
+                    if (
+                        detail.get("type") == "switch"
+                        and detail.get("id") not in selected
+                    ):
                         mask[idx] = 0
             self._action_mappings[player_id] = mapping
             return mask, mapping
@@ -192,7 +195,11 @@ class PokemonEnv(gym.Env):
         return int(action_idx)
 
     def reset(
-        self, *, seed: int | None = None, options: dict | None = None, return_masks: bool = True
+        self,
+        *,
+        seed: int | None = None,
+        options: dict | None = None,
+        return_masks: bool = True,
     ) -> Tuple[Any, dict] | Tuple[Any, dict, Tuple[np.ndarray, np.ndarray]]:
         """Reset the environment and start a new battle.
 
@@ -224,7 +231,9 @@ class PokemonEnv(gym.Env):
         if not hasattr(self, "_env_players"):
             from pathlib import Path
 
-            team_path = Path(__file__).resolve().parents[2] / "config" / "my_team_for_debug.txt"
+            team_path = (
+                Path(__file__).resolve().parents[2] / "config" / "my_team_for_debug.txt"
+            )
             try:
                 team = team_path.read_text()
             except OSError:  # pragma: no cover - デバッグ用
@@ -356,7 +365,7 @@ class PokemonEnv(gym.Env):
             return None
 
         self._logger.debug(
-            "[DBG] race_get start qsize=%d events=%s", 
+            "[DBG] race_get start qsize=%d events=%s",
             queue.qsize(),
             [e.is_set() for e in events],
         )
@@ -406,11 +415,9 @@ class PokemonEnv(gym.Env):
                 f"(HP:{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%"
                 f", fainted={getattr(p, 'fainted', False)}"
                 f", active={getattr(p, 'active', False)})"
-                for p in getattr(battle, 'available_switches', [])
+                for p in getattr(battle, "available_switches", [])
             ]
-            self._logger.debug(
-                "[DBG] %s available_switches: %s", pid, switches_info
-            )
+            self._logger.debug("[DBG] %s available_switches: %s", pid, switches_info)
 
             selected = self._selected_species.get(pid)
             if selected:
@@ -455,22 +462,34 @@ class PokemonEnv(gym.Env):
                         roster[i] for i in indices if 0 <= i < len(roster)
                     }
             else:
-                mapping = self._action_mappings.get(agent_id) or {}
-                self._logger.debug("received action %s for %s", act, agent_id)
-                self._logger.debug("current mapping for %s: %s", agent_id, mapping)
-                if mapping:
-                    order = self.action_helper.action_index_to_order_from_mapping(
-                        self._env_players[agent_id],
-                        self._current_battles[agent_id],
-                        int(act),
-                        mapping,
-                    )
-                else:
-                    order = self.action_helper.action_index_to_order(
-                        self._env_players[agent_id],
-                        self._current_battles[agent_id],
-                        int(act),
-                    )
+                battle = self._current_battles.get(agent_id)
+                if battle is None:
+                    raise ValueError(f"No current battle for {agent_id}")
+                _, mapping = self.action_helper.get_available_actions(battle)
+                self._action_mappings[agent_id] = mapping
+
+                switch_info = [
+                    f"({getattr(p, 'species', '?')},"
+                    f"{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%,"
+                    f"{getattr(p, 'fainted', False)},"
+                    f"{getattr(p, 'active', False)})"
+                    for p in getattr(battle, "available_switches", [])
+                ]
+                self._logger.debug(
+                    "[DBG] %s keys=%s sw=%d force=%s info=%s",
+                    agent_id,
+                    list(mapping.keys()),
+                    len(getattr(battle, "available_switches", [])),
+                    getattr(battle, "force_switch", False),
+                    switch_info,
+                )
+
+                order = self.action_helper.action_index_to_order_from_mapping(
+                    self._env_players[agent_id],
+                    battle,
+                    int(act),
+                    mapping,
+                )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()
@@ -502,12 +521,9 @@ class PokemonEnv(gym.Env):
         masks = self._compute_all_masks()
 
         observations = {
-            pid: self.state_observer.observe(battles[pid])
-            for pid in self.agent_ids
+            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
         }
-        rewards = {
-            pid: self._calc_reward(battles[pid]) for pid in self.agent_ids
-        }
+        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
         terminated: dict[str, bool] = {}
         truncated: dict[str, bool] = {}
         for pid in self.agent_ids:
