@@ -49,6 +49,22 @@ class DoubleBattle(AbstractBattle):
         # Other
         self._move_to_pokemon_id: Dict[Move, str] = {}
 
+    def _log_team_state(self, label: str) -> None:
+        if self.logger is None:
+            return
+        try:
+            info = [
+                f"{ident}: active={mon.active}, fainted={mon.fainted}"
+                for ident, mon in self.team.items()
+            ]
+            self.logger.debug(
+                "[DBG] %s %s team_state: %s", self.battle_tag, label, info
+            )
+        except Exception as exc:  # pragma: no cover - debug helper
+            self.logger.debug(
+                "[DBG] failed to log team_state %s: %s", label, exc
+            )
+
     def clear_all_boosts(self):
         for active_pokemon_group in (self.active_pokemon, self.opponent_active_pokemon):
             for active_pokemon in active_pokemon_group:
@@ -212,6 +228,8 @@ class DoubleBattle(AbstractBattle):
                         if self.reviving and not pokemon.active and pokemon.fainted:
                             self._available_switches[pokemon_index].append(pokemon)
 
+        self._log_team_state("after parse_request")
+
     def switch(self, pokemon_str: str, details: str, hp_status: str):
         pokemon_identifier = pokemon_str.split(":")[0][:3]
         player_identifier = pokemon_identifier[:2]
@@ -227,6 +245,8 @@ class DoubleBattle(AbstractBattle):
         pokemon_in.switch_in()
         pokemon_in.set_hp_status(hp_status)
         team[pokemon_identifier] = pokemon_in
+
+        self._log_team_state("after switch")
 
     def _swap(self, pokemon_str: str, slot: str):
         player_identifier = pokemon_str.split(":")[0][:2]
