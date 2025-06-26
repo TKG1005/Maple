@@ -133,6 +133,13 @@ class PokemonEnv(gym.Env):
         if not hasattr(self, "_agents"):
             self._agents: dict[str, Any] = {}
         self._agents[player_id] = agent
+        # Also store the identifier on the agent itself so that it can
+        # reliably know which player it controls even if the internal mapping
+        # is later overwritten.
+        try:
+            setattr(agent, "_player_id", player_id)
+        except Exception:  # pragma: no cover - ignore if attribute cannot be set
+            pass
 
     def get_current_battle(self, agent_id: str = "player_0") -> Any | None:
         """Return the latest :class:`Battle` object for ``agent_id``."""

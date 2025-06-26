@@ -16,9 +16,16 @@ class MapleAgent:
 
     def _get_player_id(self) -> str:
         """Return the player id registered with the environment."""
+        # ``register_agent`` stores the id on the agent itself which allows
+        # quick retrieval without relying on the environment's internal mapping.
+        if hasattr(self, "_player_id"):
+            return getattr(self, "_player_id")
+
         agents = getattr(self.env, "_agents", {})
         for pid, agent in agents.items():
             if agent is self:
+                # Cache for future calls
+                setattr(self, "_player_id", pid)
                 return pid
         return getattr(self.env, "agent_ids", ["player"])[0]
 
