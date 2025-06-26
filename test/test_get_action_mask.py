@@ -68,13 +68,13 @@ class DummyObserver:
 
 class DummyActionHelper:
     def get_action_mapping(self, battle):
-        mapping = {i: ("move", i, True) for i in range(10)}
+        mapping = {i: ("move", i, True) for i in range(11)}
         mapping[8] = ("switch", 0, False)
         mapping[9] = ("switch", 1, False)
         return mapping
 
     def get_available_actions_with_details(self, battle):
-        mask = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype=np.int8)
+        mask = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0], dtype=np.int8)
         mapping = {
             8: {"type": "switch", "name": "a", "id": "pika"},
             9: {"type": "switch", "name": "b", "id": "bulba"},
