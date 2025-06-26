@@ -116,6 +116,13 @@ class PokemonEnv(gym.Env):
             agent_id: set() for agent_id in self.agent_ids
         }
 
+        # Battle.last_request の更新を追跡するためのキャッシュ
+        self._last_requests: dict[str, Any] = {
+            agent_id: None for agent_id in self.agent_ids
+        }
+        # 直近に計算した行動マスク
+        self._latest_masks: tuple[np.ndarray, ...] | None = None
+
     # ------------------------------------------------------------------
     # Agent interaction utilities
     # ------------------------------------------------------------------
@@ -311,6 +318,10 @@ class PokemonEnv(gym.Env):
         }
 
         masks = self._compute_all_masks()
+        self._last_requests = {
+            pid: self._current_battles[pid].last_request for pid in self.agent_ids
+        }
+        self._latest_masks = masks
 
         if hasattr(self, "single_agent_mode"):
             if return_masks:
@@ -534,6 +545,7 @@ class PokemonEnv(gym.Env):
                 raise exc
 
         battles: dict[str, Any] = {}
+        updated: dict[str, bool] = {}
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
             battle = self._race_get(
@@ -550,8 +562,21 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
+            updated[pid] = battle is not None and (
+                battle.last_request is not self._last_requests.get(pid)
+            )
 
-        masks = self._compute_all_masks()
+        if all(updated.get(pid, False) for pid in self.agent_ids):
+            masks = self._compute_all_masks()
+            for pid in self.agent_ids:
+                self._last_requests[pid] = self._current_battles[pid].last_request
+            self._latest_masks = masks
+        else:
+            if self._latest_masks is None:
+                masks = self._compute_all_masks()
+                self._latest_masks = masks
+            else:
+                masks = self._latest_masks
 
         observations = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
