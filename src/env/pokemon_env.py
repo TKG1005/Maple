@@ -410,8 +410,12 @@ class PokemonEnv(gym.Env):
                 self._action_mappings[pid] = {}
                 continue
 
-            mapping = self.action_helper.get_action_mapping(battle)
-            mask = self._build_action_mask(mapping)
+            mask, mapping = self.action_helper.get_available_actions(battle)
+            # --- forceSwitch フェーズでは move アクションを全て無効化する
+            if getattr(battle, "force_switch", False):
+                for idx, (atype, _) in mapping.items():
+                    if atype == "move":
+                        mask[idx] = 0
 
             self._logger.debug(
                 "[DBG] %s: %d moves, %d switches (force_switch=%s)",
@@ -473,55 +477,22 @@ class PokemonEnv(gym.Env):
                         roster[i] for i in indices if 0 <= i < len(roster)
                     }
             else:
-                battle = self._current_battles.get(agent_id)
-                if battle is None:
-                    raise ValueError(f"No current battle for {agent_id}")
-                mapping = self.action_helper.get_action_mapping(battle)
-                self._action_mappings[agent_id] = mapping
-
-                switch_info = [
-                    f"({getattr(p, 'species', '?')},"
-                    f"{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%,"
-                    f"{getattr(p, 'fainted', False)},"
-                    f"{getattr(p, 'active', False)})"
-                    for p in getattr(battle, "available_switches", [])
-                ]
-                self._logger.debug(
-                    "[DBG] %s mapping=%s sw=%d force=%s info=%s",
-                    agent_id,
-                    mapping,
-                    len(getattr(battle, "available_switches", [])),
-                    getattr(battle, "force_switch", False),
-                    switch_info,
-                )
-
-                DisabledErr = getattr(
-                    self.action_helper, "DisabledMoveError", ValueError
-                )
-                try:
+                mapping = self._action_mappings.get(agent_id) or {}
+                self._logger.debug("received action %s for %s", act, agent_id)
+                self._logger.debug("current mapping for %s: %s", agent_id, mapping)
+                if mapping:
                     order = self.action_helper.action_index_to_order_from_mapping(
                         self._env_players[agent_id],
-                        battle,
+                        self._current_battles[agent_id],
                         int(act),
                         mapping,
                     )
-                except DisabledErr:
-                    mask = self._build_action_mask(mapping)
-                    valid = [i for i, m in enumerate(mask) if m == 1]
-                    if not valid:
-                        raise
-                    new_idx = int(self.rng.choice(valid))
-                    self._logger.warning(
-                        "%s selected disabled action %s; fallback to %s",
-                        agent_id,
-                        act,
-                        new_idx,
-                    )
-                    order = self.action_helper.action_index_to_order_from_mapping(
+                else:
+                    # fallback（理論上ここには来ない）
+                    order = self.action_helper.action_index_to_order(
                         self._env_players[agent_id],
-                        battle,
-                        new_idx,
-                        mapping,
+                        self._current_battles[agent_id],
+                        int(act),
                     )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
@@ -550,6 +521,31 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
+
+        # --- ensure both battles are on the same turn (desync fix) ---
+        try_count = 0
+        while True:
+            turns = {pid: getattr(b, "turn", -1) for pid, b in battles.items()}
+            if len(set(turns.values())) == 1:
+                break  # 同期済み
+            if try_count > 5:
+                self._logger.warning(
+                    "turn desync persists: %s (continuing anyway)", turns
+                )
+                break
+            max_turn = max(turns.values())
+            for pid, t in turns.items():
+                if t < max_turn:
+                    opp = "player_1" if pid == "player_0" else "player_0"
+                    newer = self._race_get(
+                        self._battle_queues[pid],
+                        self._env_players[pid]._waiting,
+                        self._env_players[opp]._trying_again,
+                    )
+                    if newer is not None:
+                        self._current_battles[pid] = newer
+                        battles[pid] = newer
+            try_count += 1
 
         masks = self._compute_all_masks()
 

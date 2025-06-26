@@ -73,6 +73,11 @@ class DummyActionHelper:
         mapping[9] = ("switch", 1, False)
         return mapping
 
+    def get_available_actions(self, battle):
+        mapping = self.get_action_mapping(battle)
+        mask = np.array([0 if mapping[i][2] else 1 for i in range(10)], dtype=np.int8)
+        return mask, mapping
+
     def get_available_actions_with_details(self, battle):
         mask = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1], dtype=np.int8)
         mapping = {
