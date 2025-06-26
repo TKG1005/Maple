@@ -1,0 +1,7 @@
+2025-06-26 16:46:48,309 WARNING player_1 selected disabled action 1; fallback to 0
+2025-06-26 16:46:49,550 WARNING player_1 selected disabled action 5; fallback to 0
+2025-06-26 16:46:51,001 WARNING player_0 selected disabled action 9; fallback to 1
+2025-06-26 16:46:55,016 WARNING player_0 selected disabled action 8; fallback to 2
+2025-06-26 16:46:55,016 WARNING player_0 selected disabled action 8; fallback to 0
+2025-06-26 16:46:56,027 WARNING player_1 selected disabled action 1; fallback to 3
+2025-06-26 16:46:59,901 ERROR [TIMEOUT] race_get queue=0 events=[False, False] exc=
