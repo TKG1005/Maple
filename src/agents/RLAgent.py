@@ -33,6 +33,8 @@ class RLAgent(MapleAgent):
         self, observation: np.ndarray, action_mask: np.ndarray
     ) -> np.ndarray:
         """Return action probabilities respecting ``action_mask``."""
+        player_id = self._get_player_id()
+        self._logger.debug("%s: %s", player_id, action_mask)
         obs_tensor = torch.as_tensor(observation, dtype=torch.float32)
         logits = self.policy_net(obs_tensor)
         mask_tensor = torch.as_tensor(action_mask, dtype=torch.bool)
@@ -46,9 +48,11 @@ class RLAgent(MapleAgent):
 
     def act(self, observation: np.ndarray, action_mask: np.ndarray) -> int:
         """Sample an action index according to the policy."""
+
         # Show the received mask to make debugging of invalid actions easier
         player_id = self._get_player_id()
         self._logger.debug("%s: %s", player_id, action_mask)
+
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
         action = int(rng.choice(len(probs), p=probs))
