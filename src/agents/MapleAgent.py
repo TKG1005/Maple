@@ -63,6 +63,10 @@ class MapleAgent:
             valid_indices = [i for i, flag in enumerate(action_mask) if flag]
         except Exception:
             valid_indices = []
+
+        player_id = self._get_player_id()
+        print(f"{player_id}: {action_mask}")
+
         if valid_indices:
             action_idx = int(self.env.rng.choice(valid_indices))
         else:
