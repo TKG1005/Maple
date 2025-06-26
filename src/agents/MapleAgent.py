@@ -14,6 +14,14 @@ class MapleAgent:
         if hasattr(self.env, "register_agent"):
             self.env.register_agent(self)
 
+    def _get_player_id(self) -> str:
+        """Return the player id registered with the environment."""
+        agents = getattr(self.env, "_agents", {})
+        for pid, agent in agents.items():
+            if agent is self:
+                return pid
+        return getattr(self.env, "agent_ids", ["player"])[0]
+
     def choose_team(self, observation: Any) -> str:
         """Return a team selection string for the team preview phase.
 
@@ -52,7 +60,8 @@ class MapleAgent:
             valid_indices = [i for i, flag in enumerate(action_mask) if flag]
         except Exception:
             valid_indices = []
-        print(f"{self.__class__.__name__}: available mask = {action_mask}")
+        player_id = self._get_player_id()
+        print(f"{player_id}: {action_mask}")
         if valid_indices:
             action_idx = int(self.env.rng.choice(valid_indices))
         else:
