@@ -519,23 +519,11 @@ class PokemonEnv(gym.Env):
                         mapping,
                     )
                 except DisabledErr:
-                    mask = self._build_action_mask(mapping)
-                    valid = [i for i, m in enumerate(mask) if m == 1]
-                    if not valid:
-                        raise
-                    new_idx = int(self.rng.choice(valid))
-                    self._logger.warning(
-                        "%s selected disabled action %s; fallback to %s",
-                        agent_id,
-                        act,
-                        new_idx,
+                    err_msg = (
+                        f"invalid action: {agent_id} selected {act} with mapping {mapping}"
                     )
-                    order = self.action_helper.action_index_to_order_from_mapping(
-                        self._env_players[agent_id],
-                        battle,
-                        new_idx,
-                        mapping,
-                    )
+                    self._logger.error(err_msg)
+                    raise RuntimeError(err_msg)
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()
