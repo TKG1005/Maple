@@ -3,18 +3,17 @@ Ability: Pressure
 Tera Type: Flying  
 EVs: 252 HP  
 - Body Press  
-- Double-Edge  
+- Taunt  
 - Hone Claws  
-- Nasty Plot  
+- Fly  
 
 Dragapult @ Focus Sash  
 Ability: Infiltrator  
 Tera Type: Dragon  
 EVs: 252 HP / 252 Spe  
 Timid Nature  
-IVs: 0 Atk  
-- Dragon Dance  
-- Surf  
+- Phantom Force  
+- Substitute  
 - Thunder Wave  
 - Will-O-Wisp  
 
@@ -33,7 +32,7 @@ Ting-Lu @ Leftovers
 Ability: Vessel of Ruin  
 Tera Type: Dark  
 EVs: 252 HP / 252 Atk  
-- Facade  
+- Memento  
 - Whirlwind  
 - Lash Out  
 - Earthquake  
@@ -44,7 +43,7 @@ Tera Type: Water
 EVs: 252 Def / 252 SpD  
 IVs: 0 Atk  
 - Blizzard  
-- Alluring Voice  
+- Rest  
 - Pain Split  
 - Healing Wish  
 
@@ -55,4 +54,5 @@ EVs: 252 SpA / 252 Spe
 - Draco Meteor  
 - Stealth Rock  
 - Head Smash  
-- Heat Wave  
+- U-turn  
+
