@@ -88,8 +88,8 @@ observation = {
 
 ```
 action_spaces = {
-    "player_0": Discrete(10), # index 0‑9
-    "player_1": Discrete(10)
+    "player_0": Discrete(11), # index 0‑10
+    "player_1": Discrete(11)
 }
 ```
 `step()` には `{"player_0": action0, "player_1": action1}` の形で行動を渡す。`action` は整数インデックスまたはチーム選択等の文字列コマンドを許容する。
@@ -99,9 +99,10 @@ action_spaces = {
 | 0‑3 | 技 1‑4 | `create_order(move_i)` |
 | 4‑7 | テラスタルして技 1‑4 | `create_order(move_i, terastallize=True)` |
 | 8‑9 | ベンチ 1 or 2 に交代 | `create_order(pokemon_j)` |
+| 10 | Struggle | `create_order("move struggle")` |
 
 * **ActionHelper**  
-  * `get_available_actions(battle) -> mask[10], mapping`  
+* `get_available_actions(battle) -> mask[11], mapping`
   * `action_index_to_order(player, battle, idx) -> BattleOrder`  
 
 ---

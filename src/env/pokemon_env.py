@@ -36,7 +36,9 @@ class PokemonEnv(gym.Env):
     ) -> None:
         super().__init__()
 
-        self.ACTION_SIZE = 10  # "gen9bss"ルールでは行動空間は10で固定
+        # "gen9bss"ルールでは行動空間は10で固定だったが、
+        # Struggle 専用インデックスを追加して11に拡張
+        self.ACTION_SIZE = 11
         self.MAX_TURNS = 1000  # エピソードの最大ターン数
 
         # Step10: 非同期アクションキューを導入

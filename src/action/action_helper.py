@@ -24,14 +24,15 @@ def generate_action_mask(
     force_switch: bool = False,
 ) -> np.ndarray:
     """
-    Return a fixed-length (10) action mask.
+    Return a fixed-length (11) action mask.
 
     Slot layout (indices):
         0-3 : normal moves
         4-7 : terastal moves (mirrors normal move slots)
         8-9 : switches
+       10   : Struggle (when no other moves are usable)
     """
-    mask = np.zeros(10, dtype=np.int8)
+    mask = np.zeros(11, dtype=np.int8)
 
     # --- Move slots --------------------------------------------------------
     if not force_switch:
@@ -117,6 +118,9 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
         disabled = i >= len(switches)
         mapping[8 + i] = ("switch", i, disabled)
 
+    # Struggle slot 10 (enabled only when no other moves are usable)
+    mapping[10] = ("move", "struggle", True)
+
     return mapping
 
 
@@ -126,7 +130,7 @@ def get_available_actions(
     """Build an action mask and index mapping for the current battle state."""
 
     mapping = get_action_mapping(battle)
-    mask = np.array([0 if mapping[i][2] else 1 for i in range(10)], dtype=np.int8)
+    mask = np.array([0 if mapping[i][2] else 1 for i in range(11)], dtype=np.int8)
 
     return mask, mapping
 
@@ -152,6 +156,13 @@ def get_available_actions_with_details(
                     "type": "move",
                     "name": f"Move: {mv.id} (PP: {mv.current_pp}/{mv.max_pp})",
                     "id": mv.id,
+                }
+                continue
+            if sub_id == "struggle":
+                detailed[action_idx] = {
+                    "type": "move",
+                    "name": "Move: struggle",
+                    "id": "struggle",
                 }
                 continue
 
@@ -215,6 +226,8 @@ def action_index_to_order_from_mapping(
     if action_type == "move":
         mv = next((m for m in moves_sorted if m.id == sub_id), None)
         if mv is None:
+            if sub_id == "struggle":
+                return player.create_order("move struggle")
             raise ValueError(f"Move id {sub_id} not available.")
         return player.create_order(mv, terastallize=False)
 
@@ -257,6 +270,8 @@ def action_index_to_order(
     if action_type == "move":
         mv = next((m for m in moves_sorted if m.id == sub_id), None)
         if mv is None:
+            if sub_id == "struggle":
+                return player.create_order("move struggle")
             raise ValueError(f"Move id {sub_id} not available.")
         return player.create_order(mv, terastallize=False)
 
