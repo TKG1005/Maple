@@ -61,7 +61,7 @@ class ActionDetail(TypedDict):
     id: Union[str, int]  # move.id or pokemon.species
 
 
-def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, int, bool]]:
+def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str, int], bool]]:
     """Return a fixed length mapping for the current battle."""
 
     force_switch = battle.force_switch
@@ -78,26 +78,29 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, int, bool]
     available_move_ids = {m.id for m in battle.available_moves}
     switches: List[Pokemon] = battle.available_switches
 
-    mapping: OrderedDict[int, Tuple[str, int, bool]] = OrderedDict()
+    mapping: OrderedDict[int, Tuple[str, Union[str, int], bool]] = OrderedDict()
 
     # Move slots 0-3
     for i in range(4):
         if i < len(active_moves):
             mv = active_moves[i]
+            move_id = mv.id
             disabled = (
                 force_switch
                 or mv.current_pp == 0
                 or mv.id not in available_move_ids
             )
         else:
+            move_id = ""
             disabled = True
-        mapping[i] = ("move", i, disabled)
+        mapping[i] = ("move", move_id, disabled)
 
     can_tera = (battle.can_tera is not None) and (not force_switch)
     # Terastal slots 4-7
     for i in range(4):
         if i < len(active_moves):
             mv = active_moves[i]
+            move_id = mv.id
             disabled = (
                 force_switch
                 or (battle.can_tera is None)
@@ -105,8 +108,9 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, int, bool]
                 or mv.id not in available_move_ids
             )
         else:
+            move_id = ""
             disabled = True
-        mapping[4 + i] = ("terastal", i, disabled)
+        mapping[4 + i] = ("terastal", move_id, disabled)
 
     # Switch slots 8-9
     for i in range(2):
@@ -118,7 +122,7 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, int, bool]
 
 def get_available_actions(
     battle: Battle,
-) -> Tuple[np.ndarray, OrderedDict[int, Tuple[str, int, bool]]]:
+) -> Tuple[np.ndarray, OrderedDict[int, Tuple[str, Union[str, int], bool]]]:
     """Build an action mask and index mapping for the current battle state."""
 
     mapping = get_action_mapping(battle)
@@ -140,29 +144,29 @@ def get_available_actions_with_details(
     moves_sorted = sorted(battle.available_moves, key=lambda m: m.id)
     switches_sorted = battle.available_switches
 
-    for action_idx, (action_type, sub_idx, disabled) in mapping.items():
-        if action_type == "move" and sub_idx < len(moves_sorted):
-            mv = moves_sorted[sub_idx]
-            detailed[action_idx] = {
-                "type": "move",
-                "name": f"Move: {mv.id} (PP: {mv.current_pp}/{mv.max_pp})",
-                "id": mv.id,
-            }
+    for action_idx, (action_type, sub_id, disabled) in mapping.items():
+        if action_type == "move":
+            mv = next((m for m in moves_sorted if m.id == sub_id), None)
+            if mv is not None:
+                detailed[action_idx] = {
+                    "type": "move",
+                    "name": f"Move: {mv.id} (PP: {mv.current_pp}/{mv.max_pp})",
+                    "id": mv.id,
+                }
+                continue
 
-        elif (
-            action_type == "terastal"
-            and sub_idx < len(moves_sorted)
-            and battle.can_tera
-        ):
-            mv = moves_sorted[sub_idx]
-            detailed[action_idx] = {
-                "type": "terastal",
-                "name": f"Terastal Move: {mv.id} (PP: {mv.current_pp}/{mv.max_pp})",
-                "id": f"tera_{mv.id}",
-            }
+        elif action_type == "terastal" and battle.can_tera:
+            mv = next((m for m in moves_sorted if m.id == sub_id), None)
+            if mv is not None:
+                detailed[action_idx] = {
+                    "type": "terastal",
+                    "name": f"Terastal Move: {mv.id} (PP: {mv.current_pp}/{mv.max_pp})",
+                    "id": f"tera_{mv.id}",
+                }
+                continue
 
-        elif action_type == "switch" and sub_idx < len(switches_sorted):
-            pkmn = switches_sorted[sub_idx]
+        elif action_type == "switch" and isinstance(sub_id, int) and sub_id < len(switches_sorted):
+            pkmn = switches_sorted[sub_id]
             detailed[action_idx] = {
                 "type": "switch",
                 "name": f"Switch to: {pkmn.species} (HP: {pkmn.current_hp_fraction * 100:.1f}%)",
@@ -183,7 +187,7 @@ def action_index_to_order_from_mapping(
     player: Player,
     battle: Battle,
     action_index: int,
-    mapping: Dict[int, Tuple[str, int, bool]],
+    mapping: Dict[int, Tuple[str, Union[str, int], bool]],
 ) -> BattleOrder:
     """Translate ``action_index`` using a precomputed ``mapping``."""
 
@@ -203,30 +207,29 @@ def action_index_to_order_from_mapping(
             f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
         )
 
-    action_type, sub_idx, disabled = mapping[action_index]
+    action_type, sub_id, disabled = mapping[action_index]
 
     if disabled:
         raise DisabledMoveError(f"Action index {action_index} is disabled")
 
     if action_type == "move":
-        if sub_idx >= len(moves_sorted):
-            raise ValueError(f"Move index {sub_idx} out of range.")
-        return player.create_order(moves_sorted[sub_idx], terastallize=False)
+        mv = next((m for m in moves_sorted if m.id == sub_id), None)
+        if mv is None:
+            raise ValueError(f"Move id {sub_id} not available.")
+        return player.create_order(mv, terastallize=False)
 
     if action_type == "terastal":
+        mv = next((m for m in moves_sorted if m.id == sub_id), None)
+        if mv is None:
+            raise ValueError(f"Terastal move id {sub_id} not available.")
         if battle.can_tera is None:
-            # テラスタルが選択できない状態では通常の技として処理する
-            if sub_idx >= len(moves_sorted):
-                raise ValueError(f"Terastal move index {sub_idx} out of range.")
-            return player.create_order(moves_sorted[sub_idx], terastallize=False)
-        if sub_idx >= len(moves_sorted):
-            raise ValueError(f"Terastal move index {sub_idx} out of range.")
-        return player.create_order(moves_sorted[sub_idx], terastallize=True)
+            return player.create_order(mv, terastallize=False)
+        return player.create_order(mv, terastallize=True)
 
     if action_type == "switch":
-        if sub_idx >= len(switches_list):
-            raise ValueError(f"Switch index {sub_idx} out of range.")
-        return player.create_order(switches_list[sub_idx])
+        if not isinstance(sub_id, int) or sub_id >= len(switches_list):
+            raise ValueError(f"Switch index {sub_id} out of range.")
+        return player.create_order(switches_list[sub_id])
 
     raise ValueError(f"Unknown action_type: {action_type}")
 def action_index_to_order(
@@ -246,30 +249,29 @@ def action_index_to_order(
             f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
         )
 
-    action_type, sub_idx, disabled = mapping[action_index]
+    action_type, sub_id, disabled = mapping[action_index]
 
     if disabled:
         raise DisabledMoveError(f"Action index {action_index} is disabled")
 
     if action_type == "move":
-        if sub_idx >= len(moves_sorted):
-            raise ValueError(f"Move index {sub_idx} out of range.")
-        return player.create_order(moves_sorted[sub_idx], terastallize=False)
+        mv = next((m for m in moves_sorted if m.id == sub_id), None)
+        if mv is None:
+            raise ValueError(f"Move id {sub_id} not available.")
+        return player.create_order(mv, terastallize=False)
 
     if action_type == "terastal":
+        mv = next((m for m in moves_sorted if m.id == sub_id), None)
+        if mv is None:
+            raise ValueError(f"Terastal move id {sub_id} not available.")
         if battle.can_tera is None:
-            # テラスタル不可時はテラスタルなしで実行
-            if sub_idx >= len(moves_sorted):
-                raise ValueError(f"Terastal move index {sub_idx} out of range.")
-            return player.create_order(moves_sorted[sub_idx], terastallize=False)
-        if sub_idx >= len(moves_sorted):
-            raise ValueError(f"Terastal move index {sub_idx} out of range.")
-        return player.create_order(moves_sorted[sub_idx], terastallize=True)
+            return player.create_order(mv, terastallize=False)
+        return player.create_order(mv, terastallize=True)
 
     if action_type == "switch":
-        if sub_idx >= len(switches_list):
-            raise ValueError(f"Switch index {sub_idx} out of range.")
-        return player.create_order(switches_list[sub_idx])
+        if not isinstance(sub_id, int) or sub_id >= len(switches_list):
+            raise ValueError(f"Switch index {sub_id} out of range.")
+        return player.create_order(switches_list[sub_id])
 
     raise ValueError(f"Unknown action_type: {action_type}")
 

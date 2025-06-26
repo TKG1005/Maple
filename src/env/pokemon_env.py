@@ -99,7 +99,7 @@ class PokemonEnv(gym.Env):
         )
 
         # 最後に生成した行動マッピングを保持しておく
-        self._action_mappings: dict[str, dict[int, tuple[str, int, bool]]] = {
+        self._action_mappings: dict[str, dict[int, tuple[str, str | int, bool]]] = {
             agent_id: {} for agent_id in self.agent_ids
         }
 
@@ -401,7 +401,7 @@ class PokemonEnv(gym.Env):
         return result
 
     def _build_action_mask(
-        self, action_mapping: dict[int, tuple[str, int, bool]]
+        self, action_mapping: dict[int, tuple[str, str | int, bool]]
     ) -> np.ndarray:
         """Return an action mask derived from ``action_mapping``."""
 
