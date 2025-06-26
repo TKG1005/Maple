@@ -1,2 +1,0 @@
-2025-06-25 16:40:00,117 INFO Run parameters: {'log_level': 'DEBUG', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 0, 'save': 'model2.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1}
-2025-06-25 16:40:00,976 INFO Model saved to model2.pt
