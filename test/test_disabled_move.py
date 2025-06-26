@@ -122,3 +122,26 @@ def test_pp0_move_disabled_and_mask():
     mask = env._build_action_mask(mapping)
     assert len(mask) == len(mapping)
     assert mask[0] == 0
+
+
+class StruggleBattle:
+    def __init__(self):
+        m0 = SimpleNamespace(id="a", current_pp=0)
+        m1 = SimpleNamespace(id="b", current_pp=0)
+        m2 = SimpleNamespace(id="c", current_pp=0)
+        m3 = SimpleNamespace(id="d", current_pp=0)
+        self.active_pokemon = SimpleNamespace(moves={0: m0, 1: m1, 2: m2, 3: m3})
+        self.available_moves = [SimpleNamespace(id="struggle", current_pp=1)]
+        self.available_switches = []
+        self.force_switch = False
+        self.can_tera = False
+
+
+def test_struggle_only_mask():
+    env = make_env()
+    battle = StruggleBattle()
+    mapping = action_helper.get_action_mapping(battle)
+    assert mapping[10] == ("move", "struggle", False)
+    mask, _ = action_helper.get_available_actions(battle)
+    assert mask[10] == 1
+    assert all(m == 0 for m in mask[:10])

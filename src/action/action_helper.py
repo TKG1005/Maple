@@ -119,7 +119,11 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
         mapping[8 + i] = ("switch", i, disabled)
 
     # Struggle slot 10 (enabled only when no other moves are usable)
-    mapping[10] = ("move", "struggle", True)
+    only_struggle = (
+        len(battle.available_moves) == 1
+        and getattr(battle.available_moves[0], "id", "") == "struggle"
+    )
+    mapping[10] = ("move", "struggle", not only_struggle)
 
     return mapping
 
