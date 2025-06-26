@@ -66,7 +66,7 @@ class DummyEnv:
             (DummyArray([1]), DummyArray([1])),
         )
     def get_action_mask(self, id, with_details=False):
-        return DummyArray([1]), {0: ('move', 0)}
+        return DummyArray([1]), {0: ('move', 0, False)}
     def step(self, actions, return_masks=True):
         obs = {'player_0': DummyArray([0]), 'player_1': DummyArray([0])}
         rewards = {'player_0': 0.0, 'player_1': 0.0}
@@ -86,7 +86,7 @@ sys.modules['src.state.state_observer'] = state
 action = types.ModuleType('src.action')
 action.action_helper = types.SimpleNamespace(
     action_index_to_order=lambda self, battle, idx: types.SimpleNamespace(message=''),
-    get_available_actions=lambda battle: (DummyArray([1]), {0: ('move', 0)}),
+    get_available_actions=lambda battle: (DummyArray([1]), {0: ('move', 0, False)}),
     get_available_actions_with_details=lambda battle: (DummyArray([1]), {0: {'type': 'move'}}),
 )
 sys.modules['src.action'] = action

@@ -99,7 +99,7 @@ class PokemonEnv(gym.Env):
         )
 
         # 最後に生成した行動マッピングを保持しておく
-        self._action_mappings: dict[str, dict[int, tuple[str, int]]] = {
+        self._action_mappings: dict[str, dict[int, tuple[str, int, bool]]] = {
             agent_id: {} for agent_id in self.agent_ids
         }
 
@@ -389,6 +389,16 @@ class PokemonEnv(gym.Env):
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
 
+    def _build_action_mask(
+        self, action_mapping: dict[int, tuple[str, int, bool]]
+    ) -> np.ndarray:
+        """Return an action mask derived from ``action_mapping``."""
+
+        return np.array(
+            [0 if disabled else 1 for _, (_, _, disabled) in sorted(action_mapping.items())],
+            dtype=np.int8,
+        )
+
     def _compute_all_masks(self) -> Tuple[np.ndarray, np.ndarray]:
         """Return current legal action masks for both players."""
 
@@ -400,7 +410,8 @@ class PokemonEnv(gym.Env):
                 self._action_mappings[pid] = {}
                 continue
 
-            mask, mapping = self.action_helper.get_available_actions(battle)
+            mapping = self.action_helper.get_action_mapping(battle)
+            mask = self._build_action_mask(mapping)
 
             self._logger.debug(
                 "[DBG] %s: %d moves, %d switches (force_switch=%s)",
@@ -421,8 +432,8 @@ class PokemonEnv(gym.Env):
 
             selected = self._selected_species.get(pid)
             if selected:
-                for idx, (atype, sub_idx) in mapping.items():
-                    if atype == "switch":
+                for idx, (atype, sub_idx, disabled) in mapping.items():
+                    if atype == "switch" and not disabled:
                         try:
                             pkmn = battle.available_switches[sub_idx]
                         except IndexError:
@@ -465,7 +476,7 @@ class PokemonEnv(gym.Env):
                 battle = self._current_battles.get(agent_id)
                 if battle is None:
                     raise ValueError(f"No current battle for {agent_id}")
-                _, mapping = self.action_helper.get_available_actions(battle)
+                mapping = self.action_helper.get_action_mapping(battle)
                 self._action_mappings[agent_id] = mapping
 
                 switch_info = [
@@ -484,12 +495,34 @@ class PokemonEnv(gym.Env):
                     switch_info,
                 )
 
-                order = self.action_helper.action_index_to_order_from_mapping(
-                    self._env_players[agent_id],
-                    battle,
-                    int(act),
-                    mapping,
+                DisabledErr = getattr(
+                    self.action_helper, "DisabledMoveError", ValueError
                 )
+                try:
+                    order = self.action_helper.action_index_to_order_from_mapping(
+                        self._env_players[agent_id],
+                        battle,
+                        int(act),
+                        mapping,
+                    )
+                except DisabledErr:
+                    mask = self._build_action_mask(mapping)
+                    valid = [i for i, m in enumerate(mask) if m == 1]
+                    if not valid:
+                        raise
+                    new_idx = int(self.rng.choice(valid))
+                    self._logger.warning(
+                        "%s selected disabled action %s; fallback to %s",
+                        agent_id,
+                        act,
+                        new_idx,
+                    )
+                    order = self.action_helper.action_index_to_order_from_mapping(
+                        self._env_players[agent_id],
+                        battle,
+                        new_idx,
+                        mapping,
+                    )
                 asyncio.run_coroutine_threadsafe(
                     self._action_queues[agent_id].put(order), POKE_LOOP
                 ).result()

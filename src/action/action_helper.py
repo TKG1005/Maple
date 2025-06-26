@@ -1,5 +1,6 @@
 # src/action/action_helper.py
 from typing import List, Tuple, Dict, Union, TypedDict
+from collections import OrderedDict
 import numpy as np
 import logging
 
@@ -60,36 +61,68 @@ class ActionDetail(TypedDict):
     id: Union[str, int]  # move.id or pokemon.species
 
 
+def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, int, bool]]:
+    """Return a fixed length mapping for the current battle."""
+
+    force_switch = battle.force_switch
+
+    # List all moves in slot order
+    active_moves: List[Move] = []
+    active = getattr(battle, "active_pokemon", None)
+    if active is not None:
+        try:
+            active_moves = list(active.moves.values())
+        except Exception:
+            active_moves = []
+
+    available_move_ids = {m.id for m in battle.available_moves}
+    switches: List[Pokemon] = battle.available_switches
+
+    mapping: OrderedDict[int, Tuple[str, int, bool]] = OrderedDict()
+
+    # Move slots 0-3
+    for i in range(4):
+        if i < len(active_moves):
+            mv = active_moves[i]
+            disabled = (
+                force_switch
+                or mv.current_pp == 0
+                or mv.id not in available_move_ids
+            )
+        else:
+            disabled = True
+        mapping[i] = ("move", i, disabled)
+
+    can_tera = (battle.can_tera is not None) and (not force_switch)
+    # Terastal slots 4-7
+    for i in range(4):
+        if i < len(active_moves):
+            mv = active_moves[i]
+            disabled = (
+                force_switch
+                or (battle.can_tera is None)
+                or mv.current_pp == 0
+                or mv.id not in available_move_ids
+            )
+        else:
+            disabled = True
+        mapping[4 + i] = ("terastal", i, disabled)
+
+    # Switch slots 8-9
+    for i in range(2):
+        disabled = i >= len(switches)
+        mapping[8 + i] = ("switch", i, disabled)
+
+    return mapping
+
+
 def get_available_actions(
     battle: Battle,
-) -> Tuple[np.ndarray, Dict[int, Tuple[str, int]]]:
-    """
-    Build an action mask and index mapping for the current battle state.
-    """
-    force_switch = battle.force_switch
-    moves_sorted: List[Move] = (
-        [] if force_switch else sorted(battle.available_moves, key=lambda m: m.id)
-    )
-    switches: List[Pokemon] = battle.available_switches
-    can_tera: bool = (battle.can_tera is not None) and (not force_switch)
+) -> Tuple[np.ndarray, OrderedDict[int, Tuple[str, int, bool]]]:
+    """Build an action mask and index mapping for the current battle state."""
 
-    mask = generate_action_mask(moves_sorted, switches, can_tera, force_switch)
-
-    mapping: Dict[int, Tuple[str, int]] = {}
-
-    # Move slots 0‒3
-    if not force_switch:
-        for i in range(min(4, len(moves_sorted))):
-            mapping[i] = ("move", i)
-
-        # Terastal slots 4‒7
-        if can_tera:
-            for i in range(min(4, len(moves_sorted))):
-                mapping[4 + i] = ("terastal", i)
-
-    # Switch slots 8‒9
-    for i in range(min(2, len(switches))):
-        mapping[8 + i] = ("switch", i)
+    mapping = get_action_mapping(battle)
+    mask = np.array([0 if mapping[i][2] else 1 for i in range(10)], dtype=np.int8)
 
     return mask, mapping
 
@@ -107,7 +140,7 @@ def get_available_actions_with_details(
     moves_sorted = sorted(battle.available_moves, key=lambda m: m.id)
     switches_sorted = battle.available_switches
 
-    for action_idx, (action_type, sub_idx) in mapping.items():
+    for action_idx, (action_type, sub_idx, disabled) in mapping.items():
         if action_type == "move" and sub_idx < len(moves_sorted):
             mv = moves_sorted[sub_idx]
             detailed[action_idx] = {
@@ -150,7 +183,7 @@ def action_index_to_order_from_mapping(
     player: Player,
     battle: Battle,
     action_index: int,
-    mapping: Dict[int, Tuple[str, int]],
+    mapping: Dict[int, Tuple[str, int, bool]],
 ) -> BattleOrder:
     """Translate ``action_index`` using a precomputed ``mapping``."""
 
@@ -170,7 +203,10 @@ def action_index_to_order_from_mapping(
             f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
         )
 
-    action_type, sub_idx = mapping[action_index]
+    action_type, sub_idx, disabled = mapping[action_index]
+
+    if disabled:
+        raise DisabledMoveError(f"Action index {action_index} is disabled")
 
     if action_type == "move":
         if sub_idx >= len(moves_sorted):
@@ -193,8 +229,6 @@ def action_index_to_order_from_mapping(
         return player.create_order(switches_list[sub_idx])
 
     raise ValueError(f"Unknown action_type: {action_type}")
-
-
 def action_index_to_order(
     player: Player, battle: Battle, action_index: int
 ) -> BattleOrder:
@@ -212,7 +246,10 @@ def action_index_to_order(
             f"Invalid or unavailable action index: {action_index}. Available: {mapping}"
         )
 
-    action_type, sub_idx = mapping[action_index]
+    action_type, sub_idx, disabled = mapping[action_index]
+
+    if disabled:
+        raise DisabledMoveError(f"Action index {action_index} is disabled")
 
     if action_type == "move":
         if sub_idx >= len(moves_sorted):
@@ -235,3 +272,7 @@ def action_index_to_order(
         return player.create_order(switches_list[sub_idx])
 
     raise ValueError(f"Unknown action_type: {action_type}")
+
+class DisabledMoveError(ValueError):
+    pass
+
