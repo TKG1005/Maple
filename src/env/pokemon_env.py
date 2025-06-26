@@ -487,9 +487,9 @@ class PokemonEnv(gym.Env):
                     for p in getattr(battle, "available_switches", [])
                 ]
                 self._logger.debug(
-                    "[DBG] %s keys=%s sw=%d force=%s info=%s",
+                    "[DBG] %s mapping=%s sw=%d force=%s info=%s",
                     agent_id,
-                    list(mapping.keys()),
+                    mapping,
                     len(getattr(battle, "available_switches", [])),
                     getattr(battle, "force_switch", False),
                     switch_info,
