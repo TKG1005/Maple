@@ -25,7 +25,7 @@ class EnvPlayer(Player):
 
         # PokemonEnv に最新の battle オブジェクトを送信
         self._logger.debug(
-            "[DBG] %s queue battle -> %s", self.player_id, battle.battle_tag
+            "[DBG] %s queue battle -> %s trapped = %s", self.player_id, battle.battle_tag,battle.trapped
         )
         await self._env._battle_queues[self.player_id].put(battle)
 
@@ -113,7 +113,6 @@ class EnvPlayer(Player):
 
         if maybe_default_order and (
             "illusion" in [p.ability for p in battle.team.values()]
-            or random.random() < self.DEFAULT_CHOICE_CHANCE
         ):
             message = self.choose_default_move().message
         elif from_teampreview_request:
@@ -162,9 +161,10 @@ class EnvPlayer(Player):
             message = choice.message
 
         self._logger.debug(
-            "[DBG] %s send message '%s' to battle %s",
+            "[DBG] %s send message '%s' to battle %s last = %s",
             self.player_id,
             message,
             battle.battle_tag,
+            battle.last_request,
         )
         await self.ps_client.send_message(message, battle.battle_tag)
