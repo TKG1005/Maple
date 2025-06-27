@@ -87,6 +87,13 @@ class EnvPlayer(Player):
         maybe_default_order: bool = False,
     ):
 
+        # 受信した request の内容をデバッグ出力する
+        self._logger.debug(
+            "[DBG] %s last_request=%s",
+            self.player_id,
+            battle.last_request,
+        )
+
         # ``battle.available_moves`` が空の場合は更新を待機する
         if not battle.available_moves:
 
