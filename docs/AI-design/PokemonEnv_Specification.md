@@ -13,7 +13,7 @@
 | 使用ライブラリ | `poke_env` の `Player` と `ServerConfiguration` |
 | 通信プロトコル | Pokémon Showdown テキストコマンド (`/team`, `/choose move 1`, など) |
 | 対戦開始 | `EnvPlayer.play_against(opponent, n_battles=1)`を2インスタンス同時に起動し、両エージェントを対戦状態にする |
-| メッセージフロー | 1. サーバーが `|request|` で始まるメッセージを送信 2. 各 `EnvPlayer`(P0/P1) がメッセージを解析して `battle` を更新し、PokemonEnv へフラグ付きで送信 3. PokemonEnv は受け取った行動を `EnvPlayer` 経由でサーバへ送信 4. サーバが結果を返す |
+| メッセージフロー | 1. サーバーが `|request|` で始まるメッセージを送信 2. 各 `EnvPlayer`(P0/P1) は `battle.last_request` の変化を確認して `battle` を更新し、PokemonEnv へフラグ付きで送信 3. PokemonEnv は受け取った行動を `EnvPlayer` 経由でサーバへ送信 4. サーバが結果を返す |
 
 * 各 `request` には昇順の `rqid` が付与され、乱序で届くことがある
 * 同一ターンに複数の `request` が送られることがある
@@ -42,12 +42,12 @@
   7. `Agent`は`info`の情報からチーム選択が呼び出されたことを理解して、`step(choose_team(state))`を実行
   8. `PokemonEnv`はチーム選択を受け取り`EnvPlayer`に送信
   9. `EnvPlayer`はチーム選択をサーバに送信して新しい`request`を待つ
-  10. `request`が発生したら`EnvPlaer`は`battle`オブジェクトを更新し、`PokemonEnv`に`battle`オブジェクトとフラグやキューを`PokemonEnv` にわたして`action`を待機する(ここで初めてbattleオブジェクトが更新)
+  10. `request`が発生したら`EnvPlayer`は`battle.last_request`が前回から変化したことを確認し、`battle`オブジェクトを更新して`PokemonEnv`に渡し`action`を待機する
   11. `PokemonEnv`は`Agent`にStateObserverを使って作成した情報ベクトルと、`action_helper.py`の`get_available_actions_with_details`で作成した選択可能な行動マスクを送信する。
   12. `Agent`は`choose_move(state,mask)`で行動を選択して、`step(action)`を呼ぶ
   13. `PokemonEnv`は`action`をキューに投入して、次の`request`フラグを待つ
   14. `EnvPlayer`(`poke-env`)は`action`を`battleorder`に変換してShowdownサーバに送信して、次の`request`を待つ
-  15. `EnvPlayer`は次の`request`が来たら`battle`を更新して`PokemonEnv`に渡して、再度`action`を待機する
+  15. `EnvPlayer`は次の`request`で`battle.last_request`が更新されたことを検知してから`battle`を`PokemonEnv`に送信し、再度`action`を待機する
  16. `PokemonEnv`は`step(action)`の戻り値として`state(observation)`、`reward`、`terminated`/`truncated` 判定、`info` を返し、`return_masks=True` のときは次の行動マスクも返す
   17. `Agent`は`受け取った情報から行動を選択して次の`step(action)`を呼ぶ
 
