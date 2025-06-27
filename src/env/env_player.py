@@ -19,6 +19,8 @@ class EnvPlayer(Player):
         self._env = env
         self.player_id = player_id
         self._logger = logging.getLogger(__name__)
+        # 前回処理した Battle.last_request を保持しておく
+        self._last_request: Any | None = None
 
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
@@ -94,6 +96,24 @@ class EnvPlayer(Player):
             battle.last_request,
         )
 
+        # 同一の request が続いた場合は更新を待機する
+        if battle.last_request is self._last_request:
+            self._logger.debug(
+                "[DBG] %s waiting last_request update", self.player_id
+            )
+
+            async def _wait_update() -> None:
+                while battle.last_request is self._last_request:
+                    await asyncio.sleep(0.1)
+
+            try:
+                await asyncio.wait_for(_wait_update(), timeout=self._env.timeout)
+            except asyncio.TimeoutError as exc:
+                self._logger.error(
+                    "[TIMEOUT] %s last_request not updated", self.player_id
+                )
+                raise RuntimeError("Battle request not updated") from exc
+
         # ``battle.available_moves`` が空の場合は更新を待機する
         if not battle.available_moves:
 
@@ -168,3 +188,6 @@ class EnvPlayer(Player):
             battle.last_request,
         )
         await self.ps_client.send_message(message, battle.battle_tag)
+        # 処理した last_request を記録
+        self._last_request = battle.last_request
+
