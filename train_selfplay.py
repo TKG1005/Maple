@@ -169,6 +169,8 @@ def main(
     entropy_coef: float = 0.0,
     gamma: float = 0.99,
     parallel: int = 1,
+    checkpoint_interval: int = 0,
+    checkpoint_dir: str = "checkpoints",
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -191,6 +193,8 @@ def main(
     writer = SummaryWriter() if tensorboard else None
 
     envs = [init_env() for _ in range(max(1, parallel))]
+
+    ckpt_dir = Path(checkpoint_dir)
 
     sample_env = envs[0]
     policy_net = PolicyNetwork(
@@ -267,6 +271,15 @@ def main(
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
 
+        if checkpoint_interval and (ep + 1) % checkpoint_interval == 0:
+            try:
+                ckpt_dir.mkdir(parents=True, exist_ok=True)
+                ckpt_path = ckpt_dir / f"checkpoint_ep{ep + 1}.pt"
+                torch.save(policy_net.state_dict(), ckpt_path)
+                logger.info("Checkpoint saved to %s", ckpt_path)
+            except OSError as exc:
+                logger.error("Failed to save checkpoint: %s", exc)
+
     if init_obs is not None and init_mask is not None and init_probs is not None:
         updated_probs = agents[0][0].select_action(init_obs, init_mask)
         diff = updated_probs - init_probs
@@ -318,6 +331,18 @@ if __name__ == "__main__":
     parser.add_argument("--entropy-coef", type=float, help="entropy bonus coefficient")
     parser.add_argument("--gamma", type=float, help="discount factor")
     parser.add_argument("--parallel", type=int, default=1, help="number of parallel environments")
+    parser.add_argument(
+        "--checkpoint-interval",
+        type=int,
+        default=0,
+        help="save intermediate models every N episodes (0 to disable)",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default="checkpoints",
+        help="directory to store checkpoint files",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -336,4 +361,6 @@ if __name__ == "__main__":
         entropy_coef=args.entropy_coef if args.entropy_coef is not None else 0.0,
         gamma=args.gamma if args.gamma is not None else 0.99,
         parallel=args.parallel,
+        checkpoint_interval=args.checkpoint_interval,
+        checkpoint_dir=args.checkpoint_dir,
     )
