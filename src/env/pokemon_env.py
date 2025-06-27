@@ -122,8 +122,6 @@ class PokemonEnv(gym.Env):
         self._last_requests: dict[str, Any] = {
             agent_id: None for agent_id in self.agent_ids
         }
-        # 直近に計算した行動マスク
-        self._latest_masks: tuple[np.ndarray, ...] | None = None
 
     # ------------------------------------------------------------------
     # Agent interaction utilities
@@ -330,7 +328,6 @@ class PokemonEnv(gym.Env):
         self._last_requests = {
             pid: self._current_battles[pid].last_request for pid in self.agent_ids
         }
-        self._latest_masks = masks
 
         if hasattr(self, "single_agent_mode"):
             if return_masks:
@@ -563,17 +560,9 @@ class PokemonEnv(gym.Env):
                 battle.last_request is not self._last_requests.get(pid)
             )
 
-        if all(updated.get(pid, False) for pid in self.agent_ids):
-            masks = self._compute_all_masks()
-            for pid in self.agent_ids:
-                self._last_requests[pid] = self._current_battles[pid].last_request
-            self._latest_masks = masks
-        else:
-            if self._latest_masks is None:
-                masks = self._compute_all_masks()
-                self._latest_masks = masks
-            else:
-                masks = self._latest_masks
+        masks = self._compute_all_masks()
+        for pid in self.agent_ids:
+            self._last_requests[pid] = self._current_battles[pid].last_request
 
         observations = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
