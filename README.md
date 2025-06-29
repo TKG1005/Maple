@@ -14,3 +14,4 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
 - 2025-06-29 `SingleAgentCompatibilityWrapper` の `reset()` と `step()` が `return_masks` を受け取り
   `PokemonEnv` の行動マスクと連携するよう更新
 - 2025-07-01 PPO 対応手順をまとめた `docs/M7_setup.md` を追加し、`train_selfplay.py` の `--algo` オプションでアルゴリズムを切り替え可能に
+- 2025-07-05 `HPDeltaReward` を追加し、`--reward hp_delta` オプションで使用可能に
