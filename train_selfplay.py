@@ -275,7 +275,13 @@ def main(
             try:
                 ckpt_dir.mkdir(parents=True, exist_ok=True)
                 ckpt_path = ckpt_dir / f"checkpoint_ep{ep + 1}.pt"
-                torch.save(policy_net.state_dict(), ckpt_path)
+                torch.save(
+                    {
+                        "policy": policy_net.state_dict(),
+                        "value": value_net.state_dict(),
+                    },
+                    ckpt_path,
+                )
                 logger.info("Checkpoint saved to %s", ckpt_path)
             except OSError as exc:
                 logger.error("Failed to save checkpoint: %s", exc)
@@ -295,7 +301,13 @@ def main(
         path = Path(save_path)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(policy_net.state_dict(), path)
+            torch.save(
+                {
+                    "policy": policy_net.state_dict(),
+                    "value": value_net.state_dict(),
+                },
+                path,
+            )
             logger.info("Model saved to %s", path)
         except OSError as exc:
             logger.error("Failed to save model: %s", exc)

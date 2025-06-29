@@ -126,7 +126,11 @@ def evaluate_single(
     policy_net = PolicyNetwork(env.observation_space, env.action_space)
     value_net = ValueNetwork(env.observation_space)
     state_dict = torch.load(model_path, map_location="cpu")
-    policy_net.load_state_dict(state_dict)
+    if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
+        policy_net.load_state_dict(state_dict["policy"])
+        value_net.load_state_dict(state_dict["value"])
+    else:
+        policy_net.load_state_dict(state_dict)
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=1e-3)
     agent = RLAgent(env, policy_net, value_net, optimizer)
@@ -160,7 +164,11 @@ def compare_models(
     )
     value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
     state_dict1 = torch.load(model_b, map_location="cpu")
-    policy1.load_state_dict(state_dict1)
+    if isinstance(state_dict1, dict) and "policy" in state_dict1 and "value" in state_dict1:
+        policy1.load_state_dict(state_dict1["policy"])
+        value1.load_state_dict(state_dict1["value"])
+    else:
+        policy1.load_state_dict(state_dict1)
     params1 = list(policy1.parameters()) + list(value1.parameters())
     opt1 = optim.Adam(params1, lr=1e-3)
     agent1 = RLAgent(env, policy1, value1, opt1)
@@ -171,7 +179,11 @@ def compare_models(
     )
     value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
     state_dict0 = torch.load(model_a, map_location="cpu")
-    policy0.load_state_dict(state_dict0)
+    if isinstance(state_dict0, dict) and "policy" in state_dict0 and "value" in state_dict0:
+        policy0.load_state_dict(state_dict0["policy"])
+        value0.load_state_dict(state_dict0["value"])
+    else:
+        policy0.load_state_dict(state_dict0)
     params0 = list(policy0.parameters()) + list(value0.parameters())
     opt0 = optim.Adam(params0, lr=1e-3)
     agent0 = RLAgent(env, policy0, value0, opt0)
