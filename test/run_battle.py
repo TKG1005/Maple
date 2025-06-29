@@ -65,7 +65,11 @@ def run_single_battle(model_path: str | None = None) -> dict:
         )
         value = ValueNetwork(env.observation_space[env.agent_ids[0]])
         state_dict = torch.load(model_path, map_location="cpu")
-        policy.load_state_dict(state_dict)
+        if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
+            policy.load_state_dict(state_dict["policy"])
+            value.load_state_dict(state_dict["value"])
+        else:
+            policy.load_state_dict(state_dict)
         params = list(policy.parameters()) + list(value.parameters())
         optimizer = optim.Adam(params, lr=1e-3)
         agent0 = RLAgent(env, policy, value, optimizer)
