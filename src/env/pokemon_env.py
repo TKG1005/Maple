@@ -17,6 +17,7 @@ import yaml
 from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
+from src.rewards import HPDeltaReward
 
 
 class PokemonEnv(gym.Env):
@@ -122,6 +123,9 @@ class PokemonEnv(gym.Env):
         self._last_requests: dict[str, Any] = {
             agent_id: None for agent_id in self.agent_ids
         }
+
+        # HPDeltaReward をプレイヤーごとに保持
+        self._hp_delta_rewards: dict[str, HPDeltaReward] = {}
 
     # ------------------------------------------------------------------
     # Agent interaction utilities
@@ -245,9 +249,7 @@ class PokemonEnv(gym.Env):
         if not hasattr(self, "_env_players"):
             from pathlib import Path
 
-            team_path = (
-                Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
-            )
+            team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
                 team = team_path.read_text()
             except OSError:  # pragma: no cover - デバッグ用
@@ -314,6 +316,15 @@ class PokemonEnv(gym.Env):
         self._selected_species["player_1"] = set(self._team_rosters["player_1"])
 
         self._current_battles = {"player_0": battle0, "player_1": battle1}
+
+        # HPDeltaReward を初期化し、初期 HP を記録
+        self._hp_delta_rewards = {
+            "player_0": HPDeltaReward(),
+            "player_1": HPDeltaReward(),
+        }
+        self._hp_delta_rewards["player_0"].reset(battle0)
+        self._hp_delta_rewards["player_1"].reset(battle1)
+
         observation = {
             "player_0": self.state_observer.observe(battle0),
             "player_1": self.state_observer.observe(battle1),
@@ -412,7 +423,10 @@ class PokemonEnv(gym.Env):
         """Return an action mask derived from ``action_mapping``."""
 
         return np.array(
-            [0 if disabled else 1 for _, (_, _, disabled) in sorted(action_mapping.items())],
+            [
+                0 if disabled else 1
+                for _, (_, _, disabled) in sorted(action_mapping.items())
+            ],
             dtype=np.int8,
         )
 
@@ -523,9 +537,7 @@ class PokemonEnv(gym.Env):
                         mapping,
                     )
                 except DisabledErr:
-                    err_msg = (
-                        f"invalid action: {agent_id} selected {act} with mapping {mapping}"
-                    )
+                    err_msg = f"invalid action: {agent_id} selected {act} with mapping {mapping}"
                     self._logger.error(err_msg)
                     raise RuntimeError(err_msg)
                 asyncio.run_coroutine_threadsafe(
@@ -556,12 +568,15 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
-            self._logger.debug("Env recieved battle from request %s for %s",battle.last_request,pid,)
+            self._logger.debug(
+                "Env recieved battle from request %s for %s",
+                battle.last_request,
+                pid,
+            )
             updated[pid] = battle is not None and (
                 battle.last_request is not self._last_requests.get(pid)
             )
-        
-        
+
         masks = self._compute_all_masks()
         for pid in self.agent_ids:
             self._last_requests[pid] = self._current_battles[pid].last_request
@@ -569,7 +584,7 @@ class PokemonEnv(gym.Env):
         observations = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
         }
-        rewards = {pid: self._calc_reward(battles[pid]) for pid in self.agent_ids}
+        rewards = {pid: self._calc_reward(battles[pid], pid) for pid in self.agent_ids}
         terminated: dict[str, bool] = {}
         truncated: dict[str, bool] = {}
         for pid in self.agent_ids:
@@ -612,17 +627,18 @@ class PokemonEnv(gym.Env):
         return terminated, truncated
 
     # Step11: 報酬計算ユーティリティ
-    def _calc_reward(self, battle: Any) -> float:
-        """Return +1 if the battle is won, -1 if lost, otherwise 0."""
+    def _calc_reward(self, battle: Any, pid: str) -> float:
+        """HP差報酬に勝敗ボーナスを加算して返す。"""
 
-        # battle.finished はバトルが終了したかどうかを示す poke-env の属性
-        if not getattr(battle, "finished", False):
-            return 0.0
+        hp_reward = 0.0
+        if pid in self._hp_delta_rewards:
+            hp_reward = self._hp_delta_rewards[pid].calc(battle)
 
-        # battle.won が True なら勝利、False なら敗北とみなす
-        if getattr(battle, "won", False):
-            return 1.0
-        return -1.0
+        win_reward = 0.0
+        if getattr(battle, "finished", False):
+            win_reward = 1.0 if getattr(battle, "won", False) else -1.0
+
+        return float(hp_reward + win_reward)
 
     def render(self) -> None:
         """Render the current battle state to the console."""
