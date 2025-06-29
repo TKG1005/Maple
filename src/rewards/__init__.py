@@ -16,9 +16,11 @@ class RewardBase(ABC):
         raise NotImplementedError
 
 
-__all__ = ["RewardBase"]
+__all__ = [
+    "RewardBase",
+    "HPDeltaReward",
+    "CompositeReward",
+]
 
 from .hp_delta import HPDeltaReward
 from .composite import CompositeReward
-
-__all__.extend(["HPDeltaReward", "CompositeReward"])
