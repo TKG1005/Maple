@@ -8,3 +8,8 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   観測とあわせて利用可能な行動マスクを返すよう更新
 - 2025-06-27 `EnvPlayer` が `battle.last_request` の変化を監視し、更新を確認してから
   `PokemonEnv` に `battle` オブジェクトを送信するよう改善
+- 2025-06-28 `train_selfplay.py` にチェックポイント保存オプションを追加し、一定間隔で
+  モデルを自動保存可能に
+- 2025-06-29 対戦ログ比較用の `plot_compare.py` を新規追加し、学習結果をグラフで確認できるように
+- 2025-06-29 `SingleAgentCompatibilityWrapper` の `reset()` と `step()` が `return_masks` を受け取り
+  `PokemonEnv` の行動マスクと連携するよう更新
