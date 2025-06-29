@@ -13,6 +13,10 @@ class HPDeltaReward(RewardBase):
     ENEMY_DAMAGE_COEF = 0.01
     ENEMY_HEAL_COEF = -0.01
 
+    # 以下 2 つの定数は R-3 で設定ファイル化する予定
+    BONUS_THRESHOLD = 0.5
+    BONUS_VALUE = 0.1
+
     def __init__(self) -> None:
         self.prev_my_hp: Dict[int, int] = {}
         self.prev_opp_hp: Dict[int, int] = {}
@@ -44,6 +48,8 @@ class HPDeltaReward(RewardBase):
         self_heal = 0.0
         enemy_damage = 0.0
         enemy_heal = 0.0
+        total_hp = 0
+        total_max = 0
 
         for mon in getattr(battle, "team", {}).values():
             cur = getattr(mon, "current_hp", 0) or 0
@@ -55,6 +61,8 @@ class HPDeltaReward(RewardBase):
             elif delta > 0:
                 self_heal += delta / max_hp
             self.prev_my_hp[id(mon)] = cur
+            total_hp += cur
+            total_max += max_hp
 
         for mon in getattr(battle, "opponent_team", {}).values():
             cur = getattr(mon, "current_hp", 0) or 0
@@ -78,7 +86,14 @@ class HPDeltaReward(RewardBase):
             + enemy_damage * self.ENEMY_DAMAGE_COEF
             + enemy_heal * self.ENEMY_HEAL_COEF
         )
-        return float(reward)
+        bonus = 0.0
+        if (
+            getattr(battle, "finished", False)
+            and total_max > 0
+            and (total_hp / total_max) >= self.BONUS_THRESHOLD
+        ):
+            bonus = self.BONUS_VALUE
+        return float(reward + bonus)
 
 
 __all__ = ["HPDeltaReward"]
