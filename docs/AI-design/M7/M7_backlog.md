@@ -110,6 +110,33 @@ reward:
   win_bonus:         +10.0  # 例: 勝利時 or HP条件達成時
 ```
 
+#### CompositeReward の使い方
+
+`CompositeReward` クラスは複数のサブ報酬をまとめて管理するマネージャです。
+`PokemonEnv` を `reward="composite"` で初期化し、
+`reward_config_path` に YAML ファイルを渡すことで利用できます。
+`train_selfplay.py` では次のように指定します。
+
+```bash
+python train_selfplay.py --reward composite --reward-config config/reward.yaml
+```
+
+YAML ファイルの例を以下に示します。各サブ報酬は `enabled` で有効/無効を切り替え、
+`weight` で重みを調整します。
+
+```yaml
+rewards:
+  hp_delta:
+    weight: 1.0
+    enabled: true
+  knockout:
+    weight: 1.0
+    enabled: true
+```
+
+任意の報酬を追加する場合は `rewards:` 配下に項目を増やすだけでよく、
+コード側は自動的に読み込んで合成します。
+
 ---
 
 ## 2. 対戦相手の多様化
