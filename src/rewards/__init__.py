@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-
 class RewardBase(ABC):
     """Interface for reward calculation."""
 
@@ -18,3 +17,7 @@ class RewardBase(ABC):
 
 
 __all__ = ["RewardBase"]
+
+from .hp_delta import HPDeltaReward
+
+__all__.append("HPDeltaReward")
