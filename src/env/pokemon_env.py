@@ -33,6 +33,7 @@ class PokemonEnv(gym.Env):
         *,
         seed: int | None = None,
         save_replays: bool | str = False,
+        reward: str = "hp_delta",
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -61,6 +62,7 @@ class PokemonEnv(gym.Env):
         self.rng = np.random.default_rng(seed)
         self.save_replays = save_replays
         self._logger = logging.getLogger(__name__)
+        self.reward_type = reward
 
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
@@ -318,12 +320,15 @@ class PokemonEnv(gym.Env):
         self._current_battles = {"player_0": battle0, "player_1": battle1}
 
         # HPDeltaReward を初期化し、初期 HP を記録
-        self._hp_delta_rewards = {
-            "player_0": HPDeltaReward(),
-            "player_1": HPDeltaReward(),
-        }
-        self._hp_delta_rewards["player_0"].reset(battle0)
-        self._hp_delta_rewards["player_1"].reset(battle1)
+        if self.reward_type == "hp_delta":
+            self._hp_delta_rewards = {
+                "player_0": HPDeltaReward(),
+                "player_1": HPDeltaReward(),
+            }
+            self._hp_delta_rewards["player_0"].reset(battle0)
+            self._hp_delta_rewards["player_1"].reset(battle1)
+        else:
+            self._hp_delta_rewards = {}
 
         observation = {
             "player_0": self.state_observer.observe(battle0),
@@ -631,7 +636,7 @@ class PokemonEnv(gym.Env):
         """HP差報酬に勝敗ボーナスを加算して返す。"""
 
         hp_reward = 0.0
-        if pid in self._hp_delta_rewards:
+        if self.reward_type == "hp_delta" and pid in self._hp_delta_rewards:
             hp_reward = self._hp_delta_rewards[pid].calc(battle)
 
         win_reward = 0.0
