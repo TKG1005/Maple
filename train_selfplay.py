@@ -64,13 +64,14 @@ from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
 
 
-def init_env() -> PokemonEnv:
+def init_env(reward: str = "hp_delta") -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
         opponent_player=None,
         state_observer=observer,
         action_helper=action_helper,
+        reward=reward,
     )
     return env
 
@@ -173,6 +174,7 @@ def main(
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
     algo: str = "ppo",
+    reward: str = "hp_delta",
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -195,7 +197,7 @@ def main(
 
     writer = SummaryWriter() if tensorboard else None
 
-    envs = [init_env() for _ in range(max(1, parallel))]
+    envs = [init_env(reward=reward) for _ in range(max(1, parallel))]
 
     ckpt_dir = Path(checkpoint_dir)
 
@@ -377,6 +379,12 @@ if __name__ == "__main__":
         default="checkpoints",
         help="directory to store checkpoint files",
     )
+    parser.add_argument(
+        "--reward",
+        type=str,
+        default="hp_delta",
+        help="reward function to use (hp_delta)",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -398,4 +406,5 @@ if __name__ == "__main__":
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,
         algo=args.algo,
+        reward=args.reward,
     )
