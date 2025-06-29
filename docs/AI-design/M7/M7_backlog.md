@@ -107,7 +107,7 @@ reward:
   hp_enemy_heal:     -0.01
   faint_enemy:       +1.0
   faint_self:        -0.5
-  win_bonus:         +1.0   # 例: 勝利時 or HP条件達成時
+  win_bonus:         +10.0  # 例: 勝利時 or HP条件達成時
 ```
 
 ---

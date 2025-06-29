@@ -151,8 +151,8 @@ sequenceDiagram
 
 | 状況 | terminated["player_0"] | terminated["player_1"] | reward["player_0"] | reward["player_1"] |
 | --- | --- | --- |
-| 自分が勝利 | True | +1 |
-| 相手が勝利 | True | -1 | +1 |
+| 自分が勝利 | True | +10 |
+| 相手が勝利 | True | -10 | +10 |
 | ターン > MAX_TURNS | True (truncated) | 0 | 0 |
 | 途中ターン | False | 0 |
 

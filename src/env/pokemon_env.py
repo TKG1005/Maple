@@ -641,7 +641,7 @@ class PokemonEnv(gym.Env):
 
         win_reward = 0.0
         if getattr(battle, "finished", False):
-            win_reward = 1.0 if getattr(battle, "won", False) else -1.0
+            win_reward = 10.0 if getattr(battle, "won", False) else -10.0
 
         return float(hp_reward + win_reward)
 
