@@ -17,7 +17,7 @@ import yaml
 from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
-from src.rewards import HPDeltaReward
+from src.rewards import HPDeltaReward, CompositeReward
 
 
 class PokemonEnv(gym.Env):
@@ -34,6 +34,7 @@ class PokemonEnv(gym.Env):
         seed: int | None = None,
         save_replays: bool | str = False,
         reward: str = "hp_delta",
+        reward_config_path: str | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -63,6 +64,10 @@ class PokemonEnv(gym.Env):
         self.save_replays = save_replays
         self._logger = logging.getLogger(__name__)
         self.reward_type = reward
+        self.reward_config_path = reward_config_path
+
+        self._composite_rewards: dict[str, CompositeReward] = {}
+        self._sub_reward_logs: dict[str, dict[str, float]] = {}
 
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
@@ -327,8 +332,28 @@ class PokemonEnv(gym.Env):
             }
             self._hp_delta_rewards["player_0"].reset(battle0)
             self._hp_delta_rewards["player_1"].reset(battle1)
+            self._composite_rewards = {}
+            self._sub_reward_logs = {}
+        elif self.reward_type == "composite":
+            path = self.reward_config_path
+            if path is None:
+                path = str(
+                    Path(__file__).resolve().parents[2]
+                    / "config"
+                    / "reward.yaml"
+                )
+            self._composite_rewards = {
+                "player_0": CompositeReward(path),
+                "player_1": CompositeReward(path),
+            }
+            self._composite_rewards["player_0"].reset(battle0)
+            self._composite_rewards["player_1"].reset(battle1)
+            self._hp_delta_rewards = {}
+            self._sub_reward_logs = {pid: {} for pid in self.agent_ids}
         else:
             self._hp_delta_rewards = {}
+            self._composite_rewards = {}
+            self._sub_reward_logs = {}
 
         observation = {
             "player_0": self.state_observer.observe(battle0),
@@ -639,10 +664,22 @@ class PokemonEnv(gym.Env):
         if self.reward_type == "hp_delta" and pid in self._hp_delta_rewards:
             hp_reward = self._hp_delta_rewards[pid].calc(battle)
 
+            win_reward = 0.0
+            if getattr(battle, "finished", False):
+                win_reward = 10.0 if getattr(battle, "won", False) else -10.0
+
+            return float(hp_reward + win_reward)
+
+        if self.reward_type == "composite" and pid in self._composite_rewards:
+            total = self._composite_rewards[pid].calc(battle)
+            self._sub_reward_logs[pid] = dict(
+                self._composite_rewards[pid].last_values
+            )
+            return float(total)
+
         win_reward = 0.0
         if getattr(battle, "finished", False):
             win_reward = 10.0 if getattr(battle, "won", False) else -10.0
-
         return float(hp_reward + win_reward)
 
     def render(self) -> None:
