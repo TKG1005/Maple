@@ -64,7 +64,7 @@ from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
 
 
-def init_env(reward: str = "hp_delta") -> PokemonEnv:
+def init_env(reward: str = "hp_delta", reward_config: str | None = None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -72,6 +72,7 @@ def init_env(reward: str = "hp_delta") -> PokemonEnv:
         state_observer=observer,
         action_helper=action_helper,
         reward=reward,
+        reward_config_path=reward_config,
     )
     return env
 
@@ -84,8 +85,25 @@ def run_episode(
     gamma: float,
     lam: float,
     record_init: bool = False,
-) -> tuple[dict[str, np.ndarray], float, tuple[np.ndarray, np.ndarray, np.ndarray] | None]:
-    """Run one self-play episode and return batch data and total reward."""
+) -> tuple[
+    dict[str, np.ndarray],
+    float,
+    tuple[np.ndarray, np.ndarray, np.ndarray] | None,
+    dict[str, float],
+]:
+    """Run one self-play episode and return batch data and total reward.
+
+    Returns
+    -------
+    batch : dict[str, np.ndarray]
+        Collected trajectories for PPO update.
+    total_reward : float
+        Episode reward summed over steps.
+    init_tuple : tuple[np.ndarray, np.ndarray, np.ndarray] | None
+        Initial observation, mask and action probabilities for logging.
+    sub_totals : dict[str, float]
+        Sum of sub reward values from :attr:`env._sub_reward_logs`.
+    """
 
     observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
@@ -111,6 +129,7 @@ def run_episode(
 
     done = False
     traj: List[dict] = []
+    sub_totals: dict[str, float] = {}
 
     while not done:
         probs0 = agent0.select_action(obs0, mask0)
@@ -122,7 +141,13 @@ def run_episode(
         val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
-        observations, rewards, terms, truncs, _, next_masks = env.step(actions, return_masks=True)
+        observations, rewards, terms, truncs, _, next_masks = env.step(
+            actions, return_masks=True
+        )
+        if hasattr(env, "_sub_reward_logs"):
+            logs = env._sub_reward_logs.get(env.agent_ids[0], {})
+            for name, val in logs.items():
+                sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
         reward = float(rewards[env.agent_ids[0]])
         done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
@@ -155,7 +180,7 @@ def run_episode(
         "rewards": np.array(rewards, dtype=np.float32),
     }
 
-    return batch, sum(rewards), init_tuple
+    return batch, sum(rewards), init_tuple, sub_totals
 
 
 def main(
@@ -175,6 +200,7 @@ def main(
     checkpoint_dir: str = "checkpoints",
     algo: str = "ppo",
     reward: str = "hp_delta",
+    reward_config: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -182,6 +208,8 @@ def main(
     ----------
     parallel : int
         Number of environments to run simultaneously.
+    reward_config : str | None
+        YAML file path for composite reward settings.
     """
 
     cfg = load_config(config_path)
@@ -197,7 +225,10 @@ def main(
 
     writer = SummaryWriter() if tensorboard else None
 
-    envs = [init_env(reward=reward) for _ in range(max(1, parallel))]
+    envs = [
+        init_env(reward=reward, reward_config=reward_config)
+        for _ in range(max(1, parallel))
+    ]
 
     ckpt_dir = Path(checkpoint_dir)
 
@@ -252,6 +283,7 @@ def main(
 
         batches = [res[0] for res in results]
         reward_list = [res[1] for res in results]
+        sub_logs_list = [res[3] for res in results]
 
         if ep == 0 and results[0][2] is not None:
             init_obs, init_mask, init_probs = results[0][2]
@@ -287,6 +319,12 @@ def main(
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
+            sub_totals = {}
+            for logs in sub_logs_list:
+                for name, val in logs.items():
+                    sub_totals[name] = sub_totals.get(name, 0.0) + val
+            for name, val in sub_totals.items():
+                writer.add_scalar(f"sub_reward/{name}", val, ep + 1)
 
         if checkpoint_interval and (ep + 1) % checkpoint_interval == 0:
             try:
@@ -385,6 +423,11 @@ if __name__ == "__main__":
         default="hp_delta",
         help="reward function to use (hp_delta)",
     )
+    parser.add_argument(
+        "--reward-config",
+        type=str,
+        help="path to composite reward YAML file",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -407,4 +450,5 @@ if __name__ == "__main__":
         checkpoint_dir=args.checkpoint_dir,
         algo=args.algo,
         reward=args.reward,
+        reward_config=args.reward_config,
     )

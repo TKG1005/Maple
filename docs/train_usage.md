@@ -19,6 +19,7 @@ python train_selfplay.py [オプション]
 | `--clip R` | PPO のクリップ率を指定します |
 | `--gae-lambda L` | GAE における λ パラメータ |
 | `--parallel N` | 並列実行する環境数 |
+| `--reward-config FILE` | CompositeReward 用の YAML ファイルを指定 |
 
 例:
 
