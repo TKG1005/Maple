@@ -19,5 +19,6 @@ class RewardBase(ABC):
 __all__ = ["RewardBase"]
 
 from .hp_delta import HPDeltaReward
+from .composite import CompositeReward
 
-__all__.append("HPDeltaReward")
+__all__.extend(["HPDeltaReward", "CompositeReward"])
