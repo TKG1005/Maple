@@ -4,8 +4,8 @@ Tera Type: Flying
 EVs: 252 HP  
 - Body Press  
 - Taunt  
-- Hone Claws  
-- Fly  
+- Brave Bird  
+- Roost  
 
 Dragapult @ Focus Sash  
 Ability: Infiltrator  
@@ -15,7 +15,7 @@ Timid Nature
 - Phantom Force  
 - Substitute  
 - Thunder Wave  
-- Will-O-Wisp  
+- Draco Meteor  
 
 Ursaluna @ Assault Vest  
 Ability: Unnerve  
