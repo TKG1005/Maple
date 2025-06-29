@@ -18,11 +18,19 @@ python train_selfplay.py [オプション]
 | `--ppo-epochs N` | 1 エピソード終了後の PPO 更新回数 |
 | `--clip R` | PPO のクリップ率を指定します |
 | `--gae-lambda L` | GAE における λ パラメータ |
+| `--parallel N` | 並列実行する環境数 |
 
 例:
 
 ```bash
-python train_selfplay.py --episodes 100 --algo ppo --clip 0.2 --gae-lambda 0.95 --save model.pt
+python train_selfplay.py \
+    --episodes 100 \
+    --algo ppo \
+    --ppo-epochs 4 \
+    --clip 0.2 \
+    --gae-lambda 0.95 \
+    --parallel 2 \
+    --save model.pt
 ```
 
 オプションを指定しない場合でも、`train_config.yml` の内容が自動的に読み込まれるため、
