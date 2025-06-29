@@ -8,3 +8,4 @@ clip_range: 0.0
 value_coef: 0.0
 entropy_coef: 0.0
 ppo_epochs: 1
+algorithm: ppo

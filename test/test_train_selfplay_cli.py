@@ -120,6 +120,7 @@ sys.modules['src.agents'] = agents
 
 alg = types.ModuleType('src.algorithms')
 alg.PPOAlgorithm = lambda *a, **k: types.SimpleNamespace()
+alg.ReinforceAlgorithm = lambda *a, **k: types.SimpleNamespace()
 alg.compute_gae = lambda rewards, values, gamma=0.99, lam=1.0: [0.0] * len(rewards)
 sys.modules['src.algorithms'] = alg
 

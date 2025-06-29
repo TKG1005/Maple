@@ -14,6 +14,7 @@ python train_selfplay.py [オプション]
 | `--episodes N` | 実行するエピソード数を指定します |
 | `--save FILE` | 学習後のモデルを保存するファイルパス。保存されるファイルには方策ネットワークと価値ネットワーク両方の重みが含まれます |
 | `--tensorboard` | TensorBoard ログを有効にします |
+| `--algo {reinforce,ppo}` | 使用するアルゴリズムを選択します |
 | `--ppo-epochs N` | 1 エピソード終了後の PPO 更新回数 |
 | `--clip R` | PPO のクリップ率を指定します |
 | `--gae-lambda L` | GAE における λ パラメータ |
@@ -21,7 +22,7 @@ python train_selfplay.py [オプション]
 例:
 
 ```bash
-python train_selfplay.py --episodes 100 --clip 0.2 --gae-lambda 0.95 --save model.pt
+python train_selfplay.py --episodes 100 --algo ppo --clip 0.2 --gae-lambda 0.95 --save model.pt
 ```
 
 オプションを指定しない場合でも、`train_config.yml` の内容が自動的に読み込まれるため、
