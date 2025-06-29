@@ -62,7 +62,7 @@ Mapleプロジェクトではポケモン対戦AIの強化学習による自律�
 | ID  | タスク                          | 対象ファイル               | 技術要件／検証 |
 |-----|-------------------------------|----------------------------|----------------|
 | R-1 | `HP差スコア` 報酬クラス追加        | `rewards/hp_delta.py`      | PyTorch で ΔHP を逐ターン計算。UnitTest で数値確認。短時間学習でエピソード平均報酬上昇を確認。 |
-| R-2 | 報酬合成マネージャ              | `rewards/composite.py`, `configs/reward.yaml` | YAML で各係数を切替。TensorBoard で sub-reward 値をプロット。 |
+| R-2 | 報酬合成マネージャ              | `rewards/composite.py`, `config/reward.yaml` | YAML で各係数を切替。TensorBoard で sub-reward 値をプロット。 |
 | R-3 | `撃破/被撃破 ±1` 実装           | `rewards/knockout.py`      | エージェント側・敵側の faint 検知ロジック追加。ログに内訳出力。 |
 | R-4 | 状態異常付与時の報酬クラス追加               | `rewards/status_effect.py`      | 状態異常判定・加点・UnitTest |
 | R-5 | 積み技成功時の微加点                       | `rewards/stat_boost.py`         | 能力値上昇検知・加点          |
