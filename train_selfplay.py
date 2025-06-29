@@ -61,7 +61,7 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
-from src.algorithms import PPOAlgorithm, compute_gae  # noqa: E402
+from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
 
 
 def init_env() -> PokemonEnv:
@@ -151,6 +151,7 @@ def run_episode(
         "advantages": np.array(adv, dtype=np.float32),
         "returns": np.array(returns, dtype=np.float32),
         "values": np.array(values, dtype=np.float32),
+        "rewards": np.array(rewards, dtype=np.float32),
     }
 
     return batch, sum(rewards), init_tuple
@@ -171,6 +172,7 @@ def main(
     parallel: int = 1,
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
+    algo: str = "ppo",
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -189,6 +191,7 @@ def main(
     clip_range = float(cfg.get("clip_range", clip_range))
     value_coef = float(cfg.get("value_coef", value_coef))
     entropy_coef = float(cfg.get("entropy_coef", entropy_coef))
+    algo_name = str(cfg.get("algorithm", algo)).lower()
 
     writer = SummaryWriter() if tensorboard else None
 
@@ -204,11 +207,17 @@ def main(
     value_net = ValueNetwork(sample_env.observation_space[sample_env.agent_ids[0]])
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
-    algorithm = PPOAlgorithm(
-        clip_range=clip_range,
-        value_coef=value_coef,
-        entropy_coef=entropy_coef,
-    )
+
+    if algo_name == "ppo":
+        algorithm = PPOAlgorithm(
+            clip_range=clip_range,
+            value_coef=value_coef,
+            entropy_coef=entropy_coef,
+        )
+    elif algo_name == "reinforce":
+        algorithm = ReinforceAlgorithm()
+    else:
+        raise ValueError(f"Unknown algorithm: {algo_name}")
 
     agents: list[tuple[RLAgent, RLAgent]] = []
     for env in envs:
@@ -253,11 +262,17 @@ def main(
             else:  # fallback for test stubs
                 combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
-        for i in range(ppo_epochs):
+        if algo_name == "ppo":
+            for i in range(ppo_epochs):
+                loss = agents[0][0].update(combined)
+                logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
+                if writer:
+                    writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+        else:
             loss = agents[0][0].update(combined)
-            logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
+            logger.info("Episode %d loss %.4f", ep + 1, loss)
             if writer:
-                writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+                writer.add_scalar("loss", loss, ep + 1)
 
         total_reward = sum(reward_list)
         duration = time.perf_counter() - start_time
@@ -344,6 +359,13 @@ if __name__ == "__main__":
     parser.add_argument("--gamma", type=float, help="discount factor")
     parser.add_argument("--parallel", type=int, default=1, help="number of parallel environments")
     parser.add_argument(
+        "--algo",
+        type=str,
+        choices=["reinforce", "ppo"],
+        default="ppo",
+        help="training algorithm (reinforce or ppo)",
+    )
+    parser.add_argument(
         "--checkpoint-interval",
         type=int,
         default=0,
@@ -375,4 +397,5 @@ if __name__ == "__main__":
         parallel=args.parallel,
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,
+        algo=args.algo,
     )
