@@ -39,3 +39,13 @@ def test_knockout_self_ko_penalty():
     battle.team[0].fainted = True
     assert r.calc(battle) == r.SELF_KO_PENALTY
 
+
+def test_knockout_reward_only_on_change():
+    battle = DummyBattle([DummyMon(False)], [DummyMon(False)])
+    r = KnockoutReward()
+    r.reset(battle)
+    assert r.calc(battle) == 0.0
+    battle.opponent_team[0].fainted = True
+    assert r.calc(battle) == r.ENEMY_KO_BONUS
+    # 同じ状態で再度計算しても報酬は発生しない
+    assert r.calc(battle) == 0.0
