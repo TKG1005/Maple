@@ -36,3 +36,23 @@ python train_selfplay.py \
 
 オプションを指定しない場合でも、`train_config.yml` の内容が自動的に読み込まれるため、
 最小限の入力で学習を開始できます。
+
+## Knockout 報酬の使用例
+
+ポケモンを倒す・倒されるイベントに応じた報酬を与える `KnockoutReward` を単独で
+利用する場合は、`--reward knockout` を指定します。
+
+```bash
+python train_selfplay.py --reward knockout
+```
+
+複数の報酬を組み合わせたいときは、CompositeReward 用の YAML で `knockout` 項目を
+有効にすることで同等の効果を得られます。例として `config/reward.yaml` では次のよう
+に設定します。
+
+```yaml
+rewards:
+  knockout:
+    weight: 1.0
+    enabled: true
+```
