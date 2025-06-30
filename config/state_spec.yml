@@ -1,4 +1,81 @@
 my_active:
+  active_level:
+    dtype: int
+    battle_path: battle.active_pokemon.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_HP:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_atk:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_def:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spa:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spd:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spe:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
   active_boosts_akt:
     dtype: int
     battle_path: battle.active_pokemon.boosts['atk']
@@ -81,6 +158,11 @@ my_active:
     battle_path: active.current_hp_fraction
     encoder: identity
     default: '1'
+  active_is_fainted:
+    dtype: bool
+    battle_path: battle.active_pokemon.fainted
+    encoder: identity
+    default: '0'
   active_move1_type:
     dtype: pkemontype
     battle_path: active_sorted_moves[0].type.name.lower()
@@ -453,6 +535,17 @@ my_active:
     - three_question_marks
     - water
 opp_active:
+  opp_active_lebel:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
   opp_active_boosts_akt:
     dtype: int
     battle_path: battle.opponent_active_pokemon.boosts['atk']
@@ -535,12 +628,17 @@ opp_active:
     battle_path: battle.opponent_active_pokemon.current_hp_fraction
     encoder: identity
     default: '1'
+  opp_active_is_fainted:
+    dtype: bool
+    battle_path: battle.opponent_active_pokemon.fainted
+    encoder: identity
+    default: '0'
   opp_active_is_terastallized:
     dtype: bool
     battle_path: battle.opponent_active_pokemon.is_terastallized
     encoder: identity
     default: '0'
-  opp_acribe_status:
+  opp_active_status:
     dtype: optional
     battle_path: battle.opponent_active_pokemon.status
     encoder: onehot
@@ -650,15 +748,102 @@ opp_active:
     - slp
     - tox
 my_bench1:
+  my_bench1_level:
+    dtype: int
+    battle_path: bench1.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_HP:
+    dtype: int
+    battle_path: bench1.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_atk:
+    dtype: int
+    battle_path: bench1.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_def:
+    dtype: int
+    battle_path: bench1.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spa:
+    dtype: int
+    battle_path: bench1.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spd:
+    dtype: int
+    battle_path: bench1.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spe:
+    dtype: int
+    battle_path: bench1.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
   my_bench1_current_hp_frac:
     dtype: float
     battle_path: bench1.current_hp_frac
     encoder: identity
     default: '1'
+  my_bench1_is_fainted:
+    dtype: bool
+    battle_path: bench1.fainted
+    encoder: nan
+    default: '0'
   my_bench1_is_terastallized:
     dtype: bool
     battle_path: bench1.is_terastallized
     encoder: identity
+    default: '0'
+  my_bench1_is_revealed:
+    dtype: bool
+    battle_path: bench1.revealed
+    encoder: nan
     default: '0'
   my_bench1_status:
     dtype: optional
@@ -756,15 +941,102 @@ my_bench1:
     - three_question_marks
     - water
 my_bench2:
+  my_bench2_level:
+    dtype: int
+    battle_path: bench2.level
+    encoder: one-hot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_HP:
+    dtype: int
+    battle_path: bench2.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_atk:
+    dtype: int
+    battle_path: bench2.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_def:
+    dtype: int
+    battle_path: bench2.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spa:
+    dtype: int
+    battle_path: bench2.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spd:
+    dtype: int
+    battle_path: bench2.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spe:
+    dtype: int
+    battle_path: bench2.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
   my_bench2_current_hp_frac:
     dtype: float
     battle_path: bench2.current_hp_frac
     encoder: nan
     default: '1'
+  my_bench2_is_fainted:
+    dtype: bool
+    battle_path: bench2.fainted
+    encoder: nan
+    default: '0'
   my_bench2_is_terastallized:
     dtype: bool
     battle_path: bench2.is_terastallized
     encoder: identity
+    default: '0'
+  my_bench2_is_revealed:
+    dtype: bool
+    battle_path: bench2.revealed
+    encoder: nan
     default: '0'
   my_bench2_status:
     dtype: optional
@@ -867,10 +1139,20 @@ opp_bench1:
     battle_path: opp_bench1.current_hp_fraction
     encoder: identity
     default: '1'
+  opp_bench1_is_fainted:
+    dtype: bool
+    battle_path: opp_bench1.fainted
+    encoder: nan
+    default: '0'
   opp_bench1_is_terastallized:
     dtype: bool
     battle_path: opp_bench1.is_terastallized
     encoder: identity
+    default: '0'
+  opp_bench1_is_revealed:
+    dtype: bool
+    battle_path: opp_bench2.revealed
+    encoder: nan
     default: '0'
   opp_bench1_teratype:
     dtype: pokemontype(enum)
@@ -959,10 +1241,20 @@ opp_bench2:
     battle_path: opp_bench2.current_hp_fraction
     encoder: identity
     default: '1'
+  opp_bench2_is_fainted:
+    dtype: bool
+    battle_path: opp_bench2.fainted
+    encoder: nan
+    default: '0'
   opp_bench2_is_terastallized:
     dtype: bool
     battle_path: opp_bench2.is_terastallized
     encoder: identity
+    default: '0'
+  opp_bench2_is_revealed:
+    dtype: bool
+    battle_path: opp_bench2.revealed
+    encoder: nan
     default: '0'
   opp_bench2_status:
     dtype: optional
