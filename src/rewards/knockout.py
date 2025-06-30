@@ -40,6 +40,31 @@ class KnockoutReward(RewardBase):
 
     def calc(self, battle: object) -> float:
         """報酬を計算して返す。"""
+
+        new_enemy_ko = 0
+        new_self_ko = 0
+
+        for mon in getattr(battle, "team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            fainted = getattr(mon, "fainted", False)
+            prev_alive = self.prev_my_alive.get(id(mon), not fainted)
+            if fainted and prev_alive:
+                new_self_ko += 1
+            self.prev_my_hp[id(mon)] = cur_hp
+            self.prev_my_alive[id(mon)] = not fainted
+
+        for mon in getattr(battle, "opponent_team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            fainted = getattr(mon, "fainted", False)
+            prev_alive = self.prev_opp_alive.get(id(mon), not fainted)
+            if fainted and prev_alive:
+                new_enemy_ko += 1
+            self.prev_opp_hp[id(mon)] = cur_hp
+            self.prev_opp_alive[id(mon)] = not fainted
+
+        self.enemy_ko += new_enemy_ko
+        self.self_ko += new_self_ko
+
         return 0.0
 
 
