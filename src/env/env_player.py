@@ -24,7 +24,7 @@ class EnvPlayer(Player):
 
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
-
+        
         # PokemonEnv に最新の battle オブジェクトを送信
         self._logger.debug(
             "[DBG] %s queue battle -> %s trapped = %s", self.player_id, battle.battle_tag,battle.trapped
