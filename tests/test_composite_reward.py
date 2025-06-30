@@ -5,7 +5,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from src.rewards import CompositeReward, RewardBase
+from src.rewards import CompositeReward, RewardBase, KnockoutReward
 
 
 class ConstReward(RewardBase):
@@ -18,6 +18,20 @@ class ConstReward(RewardBase):
 
     def calc(self, battle: object) -> float:
         return float(self.value)
+
+
+class DummyMon:
+    def __init__(self, fainted: bool = False):
+        self.fainted = fainted
+        self.current_hp = 100
+
+
+class DummyBattle:
+    def __init__(self, my_mons: list[DummyMon], opp_mons: list[DummyMon]):
+        self.team = {i: m for i, m in enumerate(my_mons)}
+        self.opponent_team = {i: m for i, m in enumerate(opp_mons)}
+        self.finished = False
+        self.won = False
 
 
 def test_composite_reward(tmp_path: Path) -> None:
@@ -43,3 +57,24 @@ def test_composite_reward(tmp_path: Path) -> None:
     assert reward == 2.0 * 1.0 + 0.5 * 1.0
     assert comp.last_values["a"] == 1.0
     assert comp.last_values["b"] == 1.0
+
+
+def test_composite_reward_knockout_from_yaml(tmp_path: Path) -> None:
+    yaml_path = tmp_path / "reward.yaml"
+    yaml_text = (
+        "rewards:\n"
+        "  knockout:\n"
+        "    weight: 2.0\n"
+        "    enabled: true\n"
+    )
+    yaml_path.write_text(yaml_text, encoding="utf-8")
+
+    comp = CompositeReward(str(yaml_path))
+
+    battle = DummyBattle([DummyMon(False)], [DummyMon(False)])
+    comp.reset(battle)
+    battle.opponent_team[0].fainted = True
+    reward = comp.calc(battle)
+
+    assert reward == 2.0 * KnockoutReward.ENEMY_KO_BONUS
+    assert comp.last_values["knockout"] == KnockoutReward.ENEMY_KO_BONUS

@@ -8,6 +8,7 @@ except Exception:  # pragma: no cover - fallback when PyYAML is missing
     yaml = None
 
 from . import RewardBase, HPDeltaReward
+from .knockout import KnockoutReward
 
 
 class CompositeReward(RewardBase):
@@ -15,6 +16,7 @@ class CompositeReward(RewardBase):
 
     DEFAULT_REWARDS: Mapping[str, Callable[[], RewardBase]] = {
         "hp_delta": HPDeltaReward,
+        "knockout": KnockoutReward,
     }
 
     def __init__(self, config_path: str, reward_map: Mapping[str, Callable[[], RewardBase]] | None = None) -> None:
