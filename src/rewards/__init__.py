@@ -20,7 +20,9 @@ __all__ = [
     "RewardBase",
     "HPDeltaReward",
     "CompositeReward",
+    "KnockoutReward",
 ]
 
 from .hp_delta import HPDeltaReward
 from .composite import CompositeReward
+from .knockout import KnockoutReward

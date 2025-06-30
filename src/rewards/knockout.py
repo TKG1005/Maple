@@ -17,13 +17,54 @@ class KnockoutReward(RewardBase):
         self.prev_opp_hp: Dict[int, int] = {}
         self.prev_my_alive: Dict[int, bool] = {}
         self.prev_opp_alive: Dict[int, bool] = {}
+        self.enemy_ko = 0
+        self.self_ko = 0
 
     def reset(self, battle: object | None = None) -> None:
         """内部状態をリセットする。"""
-        pass
+
+        self.prev_my_hp.clear()
+        self.prev_opp_hp.clear()
+        self.prev_my_alive.clear()
+        self.prev_opp_alive.clear()
+        self.enemy_ko = 0
+        self.self_ko = 0
+
+        if battle is not None:
+            for mon in getattr(battle, "team", {}).values():
+                self.prev_my_hp[id(mon)] = getattr(mon, "current_hp", 0) or 0
+                self.prev_my_alive[id(mon)] = not getattr(mon, "fainted", False)
+            for mon in getattr(battle, "opponent_team", {}).values():
+                self.prev_opp_hp[id(mon)] = getattr(mon, "current_hp", 0) or 0
+                self.prev_opp_alive[id(mon)] = not getattr(mon, "fainted", False)
 
     def calc(self, battle: object) -> float:
         """報酬を計算して返す。"""
+
+        new_enemy_ko = 0
+        new_self_ko = 0
+
+        for mon in getattr(battle, "team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            fainted = getattr(mon, "fainted", False)
+            prev_alive = self.prev_my_alive.get(id(mon), not fainted)
+            if fainted and prev_alive:
+                new_self_ko += 1
+            self.prev_my_hp[id(mon)] = cur_hp
+            self.prev_my_alive[id(mon)] = not fainted
+
+        for mon in getattr(battle, "opponent_team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            fainted = getattr(mon, "fainted", False)
+            prev_alive = self.prev_opp_alive.get(id(mon), not fainted)
+            if fainted and prev_alive:
+                new_enemy_ko += 1
+            self.prev_opp_hp[id(mon)] = cur_hp
+            self.prev_opp_alive[id(mon)] = not fainted
+
+        self.enemy_ko += new_enemy_ko
+        self.self_ko += new_self_ko
+
         return 0.0
 
 
