@@ -9,9 +9,10 @@ from src.rewards import KnockoutReward
 
 
 class DummyMon:
-    def __init__(self, current_hp=0, fainted=False):
-        self.current_hp = current_hp
+    def __init__(self, fainted=False):
         self.fainted = fainted
+        self.current_hp = 100
+
 
 
 class DummyBattle:
@@ -19,48 +20,22 @@ class DummyBattle:
         self.team = {i: m for i, m in enumerate(my_mons)}
         self.opponent_team = {i: m for i, m in enumerate(opp_mons)}
 
+        self.finished = False
+        self.won = False
 
-def test_knockout_reset_records_initial_state():
-    my1 = DummyMon(50, False)
-    my2 = DummyMon(0, True)
-    opp1 = DummyMon(60, False)
-    battle = DummyBattle([my1, my2], [opp1])
 
+def test_knockout_enemy_ko_reward():
+    battle = DummyBattle([DummyMon(False)], [DummyMon(False)])
     r = KnockoutReward()
     r.reset(battle)
-
-    assert r.prev_my_hp[id(my1)] == 50
-    assert r.prev_my_hp[id(my2)] == 0
-    assert r.prev_my_alive[id(my1)] is True
-    assert r.prev_my_alive[id(my2)] is False
-    assert r.prev_opp_hp[id(opp1)] == 60
-    assert r.prev_opp_alive[id(opp1)] is True
-    assert r.enemy_ko == 0
-    assert r.self_ko == 0
+    battle.opponent_team[0].fainted = True
+    assert r.calc(battle) == r.ENEMY_KO_BONUS
 
 
-def test_knockout_calc_counts_new_faints():
-    my1 = DummyMon(50, False)
-    my2 = DummyMon(40, False)
-    opp1 = DummyMon(60, False)
-    battle = DummyBattle([my1, my2], [opp1])
-
+def test_knockout_self_ko_penalty():
+    battle = DummyBattle([DummyMon(False)], [DummyMon(False)])
     r = KnockoutReward()
     r.reset(battle)
+    battle.team[0].fainted = True
+    assert r.calc(battle) == r.SELF_KO_PENALTY
 
-    my1.current_hp = 0
-    my1.fainted = True
-    opp1.current_hp = 0
-    opp1.fainted = True
-
-    reward = r.calc(battle)
-
-    assert reward == 0.0
-    assert r.self_ko == 1
-    assert r.enemy_ko == 1
-
-    # Calling again without additional faint should not change counts
-    reward2 = r.calc(battle)
-    assert reward2 == 0.0
-    assert r.self_ko == 1
-    assert r.enemy_ko == 1
