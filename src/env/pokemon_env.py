@@ -269,7 +269,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
-                    log_level=logging.WARNING,
+                    log_level=logging.DEBUG,
                     save_replays=self.save_replays,
                 )
             }
@@ -280,7 +280,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
                     team=team,
-                    log_level=logging.WARNING,
+                    log_level=logging.DEBUG,
                     save_replays=self.save_replays,
                 )
             else:
