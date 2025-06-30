@@ -37,3 +37,30 @@ def test_knockout_reset_records_initial_state():
     assert r.prev_opp_alive[id(opp1)] is True
     assert r.enemy_ko == 0
     assert r.self_ko == 0
+
+
+def test_knockout_calc_counts_new_faints():
+    my1 = DummyMon(50, False)
+    my2 = DummyMon(40, False)
+    opp1 = DummyMon(60, False)
+    battle = DummyBattle([my1, my2], [opp1])
+
+    r = KnockoutReward()
+    r.reset(battle)
+
+    my1.current_hp = 0
+    my1.fainted = True
+    opp1.current_hp = 0
+    opp1.fainted = True
+
+    reward = r.calc(battle)
+
+    assert reward == 0.0
+    assert r.self_ko == 1
+    assert r.enemy_ko == 1
+
+    # Calling again without additional faint should not change counts
+    reward2 = r.calc(battle)
+    assert reward2 == 0.0
+    assert r.self_ko == 1
+    assert r.enemy_ko == 1
