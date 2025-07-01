@@ -8,10 +8,22 @@ if str(ROOT_DIR) not in sys.path:
 from src.rewards import TurnPenaltyReward
 
 
-def test_turn_penalty_returns_constant_value():
+class DummyBattle:
+    def __init__(self, turn: int) -> None:
+        self.turn = turn
+
+
+def test_turn_penalty_per_turn():
+    battle = DummyBattle(turn=1)
     r = TurnPenaltyReward(penalty=-0.1)
-    r.reset(None)
-    assert r(None) == -0.1
-    assert r(None) == -0.1
+    r.reset(battle)
+
+    assert r(battle) == -0.1
+    # 同じターン内ではペナルティは重複しない
+    assert r(battle) == 0.0
+
+    battle.turn = 2
+    assert r(battle) == -0.1
     assert r.turn_count == 2
-    assert r.calc(None) == -0.1
+    # calc も同一のロジックを通る
+    assert r.calc(battle) == 0.0
