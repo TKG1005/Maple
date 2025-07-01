@@ -70,7 +70,7 @@ Mapleプロジェクトではポケモン対戦AIの強化学習による自律�
 | R-7 | 毎ターン経過ペナルティ                     | `rewards/turn_penalty.py`       | ターンごとに-0.01付与         |
 | R-8 | 最終味方数-相手数で差分報酬                 | `rewards/team_diff.py`          | エピソード終了時に判定・加点   |
 | R-9 | 報酬合成管理の強化（優先度・重み制御機能追加） | `rewards/composite.py`          | 各sub-rewardの重みパラメータ  |
-| R-10 | 無効行動時のボーナス・ペナルティ            | `rewards/fail_and_immute.py`    | 相手の行動を無効にしたときにボーナス/自分の無効行動にペナルティを与える    |
+| R-10 | 無効行動時のペナルティ            | `rewards/fail_and_immute.py`    | 自分の無効行動にペナルティを与える    |
 
 ### 報酬設計・仕様
 
