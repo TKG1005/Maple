@@ -22,8 +22,6 @@ class KnockoutReward(RewardBase):
 
     def reset(self, battle: object | None = None) -> None:
         """内部状態をリセットする。"""
-
-
         self.prev_my_hp.clear()
         self.prev_opp_hp.clear()
         self.prev_my_alive.clear()
@@ -40,7 +38,32 @@ class KnockoutReward(RewardBase):
 
     def calc(self, battle: object) -> float:
         """報酬を計算して返す。"""
-        return 0.0
+        enemy_kos = 0
+        self_kos = 0
+
+        for mon in getattr(battle, "team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            alive = not getattr(mon, "fainted", cur_hp <= 0)
+            prev_alive = self.prev_my_alive.get(id(mon), alive)
+            if prev_alive and not alive:
+                self_kos += 1
+            self.prev_my_hp[id(mon)] = cur_hp
+            self.prev_my_alive[id(mon)] = alive
+
+        for mon in getattr(battle, "opponent_team", {}).values():
+            cur_hp = getattr(mon, "current_hp", 0) or 0
+            alive = not getattr(mon, "fainted", cur_hp <= 0)
+            prev_alive = self.prev_opp_alive.get(id(mon), alive)
+            if prev_alive and not alive:
+                enemy_kos += 1
+            self.prev_opp_hp[id(mon)] = cur_hp
+            self.prev_opp_alive[id(mon)] = alive
+
+        reward = (
+            enemy_kos * self.ENEMY_KO_BONUS
+            + self_kos * self.SELF_KO_PENALTY
+        )
+        return float(reward)
 
 
 

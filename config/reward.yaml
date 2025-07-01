@@ -5,3 +5,6 @@ rewards:
   knockout:
     weight: 1.0
     enabled: true
+  turn_penalty:
+    weight: 1.0
+    enabled: true

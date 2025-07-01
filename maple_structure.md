@@ -1,25 +1,16 @@
 /Users/takagikouichi/Documents/GitHub/Maple
 ├── checkpoints
-│   ├── checkpoint_ep100.pt
-│   ├── checkpoint_ep1000.pt
-│   ├── checkpoint_ep200.pt
-│   ├── checkpoint_ep300.pt
-│   ├── checkpoint_ep400.pt
-│   ├── checkpoint_ep500.pt
-│   ├── checkpoint_ep600.pt
-│   ├── checkpoint_ep700.pt
-│   ├── checkpoint_ep800.pt
-│   └── checkpoint_ep900.pt
+├── compare.png
 ├── config
 │   ├── action_map.yml
 │   ├── battle_available_notes.md
 │   ├── env_config.yml
 │   ├── generate_yaml.py
-│   ├── move_catalog.md
 │   ├── moves_english_japanese.csv
 │   ├── my_team_for_debug.txt
 │   ├── my_team.txt
 │   ├── pokemon_all_moves.csv
+│   ├── reward.yaml
 │   ├── state_feature_catalog_temp - シート1.csv
 │   ├── state_spec.yml
 │   └── train_config.yml
@@ -41,24 +32,36 @@
 │       └── poke_env
 ├── docs
 │   ├── AI-design
+│   │   ├── algorithm_extension_design.md
 │   │   ├── M2
 │   │   ├── M4
+│   │   ├── M4_setup.md
 │   │   ├── M5
 │   │   ├── M6
+│   │   ├── M6_ setup.md
+│   │   ├── M7
 │   │   └── PokemonEnv_Specification.md
-│   ├── M4_setup.md
+│   ├── Maple_AI_Development_Strategy.md
+│   ├── TODO_M7.md
 │   └── train_usage.md
 ├── evaluate_rl.py
 ├── logs
 │   ├── run1.json
-│   ├── train_20250625_163222.log
-│   ├── train_20250625_164000.log
-│   ├── train_20250625_164017.log
-│   └── train_20250625_164102.log
+│   ├── train_20250630_010712.log
+│   ├── train_20250630_082909.log
+│   ├── train_20250630_102256.log
+│   ├── train_20250630_103437.log
+│   ├── train_20250630_103947.log
+│   ├── train_20250630_164502.log
+│   ├── train_20250630_165905.log
+│   └── train_20250630_165934.log
 ├── maple_structure.md
+├── maple_structure.txt
+├── model_debug.pt
+├── model_ppo.pt
+├── model_reinforce.pt
 ├── model.pt
-├── model1.pt
-├── model2.pt
+├── plot_compare.py
 ├── plot_results.py
 ├── pokemon-showdown
 │   ├── ARCHITECTURE.md
@@ -144,21 +147,29 @@
 │   │   ├── responder.jsonl
 │   │   └── tickets
 │   ├── node_modules
+│   │   ├── @alcalzone
+│   │   ├── @colors
 │   │   ├── @esbuild
 │   │   ├── @eslint
 │   │   ├── @eslint-community
 │   │   ├── @gar
 │   │   ├── @humanfs
 │   │   ├── @humanwhocodes
+│   │   ├── @inkjs
 │   │   ├── @isaacs
 │   │   ├── @nodelib
 │   │   ├── @npmcli
+│   │   ├── @openai
 │   │   ├── @pkgjs
+│   │   ├── @sindresorhus
 │   │   ├── @stylistic
+│   │   ├── @tokenizer
 │   │   ├── @tootallnate
 │   │   ├── @types
 │   │   ├── @typescript-eslint
 │   │   ├── abbrev
+│   │   ├── abort-controller
+│   │   ├── accepts
 │   │   ├── acorn
 │   │   ├── acorn-jsx
 │   │   ├── agent-base
@@ -166,6 +177,7 @@
 │   │   ├── aggregate-error
 │   │   ├── ajv
 │   │   ├── ansi-colors
+│   │   ├── ansi-escapes
 │   │   ├── ansi-regex
 │   │   ├── ansi-styles
 │   │   ├── any-promise
@@ -173,53 +185,93 @@
 │   │   ├── aproba
 │   │   ├── are-we-there-yet
 │   │   ├── argparse
+│   │   ├── asynckit
+│   │   ├── auto-bind
+│   │   ├── aws-ssl-profiles
 │   │   ├── balanced-match
 │   │   ├── base64-js
 │   │   ├── better-sqlite3
 │   │   ├── binary-extensions
 │   │   ├── bindings
 │   │   ├── bl
+│   │   ├── body-parser
 │   │   ├── brace-expansion
 │   │   ├── braces
 │   │   ├── browser-stdout
 │   │   ├── buffer
 │   │   ├── buffer-from
 │   │   ├── buffer-writer
+│   │   ├── bundle-name
+│   │   ├── bytes
 │   │   ├── cacache
+│   │   ├── call-bind-apply-helpers
+│   │   ├── call-bound
 │   │   ├── callsites
 │   │   ├── camelcase
 │   │   ├── chalk
+│   │   ├── char-regex
 │   │   ├── chokidar
 │   │   ├── chownr
 │   │   ├── clean-stack
+│   │   ├── cli-boxes
+│   │   ├── cli-cursor
+│   │   ├── cli-highlight
+│   │   ├── cli-spinners
+│   │   ├── cli-table3
+│   │   ├── cli-truncate
 │   │   ├── cliui
 │   │   ├── cloud-env
+│   │   ├── code-excerpt
 │   │   ├── color-convert
 │   │   ├── color-name
 │   │   ├── color-support
 │   │   ├── colors
+│   │   ├── combined-stream
 │   │   ├── commander
 │   │   ├── concat-map
 │   │   ├── console-control-strings
+│   │   ├── content-disposition
+│   │   ├── content-type
+│   │   ├── convert-to-spaces
+│   │   ├── cookie
+│   │   ├── cookie-signature
 │   │   ├── cross-spawn
 │   │   ├── debug
 │   │   ├── decamelize
 │   │   ├── decompress-response
 │   │   ├── deep-extend
 │   │   ├── deep-is
+│   │   ├── deepmerge
+│   │   ├── default-browser
+│   │   ├── default-browser-id
+│   │   ├── define-lazy-prop
+│   │   ├── delayed-stream
 │   │   ├── delegates
 │   │   ├── denque
+│   │   ├── depd
 │   │   ├── detect-libc
 │   │   ├── diff
 │   │   ├── docopt
+│   │   ├── dotenv
+│   │   ├── dunder-proto
 │   │   ├── eastasianwidth
+│   │   ├── ee-first
 │   │   ├── emoji-regex
+│   │   ├── emojilib
+│   │   ├── encodeurl
 │   │   ├── encoding
 │   │   ├── end-of-stream
 │   │   ├── env-paths
+│   │   ├── environment
 │   │   ├── err-code
+│   │   ├── es-define-property
+│   │   ├── es-errors
+│   │   ├── es-object-atoms
+│   │   ├── es-set-tostringtag
+│   │   ├── es-toolkit
 │   │   ├── esbuild
 │   │   ├── escalade
+│   │   ├── escape-html
 │   │   ├── escape-string-regexp
 │   │   ├── eslint
 │   │   ├── eslint-scope
@@ -229,40 +281,63 @@
 │   │   ├── esrecurse
 │   │   ├── estraverse
 │   │   ├── esutils
+│   │   ├── etag
+│   │   ├── event-target-shim
 │   │   ├── expand-template
+│   │   ├── express
 │   │   ├── fast-deep-equal
 │   │   ├── fast-glob
 │   │   ├── fast-json-stable-stringify
 │   │   ├── fast-levenshtein
+│   │   ├── fast-npm-meta
 │   │   ├── fastq
 │   │   ├── faye-websocket
+│   │   ├── fflate
+│   │   ├── figures
 │   │   ├── file-entry-cache
+│   │   ├── file-type
 │   │   ├── file-uri-to-path
 │   │   ├── fill-range
+│   │   ├── finalhandler
 │   │   ├── find-up
 │   │   ├── flat
 │   │   ├── flat-cache
 │   │   ├── flatted
 │   │   ├── foreground-child
+│   │   ├── form-data
+│   │   ├── form-data-encoder
+│   │   ├── formdata-node
+│   │   ├── forwarded
+│   │   ├── fresh
 │   │   ├── fs-constants
 │   │   ├── fs-minipass
 │   │   ├── fs.realpath
 │   │   ├── fsevents
+│   │   ├── function-bind
 │   │   ├── gauge
 │   │   ├── generate-function
 │   │   ├── get-caller-file
+│   │   ├── get-east-asian-width
+│   │   ├── get-intrinsic
+│   │   ├── get-proto
 │   │   ├── get-stdin
 │   │   ├── github-from-package
 │   │   ├── githubhook
 │   │   ├── glob
 │   │   ├── glob-parent
 │   │   ├── globals
+│   │   ├── gopd
 │   │   ├── graceful-fs
 │   │   ├── graphemer
 │   │   ├── has-flag
+│   │   ├── has-symbols
+│   │   ├── has-tostringtag
 │   │   ├── has-unicode
+│   │   ├── hasown
 │   │   ├── he
+│   │   ├── highlight.js
 │   │   ├── http-cache-semantics
+│   │   ├── http-errors
 │   │   ├── http-parser-js
 │   │   ├── http-proxy-agent
 │   │   ├── https-proxy-agent
@@ -277,18 +352,26 @@
 │   │   ├── inflight
 │   │   ├── inherits
 │   │   ├── ini
+│   │   ├── ink
 │   │   ├── ip-address
+│   │   ├── ipaddr.js
 │   │   ├── is-binary-path
+│   │   ├── is-docker
 │   │   ├── is-extglob
 │   │   ├── is-fullwidth-code-point
 │   │   ├── is-glob
+│   │   ├── is-in-ci
+│   │   ├── is-inside-container
 │   │   ├── is-lambda
 │   │   ├── is-number
 │   │   ├── is-plain-obj
+│   │   ├── is-promise
 │   │   ├── is-property
 │   │   ├── is-unicode-supported
+│   │   ├── is-wsl
 │   │   ├── isexe
 │   │   ├── jackspeak
+│   │   ├── js-tokens
 │   │   ├── js-yaml
 │   │   ├── jsbn
 │   │   ├── json-buffer
@@ -301,11 +384,22 @@
 │   │   ├── lodash.merge
 │   │   ├── log-symbols
 │   │   ├── long
+│   │   ├── loose-envify
 │   │   ├── lru-cache
+│   │   ├── lru.min
 │   │   ├── make-fetch-happen
+│   │   ├── marked
+│   │   ├── marked-terminal
+│   │   ├── math-intrinsics
+│   │   ├── media-typer
+│   │   ├── meow
+│   │   ├── merge-descriptors
 │   │   ├── merge2
 │   │   ├── micromatch
 │   │   ├── mime
+│   │   ├── mime-db
+│   │   ├── mime-types
+│   │   ├── mimic-fn
 │   │   ├── mimic-response
 │   │   ├── minimatch
 │   │   ├── minimist
@@ -329,6 +423,9 @@
 │   │   ├── needle
 │   │   ├── negotiator
 │   │   ├── node-abi
+│   │   ├── node-domexception
+│   │   ├── node-emoji
+│   │   ├── node-fetch
 │   │   ├── node-gyp
 │   │   ├── node-static
 │   │   ├── nodemailer
@@ -336,19 +433,30 @@
 │   │   ├── normalize-path
 │   │   ├── npmlog
 │   │   ├── object-assign
+│   │   ├── object-inspect
+│   │   ├── on-finished
 │   │   ├── once
+│   │   ├── onetime
+│   │   ├── open
+│   │   ├── openai
 │   │   ├── optimist
 │   │   ├── optionator
 │   │   ├── p-limit
 │   │   ├── p-locate
 │   │   ├── p-map
 │   │   ├── package-json-from-dist
+│   │   ├── package-manager-detector
 │   │   ├── packet-reader
 │   │   ├── parent-module
+│   │   ├── parse5
+│   │   ├── parse5-htmlparser2-tree-adapter
+│   │   ├── parseurl
+│   │   ├── patch-console
 │   │   ├── path-exists
 │   │   ├── path-is-absolute
 │   │   ├── path-key
 │   │   ├── path-scurry
+│   │   ├── path-to-regexp
 │   │   ├── permessage-deflate
 │   │   ├── pg
 │   │   ├── pg-cloudflare
@@ -371,31 +479,51 @@
 │   │   ├── probe-image-size
 │   │   ├── promise-inflight
 │   │   ├── promise-retry
+│   │   ├── proxy-addr
 │   │   ├── pump
 │   │   ├── punycode
+│   │   ├── qs
 │   │   ├── queue-microtask
 │   │   ├── randombytes
+│   │   ├── range-parser
+│   │   ├── raw-body
 │   │   ├── rc
+│   │   ├── react
+│   │   ├── react-reconciler
 │   │   ├── readable-stream
 │   │   ├── readdirp
 │   │   ├── require-directory
 │   │   ├── resolve-from
+│   │   ├── restore-cursor
 │   │   ├── retry
 │   │   ├── reusify
 │   │   ├── rimraf
+│   │   ├── router
+│   │   ├── run-applescript
 │   │   ├── run-parallel
 │   │   ├── safe-buffer
 │   │   ├── safer-buffer
 │   │   ├── sax
+│   │   ├── scheduler
 │   │   ├── semver
+│   │   ├── send
 │   │   ├── seq-queue
 │   │   ├── serialize-javascript
+│   │   ├── serve-static
 │   │   ├── set-blocking
+│   │   ├── setprototypeof
 │   │   ├── shebang-command
 │   │   ├── shebang-regex
+│   │   ├── shell-quote
+│   │   ├── side-channel
+│   │   ├── side-channel-list
+│   │   ├── side-channel-map
+│   │   ├── side-channel-weakmap
 │   │   ├── signal-exit
 │   │   ├── simple-concat
 │   │   ├── simple-get
+│   │   ├── skin-tone
+│   │   ├── slice-ansi
 │   │   ├── smart-buffer
 │   │   ├── smogon
 │   │   ├── sockjs
@@ -409,6 +537,8 @@
 │   │   ├── sqlite
 │   │   ├── sqlstring
 │   │   ├── ssri
+│   │   ├── stack-utils
+│   │   ├── statuses
 │   │   ├── stream-parser
 │   │   ├── string_decoder
 │   │   ├── string-width
@@ -417,41 +547,62 @@
 │   │   ├── strip-ansi-cjs
 │   │   ├── strip-indent
 │   │   ├── strip-json-comments
+│   │   ├── strtok3
 │   │   ├── sucrase
 │   │   ├── supports-color
+│   │   ├── supports-hyperlinks
 │   │   ├── tar
 │   │   ├── tar-fs
 │   │   ├── tar-stream
 │   │   ├── thenify
 │   │   ├── thenify-all
 │   │   ├── to-regex-range
+│   │   ├── to-rotated
+│   │   ├── toidentifier
+│   │   ├── token-types
+│   │   ├── tr46
 │   │   ├── ts-api-utils
 │   │   ├── ts-chacha20
 │   │   ├── ts-interface-checker
 │   │   ├── tunnel-agent
 │   │   ├── type-check
+│   │   ├── type-fest
+│   │   ├── type-is
 │   │   ├── typescript
 │   │   ├── typescript-eslint
+│   │   ├── uint8array-extras
+│   │   ├── undici-types
+│   │   ├── unicode-emoji-modifier-base
 │   │   ├── unique-filename
 │   │   ├── unique-slug
+│   │   ├── unpipe
 │   │   ├── uri-js
+│   │   ├── use-interval
 │   │   ├── util-deprecate
+│   │   ├── vary
+│   │   ├── web-streams-polyfill
+│   │   ├── webidl-conversions
 │   │   ├── websocket-driver
 │   │   ├── websocket-extensions
+│   │   ├── whatwg-url
 │   │   ├── which
+│   │   ├── widest-line
 │   │   ├── word-wrap
 │   │   ├── wordwrap
 │   │   ├── workerpool
 │   │   ├── wrap-ansi
 │   │   ├── wrap-ansi-cjs
 │   │   ├── wrappy
+│   │   ├── ws
 │   │   ├── xtend
 │   │   ├── y18n
 │   │   ├── yallist
 │   │   ├── yargs
 │   │   ├── yargs-parser
 │   │   ├── yargs-unparser
-│   │   └── yocto-queue
+│   │   ├── yocto-queue
+│   │   ├── yoga-layout
+│   │   └── zod
 │   ├── old-simulator-doc.txt
 │   ├── package-lock.json
 │   ├── package.json
@@ -563,14 +714,11 @@
 │   └── tsconfig.json
 ├── pytest.ini
 ├── README.md
+├── replays
 ├── requirements.txt
 ├── runs
-│   ├── Jun20_08-50-01_MacBook-Pro.local
-│   │   └── events.out.tfevents.1750377001.MacBook-Pro.local.12077.0
-│   ├── Jun20_08-51-16_MacBook-Pro.local
-│   │   └── events.out.tfevents.1750377076.MacBook-Pro.local.12271.0
-│   └── Jun20_15-51-18_MacBook-Pro.local
-│       └── events.out.tfevents.1750402278.MacBook-Pro.local.27369.0
+│   └── Jun30_16-59-34_DESKTOP-TDAQCBO
+│       └── events.out.tfevents.1751270374.DESKTOP-TDAQCBO.25168.0
 ├── scripts
 ├── src
 │   ├── __init__.py
@@ -605,6 +753,13 @@
 │   │   ├── env_player.py
 │   │   ├── pokemon_env.py
 │   │   └── wrappers.py
+│   ├── rewards
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── composite.py
+│   │   ├── hp_delta.py
+│   │   ├── knockout.py
+│   │   └── turn_penalty.py
 │   ├── state
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
@@ -620,12 +775,14 @@
 │   │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
 │   │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
 │   ├── run_battle.py
-│   ├── simple_agent.py
-│   ├── test_compute_gae.py
-│   ├── test_get_action_mask.py
-│   ├── test_ppo_loss.py
-│   └── test_train_selfplay_cli.py
+│   └── simple_agent.py
+├── tests
+│   ├── test_composite_reward.py
+│   ├── test_env_composite_reward.py
+│   ├── test_hp_delta_reward.py
+│   ├── test_reward_import.py
+│   └── test_turn_penalty_reward.py
 ├── train_rl.py
 └── train_selfplay.py
 
-412 directories, 217 files
+563 directories, 223 files
