@@ -598,11 +598,7 @@ class PokemonEnv(gym.Env):
                 self._current_battles[pid] = battle
                 self._need_action[pid] = True
             battles[pid] = battle
-            self._logger.debug(
-                "Env recieved battle from request %s for %s",
-                battle.last_request,
-                pid,
-            )
+
             updated[pid] = battle is not None and (
                 battle.last_request is not self._last_requests.get(pid)
             )
