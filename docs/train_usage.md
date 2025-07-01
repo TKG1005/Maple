@@ -46,13 +46,18 @@ python train_selfplay.py \
 python train_selfplay.py --reward knockout
 ```
 
-複数の報酬を組み合わせたいときは、CompositeReward 用の YAML で `knockout` 項目を
-有効にすることで同等の効果を得られます。例として `config/reward.yaml` では次のよう
-に設定します。
+複数の報酬を組み合わせたいときは、CompositeReward 用の YAML で各項目を有効にするだけで
+利用できます。例として `config/reward.yaml` では次のように設定します。
 
 ```yaml
 rewards:
+  hp_delta:
+    weight: 1.0
+    enabled: true
   knockout:
+    weight: 1.0
+    enabled: true
+  turn_penalty:
     weight: 1.0
     enabled: true
 ```

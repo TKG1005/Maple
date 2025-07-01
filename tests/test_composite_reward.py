@@ -78,3 +78,27 @@ def test_composite_reward_knockout_from_yaml(tmp_path: Path) -> None:
 
     assert reward == 2.0 * KnockoutReward.ENEMY_KO_BONUS
     assert comp.last_values["knockout"] == KnockoutReward.ENEMY_KO_BONUS
+
+
+def test_composite_reward_turn_penalty_from_yaml(tmp_path: Path) -> None:
+    yaml_path = tmp_path / "reward.yaml"
+    yaml_text = (
+        "rewards:\n"
+        "  turn_penalty:\n"
+        "    weight: 2.0\n"
+        "    enabled: true\n"
+    )
+    yaml_path.write_text(yaml_text, encoding="utf-8")
+
+    comp = CompositeReward(str(yaml_path))
+
+    class Battle:
+        def __init__(self, turn: int = 1) -> None:
+            self.turn = turn
+
+    battle = Battle()
+    comp.reset(battle)
+    reward = comp.calc(battle)
+
+    assert reward == 2.0 * (-0.01)
+    assert comp.last_values["turn_penalty"] == -0.01
