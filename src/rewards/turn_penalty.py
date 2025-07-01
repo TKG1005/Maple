@@ -16,7 +16,12 @@ class TurnPenaltyReward(RewardBase):
 
     def __call__(self, battle: object) -> float:
         """報酬を計算して返す。"""
-        return 0.0
+        self.turn_count += 1
+        return float(self.penalty)
+
+    def calc(self, battle: object) -> float:  # pragma: no cover - thin wrapper
+        """Alias for compatibility with :class:`RewardBase`."""
+        return self.__call__(battle)
 
 
 __all__ = ["TurnPenaltyReward"]
