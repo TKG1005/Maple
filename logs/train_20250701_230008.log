@@ -1,0 +1,110 @@
+2025-07-01 23:00:08,232 INFO Run parameters: {'log_level': 'DEBUG', 'config': 'C:\\Users\\こう\\Documents\\GitHub\\Maple\\Maple\\config\\train_config.yml', 'episodes': 1, 'save': 'model_debug.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1, 'algo': 'ppo', 'checkpoint_interval': 50, 'checkpoint_dir': 'checkpoints', 'reward': 'hp_delta', 'reward_config': None}
+2025-07-01 23:00:09,418 DEBUG environment reset: cleared action queues and mappings
+2025-07-01 23:00:11,425 DEBUG = connection is CONNECTING
+2025-07-01 23:00:11,426 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-07-01 23:00:11,426 DEBUG > Host: localhost:8000
+2025-07-01 23:00:11,427 DEBUG > Upgrade: websocket
+2025-07-01 23:00:11,427 DEBUG > Connection: Upgrade
+2025-07-01 23:00:11,427 DEBUG > Sec-WebSocket-Key: X57fV6FpTcBYX8069I7EoQ==
+2025-07-01 23:00:11,427 DEBUG > Sec-WebSocket-Version: 13
+2025-07-01 23:00:11,427 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-07-01 23:00:11,427 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-07-01 23:00:11,427 DEBUG = connection is CONNECTING
+2025-07-01 23:00:11,428 DEBUG > GET /showdown/websocket HTTP/1.1
+2025-07-01 23:00:11,428 DEBUG > Host: localhost:8000
+2025-07-01 23:00:11,428 DEBUG > Upgrade: websocket
+2025-07-01 23:00:11,428 DEBUG > Connection: Upgrade
+2025-07-01 23:00:11,428 DEBUG > Sec-WebSocket-Key: W/QAW1TvVbEfHVsihOnNjA==
+2025-07-01 23:00:11,428 DEBUG > Sec-WebSocket-Version: 13
+2025-07-01 23:00:11,428 DEBUG > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2025-07-01 23:00:11,428 DEBUG > User-Agent: Python/3.12 websockets/15.0.1
+2025-07-01 23:00:11,428 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-07-01 23:00:11,428 DEBUG < Upgrade: websocket
+2025-07-01 23:00:11,428 DEBUG < Connection: Upgrade
+2025-07-01 23:00:11,429 DEBUG < Sec-WebSocket-Accept: NUiCczuNB+ap35gnWqRbXMeF+WA=
+2025-07-01 23:00:11,429 DEBUG = connection is OPEN
+2025-07-01 23:00:11,429 DEBUG < HTTP/1.1 101 Switching Protocols
+2025-07-01 23:00:11,430 DEBUG < Upgrade: websocket
+2025-07-01 23:00:11,430 DEBUG < Connection: Upgrade
+2025-07-01 23:00:11,430 DEBUG < Sec-WebSocket-Accept: qsf/wDgdXCyAIoIFHIAC+lNCjZY=
+2025-07-01 23:00:11,430 DEBUG = connection is OPEN
+2025-07-01 23:00:11,430 DEBUG < TEXT '|updateuser| Guest 5|0|102|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-07-01 23:00:11,431 DEBUG < TEXT '|challstr|4|82a79717a6154d19096acdb089fc8035a77...37cbe69093b3da310d996cc' [268 bytes]
+2025-07-01 23:00:11,431 DEBUG < TEXT '|updateuser| Guest 6|0|169|{"blockChallenges":f...c|[Gen 1] Custom Game,c' [8022 bytes]
+2025-07-01 23:00:11,432 DEBUG < TEXT '|challstr|4|a8e32769cd3aa9ff5cbb1a89e11353ad9bd...b56fc7ae068c0c967a15691' [268 bytes]
+2025-07-01 23:00:11,433 DEBUG > TEXT '|/trn EnvPlayer 2,0,' [20 bytes]
+2025-07-01 23:00:11,434 DEBUG > TEXT '|/trn EnvPlayer 1,0,' [20 bytes]
+2025-07-01 23:00:11,435 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-07-01 23:00:11,435 DEBUG < TEXT '|updateuser| EnvPlayer 2|1|265|{"blockChallenge...:false,"language":null}' [354 bytes]
+2025-07-01 23:00:11,435 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [148 bytes]
+2025-07-01 23:00:11,436 DEBUG < TEXT '>battle-gen9bssregi-24923\n|init|battle\n|title...r|p1|EnvPlayer 2|265|\n' [1131 bytes]
+2025-07-01 23:00:11,438 DEBUG [DBG] player_1 last_request={}
+2025-07-01 23:00:11,438 DEBUG < TEXT '>battle-gen9bssregi-24923\n|request|{"active":[...llized":""}]},"rqid":4}' [1598 bytes]
+2025-07-01 23:00:11,439 DEBUG < TEXT '>battle-gen9bssregi-24924\n|init|battle\n|title...r|p1|EnvPlayer 2|265|\n' [809 bytes]
+2025-07-01 23:00:11,440 DEBUG < TEXT '>battle-gen9bssregi-24924\n|request|{"teamPrevi...llized":""}]},"rqid":2}' [2366 bytes]
+2025-07-01 23:00:11,440 DEBUG < TEXT '>battle-gen9bssregi-24923\n|player|p1|EnvPlayer 2|265|\n|j|☆EnvPlayer 1' [71 bytes]
+2025-07-01 23:00:11,441 DEBUG < TEXT '|updatesearch|{"searching":[],"games":null}' [43 bytes]
+2025-07-01 23:00:11,441 DEBUG < TEXT '>battle-gen9bssregi-24924\n|player|p1|EnvPlayer 2|265|\n|j|☆EnvPlayer 1' [71 bytes]
+2025-07-01 23:00:11,441 DEBUG < TEXT '|updateuser| EnvPlayer 1|1|170|{"blockChallenge...:false,"language":null}' [354 bytes]
+2025-07-01 23:00:11,441 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [148 bytes]
+2025-07-01 23:00:11,441 DEBUG < TEXT '>battle-gen9bssregi-24923\n|init|battle\n|title...r|p2|EnvPlayer 1|170|\n' [1177 bytes]
+2025-07-01 23:00:11,442 DEBUG < TEXT '>battle-gen9bssregi-24923\n|request|{"active":[...llized":""}]},"rqid":5}' [1650 bytes]
+2025-07-01 23:00:11,442 DEBUG < TEXT '>battle-gen9bssregi-24924\n|init|battle\n|title...r|p2|EnvPlayer 1|170|\n' [855 bytes]
+2025-07-01 23:00:11,442 DEBUG < TEXT '>battle-gen9bssregi-24924\n|request|{"teamPrevi...llized":""}]},"rqid":3}' [2366 bytes]
+2025-07-01 23:00:11,444 DEBUG [DBG] player_0 last_request={}
+2025-07-01 23:00:11,445 DEBUG > TEXT '|/utm Corviknight||flameorb|pressure|bodypress,...,252,,252|||||,,,,,Dark' [614 bytes]
+2025-07-01 23:00:11,445 DEBUG > TEXT '|/challenge envplayer2, gen9bssregi' [35 bytes]
+2025-07-01 23:00:11,446 DEBUG > TEXT '|/utm Corviknight||flameorb|pressure|bodypress,...,252,,252|||||,,,,,Dark' [614 bytes]
+2025-07-01 23:00:11,446 DEBUG > TEXT '|/challenge envplayer1, gen9bssregi' [35 bytes]
+2025-07-01 23:00:11,449 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-07-01 23:00:11,449 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/challenge gen9bssregi|gen9bssregi|||' [67 bytes]
+2025-07-01 23:00:11,450 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-07-01 23:00:11,450 DEBUG < TEXT '|pm| EnvPlayer 1| EnvPlayer 2|/log EnvPlayer 1 wants to battle!' [63 bytes]
+2025-07-01 23:00:11,451 DEBUG > TEXT '|/utm Corviknight||flameorb|pressure|bodypress,...,252,,252|||||,,,,,Dark' [614 bytes]
+2025-07-01 23:00:11,451 DEBUG > TEXT '|/accept envplayer1' [19 bytes]
+2025-07-01 23:00:11,452 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-07-01 23:00:11,452 DEBUG < TEXT '|pm| EnvPlayer 2| EnvPlayer 1|/challenge' [40 bytes]
+2025-07-01 23:00:11,452 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [148 bytes]
+2025-07-01 23:00:11,452 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [148 bytes]
+2025-07-01 23:00:11,454 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [202 bytes]
+2025-07-01 23:00:11,455 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [202 bytes]
+2025-07-01 23:00:11,455 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [202 bytes]
+2025-07-01 23:00:11,455 DEBUG < TEXT '|updatesearch|{"searching":[],"games":{"battle-... 9] BSS Reg I Battle"}}' [202 bytes]
+2025-07-01 23:00:11,455 DEBUG < TEXT '>battle-gen9bssregi-24925\n|init|battle\n|title...er 2\n|j|☆EnvPlayer 1\n' [92 bytes]
+2025-07-01 23:00:11,455 DEBUG < TEXT '>battle-gen9bssregi-24925\n|j|☆EnvPlayer 2' [43 bytes]
+2025-07-01 23:00:11,456 DEBUG < TEXT '>battle-gen9bssregi-24925\n|init|battle\n|title...er 1\n|j|☆EnvPlayer 2\n' [110 bytes]
+2025-07-01 23:00:11,456 DEBUG < TEXT '|popup|envplayer1 is not challenging you. Maybe...ed before you accepted?' [83 bytes]
+2025-07-01 23:00:11,456 DEBUG < TEXT '>battle-gen9bssregi-24925\n|t:|1751378411\n|gametype|singles' [58 bytes]
+2025-07-01 23:00:11,456 DEBUG < TEXT '>battle-gen9bssregi-24925\n|player|p1|EnvPlayer 1|170|' [53 bytes]
+2025-07-01 23:00:11,457 DEBUG < TEXT '>battle-gen9bssregi-24925\n|t:|1751378411\n|gametype|singles' [58 bytes]
+2025-07-01 23:00:11,457 DEBUG < TEXT '>battle-gen9bssregi-24925\n|player|p1|EnvPlayer 1|170|' [53 bytes]
+2025-07-01 23:00:11,457 DEBUG < TEXT '>battle-gen9bssregi-24925\n|player|p2|EnvPlayer...L50, M|\n|teampreview|3' [557 bytes]
+2025-07-01 23:00:11,457 DEBUG < TEXT '>battle-gen9bssregi-24925\n|request|{"teamPrevi...llized":""}]},"rqid":2}' [2366 bytes]
+2025-07-01 23:00:11,458 DEBUG < TEXT '>battle-gen9bssregi-24925\n|player|p2|EnvPlayer...L50, M|\n|teampreview|3' [557 bytes]
+2025-07-01 23:00:11,458 DEBUG < TEXT '>battle-gen9bssregi-24925\n|request|{"teamPrevi...llized":""}]},"rqid":3}' [2366 bytes]
+2025-07-01 23:00:11,545 DEBUG [DBG] player_1 send team preview request for battle-gen9bssregi-24923
+2025-07-01 23:00:11,545 DEBUG [DBG] player_1 waiting team preview action (qsize=0)
+2025-07-01 23:00:11,545 DEBUG [DBG] player_0 send team preview request for battle-gen9bssregi-24923
+2025-07-01 23:00:11,545 DEBUG [DBG] player_0 waiting team preview action (qsize=0)
+2025-07-01 23:00:11,550 DEBUG [DBG] player_0: 4 moves, 2 switches (force_switch=False)
+2025-07-01 23:00:11,550 DEBUG [DBG] player_0 available_switches: ['tinglu(HP:100.0%, fainted=False, active=False)', 'hydreigon(HP:100.0%, fainted=False, active=False)']
+2025-07-01 23:00:11,550 DEBUG [DBG] player_1: 4 moves, 2 switches (force_switch=False)
+2025-07-01 23:00:11,551 DEBUG [DBG] player_1 available_switches: ['tinglu(HP:100.0%, fainted=False, active=False)', 'alomomola(HP:100.0%, fainted=False, active=False)']
+2025-07-01 23:00:11,551 DEBUG [DBG] player_0 team preview message /team 234 (EnvPlayer 1)
+2025-07-01 23:00:11,552 DEBUG [DBG] player_0 send message '/team 234' to battle battle-gen9bssregi-24923 last = {'active': [{'moves': [{'move': 'Phantom Force', 'id': 'phantomforce', 'pp': 16, 'maxpp': 16, 'target': 'normal', 'disabled': False}, {'move': 'Substitute', 'id': 'substitute', 'pp': 16, 'maxpp': 16, 'target': 'self', 'disabled': False}, {'move': 'Thunder Wave', 'id': 'thunderwave', 'pp': 32, 'maxpp': 32, 'target': 'normal', 'disabled': False}, {'move': 'Draco Meteor', 'id': 'dracometeor', 'pp': 8, 'maxpp': 8, 'target': 'normal', 'disabled': False}], 'canTerastallize': 'Dragon'}], 'side': {'name': 'EnvPlayer 1', 'id': 'p2', 'pokemon': [{'ident': 'p2: Dragapult', 'details': 'Dragapult, L50, M', 'condition': '195/195', 'active': True, 'stats': {'atk': 126, 'def': 95, 'spa': 120, 'spd': 95, 'spe': 213}, 'moves': ['phantomforce', 'substitute', 'thunderwave', 'dracometeor'], 'baseAbility': 'infiltrator', 'item': 'focussash', 'pokeball': 'pokeball', 'ability': 'infiltrator', 'commanding': False, 'reviving': False, 'teraType': 'Dragon', 'terastallized': ''}, {'ident': 'p2: Ting-Lu', 'details': 'Ting-Lu, L50', 'condition': '262/262', 'active': False, 'stats': {'atk': 162, 'def': 145, 'spa': 75, 'spd': 100, 'spe': 65}, 'moves': ['memento', 'whirlwind', 'lashout', 'earthquake'], 'baseAbility': 'vesselofruin', 'item': 'leftovers', 'pokeball': 'pokeball', 'ability': 'vesselofruin', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}, {'ident': 'p2: Hydreigon', 'details': 'Hydreigon, L50, F', 'condition': '167/167', 'active': False, 'stats': {'atk': 125, 'def': 110, 'spa': 177, 'spd': 110, 'spe': 150}, 'moves': ['dracometeor', 'stealthrock', 'headsmash', 'uturn'], 'baseAbility': 'levitate', 'item': 'lifeorb', 'pokeball': 'pokeball', 'ability': 'levitate', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}]}, 'rqid': 5}
+2025-07-01 23:00:11,552 DEBUG > TEXT 'battle-gen9bssregi-24923|/team 234' [34 bytes]
+2025-07-01 23:00:11,553 DEBUG [DBG] player_0 last_request={'active': [{'moves': [{'move': 'Phantom Force', 'id': 'phantomforce', 'pp': 16, 'maxpp': 16, 'target': 'normal', 'disabled': False}, {'move': 'Substitute', 'id': 'substitute', 'pp': 16, 'maxpp': 16, 'target': 'self', 'disabled': False}, {'move': 'Thunder Wave', 'id': 'thunderwave', 'pp': 32, 'maxpp': 32, 'target': 'normal', 'disabled': False}, {'move': 'Draco Meteor', 'id': 'dracometeor', 'pp': 8, 'maxpp': 8, 'target': 'normal', 'disabled': False}], 'canTerastallize': 'Dragon'}], 'side': {'name': 'EnvPlayer 1', 'id': 'p2', 'pokemon': [{'ident': 'p2: Dragapult', 'details': 'Dragapult, L50, M', 'condition': '195/195', 'active': True, 'stats': {'atk': 126, 'def': 95, 'spa': 120, 'spd': 95, 'spe': 213}, 'moves': ['phantomforce', 'substitute', 'thunderwave', 'dracometeor'], 'baseAbility': 'infiltrator', 'item': 'focussash', 'pokeball': 'pokeball', 'ability': 'infiltrator', 'commanding': False, 'reviving': False, 'teraType': 'Dragon', 'terastallized': ''}, {'ident': 'p2: Ting-Lu', 'details': 'Ting-Lu, L50', 'condition': '262/262', 'active': False, 'stats': {'atk': 162, 'def': 145, 'spa': 75, 'spd': 100, 'spe': 65}, 'moves': ['memento', 'whirlwind', 'lashout', 'earthquake'], 'baseAbility': 'vesselofruin', 'item': 'leftovers', 'pokeball': 'pokeball', 'ability': 'vesselofruin', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}, {'ident': 'p2: Hydreigon', 'details': 'Hydreigon, L50, F', 'condition': '167/167', 'active': False, 'stats': {'atk': 125, 'def': 110, 'spa': 177, 'spd': 110, 'spe': 150}, 'moves': ['dracometeor', 'stealthrock', 'headsmash', 'uturn'], 'baseAbility': 'levitate', 'item': 'lifeorb', 'pokeball': 'pokeball', 'ability': 'levitate', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}]}, 'rqid': 5}
+2025-07-01 23:00:11,553 DEBUG [DBG] player_0 waiting last_request update
+2025-07-01 23:00:11,553 DEBUG < TEXT '>battle-gen9bssregi-24923\n|player|p2|EnvPlayer 1|170|' [53 bytes]
+2025-07-01 23:00:11,553 DEBUG < TEXT '>battle-gen9bssregi-24923\n|player|p2|EnvPlayer 1|170|' [53 bytes]
+2025-07-01 23:00:11,554 DEBUG < TEXT ">battle-gen9bssregi-24923\n|error|[Invalid choi...in a Team Preview phase" [115 bytes]
+2025-07-01 23:00:11,554 DEBUG [DBG] player_1 team preview message /team 124 (EnvPlayer 2)
+2025-07-01 23:00:11,554 DEBUG [DBG] player_1 send message '/team 124' to battle battle-gen9bssregi-24923 last = {'active': [{'moves': [{'move': 'Body Press', 'id': 'bodypress', 'pp': 16, 'maxpp': 16, 'target': 'normal', 'disabled': False}, {'move': 'Taunt', 'id': 'taunt', 'pp': 32, 'maxpp': 32, 'target': 'normal', 'disabled': False}, {'move': 'Brave Bird', 'id': 'bravebird', 'pp': 24, 'maxpp': 24, 'target': 'any', 'disabled': False}, {'move': 'Roost', 'id': 'roost', 'pp': 8, 'maxpp': 8, 'target': 'self', 'disabled': False}], 'canTerastallize': 'Flying'}], 'side': {'name': 'EnvPlayer 2', 'id': 'p1', 'pokemon': [{'ident': 'p1: Corviknight', 'details': 'Corviknight, L50, F', 'condition': '205/205', 'active': True, 'stats': {'atk': 107, 'def': 125, 'spa': 73, 'spd': 105, 'spe': 87}, 'moves': ['bodypress', 'taunt', 'bravebird', 'roost'], 'baseAbility': 'pressure', 'item': 'flameorb', 'pokeball': 'pokeball', 'ability': 'pressure', 'commanding': False, 'reviving': False, 'teraType': 'Flying', 'terastallized': ''}, {'ident': 'p1: Ting-Lu', 'details': 'Ting-Lu, L50', 'condition': '262/262', 'active': False, 'stats': {'atk': 162, 'def': 145, 'spa': 75, 'spd': 100, 'spe': 65}, 'moves': ['memento', 'whirlwind', 'lashout', 'earthquake'], 'baseAbility': 'vesselofruin', 'item': 'leftovers', 'pokeball': 'pokeball', 'ability': 'vesselofruin', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}, {'ident': 'p1: Alomomola', 'details': 'Alomomola, L50, F', 'condition': '240/240', 'active': False, 'stats': {'atk': 80, 'def': 132, 'spa': 60, 'spd': 97, 'spe': 85}, 'moves': ['blizzard', 'rest', 'painsplit', 'healingwish'], 'baseAbility': 'regenerator', 'item': 'rockyhelmet', 'pokeball': 'pokeball', 'ability': 'regenerator', 'commanding': False, 'reviving': False, 'teraType': 'Water', 'terastallized': ''}]}, 'rqid': 4}
+2025-07-01 23:00:11,555 DEBUG > TEXT 'battle-gen9bssregi-24923|/team 124' [34 bytes]
+2025-07-01 23:00:11,556 DEBUG [DBG] player_1 last_request={'active': [{'moves': [{'move': 'Body Press', 'id': 'bodypress', 'pp': 16, 'maxpp': 16, 'target': 'normal', 'disabled': False}, {'move': 'Taunt', 'id': 'taunt', 'pp': 32, 'maxpp': 32, 'target': 'normal', 'disabled': False}, {'move': 'Brave Bird', 'id': 'bravebird', 'pp': 24, 'maxpp': 24, 'target': 'any', 'disabled': False}, {'move': 'Roost', 'id': 'roost', 'pp': 8, 'maxpp': 8, 'target': 'self', 'disabled': False}], 'canTerastallize': 'Flying'}], 'side': {'name': 'EnvPlayer 2', 'id': 'p1', 'pokemon': [{'ident': 'p1: Corviknight', 'details': 'Corviknight, L50, F', 'condition': '205/205', 'active': True, 'stats': {'atk': 107, 'def': 125, 'spa': 73, 'spd': 105, 'spe': 87}, 'moves': ['bodypress', 'taunt', 'bravebird', 'roost'], 'baseAbility': 'pressure', 'item': 'flameorb', 'pokeball': 'pokeball', 'ability': 'pressure', 'commanding': False, 'reviving': False, 'teraType': 'Flying', 'terastallized': ''}, {'ident': 'p1: Ting-Lu', 'details': 'Ting-Lu, L50', 'condition': '262/262', 'active': False, 'stats': {'atk': 162, 'def': 145, 'spa': 75, 'spd': 100, 'spe': 65}, 'moves': ['memento', 'whirlwind', 'lashout', 'earthquake'], 'baseAbility': 'vesselofruin', 'item': 'leftovers', 'pokeball': 'pokeball', 'ability': 'vesselofruin', 'commanding': False, 'reviving': False, 'teraType': 'Dark', 'terastallized': ''}, {'ident': 'p1: Alomomola', 'details': 'Alomomola, L50, F', 'condition': '240/240', 'active': False, 'stats': {'atk': 80, 'def': 132, 'spa': 60, 'spd': 97, 'spe': 85}, 'moves': ['blizzard', 'rest', 'painsplit', 'healingwish'], 'baseAbility': 'regenerator', 'item': 'rockyhelmet', 'pokeball': 'pokeball', 'ability': 'regenerator', 'commanding': False, 'reviving': False, 'teraType': 'Water', 'terastallized': ''}]}, 'rqid': 4}
+2025-07-01 23:00:11,556 DEBUG [DBG] player_1 waiting last_request update
+2025-07-01 23:00:11,556 DEBUG [DBG] race_get start qsize=0 events=[False, False]
+2025-07-01 23:00:11,557 DEBUG < TEXT ">battle-gen9bssregi-24923\n|error|[Invalid choi...in a Team Preview phase" [115 bytes]
+2025-07-01 23:00:21,545 ERROR [TIMEOUT] player_0 last_request not updated
+2025-07-01 23:00:21,589 ERROR [TIMEOUT] player_1 last_request not updated
+2025-07-01 23:00:21,590 ERROR [TIMEOUT] race_get queue=0 events=[False, False] exc=
