@@ -9,6 +9,7 @@ from poke_env.environment.abstract_battle import AbstractBattle
 # PokemonType のインポートが不足している可能性があるため追加 (エンコーダーなどで利用する場合)
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.move_category import MoveCategory  # MoveCategoryも追加
+from src.state.type_matchup_extractor import TypeMatchupFeatureExtractor
 
 
 class StateObserver:
@@ -18,6 +19,7 @@ class StateObserver:
         # _build_encoders は get_observation_dimension でも利用する可能性があるため、先に初期化
         self.encoders = self._build_encoders(self.spec)
         self.opp_total_estimate = 3  # 敵の手持ちの初期値
+        self.type_matchup_extractor = TypeMatchupFeatureExtractor()
 
     def observe(self, battle: AbstractBattle) -> np.ndarray:
         state = []
@@ -63,11 +65,7 @@ class StateObserver:
                 encoded_val = enc_func(val)
 
                 # デバッグ用printは条件を絞るか、詳細ログレベルで管理した方が良い
-                # if battle.turn == 1: # 例としてターン1の時だけ出力
-                #    print(f"Debug observe: {key} raw='{val}' encoded='{encoded_val}'")
-
-                # if battle.turn == 1:
-                #     print(f"Debug observe: {key} raw='{val}' encoded='{encoded_val}'")
+                
 
                 state.extend(
                     encoded_val if isinstance(encoded_val, list) else [encoded_val]
@@ -207,6 +205,8 @@ class StateObserver:
         ctx["opp_bench2"] = opp_bench[1] if len(opp_bench) > 1 else None
         ctx["my_alive_count"] = sum(1 for p in my_team if not p.fainted)
         ctx["opp_alive_count"] = opp_alive_seen + unknown_remaining
+        
+        ctx["type_matchup_vec"] = self.type_matchup_extractor.extract(battle)
 
         return ctx
 
