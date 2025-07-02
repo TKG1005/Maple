@@ -254,8 +254,6 @@ class PokemonEnv(gym.Env):
 
         # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
         if not hasattr(self, "_env_players"):
-            from pathlib import Path
-
             team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
             try:
                 team = team_path.read_text()

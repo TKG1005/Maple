@@ -139,5 +139,8 @@ class RuleBasedPlayer(MapleAgent):
         valid_actions = np.where(action_mask)[0]
         return int(self.env.rng.choice(valid_actions)) if len(valid_actions) > 0 else 0
 
+    def act(self, observation: Any, action_mask: Any) -> int:
+        return self.select_action(observation, action_mask)
+
 
 __all__ = ["RuleBasedPlayer"]

@@ -35,5 +35,8 @@ class RandomAgent(MapleAgent):
         chosen_action = self.env.rng.choice(valid_actions)
         return int(chosen_action)
 
+    def act(self, observation: Any, action_mask: Any) -> int:
+        return self.select_action(observation, action_mask)
+
 
 __all__ = ["RandomAgent"]
