@@ -16,9 +16,12 @@ class FailAndImmuneReward(RewardBase):
     def calc(self, battle: object) -> float:
         """報酬を計算して返す。
         
-        battle.last_invalid_actionがTrueの場合、ペナルティを返す。
+        battle.last_fail_actionまたはbattle.last_immune_actionがTrueの場合、ペナルティを返す。
         """
-        if hasattr(battle, 'last_invalid_action') and getattr(battle, 'last_invalid_action', False):
+        fail_action = hasattr(battle, 'last_fail_action') and getattr(battle, 'last_fail_action', False)
+        immune_action = hasattr(battle, 'last_immune_action') and getattr(battle, 'last_immune_action', False)
+        
+        if fail_action or immune_action:
             return float(self.penalty)
         return 0.0
 

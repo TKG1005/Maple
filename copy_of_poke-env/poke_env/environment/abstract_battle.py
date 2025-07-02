@@ -117,7 +117,8 @@ class AbstractBattle(ABC):
         "_wait",
         "_weather",
         "_won",
-        "_last_invalid_action",
+        "_last_fail_action",
+        "_last_immune_action",
         "logger",
     )
 
@@ -170,7 +171,8 @@ class AbstractBattle(ABC):
         self._opponent_rating: Optional[int] = None
         self._rating: Optional[int] = None
         self._won: Optional[bool] = None
-        self._last_invalid_action: bool = False
+        self._last_fail_action: bool = False
+        self._last_immune_action: bool = False
 
         # In game battle state attributes
         self._weather: Dict[Weather, int] = {}
@@ -581,19 +583,19 @@ class AbstractBattle(ABC):
             if len(event) >= 3:
                 pokemon = event[2]
                 if pokemon.startswith(self._player_role):
-                    self._last_invalid_action = True
+                    self._last_fail_action = True
         elif event[1] == "-immune":
             # Handle immune messages
             if len(event) >= 3:
                 pokemon = event[2]
                 if pokemon.startswith(self._player_role):
-                    self._last_invalid_action = True
+                    self._last_immune_action = True
         elif event[1] == "immune":
             # Handle immune messages (alternative format)
             if len(event) >= 3:
                 pokemon = event[2]
                 if pokemon.startswith(self._player_role):
-                    self._last_invalid_action = True
+                    self._last_immune_action = True
         elif event[1] == "turn":
             # Saving the beginning-of-turn battle state and events as we go into the turn
             self.observations[self.turn] = self._current_observation
@@ -1470,13 +1472,38 @@ class AbstractBattle(ABC):
         return self._reviving
 
     @property
+    def last_fail_action(self) -> bool:
+        """
+        :return: Whether the last action failed.
+        :rtype: bool
+        """
+        return self._last_fail_action
+
+    @property
+    def last_immune_action(self) -> bool:
+        """
+        :return: Whether the last action was immune.
+        :rtype: bool
+        """
+        return self._last_immune_action
+
+    @property
     def last_invalid_action(self) -> bool:
         """
         :return: Whether the last action was invalid (failed or immune).
         :rtype: bool
         """
-        return self._last_invalid_action
+        return self._last_fail_action or self._last_immune_action
 
     def reset_invalid_action(self) -> None:
-        """Reset the invalid action flag."""
-        self._last_invalid_action = False
+        """Reset both invalid action flags."""
+        self._last_fail_action = False
+        self._last_immune_action = False
+
+    def reset_fail_action(self) -> None:
+        """Reset the fail action flag."""
+        self._last_fail_action = False
+
+    def reset_immune_action(self) -> None:
+        """Reset the immune action flag."""
+        self._last_immune_action = False

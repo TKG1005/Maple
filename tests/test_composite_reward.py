@@ -117,18 +117,26 @@ def test_composite_reward_fail_immune_from_yaml(tmp_path: Path) -> None:
     comp = CompositeReward(str(yaml_path))
 
     class Battle:
-        def __init__(self, last_invalid_action: bool = False) -> None:
-            self.last_invalid_action = last_invalid_action
+        def __init__(self, last_fail_action: bool = False, last_immune_action: bool = False) -> None:
+            self.last_fail_action = last_fail_action
+            self.last_immune_action = last_immune_action
 
     # Test no penalty
-    battle = Battle(last_invalid_action=False)
+    battle = Battle(last_fail_action=False, last_immune_action=False)
     comp.reset(battle)
     reward = comp.calc(battle)
     assert reward == 0.0
     assert comp.last_values["fail_immune"] == 0.0
 
-    # Test penalty
-    battle.last_invalid_action = True
+    # Test penalty with fail action
+    battle.last_fail_action = True
+    reward = comp.calc(battle)
+    assert reward == 2.0 * (-0.02)
+    assert comp.last_values["fail_immune"] == -0.02
+
+    # Test penalty with immune action
+    battle.last_fail_action = False
+    battle.last_immune_action = True
     reward = comp.calc(battle)
     assert reward == 2.0 * (-0.02)
     assert comp.last_values["fail_immune"] == -0.02
