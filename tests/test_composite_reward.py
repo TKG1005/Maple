@@ -102,3 +102,33 @@ def test_composite_reward_turn_penalty_from_yaml(tmp_path: Path) -> None:
 
     assert reward == 2.0 * (-0.01)
     assert comp.last_values["turn_penalty"] == -0.01
+
+
+def test_composite_reward_fail_immune_from_yaml(tmp_path: Path) -> None:
+    yaml_path = tmp_path / "reward.yaml"
+    yaml_text = (
+        "rewards:\n"
+        "  fail_immune:\n"
+        "    weight: 2.0\n"
+        "    enabled: true\n"
+    )
+    yaml_path.write_text(yaml_text, encoding="utf-8")
+
+    comp = CompositeReward(str(yaml_path))
+
+    class Battle:
+        def __init__(self, last_invalid_action: bool = False) -> None:
+            self.last_invalid_action = last_invalid_action
+
+    # Test no penalty
+    battle = Battle(last_invalid_action=False)
+    comp.reset(battle)
+    reward = comp.calc(battle)
+    assert reward == 0.0
+    assert comp.last_values["fail_immune"] == 0.0
+
+    # Test penalty
+    battle.last_invalid_action = True
+    reward = comp.calc(battle)
+    assert reward == 2.0 * (-0.02)
+    assert comp.last_values["fail_immune"] == -0.02

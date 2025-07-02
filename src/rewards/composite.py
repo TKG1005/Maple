@@ -10,6 +10,7 @@ except Exception:  # pragma: no cover - fallback when PyYAML is missing
 from . import RewardBase, HPDeltaReward
 from .knockout import KnockoutReward
 from .turn_penalty import TurnPenaltyReward
+from .fail_and_immune import FailAndImmuneReward
 
 
 class CompositeReward(RewardBase):
@@ -19,6 +20,7 @@ class CompositeReward(RewardBase):
         "hp_delta": HPDeltaReward,
         "knockout": KnockoutReward,
         "turn_penalty": TurnPenaltyReward,
+        "fail_immune": FailAndImmuneReward,
     }
 
     def __init__(self, config_path: str, reward_map: Mapping[str, Callable[[], RewardBase]] | None = None) -> None:

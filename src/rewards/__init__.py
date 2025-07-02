@@ -22,9 +22,11 @@ __all__ = [
     "CompositeReward",
     "KnockoutReward",
     "TurnPenaltyReward",
+    "FailAndImmuneReward",
 ]
 
 from .hp_delta import HPDeltaReward
 from .composite import CompositeReward
 from .knockout import KnockoutReward
 from .turn_penalty import TurnPenaltyReward
+from .fail_and_immune import FailAndImmuneReward
