@@ -19,7 +19,8 @@ python train_selfplay.py [オプション]
 | `--clip R` | PPO のクリップ率を指定します |
 | `--gae-lambda L` | GAE における λ パラメータ |
 | `--parallel N` | 並列実行する環境数 |
-| `--reward-config FILE` | CompositeReward 用の YAML ファイルを指定 |
+| `--reward STR` | 使用する報酬タイプを指定します（既定: `composite`） |
+| `--reward-config FILE` | CompositeReward 用の YAML ファイルを指定（既定: `config/reward.yaml`） |
 
 例:
 
@@ -36,6 +37,8 @@ python train_selfplay.py \
 
 オプションを指定しない場合でも、`train_config.yml` の内容が自動的に読み込まれるため、
 最小限の入力で学習を開始できます。
+デフォルトでは `CompositeReward` が使用されており、
+`config/reward.yaml` の各項目を編集することで簡単に報酬の重みを調整できます。
 
 ## Knockout 報酬の使用例
 
