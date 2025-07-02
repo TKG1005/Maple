@@ -15,3 +15,5 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   `PokemonEnv` の行動マスクと連携するよう更新
 - 2025-07-01 PPO 対応手順をまとめた `docs/M7_setup.md` を追加し、`train_selfplay.py` の `--algo` オプションでアルゴリズムを切り替え可能に
 - 2025-07-05 `HPDeltaReward` を追加し、`--reward hp_delta` オプションで使用可能に
+- 2025-07-06 `train_selfplay.py` の報酬を `CompositeReward` ベースに変更し、
+  `config/train_config.yml` の設定で他の報酬へ切り替え可能に

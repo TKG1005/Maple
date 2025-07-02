@@ -33,7 +33,7 @@ class PokemonEnv(gym.Env):
         *,
         seed: int | None = None,
         save_replays: bool | str = False,
-        reward: str = "hp_delta",
+        reward: str = "composite",
         reward_config_path: str | None = None,
         **kwargs: Any,
     ) -> None:

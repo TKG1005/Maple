@@ -64,7 +64,7 @@ from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
 
 
-def init_env(reward: str = "hp_delta", reward_config: str | None = None) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -199,8 +199,8 @@ def main(
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
     algo: str = "ppo",
-    reward: str = "hp_delta",
-    reward_config: str | None = None,
+    reward: str = "composite",
+    reward_config: str | None = str(ROOT_DIR / "config" / "reward.yaml"),
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -222,6 +222,10 @@ def main(
     value_coef = float(cfg.get("value_coef", value_coef))
     entropy_coef = float(cfg.get("entropy_coef", entropy_coef))
     algo_name = str(cfg.get("algorithm", algo)).lower()
+    reward = str(cfg.get("reward", reward))
+    reward_config = cfg.get("reward_config", reward_config)
+    if reward_config is not None:
+        reward_config = str(reward_config)
 
     writer = SummaryWriter() if tensorboard else None
 
@@ -420,12 +424,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reward",
         type=str,
-        default="hp_delta",
-        help="reward function to use (hp_delta)",
+        default="composite",
+        help="reward function to use (composite)",
     )
     parser.add_argument(
         "--reward-config",
         type=str,
+        default=str(ROOT_DIR / "config" / "reward.yaml"),
         help="path to composite reward YAML file",
     )
     args = parser.parse_args()
