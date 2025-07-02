@@ -9,3 +9,5 @@ value_coef: 0.6
 entropy_coef: 0.02
 ppo_epochs: 4
 algorithm: ppo
+reward: composite
+reward_config: config/reward.yaml
