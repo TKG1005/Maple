@@ -24,7 +24,6 @@ class AbstractBattle(ABC):
         "-center",
         "-combine",
         "-crit",
-        "-fail",
         "-fieldactivate",
         "-hint",
         "-hitcount",
@@ -46,7 +45,6 @@ class AbstractBattle(ABC):
         "deinit",
         "gametype",
         "html",
-        "immune",
         "inactiveoff",
         "init",
         "j",
@@ -119,6 +117,7 @@ class AbstractBattle(ABC):
         "_wait",
         "_weather",
         "_won",
+        "_last_invalid_action",
         "logger",
     )
 
@@ -171,6 +170,7 @@ class AbstractBattle(ABC):
         self._opponent_rating: Optional[int] = None
         self._rating: Optional[int] = None
         self._won: Optional[bool] = None
+        self._last_invalid_action: bool = False
 
         # In game battle state attributes
         self._weather: Dict[Weather, int] = {}
@@ -576,6 +576,24 @@ class AbstractBattle(ABC):
         elif event[1] == "cant":
             pokemon, _ = event[2:4]
             self.get_pokemon(pokemon).cant_move()
+        elif event[1] == "-fail":
+            # Handle move failures
+            if len(event) >= 3:
+                pokemon = event[2]
+                if pokemon.startswith(self._player_role):
+                    self._last_invalid_action = True
+        elif event[1] == "-immune":
+            # Handle immune messages
+            if len(event) >= 3:
+                pokemon = event[2]
+                if pokemon.startswith(self._player_role):
+                    self._last_invalid_action = True
+        elif event[1] == "immune":
+            # Handle immune messages (alternative format)
+            if len(event) >= 3:
+                pokemon = event[2]
+                if pokemon.startswith(self._player_role):
+                    self._last_invalid_action = True
         elif event[1] == "turn":
             # Saving the beginning-of-turn battle state and events as we go into the turn
             self.observations[self.turn] = self._current_observation
@@ -1450,3 +1468,15 @@ class AbstractBattle(ABC):
     @property
     def reviving(self) -> bool:
         return self._reviving
+
+    @property
+    def last_invalid_action(self) -> bool:
+        """
+        :return: Whether the last action was invalid (failed or immune).
+        :rtype: bool
+        """
+        return self._last_invalid_action
+
+    def reset_invalid_action(self) -> None:
+        """Reset the invalid action flag."""
+        self._last_invalid_action = False

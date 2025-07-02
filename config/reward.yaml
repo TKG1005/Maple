@@ -8,3 +8,6 @@ rewards:
   turn_penalty:
     weight: 1.0
     enabled: true
+  fail_immune:
+    weight: 1.0
+    enabled: true
