@@ -610,15 +610,7 @@ class PokemonEnv(gym.Env):
         observations = {
             pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
         }
-        
-        # Check for invalid actions before reward calculation
-        for pid in self.agent_ids:
-            battle = battles[pid]
-            if hasattr(battle, 'last_fail_action') and battle.last_fail_action:
-                self._logger.info(f"[{pid}] Fail action detected")
-            if hasattr(battle, 'last_immune_action') and battle.last_immune_action:
-                self._logger.info(f"[{pid}] Immune action detected")
-        
+                
         rewards = {pid: self._calc_reward(battles[pid], pid) for pid in self.agent_ids}
         
         # Reset invalid action flags after reward calculation
