@@ -13,7 +13,7 @@
 - [ ] R-7 毎ターン経過ペナルティ
 - [ ] R-8 最終味方数-相手数で差分報酬
 - [ ] R-9 報酬合成管理の強化
-- [ ] R-10 無効行動時のボーナス・ペナルティ
+- [x] R-10 無効行動時のボーナス・ペナルティ (FailAndImmuneReward として実装完了)
 
 ## 対戦相手の多様化
 - [ ] B-1 RandomBot 実装
@@ -40,5 +40,5 @@
 
 ## CI / 自動化
 - [ ] C-1 GitHub Actions スモーク
-- [ ] C-2 Codex/LLM 用 TODO.md
+- [x] C-2 Codex/LLM 用 TODO.md (CLAUDE.md として実装完了)
 - [ ] C-3 Pre-commit Black + ruff

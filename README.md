@@ -17,3 +17,7 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
 - 2025-07-05 `HPDeltaReward` を追加し、`--reward hp_delta` オプションで使用可能に
 - 2025-07-06 `train_selfplay.py` の報酬を `CompositeReward` ベースに変更し、
   `config/train_config.yml` の設定で他の報酬へ切り替え可能に
+- 2025-07-02 `CLAUDE.md` ファイルを新規作成し、Claude Code用のコードベース解説と
+  開発コマンド、アーキテクチャ概要をドキュメント化
+- 2025-07-02 `FailAndImmuneReward` を実装し、無効行動（失敗・無効技）時の
+  ペナルティ機能を追加。`config/reward.yaml` の `fail_immune` で有効化可能
