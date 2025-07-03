@@ -39,6 +39,8 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
+from src.agents.random_agent import RandomAgent  # noqa: E402
+from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -119,12 +121,27 @@ def run_episode_multi(
     return win0, win1, reward0, reward1
 
 
+def create_opponent_agent(opponent_type: str, env: PokemonEnv):
+    """指定されたタイプの対戦相手エージェントを作成"""
+    if opponent_type == "random":
+        return RandomAgent(env)
+    elif opponent_type == "rule":
+        return RuleBasedPlayer(env)
+    else:
+        raise ValueError(f"Unknown opponent type: {opponent_type}")
+
+
 def evaluate_single(
-    model_path: str, n: int = 1, replay_dir: str | bool = "replays"
+    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random"
 ) -> None:
-    env = init_env(save_replays=replay_dir, single=True)
-    policy_net = PolicyNetwork(env.observation_space, env.action_space)
-    value_net = ValueNetwork(env.observation_space)
+    # Multi-agent環境でRL学習済みエージェント vs 指定した対戦相手
+    env = init_env(save_replays=replay_dir, single=False)
+    
+    # RL学習済みエージェントの作成 (player_0)
+    policy_net = PolicyNetwork(
+        env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+    )
+    value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
     state_dict = torch.load(model_path, map_location="cpu")
     if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
         policy_net.load_state_dict(state_dict["policy"])
@@ -133,22 +150,29 @@ def evaluate_single(
         policy_net.load_state_dict(state_dict)
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=1e-3)
-    agent = RLAgent(env, policy_net, value_net, optimizer)
+    rl_agent = RLAgent(env, policy_net, value_net, optimizer)
+
+    # 対戦相手エージェントの作成 (player_1)
+    opponent_agent = create_opponent_agent(opponent, env)
+    env.register_agent(opponent_agent, env.agent_ids[1])
 
     wins = 0
     total_reward = 0.0
     for i in range(n):
-        won, reward = run_episode(agent)
-        wins += int(won)
-        total_reward += reward
-        logger.info("Battle %d reward=%.2f win=%s", i + 1, reward, won)
+        win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent)
+        wins += int(win0)
+        total_reward += reward0
+        logger.info(
+            "Battle %d RL_reward=%.2f win=%s %s_reward=%.2f win=%s", 
+            i + 1, reward0, win0, opponent, reward1, win1
+        )
 
     env.close()
     logger.info("Evaluation finished after %d battles", n)
 
     win_rate = wins / n if n else 0.0
     avg_reward = total_reward / n if n else 0.0
-    logger.info("win_rate: %.2f avg_reward: %.2f", win_rate, avg_reward)
+    logger.info("RL Agent vs %s - win_rate: %.2f avg_reward: %.2f", opponent, win_rate, avg_reward)
 
 
 def compare_models(
@@ -233,6 +257,12 @@ if __name__ == "__main__":
         default="replays",
         help="directory to save battle replays",
     )
+    parser.add_argument(
+        "--opponent",
+        choices=["random", "rule"],
+        default="random",
+        help="opponent type for single model evaluation (random or rule)",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -240,6 +270,6 @@ if __name__ == "__main__":
     if args.models:
         compare_models(args.models[0], args.models[1], args.n, args.replay_dir)
     elif args.model:
-        evaluate_single(args.model, args.n, args.replay_dir)
+        evaluate_single(args.model, args.n, args.replay_dir, args.opponent)
     else:
         parser.error("--model or --models is required")

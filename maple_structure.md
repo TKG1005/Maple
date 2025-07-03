@@ -1,5 +1,14 @@
 /Users/takagikouichi/Documents/GitHub/Maple
 ├── checkpoints
+│   ├── checkpoint_ep1000.pt
+│   ├── checkpoint_ep1500.pt
+│   ├── checkpoint_ep2000.pt
+│   ├── checkpoint_ep2500.pt
+│   ├── checkpoint_ep3000.pt
+│   ├── checkpoint_ep3500.pt
+│   ├── checkpoint_ep4000.pt
+│   └── checkpoint_ep500.pt
+├── CLAUDE.md
 ├── compare.png
 ├── config
 │   ├── action_map.yml
@@ -46,15 +55,17 @@
 │   └── train_usage.md
 ├── evaluate_rl.py
 ├── logs
+│   ├── eval_20250702_160223.log
+│   ├── eval_20250702_221738.log
+│   ├── eval_20250702_221923.log
+│   ├── eval_20250702_221953.log
+│   ├── eval_20250702_222634.log
+│   ├── eval_20250702_222656.log
+│   ├── eval_20250702_225733.log
 │   ├── run1.json
-│   ├── train_20250630_010712.log
-│   ├── train_20250630_082909.log
-│   ├── train_20250630_102256.log
-│   ├── train_20250630_103437.log
-│   ├── train_20250630_103947.log
-│   ├── train_20250630_164502.log
-│   ├── train_20250630_165905.log
-│   └── train_20250630_165934.log
+│   ├── train_20250702_142654.log
+│   ├── train_20250702_142743.log
+│   └── train_20250702_143307.log
 ├── maple_structure.md
 ├── maple_structure.txt
 ├── model_debug.pt
@@ -715,10 +726,212 @@
 ├── pytest.ini
 ├── README.md
 ├── replays
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84442.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84443.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84444.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84445.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84446.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84447.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84448.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84449.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84450.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84451.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84452.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84453.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84454.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84455.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84456.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84457.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84458.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84459.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84460.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84461.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84462.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84463.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84464.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84465.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84466.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84467.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84468.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84469.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84470.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84471.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84472.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84473.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84474.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84475.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84476.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84477.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84478.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84479.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84480.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84481.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84482.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84483.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84484.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84485.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84486.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84487.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84488.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84489.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84490.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84491.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84492.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84493.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84494.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84495.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84496.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84497.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84498.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84499.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84500.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84501.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84502.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84503.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84504.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84505.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84506.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84507.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84508.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84509.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84510.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84511.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84512.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84513.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84514.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84515.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84516.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84517.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84518.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84519.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84520.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84521.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84522.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84523.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84524.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84525.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84526.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84527.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84528.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84529.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84530.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84531.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84532.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84533.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84534.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84535.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84536.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84537.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84538.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84539.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84540.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84541.html
+│   ├── EnvPlayer 1 - battle-gen9bssregi-84542.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84442.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84443.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84444.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84445.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84446.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84447.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84448.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84449.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84450.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84451.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84452.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84453.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84454.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84455.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84456.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84457.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84458.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84459.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84460.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84461.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84462.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84463.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84464.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84465.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84466.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84467.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84468.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84469.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84470.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84471.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84472.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84473.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84474.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84475.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84476.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84477.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84478.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84479.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84480.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84481.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84482.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84483.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84484.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84485.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84486.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84487.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84488.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84489.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84490.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84491.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84492.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84493.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84494.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84495.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84496.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84497.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84498.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84499.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84500.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84501.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84502.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84503.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84504.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84505.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84506.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84507.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84508.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84509.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84510.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84511.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84512.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84513.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84514.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84515.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84516.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84517.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84518.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84519.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84520.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84521.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84522.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84523.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84524.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84525.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84526.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84527.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84528.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84529.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84530.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84531.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84532.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84533.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84534.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84535.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84536.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84537.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84538.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84539.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84540.html
+│   ├── EnvPlayer 2 - battle-gen9bssregi-84541.html
+│   └── EnvPlayer 2 - battle-gen9bssregi-84542.html
 ├── requirements.txt
 ├── runs
-│   └── Jun30_16-59-34_DESKTOP-TDAQCBO
-│       └── events.out.tfevents.1751270374.DESKTOP-TDAQCBO.25168.0
+│   └── Jul01_22-47-20_DESKTOP-TDAQCBO
+│       └── events.out.tfevents.1751377640.DESKTOP-TDAQCBO.25828.0
 ├── scripts
 ├── src
 │   ├── __init__.py
@@ -735,6 +948,7 @@
 │   │   ├── MapleAgent.py
 │   │   ├── my_simple_player.py
 │   │   ├── policy_network.py
+│   │   ├── random_agent.py
 │   │   ├── replay_buffer.py
 │   │   ├── RLAgent.py
 │   │   ├── rule_based_player.py
@@ -757,6 +971,7 @@
 │   │   ├── __init__.py
 │   │   ├── __pycache__
 │   │   ├── composite.py
+│   │   ├── fail_and_immune.py
 │   │   ├── hp_delta.py
 │   │   ├── knockout.py
 │   │   └── turn_penalty.py
@@ -764,7 +979,8 @@
 │   │   ├── __pycache__
 │   │   ├── generate_yaml.py
 │   │   ├── state_feature_catalog_temp - シート1.csv
-│   │   └── state_observer.py
+│   │   ├── state_observer.py
+│   │   └── type_matchup_extractor.py
 │   └── util
 ├── test
 │   ├── __pycache__
@@ -777,12 +993,17 @@
 │   ├── run_battle.py
 │   └── simple_agent.py
 ├── tests
+│   ├── __pycache__
+│   │   ├── test_composite_reward.cpython-312-pytest-8.4.0.pyc
+│   │   └── test_fail_and_immune_reward.cpython-312-pytest-8.4.0.pyc
 │   ├── test_composite_reward.py
 │   ├── test_env_composite_reward.py
+│   ├── test_fail_and_immune_reward.py
 │   ├── test_hp_delta_reward.py
 │   ├── test_reward_import.py
-│   └── test_turn_penalty_reward.py
+│   ├── test_turn_penalty_reward.py
+│   └── test_type_matchup_extractor.py
 ├── train_rl.py
 └── train_selfplay.py
 
-563 directories, 223 files
+564 directories, 443 files
