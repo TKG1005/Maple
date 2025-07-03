@@ -1,4 +1,4 @@
-Corviknight @ Flame Orb  
+Corviknight @ Weakness Policy  
 Ability: Pressure  
 Tera Type: Flying  
 EVs: 252 HP  
@@ -9,11 +9,11 @@ EVs: 252 HP
 
 Dragapult @ Focus Sash  
 Ability: Infiltrator  
-Tera Type: Dragon  
+Tera Type: Ice  
 EVs: 252 HP / 252 Spe  
 Timid Nature  
 - Phantom Force  
-- Substitute  
+- Tera Blast  
 - Thunder Wave  
 - Draco Meteor  
 
@@ -22,20 +22,19 @@ Ability: Unnerve
 Tera Type: Ground  
 EVs: 252 HP  
 Gentle Nature  
-IVs: 0 Atk  
 - Body Press  
-- Hyper Voice  
+- Body Slam  
 - Seismic Toss  
-- Counter  
+- Avalanche  
 
-Ting-Lu @ Leftovers  
-Ability: Vessel of Ruin  
-Tera Type: Dark  
-EVs: 252 HP / 252 Atk  
-- Memento  
-- Whirlwind  
-- Lash Out  
-- Earthquake  
+Landorus-Therian (M) @ Choice Scarf  
+Ability: Intimidate  
+Tera Type: Ground  
+EVs: 252 HP / 252 Spe  
+- U-turn  
+- Earth Power  
+- Fly  
+- Stealth Rock  
 
 Alomomola @ Rocky Helmet  
 Ability: Regenerator  
@@ -45,7 +44,7 @@ IVs: 0 Atk
 - Blizzard  
 - Rest  
 - Pain Split  
-- Healing Wish  
+- Hydro Pump  
 
 Hydreigon @ Life Orb  
 Ability: Levitate  
