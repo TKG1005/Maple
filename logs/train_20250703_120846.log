@@ -1,0 +1,3 @@
+2025-07-03 12:08:46,180 INFO Run parameters: {'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'dry_run': True, 'episodes': 1, 'save': None, 'tensorboard': False, 'checkpoint_interval': 0, 'checkpoint_dir': 'checkpoints', 'clip': None, 'gae_lambda': None, 'ppo_epochs': None, 'value_coef': None, 'opponent': 'random'}
+2025-07-03 12:08:46,384 INFO Environment initialised
+2025-07-03 12:08:46,386 INFO Dry run complete
