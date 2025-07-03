@@ -123,3 +123,37 @@ The `FailAndImmuneReward` class provides penalties for invalid actions:
 - Default penalty: -0.02 (configurable via constructor)
 - Stateless design - no internal state to reset
 - Enabled via `config/reward.yaml` with `fail_immune.enabled: true`
+
+## Project-Specific Rules
+
+### Code Style and Conventions
+- Use `from __future__ import annotations` for type hints
+- All new agent classes must inherit from `MapleAgent` base class
+- Use `MapleAgent.select_action(observation, action_mask)` interface for agents
+- Implement both `select_action()` and `act()` methods for agent compatibility
+- Import order: stdlib → third-party → local imports with `# noqa: E402` for late imports
+
+### Agent Development Rules
+- All agents must handle empty action masks gracefully
+- Use `self.env.rng` for reproducible random number generation
+- Agent constructors should accept `env` as first parameter
+- Register agents with environment using `env.register_agent(agent, player_id)`
+- Battle state access should use `self._get_current_battle()` pattern
+
+### Testing Requirements
+- Mark slow integration tests with `@pytest.mark.slow`
+- Unit tests for reward functions must test edge cases (empty battles, missing attributes)
+- Agent tests should verify both valid action selection and error handling
+- Configuration changes require corresponding test updates
+
+### Documentation Updates
+- Update `README.md` changelog for new features
+- Mark completed tasks in `docs/TODO_M7.md`
+- Update this `CLAUDE.md` with new implementation details
+- Include usage examples for new command-line options
+
+### Prohibited Patterns
+- Never use `poke_env.Player` directly - always use `MapleAgent` base class
+- Avoid hardcoded paths - use relative paths from project root
+- Don't create agents without proper environment registration
+- Never ignore action masks - always respect valid action constraints
