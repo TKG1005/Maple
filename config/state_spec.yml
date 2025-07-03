@@ -1394,90 +1394,198 @@ type_matchup:
   move1_vs_opp_active:
     dtype: float
     battle_path: type_matchup_vec[0]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move1_vs_opp_bench1:
     dtype: float
     battle_path: type_matchup_vec[1]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move1_vs_opp_bench2:
     dtype: float
     battle_path: type_matchup_vec[2]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move2_vs_opp_active:
     dtype: float
     battle_path: type_matchup_vec[3]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move2_vs_opp_bench1:
     dtype: float
     battle_path: type_matchup_vec[4]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move2_vs_opp_bench2:
     dtype: float
     battle_path: type_matchup_vec[5]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move3_vs_opp_active:
     dtype: float
     battle_path: type_matchup_vec[6]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move3_vs_opp_bench1:
     dtype: float
     battle_path: type_matchup_vec[7]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move3_vs_opp_bench2:
     dtype: float
     battle_path: type_matchup_vec[8]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move4_vs_opp_active:
     dtype: float
     battle_path: type_matchup_vec[9]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move4_vs_opp_bench1:
     dtype: float
     battle_path: type_matchup_vec[10]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   move4_vs_opp_bench2:
     dtype: float
     battle_path: type_matchup_vec[11]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab1_vs_my_active:
     dtype: float
     battle_path: type_matchup_vec[12]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab1_vs_my_bench1:
     dtype: float
     battle_path: type_matchup_vec[13]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab1_vs_my_bench2:
     dtype: float
     battle_path: type_matchup_vec[14]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab2_vs_my_active:
     dtype: float
     battle_path: type_matchup_vec[15]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab2_vs_my_bench1:
     dtype: float
     battle_path: type_matchup_vec[16]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1
   opp_stab2_vs_my_bench2:
     dtype: float
     battle_path: type_matchup_vec[17]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
+    range:
+    - -10
+    - 2
+    scale_to:
+    - 0
+    - 1

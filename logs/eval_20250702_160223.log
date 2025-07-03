@@ -1,1 +1,0 @@
-2025-07-02 16:02:23,983 INFO Run parameters: {'model': 'model_ppo.pt', 'models': None, 'n': 100, 'replay_dir': 'replays', 'opponent': 'rule'}
