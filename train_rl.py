@@ -51,6 +51,8 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent, ReplayBuffer  # noqa: E402
+from src.agents.random_agent import RandomAgent  # noqa: E402
+from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.algorithms import (
     BaseAlgorithm,
     ReinforceAlgorithm,
@@ -60,16 +62,34 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env() -> SingleAgentCompatibilityWrapper:
-    """Create :class:`PokemonEnv` wrapped for single-agent use."""
+def create_opponent_agent(opponent_type: str, env: PokemonEnv):
+    """指定されたタイプの対戦相手エージェントを作成"""
+    if opponent_type == "random":
+        return RandomAgent(env)
+    elif opponent_type == "rule":
+        return RuleBasedPlayer(env)
+    else:
+        raise ValueError(f"Unknown opponent type: {opponent_type}")
 
+
+def init_env(opponent_type: str = "random"):
+    """Create PokemonEnv with specified opponent type."""
+    
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
         opponent_player=None,
         state_observer=observer,
         action_helper=action_helper,
     )
-    return SingleAgentCompatibilityWrapper(env)
+    
+    if opponent_type == "random":
+        # 従来通りの単一エージェント環境（ランダム相手）
+        return SingleAgentCompatibilityWrapper(env)
+    else:
+        # マルチエージェント環境で特定の対戦相手
+        opponent_agent = create_opponent_agent(opponent_type, env)
+        env.register_agent(opponent_agent, env.agent_ids[1])
+        return env
 
 
 def main(
@@ -82,6 +102,11 @@ def main(
     checkpoint_interval: int = 0,
     checkpoint_dir: str = "checkpoints",
     algorithm: BaseAlgorithm | None = None,
+    opponent: str = "random",
+    clip: float | None = None,
+    gae_lambda: float | None = None,
+    ppo_epochs: int | None = None,
+    value_coef: float | None = None,
 ) -> None:
     """Entry point for RL training script."""
 
@@ -98,7 +123,7 @@ def main(
     writer = None
     global_step = 0
 
-    env = init_env()
+    env = init_env(opponent)
 
     if dry_run:
         # 初期化のみ確認して即終了
@@ -113,11 +138,22 @@ def main(
     if tensorboard:
         writer = SummaryWriter()
 
-    observation_dim = env.observation_space.shape
-    action_space = env.action_space
+    # 環境タイプに応じて観測・行動空間を取得
+    is_single_agent = isinstance(env, SingleAgentCompatibilityWrapper)
+    
+    if is_single_agent:
+        observation_dim = env.observation_space.shape
+        action_space = env.action_space
+        obs_space = env.observation_space
+    else:
+        # マルチエージェント環境の場合、学習エージェント（player_0）の空間を使用
+        player_id = env.agent_ids[0]
+        observation_dim = env.observation_space[player_id].shape
+        action_space = env.action_space[player_id]
+        obs_space = env.observation_space[player_id]
 
-    policy_net = PolicyNetwork(env.observation_space, action_space)
-    value_net = ValueNetwork(env.observation_space)
+    policy_net = PolicyNetwork(obs_space, action_space)
+    value_net = ValueNetwork(obs_space)
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
     algorithm = algorithm or ReinforceAlgorithm()
@@ -128,26 +164,84 @@ def main(
 
     for ep in range(episodes):
         start_time = time.perf_counter()
-        obs, info, action_mask = env.reset(return_masks=True)
-        if info.get("request_teampreview"):
-            team_cmd = agent.choose_team(obs)
-            obs, action_mask, _, done, _ = env.step(team_cmd, return_masks=True)
-        else:
-            done = False
+        
+        if is_single_agent:
+            # シングルエージェント環境（従来通り）
+            obs, info, action_mask = env.reset(return_masks=True)
+            if info.get("request_teampreview"):
+                team_cmd = agent.choose_team(obs)
+                obs, action_mask, _, done, _ = env.step(team_cmd, return_masks=True)
+            else:
+                done = False
 
-        total_reward = 0.0
-        while not done:
-            action = agent.act(obs, action_mask)
-            next_obs, action_mask, reward, done, _ = env.step(action, return_masks=True)
-            buffer.add(obs, action, float(reward), done, next_obs)
-            if len(buffer) >= batch_size:
-                batch = buffer.sample(batch_size)
-                loss = agent.update(batch)
-                if writer:
-                    writer.add_scalar("loss", loss, global_step)
-                global_step += 1
-            obs = next_obs
-            total_reward += float(reward)
+            total_reward = 0.0
+            while not done:
+                action = agent.act(obs, action_mask)
+                next_obs, action_mask, reward, done, _ = env.step(action, return_masks=True)
+                buffer.add(obs, action, float(reward), done, next_obs)
+                if len(buffer) >= batch_size:
+                    batch = buffer.sample(batch_size)
+                    loss = agent.update(batch)
+                    if writer:
+                        writer.add_scalar("loss", loss, global_step)
+                    global_step += 1
+                obs = next_obs
+                total_reward += float(reward)
+        else:
+            # マルチエージェント環境（対戦相手あり）
+            observations, info, masks = env.reset(return_masks=True)
+            player_id = env.agent_ids[0]
+            opponent_id = env.agent_ids[1]
+            
+            obs = observations[player_id]
+            action_mask = masks[0]  # player_0のマスク
+            
+            if info.get("request_teampreview"):
+                team_cmd = agent.choose_team(obs)
+                # 対戦相手も必要に応じてチーム選択（ここではランダム）
+                opponent_agent = env._agents[opponent_id]
+                opponent_team_cmd = opponent_agent.choose_team(observations[opponent_id])
+                
+                observations, *_, masks = env.step(
+                    {player_id: team_cmd, opponent_id: opponent_team_cmd}, return_masks=True
+                )
+                obs = observations[player_id]
+                action_mask = masks[0]
+
+            done = False
+            total_reward = 0.0
+            
+            while not done:
+                # 学習エージェントの行動
+                action = agent.act(obs, action_mask) if env._need_action[player_id] else 0
+                
+                # 対戦相手の行動
+                opponent_agent = env._agents[opponent_id]
+                opponent_obs = observations[opponent_id]
+                opponent_mask = masks[1]
+                opponent_action = opponent_agent.act(opponent_obs, opponent_mask) if env._need_action[opponent_id] else 0
+                
+                # 両方の行動を環境に送信
+                observations, rewards, terms, truncs, _, masks = env.step(
+                    {player_id: action, opponent_id: opponent_action}, return_masks=True
+                )
+                
+                next_obs = observations[player_id]
+                reward = rewards[player_id]
+                done = terms[player_id] or truncs[player_id]
+                action_mask = masks[0]
+                
+                # 学習エージェントのデータのみをバッファに追加
+                buffer.add(obs, action, float(reward), done, next_obs)
+                if len(buffer) >= batch_size:
+                    batch = buffer.sample(batch_size)
+                    loss = agent.update(batch)
+                    if writer:
+                        writer.add_scalar("loss", loss, global_step)
+                    global_step += 1
+                
+                obs = next_obs
+                total_reward += float(reward)
 
         duration = time.perf_counter() - start_time
         logger.info(
@@ -251,6 +345,12 @@ if __name__ == "__main__":
         default=None,
         help="coefficient for value loss",
     )
+    parser.add_argument(
+        "--opponent",
+        choices=["random", "rule"],
+        default="random",
+        help="opponent type for training (random or rule)",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
@@ -267,4 +367,5 @@ if __name__ == "__main__":
         gae_lambda=args.gae_lambda,
         ppo_epochs=args.ppo_epochs,
         value_coef=args.value_coef,
+        opponent=args.opponent,
     )
