@@ -1,1 +1,0 @@
-2025-07-03 09:56:21,434 INFO Run parameters: {'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'dry_run': True, 'episodes': 1, 'save': None, 'tensorboard': False, 'checkpoint_interval': 0, 'checkpoint_dir': 'checkpoints', 'clip': None, 'gae_lambda': None, 'ppo_epochs': None, 'value_coef': None, 'opponent': 'random'}

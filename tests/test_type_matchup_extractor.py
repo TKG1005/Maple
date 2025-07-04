@@ -93,8 +93,8 @@ class TestTypeMatchupFeatureExtractor(unittest.TestCase):
         features = self.extractor.extract(battle)
 
         # Assert
-        # All matchups should be 1.0
-        self.assertTrue(np.all(features == 1.0))
+        # All matchups should be 0.0 (log2(1.0) = 0.0)
+        self.assertTrue(np.all(features == 0.0))
 
 if __name__ == '__main__':
     unittest.main()

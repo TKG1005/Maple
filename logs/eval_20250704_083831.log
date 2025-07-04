@@ -1,0 +1,1 @@
+2025-07-04 08:38:31,382 INFO Run parameters: {'model': 'model_debug.pt', 'models': None, 'n': 50, 'replay_dir': 'replays', 'opponent': 'rule'}

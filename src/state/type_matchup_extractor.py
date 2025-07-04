@@ -9,6 +9,12 @@ from poke_env.environment.move_category import MoveCategory
 class TypeMatchupFeatureExtractor:
     def __init__(self, gen: int = 9):
         self.type_chart = GenData.from_gen(gen).type_chart
+    
+    def _log2_damage_multiplier(self, multiplier: float) -> float:
+        """Convert damage multiplier (0-4x) to log2 scale (-4 to 2)."""
+        if multiplier == 0.0:
+            return -4.0  # Use -4 for immune effects instead of -10 to avoid NaN
+        return np.log2(multiplier)
 
     def extract(self, battle: AbstractBattle) -> np.ndarray:
         my_active = battle.active_pokemon
@@ -20,13 +26,13 @@ class TypeMatchupFeatureExtractor:
         my_moves = sorted(my_active.moves.values(), key=lambda m: m.id)[:4]
         for move in my_moves:
             # 対相手アクティブ
-            move_matchups.append(self._get_damage_multiplier(move, opp_active))
+            move_matchups.append(self._log2_damage_multiplier(self._get_damage_multiplier(move, opp_active)))
             # 対相手ベンチ
             for i in range(2):
                 if i < len(opp_bench):
-                    move_matchups.append(self._get_damage_multiplier(move, opp_bench[i]))
+                    move_matchups.append(self._log2_damage_multiplier(self._get_damage_multiplier(move, opp_bench[i])))
                 else:
-                    move_matchups.append(1.0)
+                    move_matchups.append(0.0)  # log2(1.0) = 0.0
 
         # 相手のタイプ一致技と自分ポケモンの相性
         stab_matchups = []
@@ -40,17 +46,17 @@ class TypeMatchupFeatureExtractor:
             for opp_type in opp_types:
                 if opp_type:
                     # 対自分アクティブ
-                    stab_matchups.append(opp_type.damage_multiplier(my_active.type_1, my_active.type_2, type_chart=self.type_chart))
+                    stab_matchups.append(self._log2_damage_multiplier(opp_type.damage_multiplier(my_active.type_1, my_active.type_2, type_chart=self.type_chart)))
                     # 対自分ベンチ
                     for i in range(2):
                         if i < len(my_bench):
-                            stab_matchups.append(opp_type.damage_multiplier(my_bench[i].type_1, my_bench[i].type_2, type_chart=self.type_chart))
+                            stab_matchups.append(self._log2_damage_multiplier(opp_type.damage_multiplier(my_bench[i].type_1, my_bench[i].type_2, type_chart=self.type_chart)))
                         else:
-                            stab_matchups.append(1.0)
+                            stab_matchups.append(0.0)  # log2(1.0) = 0.0
                 else:
-                    stab_matchups.extend([1.0] * 3)
+                    stab_matchups.extend([0.0] * 3)  # log2(1.0) = 0.0
         else:
-            stab_matchups.extend([1.0] * 6)
+            stab_matchups.extend([0.0] * 6)  # log2(1.0) = 0.0
 
         # 12 + 6 = 18要素のベクトル
         return np.array(move_matchups + stab_matchups, dtype=np.float32)

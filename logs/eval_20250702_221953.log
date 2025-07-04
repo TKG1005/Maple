@@ -1,4 +1,0 @@
-2025-07-02 22:19:53,847 INFO Run parameters: {'model': 'checkpoints/checkpoint_ep1500.pt', 'models': None, 'n': 100, 'replay_dir': 'replays', 'opponent': 'random'}
-2025-07-02 22:19:58,452 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
-2025-07-02 22:19:58,453 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
-2025-07-02 22:19:58,454 DEBUG RLAgent: chosen action = 0
