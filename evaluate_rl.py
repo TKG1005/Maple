@@ -60,6 +60,31 @@ def init_env(*, save_replays: bool | str = False, single: bool = True):
     return env
 
 
+def set_player_names(env, player_names: tuple[str, str]):
+    """Set custom player names for environment players."""
+    from poke_env.ps_client.account_configuration import AccountConfiguration
+    
+    # 元のreset関数を保存
+    if not hasattr(env, '_original_reset'):
+        env._original_reset = env.reset
+    
+    def custom_reset(*args, **kwargs):
+        # 元のresetを実行
+        result = env._original_reset(*args, **kwargs)
+        
+        # reset後にプレイヤー名を設定
+        if hasattr(env, '_env_players'):
+            if 'player_0' in env._env_players:
+                env._env_players['player_0'].account_configuration = AccountConfiguration(player_names[0], None)
+            if 'player_1' in env._env_players:
+                env._env_players['player_1'].account_configuration = AccountConfiguration(player_names[1], None)
+        
+        return result
+    
+    # reset関数を置き換え
+    env.reset = custom_reset
+
+
 def run_episode(agent: RLAgent) -> tuple[bool, float]:
     """Run one battle and return win flag and total reward."""
 
@@ -80,11 +105,16 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
 
 
 def run_episode_multi(
-    agent0: RLAgent, agent1: RLAgent
+    agent0: RLAgent, agent1: RLAgent, player_names: tuple[str, str] = None
 ) -> tuple[bool, bool, float, float]:
     """Run one battle between two agents and return win flags and rewards."""
 
     env = agent0.env
+    
+    # プレイヤー名を設定（reset前に行う）
+    if player_names:
+        set_player_names(env, player_names)
+    
     observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
@@ -135,6 +165,8 @@ def evaluate_single(
     model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random"
 ) -> None:
     # Multi-agent環境でRL学習済みエージェント vs 指定した対戦相手
+    model_name = Path(model_path).stem
+    opponent_name = f"{opponent.capitalize()}Agent"
     env = init_env(save_replays=replay_dir, single=False)
     
     # RL学習済みエージェントの作成 (player_0)
@@ -159,12 +191,12 @@ def evaluate_single(
     wins = 0
     total_reward = 0.0
     for i in range(n):
-        win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent)
+        win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent, (model_name, opponent_name))
         wins += int(win0)
         total_reward += reward0
         logger.info(
-            "Battle %d RL_reward=%.2f win=%s %s_reward=%.2f win=%s", 
-            i + 1, reward0, win0, opponent, reward1, win1
+            "Battle %d %s_reward=%.2f win=%s %s_reward=%.2f win=%s", 
+            i + 1, model_name, reward0, win0, opponent_name, reward1, win1
         )
 
     env.close()
@@ -180,6 +212,8 @@ def compare_models(
 ) -> None:
     """Evaluate two models against each other and report win rates."""
 
+    model_a_name = Path(model_a).stem
+    model_b_name = Path(model_b).stem
     env = init_env(save_replays=replay_dir, single=False)
 
     # Create player_1 agent first so that registration order is correct
@@ -217,16 +251,18 @@ def compare_models(
     total0 = 0.0
     total1 = 0.0
     for i in range(n):
-        win0, win1, reward0, reward1 = run_episode_multi(agent0, agent1)
+        win0, win1, reward0, reward1 = run_episode_multi(agent0, agent1, (model_a_name, model_b_name))
         wins0 += int(win0)
         wins1 += int(win1)
         total0 += reward0
         total1 += reward1
         logger.info(
-            "Battle %d P0_reward=%.2f win=%s P1_reward=%.2f win=%s",
+            "Battle %d %s_reward=%.2f win=%s %s_reward=%.2f win=%s",
             i + 1,
+            model_a_name,
             reward0,
             win0,
+            model_b_name,
             reward1,
             win1,
         )
@@ -236,8 +272,8 @@ def compare_models(
     win_rate1 = wins1 / n if n else 0.0
     avg0 = total0 / n if n else 0.0
     avg1 = total1 / n if n else 0.0
-    logger.info("modelA win_rate: %.2f avg_reward: %.2f", win_rate0, avg0)
-    logger.info("modelB win_rate: %.2f avg_reward: %.2f", win_rate1, avg1)
+    logger.info("%s win_rate: %.2f avg_reward: %.2f", model_a_name, win_rate0, avg0)
+    logger.info("%s win_rate: %.2f avg_reward: %.2f", model_b_name, win_rate1, avg1)
 
 
 if __name__ == "__main__":

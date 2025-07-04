@@ -11,9 +11,9 @@ class TypeMatchupFeatureExtractor:
         self.type_chart = GenData.from_gen(gen).type_chart
     
     def _log2_damage_multiplier(self, multiplier: float) -> float:
-        """Convert damage multiplier (0-4x) to log2 scale (-10 to 2)."""
+        """Convert damage multiplier (0-4x) to log2 scale (-4 to 2)."""
         if multiplier == 0.0:
-            return -10.0  # Use large negative value instead of -inf to avoid NaN
+            return -4.0  # Use -4 for immune effects instead of -10 to avoid NaN
         return np.log2(multiplier)
 
     def extract(self, battle: AbstractBattle) -> np.ndarray:
