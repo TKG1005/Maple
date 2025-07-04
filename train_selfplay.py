@@ -61,7 +61,11 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
+from src.agents.random_agent import RandomAgent  # noqa: E402
+from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
+from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
+from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
 
 
 def init_env(reward: str = "composite", reward_config: str | None = None) -> PokemonEnv:
@@ -75,6 +79,140 @@ def init_env(reward: str = "composite", reward_config: str | None = None) -> Pok
         reward_config_path=reward_config,
     )
     return env
+
+
+def create_opponent_agent(opponent_type: str, env: PokemonEnv):
+    """指定されたタイプの対戦相手エージェントを作成"""
+    if opponent_type == "random":
+        return RandomBot(env)
+    elif opponent_type == "max":
+        return MaxDamageBot(env)
+    elif opponent_type == "rule":
+        return RuleBasedPlayer(env)
+    else:
+        raise ValueError(f"Unknown opponent type: {opponent_type}")
+
+
+def run_episode_with_opponent(
+    env: PokemonEnv,
+    rl_agent: RLAgent,
+    opponent_agent: Any,
+    value_net: torch.nn.Module,
+    gamma: float,
+    lam: float,
+    record_init: bool = False,
+    opponent_type: str = "unknown",
+) -> tuple[
+    dict[str, np.ndarray],
+    float,
+    tuple[np.ndarray, np.ndarray, np.ndarray] | None,
+    dict[str, float],
+    str,
+]:
+    """Run one episode with RL agent vs opponent and return batch data and total reward.
+
+    Returns
+    -------
+    batch : dict[str, np.ndarray]
+        Collected trajectories for PPO update.
+    total_reward : float
+        Episode reward summed over steps.
+    init_tuple : tuple[np.ndarray, np.ndarray, np.ndarray] | None
+        Initial observation, mask and action probabilities for logging.
+    sub_totals : dict[str, float]
+        Sum of sub reward values from :attr:`env._sub_reward_logs`.
+    opponent_type : str
+        Type of opponent used in this episode.
+    """
+
+    observations, info, masks = env.reset(return_masks=True)
+    obs0 = observations[env.agent_ids[0]]
+    obs1 = observations[env.agent_ids[1]]
+    mask0, mask1 = masks
+
+    init_tuple: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
+    if info.get("request_teampreview"):
+        order0 = rl_agent.choose_team(obs0)
+        order1 = opponent_agent.choose_team(obs1)
+        observations, *_ , masks = env.step(
+            {env.agent_ids[0]: order0, env.agent_ids[1]: order1}, return_masks=True
+        )
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+        mask0, mask1 = masks
+
+    if record_init:
+        init_obs = obs0.copy()
+        init_mask = mask0.copy()
+        init_probs = rl_agent.select_action(init_obs, init_mask)
+        init_tuple = (init_obs, init_mask, init_probs)
+
+    done = False
+    traj: List[dict] = []
+    sub_totals: dict[str, float] = {}
+
+    while not done:
+        # RL agent action
+        if hasattr(rl_agent, 'select_action'):
+            # For RL agents, use select_action which returns probabilities
+            probs0 = rl_agent.select_action(obs0, mask0)
+            rng = env.rng
+            act0 = int(rng.choice(len(probs0), p=probs0))
+            logp0 = float(np.log(probs0[act0] + 1e-8))
+        else:
+            # Fallback for other agent types
+            act0 = rl_agent.act(obs0, mask0)
+            logp0 = 0.0  # No gradient for non-RL agents
+        
+        # Opponent action
+        if env._need_action.get(env.agent_ids[1], True):
+            act1 = opponent_agent.act(obs1, mask1)
+        else:
+            act1 = 0
+
+        val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
+
+        actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
+        observations, rewards, terms, truncs, _, next_masks = env.step(
+            actions, return_masks=True
+        )
+        if hasattr(env, "_sub_reward_logs"):
+            logs = env._sub_reward_logs.get(env.agent_ids[0], {})
+            for name, val in logs.items():
+                sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
+        reward = float(rewards[env.agent_ids[0]])
+        done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+
+        traj.append(
+            {
+                "obs": obs0,
+                "action": act0,
+                "log_prob": logp0,
+                "value": val0,
+                "reward": reward,
+            }
+        )
+
+        obs0 = observations[env.agent_ids[0]]
+        obs1 = observations[env.agent_ids[1]]
+        mask0, mask1 = next_masks
+
+    rewards = [t["reward"] for t in traj]
+    values = [t["value"] for t in traj]
+    adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
+    returns = [a + v for a, v in zip(adv, values)]
+
+    batch = {
+        "observations": np.stack([t["obs"] for t in traj]),
+        "actions": np.array([t["action"] for t in traj], dtype=np.int64),
+        "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
+        "advantages": np.array(adv, dtype=np.float32),
+        "returns": np.array(returns, dtype=np.float32),
+        "values": np.array(values, dtype=np.float32),
+        "rewards": np.array(rewards, dtype=np.float32),
+    }
+
+    return batch, sum(rewards), init_tuple, sub_totals, opponent_type
 
 
 def run_episode(
@@ -201,6 +339,8 @@ def main(
     algo: str = "ppo",
     reward: str = "composite",
     reward_config: str | None = str(ROOT_DIR / "config" / "reward.yaml"),
+    opponent: str | None = None,
+    opponent_mix: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -210,6 +350,10 @@ def main(
         Number of environments to run simultaneously.
     reward_config : str | None
         YAML file path for composite reward settings.
+    opponent : str | None
+        Single opponent type for training.
+    opponent_mix : str | None
+        Mixed opponent types with ratios (e.g., "random:0.3,max:0.3,self:0.4").
     """
 
     cfg = load_config(config_path)
@@ -228,15 +372,26 @@ def main(
         reward_config = str(reward_config)
 
     writer = SummaryWriter() if tensorboard else None
-
-    envs = [
-        init_env(reward=reward, reward_config=reward_config)
-        for _ in range(max(1, parallel))
-    ]
+    
+    # Setup opponent pool if opponent_mix is specified
+    opponent_pool = None
+    if opponent_mix:
+        try:
+            opponent_mix_parsed = parse_opponent_mix(opponent_mix)
+            opponent_pool = OpponentPool(opponent_mix_parsed, np.random.default_rng())
+            logger.info("Using opponent mix: %s", opponent_mix_parsed)
+        except ValueError as e:
+            logger.error("Invalid opponent mix: %s", e)
+            raise
+    elif opponent:
+        logger.info("Using single opponent: %s", opponent)
+    else:
+        logger.info("Using self-play mode")
 
     ckpt_dir = Path(checkpoint_dir)
-
-    sample_env = envs[0]
+    
+    # Create sample environment for network setup
+    sample_env = init_env(reward=reward, reward_config=reward_config)
     policy_net = PolicyNetwork(
         sample_env.observation_space[sample_env.agent_ids[0]],
         sample_env.action_space[sample_env.agent_ids[0]],
@@ -256,41 +411,108 @@ def main(
     else:
         raise ValueError(f"Unknown algorithm: {algo_name}")
 
-    agents: list[tuple[RLAgent, RLAgent]] = []
-    for env in envs:
-        a0 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
-        a1 = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
-        env.register_agent(a1, env.agent_ids[1])
-        agents.append((a0, a1))
+    sample_env.close()
 
     init_obs: np.ndarray | None = None
     init_mask: np.ndarray | None = None
     init_probs: np.ndarray | None = None
+    
+    # For tracking opponent usage
+    opponent_stats = {}
 
     for ep in range(episodes):
         start_time = time.perf_counter()
-        with ThreadPoolExecutor(max_workers=len(envs)) as executor:
-            futures = [
-                executor.submit(
-                    run_episode,
-                    envs[i],
-                    agents[i][0],
-                    agents[i][1],
-                    value_net,
-                    gamma,
-                    lam,
-                    record_init=(ep == 0 and i == 0),
-                )
-                for i in range(len(envs))
-            ]
-            results = [f.result() for f in futures]
+        
+        # Prepare environments and agents for this episode
+        envs = []
+        agents = []
+        episode_opponents = []
+        
+        for i in range(max(1, parallel)):
+            # Create new environment for this episode
+            env = init_env(reward=reward, reward_config=reward_config)
+            
+            # Determine opponent type for this environment
+            if opponent_pool:
+                opp_type = opponent_pool.sample_opponent_type()
+            elif opponent:
+                opp_type = opponent
+            else:
+                opp_type = "self"
+            
+            episode_opponents.append(opp_type)
+            opponent_stats[opp_type] = opponent_stats.get(opp_type, 0) + 1
+            
+            # Create agents based on opponent type
+            rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+            
+            if opp_type == "self":
+                # Self-play: both agents are RL agents
+                opponent_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+                env.register_agent(opponent_agent, env.agent_ids[1])
+                envs.append(env)
+                agents.append((rl_agent, opponent_agent, opp_type))
+            else:
+                # Bot opponent
+                opponent_agent = create_opponent_agent(opp_type, env)
+                env.register_agent(opponent_agent, env.agent_ids[1])
+                envs.append(env)
+                agents.append((rl_agent, opponent_agent, opp_type))
 
-        batches = [res[0] for res in results]
-        reward_list = [res[1] for res in results]
-        sub_logs_list = [res[3] for res in results]
+        # Run episodes
+        if opponent_pool or opponent:
+            # Mixed or single opponent mode
+            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                futures = [
+                    executor.submit(
+                        run_episode_with_opponent,
+                        envs[i],
+                        agents[i][0],  # RL agent
+                        agents[i][1],  # opponent agent
+                        value_net,
+                        gamma,
+                        lam,
+                        record_init=(ep == 0 and i == 0),
+                        opponent_type=agents[i][2],
+                    )
+                    for i in range(len(envs))
+                ]
+                results = [f.result() for f in futures]
+                
+            batches = [res[0] for res in results]
+            reward_list = [res[1] for res in results]
+            sub_logs_list = [res[3] for res in results]
+            opponents_used = [res[4] for res in results]
+            
+        else:
+            # Self-play mode
+            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                futures = [
+                    executor.submit(
+                        run_episode,
+                        envs[i],
+                        agents[i][0],  # RL agent
+                        agents[i][1],  # RL agent (self-play)
+                        value_net,
+                        gamma,
+                        lam,
+                        record_init=(ep == 0 and i == 0),
+                    )
+                    for i in range(len(envs))
+                ]
+                results = [f.result() for f in futures]
+                
+            batches = [res[0] for res in results]
+            reward_list = [res[1] for res in results]
+            sub_logs_list = [res[3] for res in results]
+            opponents_used = ["self"] * len(envs)
 
         if ep == 0 and results[0][2] is not None:
             init_obs, init_mask, init_probs = results[0][2]
+
+        # Close environments
+        for env in envs:
+            env.close()
 
         combined = {}
         for key in batches[0].keys():
@@ -300,25 +522,32 @@ def main(
             else:  # fallback for test stubs
                 combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
+        # Use a temporary agent for updating
+        temp_env = init_env(reward=reward, reward_config=reward_config)
+        temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
+        
         if algo_name == "ppo":
             for i in range(ppo_epochs):
-                loss = agents[0][0].update(combined)
+                loss = temp_agent.update(combined)
                 logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
                 if writer:
                     writer.add_scalar("loss", loss, ep * ppo_epochs + i)
         else:
-            loss = agents[0][0].update(combined)
+            loss = temp_agent.update(combined)
             logger.info("Episode %d loss %.4f", ep + 1, loss)
             if writer:
                 writer.add_scalar("loss", loss, ep + 1)
+        
+        temp_env.close()
 
         total_reward = sum(reward_list)
         duration = time.perf_counter() - start_time
         logger.info(
-            "Episode %d reward %.2f time/episode: %.3f",
+            "Episode %d reward %.2f time/episode: %.3f opponents: %s",
             ep + 1,
             total_reward,
             duration,
+            ", ".join(opponents_used),
         )
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
@@ -345,15 +574,23 @@ def main(
             except OSError as exc:
                 logger.error("Failed to save checkpoint: %s", exc)
 
+    # Log opponent usage statistics
+    if opponent_stats:
+        logger.info("Opponent usage statistics:")
+        for opp_type, count in opponent_stats.items():
+            percentage = count / sum(opponent_stats.values()) * 100
+            logger.info("  %s: %d episodes (%.1f%%)", opp_type, count, percentage)
+
     if init_obs is not None and init_mask is not None and init_probs is not None:
-        updated_probs = agents[0][0].select_action(init_obs, init_mask)
+        # Create a temporary agent for probability comparison
+        temp_env = init_env(reward=reward, reward_config=reward_config)
+        temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
+        updated_probs = temp_agent.select_action(init_obs, init_mask)
         diff = updated_probs - init_probs
         logger.info("Initial probs: %s", np.array2string(init_probs, precision=3))
         logger.info("Updated probs: %s", np.array2string(updated_probs, precision=3))
         logger.info("Prob change: %s", np.array2string(diff, precision=3))
-
-    for env in envs:
-        env.close()
+        temp_env.close()
     if writer:
         writer.close()
     if save_path is not None:
@@ -433,6 +670,17 @@ if __name__ == "__main__":
         default=str(ROOT_DIR / "config" / "reward.yaml"),
         help="path to composite reward YAML file",
     )
+    parser.add_argument(
+        "--opponent",
+        type=str,
+        choices=["random", "max", "rule"],
+        help="single opponent type for training",
+    )
+    parser.add_argument(
+        "--opponent-mix",
+        type=str,
+        help="mixed opponent types with ratios (e.g., 'random:0.3,max:0.3,self:0.4')",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -456,4 +704,6 @@ if __name__ == "__main__":
         algo=args.algo,
         reward=args.reward,
         reward_config=args.reward_config,
+        opponent=args.opponent,
+        opponent_mix=args.opponent_mix,
     )

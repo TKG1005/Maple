@@ -1,0 +1,49 @@
+2025-07-04 12:34:34,135 INFO Run parameters: {'model': 'checkpoints/checkpoint_ep4500.pt', 'models': None, 'n': 1, 'replay_dir': 'replays', 'opponent': 'max'}
+2025-07-04 12:34:35,485 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,486 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,486 DEBUG RLAgent: chosen action = 0
+2025-07-04 12:34:35,614 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,614 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,614 DEBUG RLAgent: chosen action = 1
+2025-07-04 12:34:35,734 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,737 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:35,739 DEBUG RLAgent: chosen action = 2
+2025-07-04 12:34:36,414 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,414 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,414 DEBUG RLAgent: chosen action = 2
+2025-07-04 12:34:36,534 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,534 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,535 DEBUG RLAgent: chosen action = 2
+2025-07-04 12:34:36,668 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,669 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,669 DEBUG RLAgent: chosen action = 0
+2025-07-04 12:34:36,803 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,803 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,804 DEBUG RLAgent: chosen action = 2
+2025-07-04 12:34:36,934 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,934 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:36,935 DEBUG RLAgent: chosen action = 3
+2025-07-04 12:34:37,475 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-04 12:34:37,476 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-04 12:34:37,477 DEBUG RLAgent: chosen action = 9
+2025-07-04 12:34:37,617 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:37,617 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:37,618 DEBUG RLAgent: chosen action = 3
+2025-07-04 12:34:37,730 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:37,730 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:37,731 DEBUG RLAgent: chosen action = 0
+2025-07-04 12:34:38,392 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:38,392 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-04 12:34:38,393 DEBUG RLAgent: chosen action = 3
+2025-07-04 12:34:38,933 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-04 12:34:38,934 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-04 12:34:38,934 DEBUG RLAgent: chosen action = 8
+2025-07-04 12:34:39,063 DEBUG player_0: [1 1 1 1 1 1 1 1 0 0 0]
+2025-07-04 12:34:39,063 DEBUG player_0: [1 1 1 1 1 1 1 1 0 0 0]
+2025-07-04 12:34:39,064 DEBUG RLAgent: chosen action = 0
+2025-07-04 12:34:39,725 DEBUG player_0: [1 0 0 0 1 0 0 0 0 0 0]
+2025-07-04 12:34:39,725 DEBUG player_0: [1 0 0 0 1 0 0 0 0 0 0]
+2025-07-04 12:34:39,725 DEBUG RLAgent: chosen action = 0
+2025-07-04 12:34:39,734 INFO Battle 1 checkpoint_ep4500_reward=0.35 win=False MaxAgent_reward=1.99 win=True
+2025-07-04 12:34:39,736 INFO Evaluation finished after 1 battles
+2025-07-04 12:34:39,736 INFO RL Agent vs max - win_rate: 0.00 avg_reward: 0.35
