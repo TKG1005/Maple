@@ -41,6 +41,7 @@ from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 from src.agents.random_agent import RandomAgent  # noqa: E402
 from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
+from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -154,7 +155,9 @@ def run_episode_multi(
 def create_opponent_agent(opponent_type: str, env: PokemonEnv):
     """指定されたタイプの対戦相手エージェントを作成"""
     if opponent_type == "random":
-        return RandomAgent(env)
+        return RandomBot(env)
+    elif opponent_type == "max":
+        return MaxDamageBot(env)
     elif opponent_type == "rule":
         return RuleBasedPlayer(env)
     else:
@@ -295,9 +298,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--opponent",
-        choices=["random", "rule"],
+        choices=["random", "max", "rule"],
         default="random",
-        help="opponent type for single model evaluation (random or rule)",
+        help="opponent type for single model evaluation (random, max, or rule)",
     )
     args = parser.parse_args()
 

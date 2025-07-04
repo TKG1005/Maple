@@ -1,0 +1,36 @@
+2025-07-04 12:34:20,826 INFO Run parameters: {'log_level': 'INFO', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 1, 'save': None, 'tensorboard': False, 'ppo_epochs': None, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 1, 'algo': 'ppo', 'checkpoint_interval': 0, 'checkpoint_dir': 'checkpoints', 'reward': 'composite', 'reward_config': '/Users/takagikouichi/Documents/GitHub/Maple/config/reward.yaml', 'opponent': 'random', 'opponent_mix': None}
+2025-07-04 12:34:20,827 INFO Using single opponent: random
+2025-07-04 12:34:22,087 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,089 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,217 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,349 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,458 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,587 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,711 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:22,852 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:23,397 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-04 12:34:23,564 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-04 12:34:23,697 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-04 12:34:23,832 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-04 12:34:23,957 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-04 12:34:24,082 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-04 12:34:24,092 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-04 12:34:24,216 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-04 12:34:24,763 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-04 12:34:24,872 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-04 12:34:25,010 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-04 12:34:25,139 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-04 12:34:25,227 INFO Episode 1 epoch 1 loss 1.4543
+2025-07-04 12:34:25,228 INFO Episode 1 epoch 2 loss 1.5133
+2025-07-04 12:34:25,229 INFO Episode 1 epoch 3 loss 1.5160
+2025-07-04 12:34:25,230 INFO Episode 1 epoch 4 loss 1.5164
+2025-07-04 12:34:25,231 INFO Episode 1 reward 1.89 time/episode: 3.431 opponents: random
+2025-07-04 12:34:25,231 INFO Opponent usage statistics:
+2025-07-04 12:34:25,231 INFO   random: 1 episodes (100.0%)
+2025-07-04 12:34:25,282 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-04 12:34:25,282 INFO Initial probs: [5.846e-03 2.191e-01 3.289e-01 1.354e-03 2.514e-01 1.806e-06 1.366e-07
+ 5.402e-05 3.713e-06 1.934e-01 0.000e+00]
+2025-07-04 12:34:25,283 INFO Updated probs: [4.144e-06 7.855e-09 5.247e-13 1.078e-06 9.998e-01 1.299e-08 3.873e-11
+ 3.090e-08 1.053e-08 1.577e-04 0.000e+00]
+2025-07-04 12:34:25,283 INFO Prob change: [-5.842e-03 -2.191e-01 -3.289e-01 -1.353e-03  7.485e-01 -1.793e-06
+ -1.366e-07 -5.399e-05 -3.703e-06 -1.933e-01  0.000e+00]
