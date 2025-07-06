@@ -41,6 +41,14 @@ class DamageCalculator:
                 modifier *= 0.5
         return modifier
 
+    def _calculate_max_stat(self, base_stat, level, is_hp):
+        # Simplified stat calculation for max EVs (252) and neutral nature (1.0)
+        # IVs are assumed to be 31
+        if is_hp:
+            return int(((base_stat * 2 + 31 + 252/4) * level / 100) + level + 10)
+        else:
+            return int(((base_stat * 2 + 31 + 252/4) * level / 100) + 5)
+
     def calculate_damage_range(self, attacker, defender, move, field_state):
         
         attack_stat = attacker.get('attack')
