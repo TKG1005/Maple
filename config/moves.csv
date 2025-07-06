@@ -1,2 +1,5 @@
 name,type,category,power,accuracy,pp,effect_type,effect_prob
 10まんボルト,でんき,特殊,90,100,15,まひ,10
+
+たいあたり,ノーマル,物理,40,100,35,,
+ハイドロポンプ,みず,特殊,110,80,5,,
