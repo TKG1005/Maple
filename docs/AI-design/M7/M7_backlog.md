@@ -149,6 +149,7 @@ rewards:
 | B-1 | `RandomBot` 実装               | `bots/random_bot.py`       | Gymnasium `Env` 互換ステップ。vs self-play 比率切替 param 追加。 |
 | B-2 | `MaxDamageBot` 実装             | `bots/max_damage_bot.py`   | poke-env の同名ロジックを移植。5 戦評価で勝率差をログ。 |
 | B-3 | 学習相手スケジューラ            | `train/opponent_pool.py`   | `--opponent_mix random:0.3,max:0.3,self:0.4` 形式パース。 |
+| B-4 | 複数チームファイルのランダム使用  | `teams/team_loader.py`, `config/teams.yaml` | Pokemon Showdown形式チーム解析。ディレクトリ一括読み込み。学習・評価時のランダム選択機能。 |
 
 ---
 

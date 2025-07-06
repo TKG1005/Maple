@@ -11,3 +11,8 @@ rewards:
   fail_immune:
     weight: 1.0
     enabled: true
+  switch_penalty:
+    weight: 1.0
+    enabled: true
+    penalty: -1.0
+    threshold: 7
