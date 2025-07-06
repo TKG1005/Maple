@@ -35,6 +35,7 @@ class PokemonEnv(gym.Env):
         save_replays: bool | str = False,
         reward: str = "composite",
         reward_config_path: str | None = None,
+        player_names: tuple[str, str] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -65,6 +66,7 @@ class PokemonEnv(gym.Env):
         self._logger = logging.getLogger(__name__)
         self.reward_type = reward
         self.reward_config_path = reward_config_path
+        self.player_names = player_names
 
         self._composite_rewards: dict[str, CompositeReward] = {}
         self._sub_reward_logs: dict[str, dict[str, float]] = {}
@@ -260,6 +262,16 @@ class PokemonEnv(gym.Env):
             except OSError:  # pragma: no cover - デバッグ用
                 team = None
 
+            # プレイヤー名を設定（evaluate_rl.py用）
+            from poke_env.ps_client.account_configuration import AccountConfiguration
+            
+            if self.player_names:
+                # 18文字制限に合わせて名前を調整
+                player_0_name = self.player_names[0][:18]
+                account_config_0 = AccountConfiguration(player_0_name, None)
+            else:
+                account_config_0 = None
+
             self._env_players = {
                 "player_0": EnvPlayer(
                     self,
@@ -269,9 +281,17 @@ class PokemonEnv(gym.Env):
                     team=team,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
+                    account_configuration=account_config_0,
                 )
             }
             if self.opponent_player is None:
+                if self.player_names:
+                    # 18文字制限に合わせて名前を調整
+                    player_1_name = self.player_names[1][:18]
+                    account_config_1 = AccountConfiguration(player_1_name, None)
+                else:
+                    account_config_1 = None
+                    
                 self._env_players["player_1"] = EnvPlayer(
                     self,
                     "player_1",
@@ -280,6 +300,7 @@ class PokemonEnv(gym.Env):
                     team=team,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
+                    account_configuration=account_config_1,
                 )
             else:
                 self._env_players["player_1"] = self.opponent_player
