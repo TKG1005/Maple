@@ -11,6 +11,7 @@ from . import RewardBase, HPDeltaReward
 from .knockout import KnockoutReward
 from .turn_penalty import TurnPenaltyReward
 from .fail_and_immune import FailAndImmuneReward
+from .switch_penalty import SwitchPenaltyReward
 
 
 class CompositeReward(RewardBase):
@@ -21,6 +22,7 @@ class CompositeReward(RewardBase):
         "knockout": KnockoutReward,
         "turn_penalty": TurnPenaltyReward,
         "fail_immune": FailAndImmuneReward,
+        "switch_penalty": SwitchPenaltyReward,
     }
 
     def __init__(self, config_path: str, reward_map: Mapping[str, Callable[[], RewardBase]] | None = None) -> None:
@@ -53,7 +55,15 @@ class CompositeReward(RewardBase):
             factory = self.reward_map.get(name)
             if factory is None:
                 continue
-            self.rewards[name] = factory()
+            
+            # パラメータ付きでインスタンス化
+            if name == "switch_penalty":
+                penalty = float(params.get("penalty", -1.0))
+                threshold = int(params.get("threshold", 7))
+                self.rewards[name] = factory(penalty=penalty, threshold=threshold)
+            else:
+                self.rewards[name] = factory()
+            
             self.weights[name] = float(params.get("weight", 1.0))
             self.last_values[name] = 0.0
 
