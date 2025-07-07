@@ -68,7 +68,7 @@ from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -77,6 +77,8 @@ def init_env(reward: str = "composite", reward_config: str | None = None) -> Pok
         action_helper=action_helper,
         reward=reward,
         reward_config_path=reward_config,
+        team_mode=team_mode,
+        teams_dir=teams_dir,
     )
     return env
 
@@ -341,6 +343,8 @@ def main(
     reward_config: str | None = str(ROOT_DIR / "config" / "reward.yaml"),
     opponent: str | None = None,
     opponent_mix: str | None = None,
+    team: str = "default",
+    teams_dir: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -370,6 +374,16 @@ def main(
     reward_config = cfg.get("reward_config", reward_config)
     if reward_config is not None:
         reward_config = str(reward_config)
+    
+    # Team configuration
+    team_mode = team
+    if team == "random":
+        if teams_dir is None:
+            teams_dir = str(ROOT_DIR / "config" / "teams")
+        logger.info("Using random team mode with teams from: %s", teams_dir)
+    else:
+        team_mode = "default"
+        logger.info("Using default team mode")
 
     writer = SummaryWriter() if tensorboard else None
     
@@ -391,7 +405,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config)
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
     policy_net = PolicyNetwork(
         sample_env.observation_space[sample_env.agent_ids[0]],
         sample_env.action_space[sample_env.agent_ids[0]],
@@ -430,7 +444,7 @@ def main(
         
         for i in range(max(1, parallel)):
             # Create new environment for this episode
-            env = init_env(reward=reward, reward_config=reward_config)
+            env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
             
             # Determine opponent type for this environment
             if opponent_pool:
@@ -523,7 +537,7 @@ def main(
                 combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
         # Use a temporary agent for updating
-        temp_env = init_env(reward=reward, reward_config=reward_config)
+        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         
         if algo_name == "ppo":
@@ -583,7 +597,7 @@ def main(
 
     if init_obs is not None and init_mask is not None and init_probs is not None:
         # Create a temporary agent for probability comparison
-        temp_env = init_env(reward=reward, reward_config=reward_config)
+        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         updated_probs = temp_agent.select_action(init_obs, init_mask)
         diff = updated_probs - init_probs
@@ -681,6 +695,18 @@ if __name__ == "__main__":
         type=str,
         help="mixed opponent types with ratios (e.g., 'random:0.3,max:0.3,self:0.4')",
     )
+    parser.add_argument(
+        "--team",
+        type=str,
+        choices=["default", "random"],
+        default="default",
+        help="team selection mode (default or random)",
+    )
+    parser.add_argument(
+        "--teams-dir",
+        type=str,
+        help="directory containing team files for random team mode",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -706,4 +732,6 @@ if __name__ == "__main__":
         reward_config=args.reward_config,
         opponent=args.opponent,
         opponent_mix=args.opponent_mix,
+        team=args.team,
+        teams_dir=args.teams_dir,
     )

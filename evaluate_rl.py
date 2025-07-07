@@ -46,8 +46,23 @@ import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
 
-def init_env(*, save_replays: bool | str = False, single: bool = True, player_names: tuple[str, str] | None = None):
+def init_env(*, save_replays: bool | str = False, single: bool = True, player_names: tuple[str, str] | None = None, team_mode: str = "default", teams_dir: str | None = None):
     """Create ``PokemonEnv`` for evaluation."""
+    import time
+    import random
+
+    # プレイヤー名に一意性を確保するためのタイムスタンプとランダム数を追加
+    if player_names:
+        timestamp = str(int(time.time() * 1000))[-6:]  # 最後の6桁のタイムスタンプ
+        random_num = random.randint(10, 99)  # 2桁のランダム数
+        unique_suffix = f"{timestamp}{random_num}"
+        
+        unique_names = (
+            f"{player_names[0][:10]}_{unique_suffix}"[:18],  # 18文字制限
+            f"{player_names[1][:10]}_{unique_suffix}"[:18]   # 18文字制限
+        )
+    else:
+        unique_names = None
 
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -55,43 +70,15 @@ def init_env(*, save_replays: bool | str = False, single: bool = True, player_na
         state_observer=observer,
         action_helper=action_helper,
         save_replays=save_replays,
-        player_names=player_names,
+        player_names=unique_names,
+        team_mode=team_mode,
+        teams_dir=teams_dir,
     )
     if single:
         return SingleAgentCompatibilityWrapper(env)
     return env
 
 
-def set_player_names(env, player_names: tuple[str, str]):
-    """Set custom player names for environment players."""
-    from poke_env.ps_client.account_configuration import AccountConfiguration
-    import uuid
-    
-    # 元のreset関数を保存
-    if not hasattr(env, '_original_reset'):
-        env._original_reset = env.reset
-    
-    def custom_reset(*args, **kwargs):
-        # 元のresetを実行
-        result = env._original_reset(*args, **kwargs)
-        
-        # reset後にプレイヤー名を設定（evaluate_rl.py用の識別しやすい名前）
-        if hasattr(env, '_env_players'):
-            if 'player_0' in env._env_players:
-                # 一意性を保つため短いUUIDを追加
-                unique_suffix = str(uuid.uuid4())[:6]
-                eval_name = f"{player_names[0]}_{unique_suffix}"
-                env._env_players['player_0'].account_configuration = AccountConfiguration(eval_name, None)
-            if 'player_1' in env._env_players:
-                # 一意性を保つため短いUUIDを追加
-                unique_suffix = str(uuid.uuid4())[:6]
-                eval_name = f"{player_names[1]}_{unique_suffix}"
-                env._env_players['player_1'].account_configuration = AccountConfiguration(eval_name, None)
-        
-        return result
-    
-    # reset関数を置き換え
-    env.reset = custom_reset
 
 
 def run_episode(agent: RLAgent) -> tuple[bool, float]:
@@ -169,7 +156,7 @@ def create_opponent_agent(opponent_type: str, env: PokemonEnv):
 
 
 def evaluate_single(
-    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random"
+    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random", team: str = "default", teams_dir: str | None = None
 ) -> None:
     # Multi-agent環境でRL学習済みエージェント vs 指定した対戦相手
     model_name = Path(model_path).stem
@@ -182,30 +169,43 @@ def evaluate_single(
     }
     opponent_name = opponent_names.get(opponent, f"{opponent.capitalize()}Agent")
     
-    env = init_env(save_replays=replay_dir, single=False, player_names=(model_name, opponent_name))
-    
-    # RL学習済みエージェントの作成 (player_0)
-    policy_net = PolicyNetwork(
-        env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
-    )
-    value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
-    state_dict = torch.load(model_path, map_location="cpu")
-    if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
-        policy_net.load_state_dict(state_dict["policy"])
-        value_net.load_state_dict(state_dict["value"])
+    # Team configuration
+    team_mode = team
+    if team == "random":
+        if teams_dir is None:
+            teams_dir = str(ROOT_DIR / "config" / "teams")
+        logger.info("Using random team mode with teams from: %s", teams_dir)
     else:
-        policy_net.load_state_dict(state_dict)
-    params = list(policy_net.parameters()) + list(value_net.parameters())
-    optimizer = optim.Adam(params, lr=1e-3)
-    rl_agent = RLAgent(env, policy_net, value_net, optimizer)
-
-    # 対戦相手エージェントの作成 (player_1)
-    opponent_agent = create_opponent_agent(opponent, env)
-    env.register_agent(opponent_agent, env.agent_ids[1])
+        team_mode = "default"
+        logger.info("Using default team mode")
+    
+    # モデルの準備
+    state_dict = torch.load(model_path, map_location="cpu")
 
     wins = 0
     total_reward = 0.0
     for i in range(n):
+        # 各バトルごとに新しい環境を作成（ユニークな名前で）
+        env = init_env(save_replays=replay_dir, single=False, player_names=(model_name, opponent_name), team_mode=team_mode, teams_dir=teams_dir)
+        
+        # RL学習済みエージェントの作成 (player_0)
+        policy_net = PolicyNetwork(
+            env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+        )
+        value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
+        if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
+            policy_net.load_state_dict(state_dict["policy"])
+            value_net.load_state_dict(state_dict["value"])
+        else:
+            policy_net.load_state_dict(state_dict)
+        params = list(policy_net.parameters()) + list(value_net.parameters())
+        optimizer = optim.Adam(params, lr=1e-3)
+        rl_agent = RLAgent(env, policy_net, value_net, optimizer)
+
+        # 対戦相手エージェントの作成 (player_1)
+        opponent_agent = create_opponent_agent(opponent, env)
+        env.register_agent(opponent_agent, env.agent_ids[1])
+        
         win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent)
         wins += int(win0)
         total_reward += reward0
@@ -213,8 +213,9 @@ def evaluate_single(
             "Battle %d %s_reward=%.2f win=%s %s_reward=%.2f win=%s", 
             i + 1, model_name, reward0, win0, opponent_name, reward1, win1
         )
-
-    env.close()
+        
+        # バトル終了後に環境をクリーンアップ
+        env.close()
     logger.info("Evaluation finished after %d battles", n)
 
     win_rate = wins / n if n else 0.0
@@ -223,49 +224,63 @@ def evaluate_single(
 
 
 def compare_models(
-    model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays"
+    model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays", team: str = "default", teams_dir: str | None = None
 ) -> None:
     """Evaluate two models against each other and report win rates."""
 
     model_a_name = Path(model_a).stem
     model_b_name = Path(model_b).stem
-    env = init_env(save_replays=replay_dir, single=False, player_names=(model_a_name, model_b_name))
-
-    # Create player_1 agent first so that registration order is correct
-    policy1 = PolicyNetwork(
-        env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]]
-    )
-    value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
-    state_dict1 = torch.load(model_b, map_location="cpu")
-    if isinstance(state_dict1, dict) and "policy" in state_dict1 and "value" in state_dict1:
-        policy1.load_state_dict(state_dict1["policy"])
-        value1.load_state_dict(state_dict1["value"])
+    
+    # Team configuration
+    team_mode = team
+    if team == "random":
+        if teams_dir is None:
+            teams_dir = str(ROOT_DIR / "config" / "teams")
+        logger.info("Using random team mode with teams from: %s", teams_dir)
     else:
-        policy1.load_state_dict(state_dict1)
-    params1 = list(policy1.parameters()) + list(value1.parameters())
-    opt1 = optim.Adam(params1, lr=1e-3)
-    agent1 = RLAgent(env, policy1, value1, opt1)
-    env.register_agent(agent1, env.agent_ids[1])
-
-    policy0 = PolicyNetwork(
-        env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
-    )
-    value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
+        team_mode = "default"
+        logger.info("Using default team mode")
+    
+    # モデルの準備
     state_dict0 = torch.load(model_a, map_location="cpu")
-    if isinstance(state_dict0, dict) and "policy" in state_dict0 and "value" in state_dict0:
-        policy0.load_state_dict(state_dict0["policy"])
-        value0.load_state_dict(state_dict0["value"])
-    else:
-        policy0.load_state_dict(state_dict0)
-    params0 = list(policy0.parameters()) + list(value0.parameters())
-    opt0 = optim.Adam(params0, lr=1e-3)
-    agent0 = RLAgent(env, policy0, value0, opt0)
+    state_dict1 = torch.load(model_b, map_location="cpu")
 
     wins0 = 0
     wins1 = 0
     total0 = 0.0
     total1 = 0.0
     for i in range(n):
+        # 各バトルごとに新しい環境を作成（ユニークな名前で）
+        env = init_env(save_replays=replay_dir, single=False, player_names=(model_a_name, model_b_name), team_mode=team_mode, teams_dir=teams_dir)
+
+        # Create player_1 agent first so that registration order is correct
+        policy1 = PolicyNetwork(
+            env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]]
+        )
+        value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
+        if isinstance(state_dict1, dict) and "policy" in state_dict1 and "value" in state_dict1:
+            policy1.load_state_dict(state_dict1["policy"])
+            value1.load_state_dict(state_dict1["value"])
+        else:
+            policy1.load_state_dict(state_dict1)
+        params1 = list(policy1.parameters()) + list(value1.parameters())
+        opt1 = optim.Adam(params1, lr=1e-3)
+        agent1 = RLAgent(env, policy1, value1, opt1)
+        env.register_agent(agent1, env.agent_ids[1])
+
+        policy0 = PolicyNetwork(
+            env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+        )
+        value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
+        if isinstance(state_dict0, dict) and "policy" in state_dict0 and "value" in state_dict0:
+            policy0.load_state_dict(state_dict0["policy"])
+            value0.load_state_dict(state_dict0["value"])
+        else:
+            policy0.load_state_dict(state_dict0)
+        params0 = list(policy0.parameters()) + list(value0.parameters())
+        opt0 = optim.Adam(params0, lr=1e-3)
+        agent0 = RLAgent(env, policy0, value0, opt0)
+
         win0, win1, reward0, reward1 = run_episode_multi(agent0, agent1)
         wins0 += int(win0)
         wins1 += int(win1)
@@ -281,8 +296,9 @@ def compare_models(
             reward1,
             win1,
         )
-
-    env.close()
+        
+        # バトル終了後に環境をクリーンアップ
+        env.close()
     win_rate0 = wins0 / n if n else 0.0
     win_rate1 = wins1 / n if n else 0.0
     avg0 = total0 / n if n else 0.0
@@ -314,13 +330,25 @@ if __name__ == "__main__":
         default="random",
         help="opponent type for single model evaluation (random, max, or rule)",
     )
+    parser.add_argument(
+        "--team",
+        type=str,
+        choices=["default", "random"],
+        default="default",
+        help="team selection mode (default or random)",
+    )
+    parser.add_argument(
+        "--teams-dir",
+        type=str,
+        help="directory containing team files for random team mode",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
 
     if args.models:
-        compare_models(args.models[0], args.models[1], args.n, args.replay_dir)
+        compare_models(args.models[0], args.models[1], args.n, args.replay_dir, args.team, args.teams_dir)
     elif args.model:
-        evaluate_single(args.model, args.n, args.replay_dir, args.opponent)
+        evaluate_single(args.model, args.n, args.replay_dir, args.opponent, args.team, args.teams_dir)
     else:
         parser.error("--model or --models is required")

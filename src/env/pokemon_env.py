@@ -36,6 +36,8 @@ class PokemonEnv(gym.Env):
         reward: str = "composite",
         reward_config_path: str | None = None,
         player_names: tuple[str, str] | None = None,
+        team_mode: str = "default",
+        teams_dir: str | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -67,6 +69,17 @@ class PokemonEnv(gym.Env):
         self.reward_type = reward
         self.reward_config_path = reward_config_path
         self.player_names = player_names
+        self.team_mode = team_mode
+        self.teams_dir = teams_dir
+        
+        # Initialize team loader for random team mode
+        self._team_loader = None
+        if self.team_mode == "random" and self.teams_dir:
+            from src.teams import TeamLoader
+            self._team_loader = TeamLoader(self.teams_dir)
+            if self._team_loader.get_team_count() == 0:
+                self._logger.warning("No teams loaded, falling back to default team")
+                self.team_mode = "default"
 
         self._composite_rewards: dict[str, CompositeReward] = {}
         self._sub_reward_logs: dict[str, dict[str, float]] = {}
@@ -135,6 +148,36 @@ class PokemonEnv(gym.Env):
 
         # HPDeltaReward をプレイヤーごとに保持
         self._hp_delta_rewards: dict[str, HPDeltaReward] = {}
+        
+    def _get_team_for_battle(self) -> str | None:
+        """Get team content for the current battle.
+        
+        Returns
+        -------
+        str | None
+            Team content in Pokemon Showdown format, or None if no team available
+        """
+        if self.team_mode == "random" and self._team_loader:
+            # Get random team from loader
+            team = self._team_loader.get_random_team()
+            if team:
+                # Extract first Pokemon name for logging
+                first_line = team.split('\n')[0].strip()
+                pokemon_name = first_line.split('@')[0].strip() if '@' in first_line else first_line
+                self._logger.info("Selected random team starting with: %s", pokemon_name)
+                return team
+            else:
+                self._logger.warning("No teams available from loader, falling back to default")
+        
+        # Default team loading
+        team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
+        try:
+            team = team_path.read_text(encoding="utf-8")
+            self._logger.debug("Using default team from %s", team_path)
+            return team
+        except OSError:  # pragma: no cover - デバッグ用
+            self._logger.warning("Default team file not found: %s", team_path)
+            return None
 
     # ------------------------------------------------------------------
     # Agent interaction utilities
@@ -254,13 +297,36 @@ class PokemonEnv(gym.Env):
                 "poke_env package is required to run PokemonEnv"
             ) from exc
 
-        # 対戦用のプレイヤーは初回のみ生成し、2 回目以降はリセットする。
-        if not hasattr(self, "_env_players"):
-            team_path = Path(__file__).resolve().parents[2] / "config" / "my_team.txt"
-            try:
-                team = team_path.read_text()
-            except OSError:  # pragma: no cover - デバッグ用
-                team = None
+        # 対戦用のプレイヤーの処理
+        # ランダムチームモードの場合は毎回新しいチームを選択するため、プレイヤーを再作成
+        should_recreate_players = (
+            self.team_mode == "random" and 
+            hasattr(self, "_env_players") and 
+            self._team_loader is not None
+        )
+        
+        if not hasattr(self, "_env_players") or should_recreate_players:
+            # 既存プレイヤーがある場合はクリーンアップ
+            if hasattr(self, "_env_players"):
+                for p in self._env_players.values():
+                    if hasattr(p, "close"):
+                        try:
+                            p.close()
+                        except Exception:
+                            pass  # Ignore cleanup errors
+            
+            # 各プレイヤー用にランダムなチームを選択
+            self._logger.info("Selecting team for player_0...")
+            team_player_0 = self._get_team_for_battle()
+            self._logger.info("Selecting team for player_1...")
+            team_player_1 = self._get_team_for_battle()
+            
+            if team_player_0 is None:
+                self._logger.warning("No team loaded for player_0, using None (may cause errors)")
+                team_player_0 = None
+            if team_player_1 is None:
+                self._logger.warning("No team loaded for player_1, using None (may cause errors)")
+                team_player_1 = None
 
             # プレイヤー名を設定（evaluate_rl.py用）
             from poke_env.ps_client.account_configuration import AccountConfiguration
@@ -278,7 +344,7 @@ class PokemonEnv(gym.Env):
                     "player_0",
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
-                    team=team,
+                    team=team_player_0,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
                     account_configuration=account_config_0,
@@ -297,7 +363,7 @@ class PokemonEnv(gym.Env):
                     "player_1",
                     battle_format="gen9bssregi",
                     server_configuration=LocalhostServerConfiguration,
-                    team=team,
+                    team=team_player_1,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
                     account_configuration=account_config_1,
@@ -305,7 +371,7 @@ class PokemonEnv(gym.Env):
             else:
                 self._env_players["player_1"] = self.opponent_player
         else:
-            # 既存プレイヤーのバトル履歴をクリア
+            # 既存プレイヤーのバトル履歴をクリア（ランダムチーム以外）
             for p in self._env_players.values():
                 if hasattr(p, "reset_battles"):
                     p.reset_battles()
