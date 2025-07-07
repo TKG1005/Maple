@@ -1,6 +1,15 @@
 /Users/takagikouichi/Documents/GitHub/Maple
 ├── checkpoints
 │   ├── checkpoint_ep1000.pt
+│   ├── checkpoint_ep10000.pt
+│   ├── checkpoint_ep10500.pt
+│   ├── checkpoint_ep11000.pt
+│   ├── checkpoint_ep11500.pt
+│   ├── checkpoint_ep12000.pt
+│   ├── checkpoint_ep12500.pt
+│   ├── checkpoint_ep13000.pt
+│   ├── checkpoint_ep13500.pt
+│   ├── checkpoint_ep14000.pt
 │   ├── checkpoint_ep1500.pt
 │   ├── checkpoint_ep2000.pt
 │   ├── checkpoint_ep2500.pt
@@ -9,7 +18,16 @@
 │   ├── checkpoint_ep4000.pt
 │   ├── checkpoint_ep4500.pt
 │   ├── checkpoint_ep500.pt
-│   └── checkpoint_ep5000.pt
+│   ├── checkpoint_ep5000.pt
+│   ├── checkpoint_ep5500.pt
+│   ├── checkpoint_ep6000.pt
+│   ├── checkpoint_ep6500.pt
+│   ├── checkpoint_ep7000.pt
+│   ├── checkpoint_ep7500.pt
+│   ├── checkpoint_ep8000.pt
+│   ├── checkpoint_ep8500.pt
+│   ├── checkpoint_ep9000.pt
+│   └── checkpoint_ep9500.pt
 ├── CLAUDE.md
 ├── compare.png
 ├── config
@@ -18,13 +36,20 @@
 │   ├── env_config.yml
 │   ├── generate_yaml.py
 │   ├── moves_english_japanese.csv
+│   ├── moves.csv
 │   ├── my_team_for_debug.txt
 │   ├── my_team.txt
 │   ├── pokemon_all_moves.csv
+│   ├── pokemon_stats.csv
 │   ├── reward.yaml
 │   ├── state_feature_catalog_temp - シート1.csv
 │   ├── state_spec.yml
-│   └── train_config.yml
+│   ├── teams
+│   │   ├── balanced_team.txt
+│   │   ├── team1.txt
+│   │   └── team2.txt
+│   ├── train_config.yml
+│   └── type_chart.csv
 ├── copy_of_poke-env
 │   └── poke_env
 │       ├── __init__.py
@@ -52,29 +77,23 @@
 │   │   ├── M6_ setup.md
 │   │   ├── M7
 │   │   └── PokemonEnv_Specification.md
+│   ├── damage_calculation_module_requirements.md
+│   ├── damage_calculator_design.md
 │   ├── Maple_AI_Development_Strategy.md
 │   ├── TODO_M7.md
 │   └── train_usage.md
 ├── evaluate_rl.py
 ├── logs
-│   ├── eval_20250704_083247.log
-│   ├── eval_20250704_083831.log
-│   ├── eval_20250704_083934.log
-│   ├── eval_20250704_084122.log
-│   ├── eval_20250704_084203.log
-│   ├── eval_20250704_084228.log
-│   ├── eval_20250704_084302.log
-│   ├── eval_20250704_084345.log
-│   ├── eval_20250704_090616.log
+│   ├── eval_20250707_085705.log
+│   ├── eval_20250707_090958.log
 │   ├── run1.json
-│   ├── train_20250704_084816.log
-│   ├── train_20250704_084831.log
-│   ├── train_20250704_085322.log
-│   ├── train_20250704_090458.log
-│   └── train_20250704_090535.log
+│   ├── train_20250707_102004.log
+│   ├── train_20250707_103000.log
+│   └── train_20250707_155602.log
 ├── maple_structure.md
 ├── maple_structure.txt
 ├── model_debug.pt
+├── model_debug.py
 ├── model_ppo.pt
 ├── model_reinforce.pt
 ├── model.pt
@@ -702,7 +721,6 @@
 │   │   ├── lib
 │   │   ├── main.js
 │   │   ├── random-battles
-│   │   ├── replays
 │   │   ├── server
 │   │   ├── sim
 │   │   ├── TESTS.md
@@ -732,6 +750,12 @@
 ├── pytest.ini
 ├── README.md
 ├── replays
+│   ├── checkpoint_9775261 - battle-gen9bssregi-262831.html
+│   ├── checkpoint_9814917 - battle-gen9bssregi-262832.html
+│   ├── checkpoint_9846776 - battle-gen9bssregi-262833.html
+│   ├── RuleBasedP_9775261 - battle-gen9bssregi-262831.html
+│   ├── RuleBasedP_9814917 - battle-gen9bssregi-262832.html
+│   └── RuleBasedP_9846776 - battle-gen9bssregi-262833.html
 ├── requirements.txt
 ├── runs
 │   └── Jul01_22-47-20_DESKTOP-TDAQCBO
@@ -765,6 +789,15 @@
 │   │   ├── gae.py
 │   │   ├── ppo.py
 │   │   └── reinforce.py
+│   ├── bots
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   ├── max_damage_bot.py
+│   │   └── random_bot.py
+│   ├── damage
+│   │   ├── __init__.py
+│   │   ├── calculator.py
+│   │   └── data_loader.py
 │   ├── env
 │   │   ├── __init__.py
 │   │   ├── __pycache__
@@ -778,6 +811,8 @@
 │   │   ├── fail_and_immune.py
 │   │   ├── hp_delta.py
 │   │   ├── knockout.py
+│   │   ├── pokemon_count.py
+│   │   ├── switch_penalty.py
 │   │   └── turn_penalty.py
 │   ├── state
 │   │   ├── __pycache__
@@ -785,29 +820,34 @@
 │   │   ├── state_feature_catalog_temp - シート1.csv
 │   │   ├── state_observer.py
 │   │   └── type_matchup_extractor.py
+│   ├── teams
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   └── team_loader.py
+│   ├── train
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   └── opponent_pool.py
 │   └── util
 ├── test
-│   ├── __pycache__
-│   │   ├── run_battle.cpython-312.pyc
-│   │   ├── test_env.cpython-312-pytest-8.4.0.pyc
-│   │   ├── test_pokemon_env_showdown.cpython-312-pytest-8.4.0.pyc
-│   │   ├── test_pokemon_env_step2_4.cpython-312-pytest-8.4.0.pyc
-│   │   ├── test_pokemon_env_step5.cpython-312-pytest-8.4.0.pyc
-│   │   └── test_run_battle.cpython-312-pytest-8.4.0.pyc
+│   ├── __init__.py
+│   ├── damage
+│   │   ├── __init__.py
+│   │   └── test_calculator.py
 │   ├── run_battle.py
 │   └── simple_agent.py
+├── test_checkpoints
+│   ├── checkpoint_ep14001.pt
+│   └── checkpoint_ep14002.pt
+├── test_resume.pt
 ├── tests
 │   ├── __pycache__
 │   │   ├── test_composite_reward.cpython-312-pytest-8.4.0.pyc
-│   │   └── test_fail_and_immune_reward.cpython-312-pytest-8.4.0.pyc
-│   ├── test_composite_reward.py
-│   ├── test_env_composite_reward.py
-│   ├── test_fail_and_immune_reward.py
-│   ├── test_hp_delta_reward.py
-│   ├── test_reward_import.py
-│   ├── test_turn_penalty_reward.py
-│   └── test_type_matchup_extractor.py
+│   │   ├── test_fail_and_immune_reward.cpython-312-pytest-8.4.0.pyc
+│   │   └── test_pokemon_count_reward.cpython-312-pytest-8.4.0.pyc
+│   ├── test_damage_calculator.py
+│   └── test_pokemon_count_reward.py
 ├── train_rl.py
 └── train_selfplay.py
 
-564 directories, 247 files
+572 directories, 279 files
