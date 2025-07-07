@@ -1,0 +1,61 @@
+Corviknight @ Rocky Helmet  
+Ability: Mirror Armor  
+Tera Type: Fighting  
+EVs: 252 HP / 252 Atk  
+Impish Nature  
+- Body Press  
+- Iron Head  
+- Roost  
+- Defog  
+
+Dragapult @ Life Orb  
+Ability: Infiltrator  
+Tera Type: Ghost  
+EVs: 252 Atk / 252 Spe  
+Adamant Nature  
+- Dragon Darts  
+- Phantom Force  
+- Sucker Punch  
+- Will-O-Wisp  
+
+Garchomp @ Loaded Dice  
+Ability: Rough Skin  
+Tera Type: Fire  
+EVs: 252 Atk / 252 Spe  
+Jolly Nature  
+- Earthquake  
+- Scale Shot  
+- Fire Fang  
+- Swords Dance  
+
+Rotom-Wash @ Choice Specs  
+Ability: Levitate  
+Tera Type: Water  
+EVs: 252 HP / 252 SpA  
+Modest Nature  
+IVs: 0 Atk  
+- Hydro Pump  
+- Thunderbolt  
+- Volt Switch  
+- Trick  
+
+Gholdengo @ Air Balloon  
+Ability: Good as Gold  
+Tera Type: Fighting  
+EVs: 252 SpA / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Shadow Ball  
+- Make It Rain  
+- Focus Blast  
+- Thunder Wave  
+
+Annihilape @ Choice Band  
+Ability: Defiant  
+Tera Type: Fighting  
+EVs: 252 HP / 252 Atk  
+Adamant Nature  
+- Rage Fist  
+- Drain Punch  
+- Ice Punch  
+- U-turn
