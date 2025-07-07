@@ -21,3 +21,9 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   開発コマンド、アーキテクチャ概要をドキュメント化
 - 2025-07-02 `FailAndImmuneReward` を実装し、無効行動（失敗・無効技）時の
   ペナルティ機能を追加。`config/reward.yaml` の `fail_immune` で有効化可能
+- 2025-07-07 `train_selfplay.py` に `--load-model` オプションを追加し、チェックポイントから
+  学習を再開可能に。ファイル名から自動的にエピソード番号を抽出
+- 2025-07-07 `train_selfplay.py` と `evaluate_rl.py` に `--team random` オプションを追加し、
+  ランダムチーム機能を実装。各プレイヤーが独立してランダムチームを選択
+- 2025-07-07 `evaluate_rl.py` でNameTakenErrorを修正し、一意なプレイヤー名生成により
+  Pokemon Showdownサーバーとの接続問題を解決

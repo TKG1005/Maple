@@ -39,6 +39,19 @@ python train_selfplay.py --reward composite --reward-config config/reward.yaml
 
 # Training with TensorBoard logging
 python train_selfplay.py --tensorboard
+
+# Resume training from a checkpoint
+python train_selfplay.py --load-model checkpoints/checkpoint_ep14000.pt --episodes 100
+
+# Training with random teams
+python train_selfplay.py --team random --teams-dir config/teams --episodes 50
+
+# Training against specific opponents
+python train_selfplay.py --opponent rule --episodes 100
+python train_selfplay.py --opponent-mix "random:0.3,max:0.3,self:0.4" --episodes 100
+
+# Advanced training with multiple options
+python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --team random --opponent-mix "rule:0.5,self:0.5" --episodes 100 --checkpoint-interval 10
 ```
 
 ### Testing
@@ -53,8 +66,17 @@ pytest -m slow  # Long-running tests
 
 ### Evaluation
 ```bash
-# Evaluate trained model
-python evaluate_rl.py
+# Basic model evaluation against random opponent
+python evaluate_rl.py --model checkpoints/checkpoint_ep14000.pt --opponent random --n 10
+
+# Evaluate with random teams for varied battles
+python evaluate_rl.py --model checkpoints/checkpoint_ep14000.pt --opponent rule --team random --n 5
+
+# Head-to-head model comparison
+python evaluate_rl.py --models checkpoints/model_a.pt checkpoints/model_b.pt --n 10
+
+# Evaluation with replay saving and custom team directory
+python evaluate_rl.py --model checkpoints/checkpoint_ep14000.pt --opponent max --team random --teams-dir config/teams --replay-dir my_replays --n 3
 
 # Plot training results comparison
 python plot_compare.py
@@ -123,6 +145,35 @@ The `FailAndImmuneReward` class provides penalties for invalid actions:
 - Default penalty: -0.02 (configurable via constructor)
 - Stateless design - no internal state to reset
 - Enabled via `config/reward.yaml` with `fail_immune.enabled: true`
+
+### Training Resume Functionality (train_selfplay.py)
+The `--load-model` option enables resuming training from checkpoints:
+- Supports both new format (`{"policy": ..., "value": ...}`) and legacy format (single state dict)
+- Automatically extracts episode number from filenames like `checkpoint_ep14000.pt`
+- Continues episode numbering from the extracted number
+- Example: `python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100`
+
+### Random Team System
+The `--team random` option enables varied training and evaluation:
+- Each player independently selects a random team from `config/teams/` directory
+- Teams are selected per battle, ensuring variety across episodes
+- Custom team directory can be specified with `--teams-dir`
+- Supports both training (`train_selfplay.py`) and evaluation (`evaluate_rl.py`)
+- Team files must be in Pokemon Showdown format
+
+### Enhanced Player Naming (evaluate_rl.py)
+Player names are automatically made unique to prevent NameTaken errors:
+- Uses timestamp and random numbers to ensure uniqueness
+- Names are truncated to 18 characters (Pokemon Showdown limit)
+- Model names and agent types are preserved for replay identification
+- Format: `ModelName_UniqueID` (e.g., `checkpoint_3418161`, `RuleBasedP_3418161`)
+
+### Opponent Mixing System
+The `--opponent-mix` option allows training against multiple opponent types:
+- Format: `"type1:ratio1,type2:ratio2,type3:ratio3"`
+- Example: `"random:0.3,max:0.3,self:0.4"` (30% random, 30% max damage, 40% self-play)
+- Supports `random`, `max`, `rule`, and `self` opponent types
+- Randomly selects opponent type based on specified ratios for each episode
 
 ## Project-Specific Rules
 
