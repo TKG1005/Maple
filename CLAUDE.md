@@ -14,7 +14,7 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 - **MapleAgent**: Base agent class for battle decision making
 - **EnvPlayer**: Bridge between poke-env's Player class and PokemonEnv
 - **StateObserver**: Converts battle state into numerical feature vectors for ML models
-- **Reward System**: Modular reward components (HP delta, knockouts, turn penalties, fail/immune actions)
+- **Reward System**: Modular reward components (knockouts, turn penalties, fail/immune actions, Pokemon count difference)
 - **Algorithms**: PPO and REINFORCE implementations with GAE for policy gradient methods
 
 ### Key Architecture Patterns
@@ -107,10 +107,10 @@ StateObserver creates feature vectors from battle state including:
 
 ### Reward Engineering
 Multiple reward components can be combined:
-- `HPDeltaReward`: Rewards based on HP changes
 - `KnockoutReward`: Rewards for fainting opposing Pokemon
 - `TurnPenaltyReward`: Penalizes long battles
 - `FailAndImmuneReward`: Penalizes failed and immune moves (default penalty: -0.02)
+- `PokemonCountReward`: End-game rewards based on remaining Pokemon difference (1 diff: 0 pts, 2 diff: ±2 pts, 3+ diff: ±5 pts)
 
 ## Testing Strategy
 
