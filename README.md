@@ -14,7 +14,7 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
 - 2025-06-29 `SingleAgentCompatibilityWrapper` の `reset()` と `step()` が `return_masks` を受け取り
   `PokemonEnv` の行動マスクと連携するよう更新
 - 2025-07-01 PPO 対応手順をまとめた `docs/M7_setup.md` を追加し、`train_selfplay.py` の `--algo` オプションでアルゴリズムを切り替え可能に
-- 2025-07-05 `HPDeltaReward` を追加し、`--reward hp_delta` オプションで使用可能に
+- 2025-07-05 `HPDeltaReward` を追加し、`--reward hp_delta` オプションで使用可能に（後にPokemonCountRewardに置き換え）
 - 2025-07-06 `train_selfplay.py` の報酬を `CompositeReward` ベースに変更し、
   `config/train_config.yml` の設定で他の報酬へ切り替え可能に
 - 2025-07-02 `CLAUDE.md` ファイルを新規作成し、Claude Code用のコードベース解説と
@@ -27,3 +27,5 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   ランダムチーム機能を実装。各プレイヤーが独立してランダムチームを選択
 - 2025-07-07 `evaluate_rl.py` でNameTakenErrorを修正し、一意なプレイヤー名生成により
   Pokemon Showdownサーバーとの接続問題を解決
+- 2025-07-07 `PokemonCountReward` を実装し、対戦終了時の残数差による報酬システムを追加。
+  `HPDeltaReward` による総HP報酬システムを削除し、よりシンプルな終了時スコアリングに変更

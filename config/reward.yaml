@@ -1,7 +1,4 @@
 rewards:
-  hp_delta:
-    weight: 1.0
-    enabled: true
   knockout:
     weight: 1.0
     enabled: true
@@ -16,3 +13,6 @@ rewards:
     enabled: true
     penalty: -1.0
     threshold: 7
+  pokemon_count:
+    weight: 1.0
+    enabled: true

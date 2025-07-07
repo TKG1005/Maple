@@ -7,22 +7,23 @@ try:  # PyYAML may not be installed in minimal environments
 except Exception:  # pragma: no cover - fallback when PyYAML is missing
     yaml = None
 
-from . import RewardBase, HPDeltaReward
+from . import RewardBase
 from .knockout import KnockoutReward
 from .turn_penalty import TurnPenaltyReward
 from .fail_and_immune import FailAndImmuneReward
 from .switch_penalty import SwitchPenaltyReward
+from .pokemon_count import PokemonCountReward
 
 
 class CompositeReward(RewardBase):
     """複数のサブ報酬を合成するクラス。"""
 
     DEFAULT_REWARDS: Mapping[str, Callable[[], RewardBase]] = {
-        "hp_delta": HPDeltaReward,
         "knockout": KnockoutReward,
         "turn_penalty": TurnPenaltyReward,
         "fail_immune": FailAndImmuneReward,
         "switch_penalty": SwitchPenaltyReward,
+        "pokemon_count": PokemonCountReward,
     }
 
     def __init__(self, config_path: str, reward_map: Mapping[str, Callable[[], RewardBase]] | None = None) -> None:
