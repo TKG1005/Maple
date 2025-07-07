@@ -345,6 +345,7 @@ def main(
     opponent_mix: str | None = None,
     team: str = "default",
     teams_dir: str | None = None,
+    load_model: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -426,6 +427,32 @@ def main(
         raise ValueError(f"Unknown algorithm: {algo_name}")
 
     sample_env.close()
+    
+    # Load model if specified
+    start_episode = 0
+    if load_model:
+        try:
+            checkpoint = torch.load(load_model, map_location="cpu")
+            if isinstance(checkpoint, dict) and "policy" in checkpoint and "value" in checkpoint:
+                policy_net.load_state_dict(checkpoint["policy"])
+                value_net.load_state_dict(checkpoint["value"])
+                logger.info("Loaded model from %s", load_model)
+                
+                # Try to extract episode number from filename for resume tracking
+                model_path = Path(load_model)
+                if "checkpoint_ep" in model_path.stem:
+                    try:
+                        start_episode = int(model_path.stem.split("checkpoint_ep")[1])
+                        logger.info("Resuming from episode %d", start_episode)
+                    except (ValueError, IndexError):
+                        logger.warning("Could not extract episode number from filename")
+            else:
+                # Legacy format - single state dict
+                policy_net.load_state_dict(checkpoint)
+                logger.info("Loaded legacy model format from %s", load_model)
+        except Exception as e:
+            logger.error("Failed to load model from %s: %s", load_model, e)
+            raise
 
     init_obs: np.ndarray | None = None
     init_mask: np.ndarray | None = None
@@ -434,7 +461,7 @@ def main(
     # For tracking opponent usage
     opponent_stats = {}
 
-    for ep in range(episodes):
+    for ep in range(start_episode, start_episode + episodes):
         start_time = time.perf_counter()
         
         # Prepare environments and agents for this episode
@@ -707,6 +734,11 @@ if __name__ == "__main__":
         type=str,
         help="directory containing team files for random team mode",
     )
+    parser.add_argument(
+        "--load-model",
+        type=str,
+        help="path to model file (.pt) to resume training from",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -734,4 +766,5 @@ if __name__ == "__main__":
         opponent_mix=args.opponent_mix,
         team=args.team,
         teams_dir=args.teams_dir,
+        load_model=args.load_model,
     )
