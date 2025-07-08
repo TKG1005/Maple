@@ -1,0 +1,1591 @@
+my_active:
+  active_level:
+    dtype: int
+    battle_path: battle.active_pokemon.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_HP:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_atk:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_def:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spa:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spd:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_base_stats_spe:
+    dtype: int
+    battle_path: battle.active_pokemon.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  active_boosts_akt:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['atk']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_def:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['def']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_spa:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['spa']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_spd:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['spd']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_spe:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['spe']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_acc:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['acc']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_boosts_eve:
+    dtype: int
+    battle_path: battle.active_pokemon.boosts['eve']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  active_current_hp_frac:
+    dtype: float
+    battle_path: active.current_hp_fraction
+    encoder: identity
+    default: '0'
+  active_is_fainted:
+    dtype: bool
+    battle_path: battle.active_pokemon.fainted
+    encoder: identity
+    default: '0'
+  active_move1_type:
+    dtype: pkemontype
+    battle_path: active_sorted_moves[0].type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_move1_base_power:
+    dtype: int
+    battle_path: active_sorted_moves[0].base_power
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  active_move1_acc:
+    dtype: float
+    battle_path: active_sorted_moves[0].accuracy
+    encoder: identity
+    default: '0'
+  active_move1_class:
+    dtype: movecategory
+    battle_path: active_sorted_moves[0].category.name.lower()
+    encoder: onehot
+    default: '[0,0,0]'
+    classes:
+    - physical
+    - special
+    - status
+  active_move1_max_pp:
+    dtype: int
+    battle_path: active_sorted_moves[0].max_pp
+    encoder: identity
+    default: '0'
+  active_move1_pp_frac:
+    dtype: float
+    battle_path: active_sorted_moves[0].current_pp / active_sorted_moves[0].max_pp
+      if active_sorted_moves[0] and active_sorted_moves[0].max_pp > 0 else 0
+    encoder: identity
+    default: '0'
+  active_move1_pp_is_one:
+    dtype: bool
+    battle_path: active_sorted_moves[0].current_pp == 1 if active_sorted_moves[0]
+      else False
+    encoder: identity
+    default: '0'
+  active_move2_type:
+    dtype: pkemontype
+    battle_path: active_sorted_moves[1].type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_move2_base_power:
+    dtype: int
+    battle_path: active_sorted_moves[1].base_power
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  active_move2_acc:
+    dtype: float
+    battle_path: active_sorted_moves[1].accuracy
+    encoder: identity
+    default: '0'
+  active_move2_class:
+    dtype: movecategory
+    battle_path: active_sorted_moves[1].category.name.lower()
+    encoder: onehot
+    default: '[0,0,0]'
+    classes:
+    - physical
+    - special
+    - status
+  active_move2_max_pp:
+    dtype: int
+    battle_path: active_sorted_moves[1].max_pp
+    encoder: identity
+    default: '0'
+  active_move2_pp_frac:
+    dtype: float
+    battle_path: active_sorted_moves[1].current_pp / active_sorted_moves[1].max_pp
+      if active_sorted_moves[1] and active_sorted_moves[1].max_pp > 0 else 0
+    encoder: identity
+    default: '0'
+  active_move2_pp_is_one:
+    dtype: bool
+    battle_path: active_sorted_moves[1].current_pp == 1 if active_sorted_moves[1]
+      else False
+    encoder: identity
+    default: '0'
+  active_move3_type:
+    dtype: pkemontype
+    battle_path: active_sorted_moves[2].type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_move3_base_power:
+    dtype: int
+    battle_path: active_sorted_moves[2].base_power
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  active_move3_acc:
+    dtype: float
+    battle_path: active_sorted_moves[2].accuracy
+    encoder: identity
+    default: '0'
+  active_move3_class:
+    dtype: movecategory
+    battle_path: active_sorted_moves[2].category.name.lower()
+    encoder: onehot
+    default: '[0,0,0]'
+    classes:
+    - physical
+    - special
+    - status
+  active_move3_max_pp:
+    dtype: int
+    battle_path: active_sorted_moves[2].max_pp
+    encoder: identity
+    default: '0'
+  active_move3_pp_frac:
+    dtype: float
+    battle_path: active_sorted_moves[2].current_pp / active_sorted_moves[2].max_pp
+      if active_sorted_moves[2] and active_sorted_moves[2].max_pp > 0 else 0
+    encoder: identity
+    default: '0'
+  active_move3_pp_is_one:
+    dtype: bool
+    battle_path: active_sorted_moves[2].current_pp == 1 if active_sorted_moves[2]
+      else False
+    encoder: identity
+    default: '0'
+  active_move4_type:
+    dtype: pkemontype
+    battle_path: active_sorted_moves[3].type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_move4_base_power:
+    dtype: int
+    battle_path: active_sorted_moves[3].base_power
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  active_move4_acc:
+    dtype: float
+    battle_path: active_sorted_moves[3].accuracy
+    encoder: identity
+    default: '0'
+  active_move4_class:
+    dtype: movecategory
+    battle_path: active_sorted_moves[3].category.name.lower()
+    encoder: onehot
+    default: '[0,0,0]'
+    classes:
+    - physical
+    - special
+    - status
+  active_move4_max_pp:
+    dtype: int
+    battle_path: active_sorted_moves[3].max_pp
+    encoder: identity
+    default: '0'
+  active_move4_pp_frac:
+    dtype: float
+    battle_path: active_sorted_moves[3].current_pp / active_sorted_moves[3].max_pp
+      if active_sorted_moves[3] and active_sorted_moves[3].max_pp > 0 else 0
+    encoder: identity
+    default: '0'
+  active_move4_pp_is_one:
+    dtype: bool
+    battle_path: active_sorted_moves[3].current_pp == 1 if active_sorted_moves[3]
+      else False
+    encoder: identity
+    default: '0'
+  active_status:
+    dtype: optional
+    battle_path: battle.active_pokemon.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+  active_teratype:
+    dtype: pokemontype(enum)
+    battle_path: battle.active_pokemon.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: battle.active_pokemon.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  active_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: battle.active_pokemon.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+opp_active:
+  opp_active_lebel:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_akt:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['atk']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_def:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['def']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_spa:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['spa']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_spd:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['spd']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_spe:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['spe']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_acc:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['acc']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_boosts_eve:
+    dtype: int
+    battle_path: battle.opponent_active_pokemon.boosts['eve']
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -6
+    - 6
+    scale_to:
+    - 0
+    - 1
+  opp_active_current_hp_frac:
+    dtype: float
+    battle_path: battle.opponent_active_pokemon.current_hp_fraction
+    encoder: identity
+    default: '0'
+  opp_active_is_fainted:
+    dtype: bool
+    battle_path: battle.opponent_active_pokemon.fainted
+    encoder: identity
+    default: '0'
+  opp_active_is_terastallized:
+    dtype: bool
+    battle_path: battle.opponent_active_pokemon.is_terastallized
+    encoder: identity
+    default: '0'
+  opp_active_status:
+    dtype: optional
+    battle_path: battle.opponent_active_pokemon.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+  opp_active_teratype:
+    dtype: pokemontype(enum)
+    battle_path: battle.opponent_active_pokemon.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_active_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: battle.opponent_active_pokemon.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_active_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: battle.opponent_active_pokemon.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_bench1_status:
+    dtype: optional
+    battle_path: opp_bench1.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+my_bench1:
+  my_bench1_level:
+    dtype: int
+    battle_path: bench1.level
+    encoder: onehot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_HP:
+    dtype: int
+    battle_path: bench1.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_atk:
+    dtype: int
+    battle_path: bench1.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_def:
+    dtype: int
+    battle_path: bench1.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spa:
+    dtype: int
+    battle_path: bench1.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spd:
+    dtype: int
+    battle_path: bench1.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_base_stats_spe:
+    dtype: int
+    battle_path: bench1.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench1_current_hp_frac:
+    dtype: float
+    battle_path: bench1.current_hp_frac
+    encoder: identity
+    default: '0'
+  my_bench1_is_fainted:
+    dtype: bool
+    battle_path: bench1.fainted
+    encoder: nan
+    default: '0'
+  my_bench1_is_terastallized:
+    dtype: bool
+    battle_path: bench1.is_terastallized
+    encoder: identity
+    default: '0'
+  my_bench1_is_revealed:
+    dtype: bool
+    battle_path: bench1.revealed
+    encoder: nan
+    default: '0'
+  my_bench1_status:
+    dtype: optional
+    battle_path: bench1.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+  my_bench1_teratype:
+    dtype: pokemontype(enum)
+    battle_path: bench1.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: bench1.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: bench1.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+my_bench2:
+  my_bench2_level:
+    dtype: int
+    battle_path: bench2.level
+    encoder: one-hot
+    default: '50'
+    range:
+    - 0
+    - 100
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_HP:
+    dtype: int
+    battle_path: bench2.stats["hp"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 362
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_atk:
+    dtype: int
+    battle_path: bench2.stats["atk"]
+    encoder: onehot
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_def:
+    dtype: int
+    battle_path: bench2.stats["def"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spa:
+    dtype: int
+    battle_path: bench2.stats["spa"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spd:
+    dtype: int
+    battle_path: bench2.stats["spd"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_base_stats_spe:
+    dtype: int
+    battle_path: bench2.stats["spe"]
+    encoder: identity
+    default: '0'
+    range:
+    - 0
+    - 337
+    scale_to:
+    - 0
+    - 1
+  my_bench2_current_hp_frac:
+    dtype: float
+    battle_path: bench2.current_hp_frac
+    encoder: nan
+    default: '0'
+  my_bench2_is_fainted:
+    dtype: bool
+    battle_path: bench2.fainted
+    encoder: nan
+    default: '0'
+  my_bench2_is_terastallized:
+    dtype: bool
+    battle_path: bench2.is_terastallized
+    encoder: identity
+    default: '0'
+  my_bench2_is_revealed:
+    dtype: bool
+    battle_path: bench2.revealed
+    encoder: nan
+    default: '0'
+  my_bench2_status:
+    dtype: optional
+    battle_path: bench2.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+  my_bench2_teratype:
+    dtype: pokemontype(enum)
+    battle_path: bench2.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: bench2.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: bench2.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+opp_bench1:
+  opp_bench1_current_hp_frac:
+    dtype: float
+    battle_path: opp_bench1.current_hp_fraction
+    encoder: identity
+    default: '0'
+  opp_bench1_is_fainted:
+    dtype: bool
+    battle_path: opp_bench1.fainted
+    encoder: nan
+    default: '0'
+  opp_bench1_is_terastallized:
+    dtype: bool
+    battle_path: opp_bench1.is_terastallized
+    encoder: identity
+    default: '0'
+  opp_bench1_is_revealed:
+    dtype: bool
+    battle_path: opp_bench2.revealed
+    encoder: nan
+    default: '0'
+  opp_bench1_teratype:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench1.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_bench1_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench1.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_bench1_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench1.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+opp_bench2:
+  opp_bench2_current_hp_frac:
+    dtype: float
+    battle_path: opp_bench2.current_hp_fraction
+    encoder: identity
+    default: '0'
+  opp_bench2_is_fainted:
+    dtype: bool
+    battle_path: opp_bench2.fainted
+    encoder: nan
+    default: '0'
+  opp_bench2_is_terastallized:
+    dtype: bool
+    battle_path: opp_bench2.is_terastallized
+    encoder: identity
+    default: '0'
+  opp_bench2_is_revealed:
+    dtype: bool
+    battle_path: opp_bench2.revealed
+    encoder: nan
+    default: '0'
+  opp_bench2_status:
+    dtype: optional
+    battle_path: opp_bench2.status
+    encoder: onehot
+    default: '[1.0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - brn
+    - fnt
+    - frz
+    - par
+    - psn
+    - slp
+    - tox
+  opp_bench2_teratype:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench2.tera_type.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_bench2_primary_type:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench2.type_1.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  opp_bench2_secondary_type:
+    dtype: pokemontype(enum)
+    battle_path: opp_bench2.type_2.name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+field:
+  weather:
+    dtype: weather
+    battle_path: AbstractBattle.weather[0].name.lower()
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - desolateland
+    - deltastream
+    - hail
+    - primordilsea
+    - raindance
+    - sandstorm
+    - snow
+    - sunnyday
+    - unknown
+  weather_turn:
+    dtype: int
+    battle_path: AbstractBattle.weather[1]
+    encoder: identity
+    default: '0'
+meta:
+  turn_count:
+    dtype: int
+    battle_path: battle.turn
+    encoder: identity
+    default: '0'
+  my_remaining_pokemon:
+    dtype: int
+    battle_path: my_alive_count
+    encoder: identity
+    default: '3'
+  opp_remaining_pokemon:
+    dtype: int
+    battle_path: opp_alive_count
+    encoder: identity
+    default: '3'
+
+type_matchup:
+  move1_vs_opp_active:
+    dtype: float
+    battle_path: type_matchup_vec[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move1_vs_opp_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move1_vs_opp_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[2]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move2_vs_opp_active:
+    dtype: float
+    battle_path: type_matchup_vec[3]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move2_vs_opp_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[4]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move2_vs_opp_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[5]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move3_vs_opp_active:
+    dtype: float
+    battle_path: type_matchup_vec[6]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move3_vs_opp_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[7]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move3_vs_opp_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[8]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move4_vs_opp_active:
+    dtype: float
+    battle_path: type_matchup_vec[9]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move4_vs_opp_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[10]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  move4_vs_opp_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[11]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab1_vs_my_active:
+    dtype: float
+    battle_path: type_matchup_vec[12]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab1_vs_my_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[13]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab1_vs_my_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[14]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab2_vs_my_active:
+    dtype: float
+    battle_path: type_matchup_vec[15]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab2_vs_my_bench1:
+    dtype: float
+    battle_path: type_matchup_vec[16]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
+  opp_stab2_vs_my_bench2:
+    dtype: float
+    battle_path: type_matchup_vec[17]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - -4
+    - 2
+    scale_to:
+    - 0
+    - 1
