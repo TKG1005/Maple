@@ -583,6 +583,14 @@ def main(
 
         total_reward = sum(reward_list)
         duration = time.perf_counter() - start_time
+        
+        # Calculate sub-reward totals
+        sub_totals = {}
+        for logs in sub_logs_list:
+            for name, val in logs.items():
+                sub_totals[name] = sub_totals.get(name, 0.0) + val
+        
+        # Log total reward and sub-reward breakdown
         logger.info(
             "Episode %d reward %.2f time/episode: %.3f opponents: %s",
             ep + 1,
@@ -590,13 +598,15 @@ def main(
             duration,
             ", ".join(opponents_used),
         )
+        
+        # Log detailed reward breakdown if sub-rewards exist
+        if sub_totals:
+            breakdown_parts = [f"{name}: {val:.3f}" for name, val in sorted(sub_totals.items())]
+            logger.info("Episode %d reward breakdown: %s", ep + 1, ", ".join(breakdown_parts))
+        
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
-            sub_totals = {}
-            for logs in sub_logs_list:
-                for name, val in logs.items():
-                    sub_totals[name] = sub_totals.get(name, 0.0) + val
             for name, val in sub_totals.items():
                 writer.add_scalar(f"sub_reward/{name}", val, ep + 1)
 
