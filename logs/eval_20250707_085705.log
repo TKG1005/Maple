@@ -1,0 +1,52 @@
+2025-07-07 08:57:05,238 INFO Run parameters: {'model': 'model_debug.pt', 'models': None, 'n': 1, 'replay_dir': 'replays', 'opponent': 'random'}
+2025-07-07 08:57:10,594 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,595 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,615 DEBUG RLAgent: chosen action = 3
+2025-07-07 08:57:10,734 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,734 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,735 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:10,847 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,847 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:10,848 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:11,481 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,481 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,482 DEBUG RLAgent: chosen action = 8
+2025-07-07 08:57:11,595 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,595 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,596 DEBUG RLAgent: chosen action = 3
+2025-07-07 08:57:11,709 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,710 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,711 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:11,823 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,823 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-07 08:57:11,824 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:12,345 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-07 08:57:12,345 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-07 08:57:12,346 DEBUG RLAgent: chosen action = 8
+2025-07-07 08:57:12,457 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,458 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,459 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:12,572 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,573 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,573 DEBUG RLAgent: chosen action = 3
+2025-07-07 08:57:12,686 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,686 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,687 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:12,798 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,799 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:12,800 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:13,433 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,433 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,434 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:13,546 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,546 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,547 DEBUG RLAgent: chosen action = 2
+2025-07-07 08:57:13,659 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,659 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:13,660 DEBUG RLAgent: chosen action = 3
+2025-07-07 08:57:14,294 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:14,294 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-07 08:57:14,295 DEBUG RLAgent: chosen action = 3
+2025-07-07 08:57:14,308 INFO Battle 1 model_debug_reward=2.47 win=True RandomBot_reward=-0.61 win=False
+2025-07-07 08:57:14,311 INFO Evaluation finished after 1 battles
+2025-07-07 08:57:14,311 INFO RL Agent vs random - win_rate: 1.00 avg_reward: 2.47

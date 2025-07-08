@@ -705,7 +705,7 @@
         ]
     },
     "weezing": {
-        "level": 81,
+        "level": 82,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -1438,7 +1438,7 @@
         ]
     },
     "umbreon": {
-        "level": 87,
+        "level": 86,
         "sets": [
             {
                 "role": "Staller",
@@ -1866,7 +1866,7 @@
         ]
     },
     "stantler": {
-        "level": 82,
+        "level": 83,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -1923,7 +1923,7 @@
         ]
     },
     "raikou": {
-        "level": 74,
+        "level": 73,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -2405,11 +2405,6 @@
             {
                 "role": "Berry Sweeper",
                 "movepool": ["bulkup", "reversal", "shadowball", "substitute"],
-                "abilities": ["Pure Power"]
-            },
-            {
-                "role": "Wallbreaker",
-                "movepool": ["brickbreak", "doubleedge", "rockslide", "shadowball"],
                 "abilities": ["Pure Power"]
             }
         ]
@@ -2951,7 +2946,7 @@
         ]
     },
     "metagross": {
-        "level": 72,
+        "level": 73,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -2983,7 +2978,7 @@
         ]
     },
     "regice": {
-        "level": 78,
+        "level": 79,
         "sets": [
             {
                 "role": "Bulky Attacker",

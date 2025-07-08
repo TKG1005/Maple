@@ -369,7 +369,6 @@ export const Scripts: ModdedBattleScriptsData = {
 		case 'start': {
 			for (const side of this.sides) {
 				if (side.pokemonLeft) side.pokemonLeft = side.pokemon.length;
-				this.add('teamsize', side.id, side.pokemon.length);
 			}
 
 			this.add('start');
@@ -410,11 +409,11 @@ export const Scripts: ModdedBattleScriptsData = {
 				}
 			}
 
-			this.format.onBattleStart?.call(this);
+			if (this.format.onBattleStart) this.format.onBattleStart.call(this);
 			for (const rule of this.ruleTable.keys()) {
 				if ('+*-!'.includes(rule.charAt(0))) continue;
 				const subFormat = this.dex.formats.get(rule);
-				subFormat.onBattleStart?.call(this);
+				if (subFormat.onBattleStart) subFormat.onBattleStart.call(this);
 			}
 
 			for (const side of this.sides) {
@@ -718,7 +717,7 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			if (move.spreadHit) {
 				// multi-target modifier (doubles only)
-				const spreadModifier = this.battle.gameType === 'freeforall' ? 0.5 : 0.75;
+				const spreadModifier = move.spreadModifier || (this.battle.gameType === 'freeforall' ? 0.5 : 0.75);
 				this.battle.debug(`Spread modifier: ${spreadModifier}`);
 				baseDamage = this.battle.modify(baseDamage, spreadModifier);
 			} else if (move.multihitType === 'parentalbond' && move.hit > 1) {
@@ -1391,7 +1390,11 @@ export const Scripts: ModdedBattleScriptsData = {
 				return false;
 			}
 
-			if (!(move.hasSheerForce && pokemon.hasAbility('sheerforce')) && !move.flags['futuremove']) {
+			if (
+				!move.negateSecondary &&
+				!(move.hasSheerForce && pokemon.hasAbility('sheerforce')) &&
+				!move.flags['futuremove']
+			) {
 				const originalHp = pokemon.hp;
 				this.battle.singleEvent('AfterMoveSecondarySelf', move, null, pokemon, target, move);
 				this.battle.runEvent('AfterMoveSecondarySelf', pokemon, target, move);
@@ -1579,7 +1582,7 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			this.afterMoveSecondaryEvent(targetsCopy.filter(val => !!val), pokemon, move);
 
-			if (!(move.hasSheerForce && pokemon.hasAbility('sheerforce'))) {
+			if (!move.negateSecondary && !(move.hasSheerForce && pokemon.hasAbility('sheerforce'))) {
 				for (const [i, d] of damage.entries()) {
 					// There are no multihit spread moves, so it's safe to use move.totalDamage for multihit moves
 					// The previous check was for `move.multihit`, but that fails for Dragon Darts

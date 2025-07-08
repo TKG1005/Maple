@@ -151,7 +151,7 @@ export const Nominations = new class {
 		Utils.sortBy(this.noms, nom => -nom.date);
 		this.save();
 		this.notifyStaff();
-		Rooms.get('staff')?.addByUser(user, `${user.name} submitted a perma nomination for ${primaryID}`).update();
+		Rooms.get('staff')?.addByUser(user, `${user.name} submitted a perma nomination for ${primaryID}`);
 	}
 	find(id: string) {
 		return this.noms.find(f => f.primaryID === id);

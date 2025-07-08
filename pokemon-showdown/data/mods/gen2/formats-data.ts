@@ -162,7 +162,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "PU",
 	},
 	diglett: {
-		tier: "LC",
+		tier: "ZU",
 	},
 	dugtrio: {
 		tier: "NU",
@@ -252,7 +252,7 @@ export const FormatsData: import('../../../sim/dex-species').ModdedSpeciesFormat
 		tier: "NU",
 	},
 	slowpoke: {
-		tier: "LC",
+		tier: "ZU",
 	},
 	slowbro: {
 		tier: "UU",

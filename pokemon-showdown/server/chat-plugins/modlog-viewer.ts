@@ -234,18 +234,13 @@ export const commands: Chat.ChatCommands = {
 		const possibleParam = cmd.slice(2);
 		const targets = target.split(',').map(f => f.trim()).filter(Boolean);
 		const search: ModlogSearch = { note: [], user: [], ip: [], action: [], actionTaker: [] };
-		let searchCmd = target.replace(/^\s?([^,=]*)(,\s?|$)/, '').replace(/,?\s*(room|lines)\s*=[^,]*,?/g, '');
 
 		switch (possibleParam) {
 		case 'id':
-			const id = targets.shift();
-			searchCmd = `user='${id}'${searchCmd.length ? `, ${searchCmd}` : ``}`;
-			targets.unshift(`user='${id}'`);
+			targets.unshift(`user='${targets.shift()}'`);
 			break;
 		case 'ip':
-			const ip = targets.shift();
-			searchCmd = `ip=${ip}${searchCmd.length ? `, ${searchCmd}` : ``}`;
-			targets.unshift(`ip=${ip}`);
+			targets.unshift(`ip=${targets.shift()}`);
 			break;
 		}
 
@@ -322,7 +317,7 @@ export const commands: Chat.ChatCommands = {
 			connection,
 			roomid,
 			search,
-			searchCmd,
+			target.replace(/^\s?([^,=]*),\s?/, '').replace(/,?\s*(room|lines)\s*=[^,]*,?/g, ''),
 			lines,
 			onlyPunishments,
 			cmd === 'timedmodlog',
@@ -361,7 +356,7 @@ export const commands: Chat.ChatCommands = {
 		if (!target) return this.parse(`/help modlogstats`);
 		return this.parse(`/join view-modlogstats-${target}`);
 	},
-	modlogstatshelp: [`/modlogstats [userid] - Fetch all information on that [userid] from the modlog (IPs, alts, etc). Requires: % @ ~`],
+	modlogstatshelp: [`/modlogstats [userid] - Fetch all information on that [userid] from the modlog (IPs, alts, etc). Requires: @ ~`],
 };
 
 export const pages: Chat.PageTable = {

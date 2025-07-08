@@ -293,8 +293,10 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			if (move.ohko) this.battle.add('-ohko');
 
-			this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
-			this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			if (!move.negateSecondary) {
+				this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
+				this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			}
 
 			if (move.recoil && move.totalDamage) {
 				this.battle.damage(this.calcRecoilDamage(move.totalDamage, move, pokemon), pokemon, target, 'recoil');

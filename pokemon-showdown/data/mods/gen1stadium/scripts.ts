@@ -231,8 +231,10 @@ export const Scripts: ModdedBattleScriptsData = {
 				return true;
 			}
 
-			this.battle.singleEvent('AfterMoveSecondarySelf', move, null, pokemon, target, move);
-			this.battle.runEvent('AfterMoveSecondarySelf', pokemon, target, move);
+			if (!move.negateSecondary) {
+				this.battle.singleEvent('AfterMoveSecondarySelf', move, null, pokemon, target, move);
+				this.battle.runEvent('AfterMoveSecondarySelf', pokemon, target, move);
+			}
 			return true;
 		},
 		tryMoveHit(target, pokemon, move) {
@@ -366,8 +368,10 @@ export const Scripts: ModdedBattleScriptsData = {
 
 			if (move.ohko) this.battle.add('-ohko');
 
-			this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
-			this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			if (!move.negateSecondary) {
+				this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
+				this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			}
 
 			return damage;
 		},

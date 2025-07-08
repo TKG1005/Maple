@@ -664,7 +664,7 @@
         ]
     },
     "kangaskhan": {
-        "level": 85,
+        "level": 86,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -862,7 +862,7 @@
         ]
     },
     "kabutops": {
-        "level": 85,
+        "level": 86,
         "sets": [
             {
                 "role": "Spinner",
@@ -1014,7 +1014,7 @@
         ]
     },
     "typhlosion": {
-        "level": 83,
+        "level": 82,
         "sets": [
             {
                 "role": "Fast Attacker",
@@ -1024,7 +1024,7 @@
         ]
     },
     "feraligatr": {
-        "level": 83,
+        "level": 84,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -1264,7 +1264,7 @@
         ]
     },
     "slowking": {
-        "level": 83,
+        "level": 84,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -1314,12 +1314,7 @@
         "sets": [
             {
                 "role": "Bulky Support",
-                "movepool": ["earthquake", "rapidspin", "spikes", "stealthrock", "toxic"],
-                "abilities": ["Sturdy"]
-            },
-            {
-                "role": "Bulky Support",
-                "movepool": ["earthquake", "rapidspin", "stealthrock", "toxicspikes", "voltswitch"],
+                "movepool": ["earthquake", "rapidspin", "spikes", "stealthrock", "toxic", "voltswitch"],
                 "abilities": ["Sturdy"]
             }
         ]
@@ -1350,7 +1345,7 @@
         ]
     },
     "steelix": {
-        "level": 83,
+        "level": 84,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -1752,7 +1747,7 @@
         ]
     },
     "blaziken": {
-        "level": 75,
+        "level": 76,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -1803,7 +1798,7 @@
         ]
     },
     "beautifly": {
-        "level": 100,
+        "level": 99,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -2064,7 +2059,7 @@
         ]
     },
     "manectric": {
-        "level": 83,
+        "level": 82,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -2182,7 +2177,7 @@
         ]
     },
     "grumpig": {
-        "level": 92,
+        "level": 91,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -2322,7 +2317,7 @@
         ]
     },
     "crawdaunt": {
-        "level": 86,
+        "level": 85,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -2490,7 +2485,7 @@
         ]
     },
     "huntail": {
-        "level": 84,
+        "level": 85,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -2646,7 +2641,7 @@
         ]
     },
     "kyogre": {
-        "level": 69,
+        "level": 68,
         "sets": [
             {
                 "role": "Fast Attacker",
@@ -2661,7 +2656,7 @@
         ]
     },
     "groudon": {
-        "level": 73,
+        "level": 74,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -3111,7 +3106,7 @@
         ]
     },
     "chatot": {
-        "level": 95,
+        "level": 94,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -3198,7 +3193,7 @@
         ]
     },
     "toxicroak": {
-        "level": 84,
+        "level": 85,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -3299,7 +3294,7 @@
         ]
     },
     "tangrowth": {
-        "level": 87,
+        "level": 86,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -4286,7 +4281,7 @@
         ]
     },
     "basculin": {
-        "level": 85,
+        "level": 86,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -4423,7 +4418,7 @@
         ]
     },
     "zoroark": {
-        "level": 82,
+        "level": 81,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -4566,7 +4561,7 @@
         ]
     },
     "ferrothorn": {
-        "level": 70,
+        "level": 71,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -4633,7 +4628,7 @@
         ]
     },
     "haxorus": {
-        "level": 74,
+        "level": 75,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -4935,7 +4930,7 @@
         ]
     },
     "landorus": {
-        "level": 75,
+        "level": 76,
         "sets": [
             {
                 "role": "Wallbreaker",
