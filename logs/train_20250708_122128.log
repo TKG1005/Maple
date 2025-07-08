@@ -1,0 +1,257 @@
+2025-07-08 12:21:28,646 INFO Run parameters: {'log_level': 'INFO', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 1, 'save': 'model_debug.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 8, 'algo': 'ppo', 'checkpoint_interval': 500, 'checkpoint_dir': 'checkpoints', 'reward': 'composite', 'reward_config': '/Users/takagikouichi/Documents/GitHub/Maple/config/reward.yaml', 'opponent': 'random', 'opponent_mix': 'max:7,self:3', 'team': 'random', 'teams_dir': None, 'load_model': None}
+2025-07-08 12:21:28,647 INFO Using random team mode with teams from: /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:28,647 INFO Using opponent mix: [('max', 0.7), ('self', 0.3)]
+2025-07-08 12:21:28,728 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:28,729 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,363 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,363 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,414 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,414 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,466 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,466 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,517 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,517 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,568 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,568 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,619 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,619 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,669 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,669 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,721 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:29,721 INFO Successfully loaded 3 teams
+2025-07-08 12:21:29,723 INFO Selecting team for player_0...
+2025-07-08 12:21:29,724 INFO Selecting team for player_0...
+2025-07-08 12:21:29,724 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,724 INFO Selecting team for player_0...
+2025-07-08 12:21:29,724 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,724 INFO Selecting team for player_0...
+2025-07-08 12:21:29,724 INFO Selecting team for player_1...
+2025-07-08 12:21:29,724 INFO Selecting team for player_0...
+2025-07-08 12:21:29,724 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_1...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_0...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_0...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_0...
+2025-07-08 12:21:29,725 INFO Selecting team for player_1...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_1...
+2025-07-08 12:21:29,725 INFO Selecting team for player_1...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selecting team for player_1...
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,725 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,726 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,726 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,726 INFO Selecting team for player_1...
+2025-07-08 12:21:29,726 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,726 INFO Selecting team for player_1...
+2025-07-08 12:21:29,727 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,727 INFO Selected random team starting with: Corviknight
+2025-07-08 12:21:29,985 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:29,995 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:29,995 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,029 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,036 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,041 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,046 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,051 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,055 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,095 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,103 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,164 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,170 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,175 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,181 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,187 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,203 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,212 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,297 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,303 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,308 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,313 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,321 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,421 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,428 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,434 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,441 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,446 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,556 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,562 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,587 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,670 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,695 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:30,713 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,726 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,780 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,805 DEBUG player_0: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,822 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,834 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,891 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,912 DEBUG player_0: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,931 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,947 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,963 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,969 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:30,999 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,021 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,039 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,055 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:31,077 DEBUG player_0: [1 1 1 1 1 1 1 1 1 0 0]
+2025-07-08 12:21:31,082 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,088 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,107 DEBUG player_0: [1 1 0 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,147 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,163 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:31,196 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,201 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,206 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,216 DEBUG player_0: [1 1 0 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,256 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,272 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,315 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,321 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,328 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,358 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,365 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,379 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,435 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,441 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,471 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,542 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,548 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,578 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,655 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,661 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,686 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,735 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,770 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,775 DEBUG player_0: [0 0 1 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,848 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,854 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,883 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,896 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:31,961 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,967 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,971 DEBUG player_0: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:31,996 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,004 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,082 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,087 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,113 DEBUG player_0: [1 1 0 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,195 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,201 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,206 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,222 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,294 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,299 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,315 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,330 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,408 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,413 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,422 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,438 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,495 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,515 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,521 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,602 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,632 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,711 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,724 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,730 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,821 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,839 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,844 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,931 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:32,938 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,947 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:32,961 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:32,968 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:33,030 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,054 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,067 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,067 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:33,076 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 12:21:33,083 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:33,138 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,147 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,175 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,183 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,197 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:33,247 DEBUG player_0: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,255 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,284 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,290 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,362 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,397 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,404 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,515 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,521 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,606 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 12:21:33,631 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,719 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,739 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,769 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,828 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,848 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,877 DEBUG player_0: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,883 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,937 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:33,959 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,046 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,056 DEBUG player_0: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,067 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,163 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:34,177 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,271 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:34,286 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,381 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:34,411 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,523 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,583 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,635 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,694 DEBUG player_0: [1 1 0 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:34,805 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:34,902 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,013 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,130 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,164 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:35,242 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,272 DEBUG player_0: [1 1 0 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,332 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 12:21:35,381 DEBUG player_0: [1 1 0 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,445 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,489 DEBUG player_0: [1 1 0 1 0 0 0 0 0 0 0]
+2025-07-08 12:21:35,557 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,081 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,193 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,305 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,417 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,530 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:36,642 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:37,165 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:37,277 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:37,391 DEBUG player_0: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 12:21:37,459 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:37,459 INFO Successfully loaded 3 teams
+2025-07-08 12:21:37,472 INFO Episode 1 epoch 1 loss 15.1642
+2025-07-08 12:21:37,474 INFO Episode 1 epoch 2 loss 15.8904
+2025-07-08 12:21:37,475 INFO Episode 1 epoch 3 loss 15.5048
+2025-07-08 12:21:37,476 INFO Episode 1 epoch 4 loss 15.5126
+2025-07-08 12:21:37,476 INFO Episode 1 reward -27.85 time/episode: 8.162 opponents: max, max, max, max, max, max, max, max
+2025-07-08 12:21:37,476 INFO Episode 1 reward breakdown: fail_immune: -0.480, knockout: 4.000, pokemon_count: 10.000, switch_penalty: 0.000, turn_penalty: -1.370, win_loss: -40.000
+2025-07-08 12:21:37,476 INFO Opponent usage statistics:
+2025-07-08 12:21:37,476 INFO   max: 8 episodes (100.0%)
+2025-07-08 12:21:37,525 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 12:21:37,526 INFO Successfully loaded 3 teams
+2025-07-08 12:21:37,528 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 12:21:37,528 INFO Initial probs: [3.509e-04 5.852e-06 7.451e-01 3.373e-07 1.630e-02 1.285e-07 3.858e-02
+ 1.991e-01 5.385e-04 4.825e-08 0.000e+00]
+2025-07-08 12:21:37,528 INFO Updated probs: [3.342e-08 5.050e-12 1.000e+00 2.532e-13 5.185e-13 1.541e-11 2.165e-09
+ 1.140e-07 1.237e-09 3.222e-13 0.000e+00]
+2025-07-08 12:21:37,529 INFO Prob change: [-3.509e-04 -5.852e-06  2.549e-01 -3.373e-07 -1.630e-02 -1.285e-07
+ -3.858e-02 -1.991e-01 -5.385e-04 -4.825e-08  0.000e+00]
+2025-07-08 12:21:37,531 INFO Model saved to model_debug.pt

@@ -763,7 +763,14 @@ class PokemonEnv(gym.Env):
             self._sub_reward_logs[pid] = dict(
                 self._composite_rewards[pid].last_values
             )
-            return float(total)
+            
+            # Add win/loss reward to the breakdown
+            win_reward = 0.0
+            if getattr(battle, "finished", False):
+                win_reward = 10.0 if getattr(battle, "won", False) else -10.0
+                self._sub_reward_logs[pid]["win_loss"] = win_reward
+            
+            return float(total + win_reward)
 
         win_reward = 0.0
         if getattr(battle, "finished", False):
