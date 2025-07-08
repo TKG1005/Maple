@@ -1,0 +1,573 @@
+2025-07-08 15:43:26,223 INFO Run parameters: {'log_level': 'INFO', 'config': '/Users/takagikouichi/Documents/GitHub/Maple/config/train_config.yml', 'episodes': 1, 'save': 'model_debug.pt', 'tensorboard': False, 'ppo_epochs': 4, 'clip': None, 'gae_lambda': None, 'value_coef': None, 'entropy_coef': None, 'gamma': None, 'parallel': 8, 'algo': 'ppo', 'checkpoint_interval': 500, 'checkpoint_dir': 'checkpoints', 'reward': 'composite', 'reward_config': '/Users/takagikouichi/Documents/GitHub/Maple/config/reward.yaml', 'opponent': 'random', 'opponent_mix': 'max:7,self:3', 'team': 'random', 'teams_dir': None, 'load_model': None}
+2025-07-08 15:43:26,224 INFO Using random team mode with teams from: /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:26,225 INFO Using opponent mix: [('max', 0.7), ('self', 0.3)]
+2025-07-08 15:43:26,348 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:26,349 INFO Successfully loaded 3 teams
+2025-07-08 15:43:26,826 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:26,826 INFO Successfully loaded 3 teams
+2025-07-08 15:43:26,864 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:26,865 INFO Successfully loaded 3 teams
+2025-07-08 15:43:26,903 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:26,903 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,006 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:27,006 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,045 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:27,045 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,084 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:27,084 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,122 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:27,122 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,161 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:27,161 INFO Successfully loaded 3 teams
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,163 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,163 INFO Selecting team for player_1...
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,163 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,163 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,163 INFO Selecting team for player_0...
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_0...
+2025-07-08 15:43:27,164 INFO Selecting team for player_0...
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,163 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,165 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,165 INFO Selecting team for player_1...
+2025-07-08 15:43:27,165 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,164 INFO Selecting team for player_1...
+2025-07-08 15:43:27,165 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,165 INFO Selected random team starting with: Corviknight
+2025-07-08 15:43:27,325 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,328 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,330 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,330 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,331 DEBUG RLAgent: chosen action = 4
+2025-07-08 15:43:27,335 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,340 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,346 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,350 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,351 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,355 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,355 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,358 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,362 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,365 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,370 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,370 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,370 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,371 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,371 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,371 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,372 DEBUG RLAgent: chosen action = 4
+2025-07-08 15:43:27,373 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:27,373 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,374 DEBUG player_1: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:27,374 DEBUG RLAgent: chosen action = 4
+2025-07-08 15:43:27,376 DEBUG RLAgent: chosen action = 4
+2025-07-08 15:43:27,384 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,389 DEBUG player_0: [1 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:27,394 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,398 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:27,399 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:27,399 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:27,403 DEBUG player_0: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,406 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,408 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,408 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,409 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:27,409 DEBUG player_1: [1 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:27,410 DEBUG player_1: [1 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:27,410 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:27,414 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,415 DEBUG RLAgent: chosen action = 0
+2025-07-08 15:43:27,418 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,425 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,432 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,435 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,439 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,440 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,440 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,440 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,440 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,441 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,444 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,444 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:27,453 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,456 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,456 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,456 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,457 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,552 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,557 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,557 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,558 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,558 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,565 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,569 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,570 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,570 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,570 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:27,577 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,577 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,577 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,578 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:27,666 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,677 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,684 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,685 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,685 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,686 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,690 DEBUG player_0: [0 0 0 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,696 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,697 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,697 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,697 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,701 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,706 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,708 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,708 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,709 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,713 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,718 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,719 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,719 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,719 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,723 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,728 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,729 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,729 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,729 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:27,733 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,738 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,739 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,739 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,740 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:27,743 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,775 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,852 DEBUG player_0: [0 0 0 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,857 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,863 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,883 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,902 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,938 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:27,943 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,950 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,964 DEBUG player_0: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,976 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,976 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,976 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:27,976 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,010 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,010 DEBUG player_1: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,010 DEBUG player_1: [1 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,011 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,050 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,051 DEBUG player_1: [0 1 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,051 DEBUG player_1: [0 1 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,051 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:28,060 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,060 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,060 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,061 DEBUG RLAgent: chosen action = 0
+2025-07-08 15:43:28,072 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,083 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,083 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,083 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,084 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,182 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,191 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,192 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,192 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,192 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:28,261 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,292 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,301 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,301 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,301 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,301 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:28,371 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,376 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,376 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,376 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,377 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:28,386 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,386 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,387 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,387 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,399 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,408 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,409 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,409 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,409 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,464 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,487 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,494 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,494 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,494 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,495 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:28,505 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,516 DEBUG player_0: [0 0 0 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,516 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,516 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,517 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:28,527 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,572 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,578 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,579 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,579 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,579 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:28,583 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,589 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,589 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:28,589 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:28,590 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:28,594 DEBUG player_0: [0 1 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:28,599 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,600 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:28,600 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:28,600 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:28,612 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,619 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,623 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,623 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,624 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,624 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:28,628 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,633 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,633 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,633 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,634 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:28,741 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,741 DEBUG player_1: [0 1 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,742 DEBUG player_1: [0 1 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,742 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,751 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,751 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,751 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,752 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,758 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,759 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,759 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,759 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:28,765 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,765 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,765 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,766 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:28,772 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:28,772 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,772 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,772 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:28,806 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:28,915 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,010 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,011 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,011 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,011 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,017 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,018 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,018 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,018 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,104 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,112 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,117 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,127 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,130 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,131 DEBUG player_1: [0 1 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,131 DEBUG player_1: [0 1 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,131 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,131 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,132 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:29,132 DEBUG RLAgent: chosen action = 1
+2025-07-08 15:43:29,139 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,146 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,147 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,147 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,147 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:29,151 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,159 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,159 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,159 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,160 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,213 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,220 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,225 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,230 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,236 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,241 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,246 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,251 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,255 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,260 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,265 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,270 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,275 DEBUG player_0: [1 1 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,280 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,285 DEBUG player_0: [1 1 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,289 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,290 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,290 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,293 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,294 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,298 DEBUG player_0: [1 1 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,303 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,306 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,307 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,307 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,307 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,314 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,314 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,314 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,314 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,319 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,320 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,320 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,320 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,432 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,544 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,664 DEBUG player_0: [0 0 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,671 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,678 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,689 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,689 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,689 DEBUG player_1: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,690 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,772 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,787 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,787 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,787 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,788 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,823 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,828 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,837 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,837 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,837 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,841 DEBUG player_0: [1 1 1 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,842 DEBUG RLAgent: chosen action = 9
+2025-07-08 15:43:29,849 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,853 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,853 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,853 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,853 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:29,860 DEBUG player_0: [1 1 1 1 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,864 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,864 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,864 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,865 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,871 DEBUG player_0: [1 1 1 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:29,874 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,875 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,875 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,875 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:29,879 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,884 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,885 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,885 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,885 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:29,893 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,893 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,893 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,893 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:29,896 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:29,897 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,897 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:29,898 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:29,935 DEBUG player_0: [1 1 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,002 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,003 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,003 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,003 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,112 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,113 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,113 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,113 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:30,207 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,215 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,222 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,223 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,223 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,225 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,231 DEBUG player_0: [0 0 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,237 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,238 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,238 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,238 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,345 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,345 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,345 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,346 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,397 DEBUG player_0: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:30,418 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,418 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,419 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,419 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:30,427 DEBUG player_0: [1 1 0 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,427 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,427 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,427 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:30,454 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,454 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,455 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,455 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:30,506 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,564 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,565 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,565 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,565 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,747 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,755 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,756 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:30,756 DEBUG player_1: [0 0 0 0 0 0 0 0 1 1 0]
+2025-07-08 15:43:30,757 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:30,768 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,768 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,769 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,769 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,777 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,777 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,777 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,777 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,869 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,886 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,886 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,886 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,886 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,894 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,894 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,894 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,894 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,901 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,902 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,902 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,902 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,908 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,909 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,909 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:30,909 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:30,915 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,916 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,916 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:30,916 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:31,025 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,030 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,031 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,031 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,031 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:31,043 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,043 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,044 DEBUG player_1: [0 0 1 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,044 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:31,050 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,051 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,051 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,051 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:31,080 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,139 DEBUG player_0: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,189 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,189 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,189 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,189 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:31,299 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,300 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,300 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,300 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:31,416 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,417 DEBUG player_1: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,417 DEBUG player_1: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,417 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:31,534 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,535 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,535 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,536 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:31,577 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,578 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,578 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,578 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:31,588 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,588 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,589 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,589 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:31,597 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,597 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,597 DEBUG player_1: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:31,597 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:31,663 DEBUG player_0: [0 0 0 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,671 DEBUG player_0: [0 0 0 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,679 DEBUG player_0: [0 0 0 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:31,687 DEBUG player_0: [0 0 0 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,057 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,117 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,117 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,117 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,117 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:32,123 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,123 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,123 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,124 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:32,235 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,235 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,235 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,235 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:32,590 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,592 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,592 DEBUG player_1: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,593 DEBUG RLAgent: chosen action = 8
+2025-07-08 15:43:32,709 DEBUG player_0: [1 1 0 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,710 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,711 DEBUG player_1: [1 1 1 1 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,711 DEBUG RLAgent: chosen action = 3
+2025-07-08 15:43:32,754 DEBUG player_0: [0 0 0 0 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,764 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,765 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,765 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,765 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:32,877 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,877 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,877 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,878 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:32,995 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:32,996 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,996 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:32,996 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:33,003 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:33,003 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:33,003 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:33,003 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:33,009 DEBUG player_0: [1 1 1 1 0 0 0 0 1 0 0]
+2025-07-08 15:43:33,010 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:33,010 DEBUG player_1: [0 0 1 0 0 0 0 0 0 0 0]
+2025-07-08 15:43:33,010 DEBUG RLAgent: chosen action = 2
+2025-07-08 15:43:33,063 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:33,063 INFO Successfully loaded 3 teams
+2025-07-08 15:43:33,078 INFO Episode 1 epoch 1 loss 21.7312
+2025-07-08 15:43:33,079 INFO Episode 1 epoch 2 loss 21.6515
+2025-07-08 15:43:33,080 INFO Episode 1 epoch 3 loss 21.6523
+2025-07-08 15:43:33,081 INFO Episode 1 epoch 4 loss 21.6524
+2025-07-08 15:43:33,082 INFO Episode 1 reward 27.15 time/episode: 6.293 opponents: self, max, self, self, max, self, max, max
+2025-07-08 15:43:33,082 INFO Episode 1 reward breakdown: fail_immune: -0.300, knockout: 9.000, pokemon_count: 20.000, switch_penalty: 0.000, turn_penalty: -1.550, win_loss: 0.000
+2025-07-08 15:43:33,082 INFO Opponent usage statistics:
+2025-07-08 15:43:33,082 INFO   self: 4 episodes (50.0%)
+2025-07-08 15:43:33,082 INFO   max: 4 episodes (50.0%)
+2025-07-08 15:43:33,119 INFO Loading teams from /Users/takagikouichi/Documents/GitHub/Maple/config/teams
+2025-07-08 15:43:33,119 INFO Successfully loaded 3 teams
+2025-07-08 15:43:33,121 DEBUG player_0: [1 1 1 1 1 1 1 1 1 1 0]
+2025-07-08 15:43:33,121 INFO Initial probs: [6.375e-05 1.727e-04 1.892e-04 3.452e-04 9.803e-01 2.823e-03 5.264e-03
+ 8.243e-03 8.941e-05 2.475e-03 0.000e+00]
+2025-07-08 15:43:33,122 INFO Updated probs: [2.889e-10 1.716e-04 4.578e-06 5.968e-06 9.991e-01 1.113e-05 2.918e-06
+ 6.724e-04 8.662e-08 1.671e-05 0.000e+00]
+2025-07-08 15:43:33,122 INFO Prob change: [-6.375e-05 -1.143e-06 -1.846e-04 -3.393e-04  1.878e-02 -2.812e-03
+ -5.261e-03 -7.570e-03 -8.933e-05 -2.459e-03  0.000e+00]
+2025-07-08 15:43:33,124 INFO Model saved to model_debug.pt
