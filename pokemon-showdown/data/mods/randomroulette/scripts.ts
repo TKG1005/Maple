@@ -80,6 +80,10 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 		}
 
+		for (const side of this.sides) {
+			this.add('teamsize', side.id, side.pokemon.length);
+		}
+
 		this.add('gen', this.gen);
 
 		this.add('tier', format.name);
@@ -88,11 +92,11 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.add('rated', typeof this.rated === 'string' ? this.rated : '');
 		}
 
-		format.onBegin?.call(this);
+		if (format.onBegin) format.onBegin.call(this);
 		for (const rule of this.ruleTable.keys()) {
 			if ('+*-!'.includes(rule.charAt(0))) continue;
 			const subFormat = this.dex.formats.get(rule);
-			subFormat.onBegin?.call(this);
+			if (subFormat.onBegin) subFormat.onBegin.call(this);
 		}
 
 		if (this.sides.some(side => !side.pokemon[0])) {
@@ -109,25 +113,11 @@ export const Scripts: ModdedBattleScriptsData = {
 			this.add(`raw|<div class="infobox"><details class="readmore"${open}><summary><strong>${format.customRules.length} custom rule${plural}:</strong></summary> ${format.customRules.join(', ')}</details></div>`);
 		}
 
-		format.onTeamPreview?.call(this);
+		if (format.onTeamPreview) format.onTeamPreview.call(this);
 		for (const rule of this.ruleTable.keys()) {
 			if ('+*-!'.includes(rule.charAt(0))) continue;
 			const subFormat = this.dex.formats.get(rule);
-			subFormat.onTeamPreview?.call(this);
-		}
-
-		if (this.requestState !== 'teampreview' && this.ruleTable.pickedTeamSize) {
-			this.add('clearpoke');
-			for (const side of this.sides) {
-				for (const pokemon of side.pokemon) {
-					// Still need to hide these formes since they change on battle start
-					const details = pokemon.details.replace(', shiny', '')
-						.replace(/(Zacian|Zamazenta)(?!-Crowned)/g, '$1-*')
-						.replace(/(Xerneas)(-[a-zA-Z?-]+)?/g, '$1-*');
-					this.addSplit(side.id, ['poke', pokemon.side.id, details, '']);
-				}
-			}
-			this.makeRequest('teampreview');
+			if (subFormat.onTeamPreview) subFormat.onTeamPreview.call(this);
 		}
 
 		this.queue.addChoice({ choice: 'start' });

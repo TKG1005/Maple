@@ -228,8 +228,10 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			if (move.ohko) this.battle.add('-ohko');
 
-			this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
-			this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			if (!move.negateSecondary) {
+				this.battle.singleEvent('AfterMoveSecondary', move, null, target, pokemon, move);
+				this.battle.runEvent('AfterMoveSecondary', target, pokemon, move);
+			}
 			// Implementing Recoil mechanics from Stadium 2.
 			// If a pokemon caused the other to faint with a recoil move and only one pokemon remains on both sides,
 			// recoil damage will not be taken.

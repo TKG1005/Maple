@@ -698,7 +698,7 @@
         ]
     },
     "rhydon": {
-        "level": 83,
+        "level": 84,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -1413,13 +1413,8 @@
         "sets": [
             {
                 "role": "Bulky Support",
-                "movepool": ["gyroball", "rapidspin", "spikes", "stealthrock", "toxic"],
+                "movepool": ["gyroball", "rapidspin", "spikes", "stealthrock", "toxic", "voltswitch"],
                 "abilities": ["Sturdy"]
-            },
-            {
-                "role": "Bulky Support",
-                "movepool": ["gyroball", "rapidspin", "stealthrock", "toxicspikes", "voltswitch"],
-                "abilities": ["Sturdy"] 
             }
         ]
     },
@@ -1596,7 +1591,7 @@
         ]
     },
     "corsola": {
-        "level": 99,
+        "level": 98,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -2162,7 +2157,7 @@
         ]
     },
     "shedinja": {
-        "level": 95,
+        "level": 94,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -2644,7 +2639,7 @@
         ]
     },
     "castform": {
-        "level": 97,
+        "level": 98,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -2671,7 +2666,7 @@
         ]
     },
     "banette": {
-        "level": 90,
+        "level": 89,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -2795,7 +2790,7 @@
         ]
     },
     "relicanth": {
-        "level": 87,
+        "level": 88,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -2981,7 +2976,7 @@
         ]
     },
     "kyogreprimal": {
-        "level": 71,
+        "level": 72,
         "sets": [
             {
                 "role": "Bulky Setup",
@@ -3617,7 +3612,7 @@
         ]
     },
     "carnivine": {
-        "level": 100,
+        "level": 99,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -4060,7 +4055,7 @@
         ]
     },
     "regigigas": {
-        "level": 84,
+        "level": 83,
         "sets": [
             {
                 "role": "Bulky Attacker",
@@ -4141,7 +4136,7 @@
         ]
     },
     "darkrai": {
-        "level": 72,
+        "level": 73,
         "sets": [
             {
                 "role": "Setup Sweeper",
@@ -4622,7 +4617,7 @@
         ]
     },
     "audinomega": {
-        "level": 92,
+        "level": 91,
         "sets": [
             {
                 "role": "Staller",
@@ -4902,8 +4897,7 @@
             {
                 "role": "Fast Attacker",
                 "movepool": ["bulletseed", "knockoff", "rockblast", "tailslap", "uturn"],
-                "abilities": ["Skill Link"],
-                "preferredTypes": ["Grass"]
+                "abilities": ["Skill Link"]
             }
         ]
     },
@@ -5424,7 +5418,7 @@
         ]
     },
     "landorustherian": {
-        "level": 76,
+        "level": 77,
         "sets": [
             {
                 "role": "Bulky Support",
@@ -5670,7 +5664,7 @@
         ]
     },
     "pangoro": {
-        "level": 85,
+        "level": 86,
         "sets": [
             {
                 "role": "Wallbreaker",
@@ -5747,7 +5741,7 @@
         ]
     },
     "aromatisse": {
-        "level": 89,
+        "level": 90,
         "sets": [
             {
                 "role": "Bulky Support",

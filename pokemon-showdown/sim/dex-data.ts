@@ -316,7 +316,7 @@ export class DexTypes {
 		return this.namesCache;
 	}
 
-	isName(name: string | null | undefined): boolean {
+	isName(name: string): boolean {
 		if (!name) return false;
 		const id = name.toLowerCase();
 		const typeName = id.charAt(0).toUpperCase() + id.substr(1);

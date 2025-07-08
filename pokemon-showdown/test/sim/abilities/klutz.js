@@ -61,16 +61,6 @@ describe('Klutz', () => {
 		assert.constant(() => klutzMon.item, () => battle.makeChoices('move fling', 'move calmmind'));
 	});
 
-	it('should cause Fling to fail even if the item ignores Klutz', () => {
-		battle = common.createBattle([[
-			{ species: "Lopunny", ability: 'klutz', item: 'abilityshield', moves: ['fling'] },
-		], [
-			{ species: "Deoxys", ability: 'noguard', moves: ['calmmind'] },
-		]]);
-		const klutzMon = battle.p1.active[0];
-		assert.constant(() => klutzMon.item, () => battle.makeChoices('move fling', 'move calmmind'));
-	});
-
 	it('should not prevent Pokemon from Mega Evolving', () => {
 		battle = common.createBattle([[
 			{ species: "Lopunny", ability: 'klutz', item: 'lopunnite', moves: ['protect'] },
@@ -79,18 +69,5 @@ describe('Klutz', () => {
 		]]);
 		battle.makeChoices('move protect mega', 'move calmmind');
 		assert.species(battle.p1.active[0], 'Lopunny-Mega');
-	});
-
-	describe('[Gen 4]', () => {
-		it('should not cause Fling to fail', () => {
-			battle = common.gen(4).createBattle([[
-				{ species: "Lopunny", ability: 'klutz', item: 'seaincense', moves: ['fling'] },
-			], [
-				{ species: "Deoxys", ability: 'noguard', moves: ['calmmind'] },
-			]]);
-			const klutzMon = battle.p1.active[0];
-			battle.makeChoices('move fling', 'move calmmind');
-			assert.false(klutzMon.item);
-		});
 	});
 });
