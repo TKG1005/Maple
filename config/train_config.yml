@@ -1,13 +1,13 @@
-episodes: 10
+episodes: 1
 lr: 0.0005
-batch_size: 2048
-buffer_capacity: 4096
-gamma: 0.997
+batch_size: 4096
+buffer_capacity: 8192
+gamma: 0.999
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
 entropy_coef: 0.01
-ppo_epochs: 4
+ppo_epochs: 6
 algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
@@ -23,7 +23,7 @@ team: "random"  # Options: default, random
 teams_dir: null  # Directory for random team mode
 
 # Opponent configuration
-opponent: null  # Single opponent type: random, max, rule
+opponent: mix  # Single opponent type: random, max, rule
 opponent_mix: "max:7,self:3"  # Mixed opponents: "random:0.3,max:0.3,self:0.4"
 
 # Self-play win rate based opponent update

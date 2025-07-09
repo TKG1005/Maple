@@ -7,15 +7,15 @@ gamma: 0.999
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
-entropy_coef: 0.005
+entropy_coef: 0.01
 ppo_epochs: 6
 algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 2
-checkpoint_interval: 50
+parallel: 10
+checkpoint_interval: 500
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
