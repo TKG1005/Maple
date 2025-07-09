@@ -511,7 +511,7 @@ def main(
             rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
             
             if opp_type == "self":
-                # Self-play: both agents are RL agents with independent networks
+                # Self-play: opponent uses current main agent's weights (frozen)
                 opponent_policy_net = create_policy_network(
                     env.observation_space[env.agent_ids[1]],
                     env.action_space[env.agent_ids[1]],
@@ -522,11 +522,20 @@ def main(
                     network_config
                 )
                 
-                # Create separate optimizer for opponent
-                opponent_params = list(opponent_policy_net.parameters()) + list(opponent_value_net.parameters())
-                opponent_optimizer = optim.Adam(opponent_params, lr=lr)
+                # Copy current weights from main agent
+                opponent_policy_net.load_state_dict(policy_net.state_dict())
+                opponent_value_net.load_state_dict(value_net.state_dict())
+                logger.debug("Self-play: Copied main agent weights to opponent")
                 
-                opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, opponent_optimizer, algorithm=algorithm)
+                # Freeze opponent networks (no learning)
+                for param in opponent_policy_net.parameters():
+                    param.requires_grad = False
+                for param in opponent_value_net.parameters():
+                    param.requires_grad = False
+                
+                # Opponent agent without optimizer (no learning)
+                opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
+                logger.debug("Self-play: Created frozen opponent agent")
                 env.register_agent(opponent_agent, env.agent_ids[1])
                 envs.append(env)
                 agents.append((rl_agent, opponent_agent, opp_type))

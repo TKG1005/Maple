@@ -62,7 +62,7 @@ class PPOAlgorithm(BaseAlgorithm):
     def update(
         self,
         model: nn.Module,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
     ) -> float:
         policy_net = model
@@ -88,9 +88,11 @@ class PPOAlgorithm(BaseAlgorithm):
             entropy_coef=self.entropy_coef,
         )
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        if optimizer is not None:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
         return float(loss.detach())
 
 
