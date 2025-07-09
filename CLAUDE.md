@@ -193,6 +193,43 @@ Comprehensive reward normalization for stable training:
 - **Configuration**: Enable/disable via `normalize_rewards` parameter
 - **Statistics**: Access normalization stats via `env.get_reward_normalization_stats()`
 
+### LSTM Hidden State Management Fix (New 2025-07-10)
+Fixed critical issue where LSTM networks were not maintaining sequential learning capability:
+
+**Problem**: `RLAgent.select_action()` did not pass hidden states to LSTM networks, causing them to reinitialize on every action selection. This defeated the purpose of LSTM's sequential learning.
+
+**Solution**: 
+- Modified `RLAgent` to detect LSTM/Attention networks with `has_hidden_states` flag
+- Added `reset_hidden_states()` method to reset hidden states at episode boundaries
+- Updated `select_action()` to pass hidden states to LSTM networks
+- Added tensor dimension handling for batch processing
+- Modified training loops to call `reset_hidden_states()` at episode start
+
+**Implementation Details**:
+```python
+# In RLAgent.__init__()
+self.has_hidden_states = hasattr(policy_net, 'hidden_state') and (value_net is None or hasattr(value_net, 'hidden_state'))
+
+# In RLAgent.select_action()
+if self.has_hidden_states:
+    if obs_tensor.dim() == 1:
+        obs_tensor = obs_tensor.unsqueeze(0)
+    logits = self.policy_net(obs_tensor, self.policy_net.hidden_state)
+    if logits.dim() == 2 and logits.size(0) == 1:
+        logits = logits.squeeze(0)
+
+# In run_episode() and run_episode_with_opponent()
+agent.reset_hidden_states()  # Called at episode start
+```
+
+**Testing**: Added comprehensive tests (`test_lstm_sequential_learning.py`) to verify:
+- Hidden states change across action selections
+- Hidden states are reset properly at episode boundaries
+- Sequential learning produces different outputs for different histories
+- LSTM networks behave differently from basic networks
+
+This fix ensures LSTM networks can properly learn sequential patterns within episodes while maintaining clean state boundaries between episodes.
+
 ## Project-Specific Rules
 
 ### Code Style and Conventions

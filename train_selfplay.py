@@ -647,6 +647,9 @@ def main(
             if writer:
                 writer.add_scalar("loss", loss, ep + 1)
         
+        # Reset hidden states after training to ensure clean state for next episode
+        temp_agent.reset_hidden_states()
+        
         temp_env.close()
 
         total_reward = sum(reward_list)
@@ -704,6 +707,10 @@ def main(
         # Create a temporary agent for probability comparison
         temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
+        
+        # Reset hidden states before inference to ensure clean state
+        temp_agent.reset_hidden_states()
+        
         updated_probs = temp_agent.select_action(init_obs, init_mask)
         diff = updated_probs - init_probs
         logger.info("Initial probs: %s", np.array2string(init_probs, precision=3))

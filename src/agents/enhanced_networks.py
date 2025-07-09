@@ -55,6 +55,12 @@ class LSTMPolicyNetwork(nn.Module):
             
             if hidden is None:
                 hidden = self.init_hidden(x.size(0), x.device)
+            else:
+                # Check if hidden state batch size matches current input batch size
+                h, c = hidden
+                if h.size(1) != x.size(0):
+                    # Reinitialize hidden state if batch size doesn't match
+                    hidden = self.init_hidden(x.size(0), x.device)
             
             lstm_out, self.hidden_state = self.lstm(x, hidden)
             # Use the last output of the sequence
@@ -120,6 +126,12 @@ class LSTMValueNetwork(nn.Module):
             
             if hidden is None:
                 hidden = self.init_hidden(x.size(0), x.device)
+            else:
+                # Check if hidden state batch size matches current input batch size
+                h, c = hidden
+                if h.size(1) != x.size(0):
+                    # Reinitialize hidden state if batch size doesn't match
+                    hidden = self.init_hidden(x.size(0), x.device)
             
             lstm_out, self.hidden_state = self.lstm(x, hidden)
             # Use the last output of the sequence
@@ -237,6 +249,12 @@ class AttentionPolicyNetwork(nn.Module):
         if self.use_lstm:
             if hidden is None:
                 hidden = self.init_hidden(x.size(0), x.device)
+            else:
+                # Check if hidden state batch size matches current input batch size
+                h, c = hidden
+                if h.size(1) != x.size(0):
+                    # Reinitialize hidden state if batch size doesn't match
+                    hidden = self.init_hidden(x.size(0), x.device)
             x, self.hidden_state = self.lstm(x, hidden)
         
         # Attention mechanism
@@ -316,6 +334,12 @@ class AttentionValueNetwork(nn.Module):
         if self.use_lstm:
             if hidden is None:
                 hidden = self.init_hidden(x.size(0), x.device)
+            else:
+                # Check if hidden state batch size matches current input batch size
+                h, c = hidden
+                if h.size(1) != x.size(0):
+                    # Reinitialize hidden state if batch size doesn't match
+                    hidden = self.init_hidden(x.size(0), x.device)
             x, self.hidden_state = self.lstm(x, hidden)
         
         # Attention mechanism
