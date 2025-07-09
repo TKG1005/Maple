@@ -414,7 +414,7 @@ def main(
     sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
     
     # Get network configuration
-    network_config = config.get("network", {})
+    network_config = cfg.get("network", {})
     logger.info("Network configuration: %s", network_config)
     
     # Create networks using factory
