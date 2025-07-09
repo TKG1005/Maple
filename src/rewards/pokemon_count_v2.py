@@ -4,9 +4,10 @@ from . import RewardBase
 
 
 class PokemonCountReward(RewardBase):
-    """対戦終了時の残りポケモン数の差に基づいて報酬を計算するクラス。
+    """対戦終了時の残りポケモン数の差に基づいて報酬を計算するクラス（修正版）。
     
-    ポケモンの差が1匹なら0点、2匹なら2点、3匹なら5点を報酬またはペナルティとして付与。
+    ポケモンの差が1匹なら0点、2匹なら1点、3匹なら2点を報酬またはペナルティとして付与。
+    従来版より報酬値を大幅に縮小し、他のコンポーネントとのバランスを改善。
     """
 
     def __init__(self) -> None:
@@ -38,7 +39,7 @@ class PokemonCountReward(RewardBase):
         # ポケモン数の差を計算（正の値は自分が有利）
         pokemon_diff = my_remaining - opp_remaining
         
-        # 差に基づいて報酬を計算（修正版：報酬値を縮小）
+        # 修正版: 報酬値を大幅に縮小
         if abs(pokemon_diff) <= 1:
             return 0.0
         elif abs(pokemon_diff) == 2:

@@ -12,13 +12,10 @@ algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
-# Network architecture configuration
+# LSTM Network Configuration
 network:
-  type: "lstm"  # Options: basic, lstm, attention
+  type: "lstm"  # Use LSTM network
   hidden_size: 128
   use_2layer: true
   use_lstm: true
-  use_attention: false
-  lstm_hidden_size: 128
-  attention_heads: 4
-  attention_dropout: 0.1
+  lstm_hidden_size: 128  # LSTM hidden state dimension

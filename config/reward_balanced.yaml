@@ -6,7 +6,7 @@ rewards:
     weight: 1.0
     enabled: true
   fail_immune:
-    weight: 2.0
+    weight: 1.5
     enabled: true
   switch_penalty:
     weight: 1.0
@@ -14,5 +14,5 @@ rewards:
     penalty: -1.0
     threshold: 7
   pokemon_count:
-    weight: 0.2
+    weight: 0.1  # 0.5 → 0.1 (5分の1に縮小)
     enabled: true
