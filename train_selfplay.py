@@ -137,6 +137,12 @@ def run_episode_with_opponent(
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
     mask0, mask1 = masks
+    
+    # Reset hidden states for LSTM networks at episode start
+    rl_agent.reset_hidden_states()
+    # Reset opponent's hidden states if it's also an RLAgent (self-play)
+    if hasattr(opponent_agent, 'reset_hidden_states'):
+        opponent_agent.reset_hidden_states()
 
     init_tuple: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
     if info.get("request_teampreview"):
@@ -178,7 +184,13 @@ def run_episode_with_opponent(
         else:
             act1 = 0
 
-        val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
+        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
+        if obs0_tensor.dim() == 1:
+            obs0_tensor = obs0_tensor.unsqueeze(0)
+        val0_tensor = value_net(obs0_tensor, value_net.hidden_state if hasattr(value_net, 'hidden_state') else None)
+        if val0_tensor.dim() > 0:
+            val0_tensor = val0_tensor.squeeze(0)
+        val0 = float(val0_tensor.item())
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
         observations, rewards, terms, truncs, _, next_masks = env.step(
@@ -255,6 +267,10 @@ def run_episode(
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
     mask0, mask1 = masks
+    
+    # Reset hidden states for LSTM networks at episode start
+    agent0.reset_hidden_states()
+    agent1.reset_hidden_states()
 
     init_tuple: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None
     if info.get("request_teampreview"):
@@ -284,7 +300,13 @@ def run_episode(
         act0 = int(rng.choice(len(probs0), p=probs0))
         act1 = int(rng.choice(len(probs1), p=probs1))
         logp0 = float(np.log(probs0[act0] + 1e-8))
-        val0 = float(value_net(torch.as_tensor(obs0, dtype=torch.float32)).item())
+        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
+        if obs0_tensor.dim() == 1:
+            obs0_tensor = obs0_tensor.unsqueeze(0)
+        val0_tensor = value_net(obs0_tensor, value_net.hidden_state if hasattr(value_net, 'hidden_state') else None)
+        if val0_tensor.dim() > 0:
+            val0_tensor = val0_tensor.squeeze(0)
+        val0 = float(val0_tensor.item())
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
         observations, rewards, terms, truncs, _, next_masks = env.step(

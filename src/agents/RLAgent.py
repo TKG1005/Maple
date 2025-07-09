@@ -28,6 +28,11 @@ class RLAgent(MapleAgent):
         self.algorithm = algorithm or ReinforceAlgorithm()
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logging.DEBUG)
+        
+        # Check if networks support hidden states (LSTM/Attention)
+        self.has_hidden_states = hasattr(policy_net, 'hidden_state') and (value_net is None or hasattr(value_net, 'hidden_state'))
+        self.policy_hidden = None
+        self.value_hidden = None
 
     def select_action(
         self, observation: np.ndarray, action_mask: np.ndarray
@@ -36,7 +41,21 @@ class RLAgent(MapleAgent):
         player_id = self._get_player_id()
         self._logger.debug("%s: %s", player_id, action_mask)
         obs_tensor = torch.as_tensor(observation, dtype=torch.float32)
-        logits = self.policy_net(obs_tensor)
+        
+        # Handle LSTM/Attention networks with hidden states
+        if self.has_hidden_states:
+            # Add batch dimension if needed for LSTM
+            if obs_tensor.dim() == 1:
+                obs_tensor = obs_tensor.unsqueeze(0)
+            # Use stored hidden state from the network itself
+            logits = self.policy_net(obs_tensor, self.policy_net.hidden_state)
+            # Remove batch dimension if we added it
+            if logits.dim() == 2 and logits.size(0) == 1:
+                logits = logits.squeeze(0)
+        else:
+            # Basic network without hidden states
+            logits = self.policy_net(obs_tensor)
+        
         mask_tensor = torch.as_tensor(action_mask, dtype=torch.bool)
         masked_logits = logits.clone()
         if mask_tensor.any():
@@ -58,6 +77,17 @@ class RLAgent(MapleAgent):
         action = int(rng.choice(len(probs), p=probs))
         self._logger.debug("%s: chosen action = %s", self.__class__.__name__, action)
         return action
+
+    def reset_hidden_states(self) -> None:
+        """Reset hidden states for LSTM/Attention networks at episode boundaries."""
+        if self.has_hidden_states:
+            if hasattr(self.policy_net, 'reset_hidden'):
+                self.policy_net.reset_hidden()
+            if self.value_net is not None and hasattr(self.value_net, 'reset_hidden'):
+                self.value_net.reset_hidden()
+            self.policy_hidden = None
+            self.value_hidden = None
+            self._logger.debug("Hidden states reset for %s", self._get_player_id())
 
     def update(self, batch: dict[str, torch.Tensor]) -> float:
         """Delegate a training update to the underlying algorithm."""
