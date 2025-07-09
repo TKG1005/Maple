@@ -1,4 +1,4 @@
-episodes: 10
+episodes: 10000
 lr: 0.002
 batch_size: 512
 buffer_capacity: 1000
@@ -12,7 +12,7 @@ algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
-# Network architecture configuration
+# Network architecture configuration for M7 tasks
 network:
   type: "basic"  # Options: basic, lstm, attention
   hidden_size: 128

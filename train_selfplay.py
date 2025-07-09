@@ -61,6 +61,11 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
+from src.agents.enhanced_networks import (
+    LSTMPolicyNetwork, LSTMValueNetwork,
+    AttentionPolicyNetwork, AttentionValueNetwork
+)  # noqa: E402
+from src.agents.network_factory import create_policy_network, create_value_network, get_network_info  # noqa: E402
 from src.agents.random_agent import RandomAgent  # noqa: E402
 from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
@@ -407,11 +412,28 @@ def main(
     
     # Create sample environment for network setup
     sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
-    policy_net = PolicyNetwork(
+    
+    # Get network configuration
+    network_config = config.get("network", {})
+    logger.info("Network configuration: %s", network_config)
+    
+    # Create networks using factory
+    policy_net = create_policy_network(
         sample_env.observation_space[sample_env.agent_ids[0]],
         sample_env.action_space[sample_env.agent_ids[0]],
+        network_config
     )
-    value_net = ValueNetwork(sample_env.observation_space[sample_env.agent_ids[0]])
+    value_net = create_value_network(
+        sample_env.observation_space[sample_env.agent_ids[0]],
+        network_config
+    )
+    
+    # Log network information
+    policy_info = get_network_info(policy_net)
+    value_info = get_network_info(value_net)
+    logger.info("Policy network: %s", policy_info)
+    logger.info("Value network: %s", value_info)
+    
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
 
