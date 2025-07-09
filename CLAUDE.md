@@ -175,6 +175,24 @@ The `--opponent-mix` option allows training against multiple opponent types:
 - Supports `random`, `max`, `rule`, and `self` opponent types
 - Randomly selects opponent type based on specified ratios for each episode
 
+### Self-Play Architecture (Updated 2025-07-09)
+The self-play system implements a **single-model convergence approach**:
+- **Main Agent**: Learns and updates through training, uses optimizer
+- **Opponent Agent**: Uses frozen copy of main agent's current weights
+- **Weight Copying**: Opponent networks are refreshed with main agent weights each episode
+- **Network Freezing**: Opponent networks have `requires_grad=False` and no optimizer
+- **Final Output**: Single trained model representing the learned policy
+- **Learning Dynamics**: Main agent progressively improves by playing against its own current strength
+
+### Reward Normalization System (New 2025-07-09)
+Comprehensive reward normalization for stable training:
+- **RewardNormalizer**: Running mean/std normalization with Welford's algorithm
+- **WindowedRewardNormalizer**: Sliding window-based normalization (alternative)
+- **Per-Agent Normalization**: Independent normalizers for each agent
+- **Integration**: Automatic normalization in `PokemonEnv._calc_reward()`
+- **Configuration**: Enable/disable via `normalize_rewards` parameter
+- **Statistics**: Access normalization stats via `env.get_reward_normalization_stats()`
+
 ## Project-Specific Rules
 
 ### Code Style and Conventions
@@ -190,6 +208,8 @@ The `--opponent-mix` option allows training against multiple opponent types:
 - Agent constructors should accept `env` as first parameter
 - Register agents with environment using `env.register_agent(agent, player_id)`
 - Battle state access should use `self._get_current_battle()` pattern
+- **RLAgent Optimizer**: Can accept `None` optimizer for frozen agents (self-play opponents)
+- **Algorithm Updates**: All algorithms must handle `None` optimizer gracefully
 
 ### Testing Requirements
 - Mark slow integration tests with `@pytest.mark.slow`
@@ -208,3 +228,22 @@ The `--opponent-mix` option allows training against multiple opponent types:
 - Avoid hardcoded paths - use relative paths from project root
 - Don't create agents without proper environment registration
 - Never ignore action masks - always respect valid action constraints
+- **Self-Play**: Never create two learning agents in self-play (use frozen opponent instead)
+- **Reward Normalization**: Don't reset normalizers between episodes (maintains running stats)
+
+## Recent Updates (2025-07-09)
+
+### Critical Bug Fixes
+- **Self-Play Network Sharing**: Fixed issue where both agents shared the same network weights
+- **Learning Rate Optimization**: Reduced from 0.002 to 0.0005 for more stable training
+- **Reward Normalization**: Implemented comprehensive normalization system for training stability
+
+### Architecture Improvements
+- **Single-Model Convergence**: Self-play now produces a single final model instead of two competing models
+- **Frozen Opponent System**: Opponent agents use current main agent weights but don't learn
+- **Algorithm Flexibility**: All RL algorithms now support both learning and non-learning modes
+
+### Configuration Updates
+- **Training Config**: Updated `config/train_config.yml` with optimized hyperparameters
+- **Reward Weights**: Adjusted `config/reward.yaml` based on performance analysis
+- **Normalization**: New `normalize_rewards` parameter in environment initialization
