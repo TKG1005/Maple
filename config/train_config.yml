@@ -12,6 +12,28 @@ algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
+# Training configuration
+parallel: 10
+checkpoint_interval: 500
+checkpoint_dir: "checkpoints"
+tensorboard: true
+
+# Team configuration
+team: "random"  # Options: default, random
+teams_dir: null  # Directory for random team mode
+
+# Opponent configuration
+opponent: null  # Single opponent type: random, max, rule
+opponent_mix: "max:7,self:3"  # Mixed opponents: "random:0.3,max:0.3,self:0.4"
+
+# Self-play win rate based opponent update
+win_rate_threshold: 0.6  # Win rate threshold for updating opponent
+win_rate_window: 100      # Number of recent battles to track
+
+# Model management
+load_model: null  # Path to model file to resume training from
+save_model: model.pt  # Path to save final model
+
 # Network architecture configuration
 network:
   type: "lstm"  # Options: basic, lstm, attention

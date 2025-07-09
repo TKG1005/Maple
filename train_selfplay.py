@@ -187,7 +187,11 @@ def run_episode_with_opponent(
         obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
         if obs0_tensor.dim() == 1:
             obs0_tensor = obs0_tensor.unsqueeze(0)
-        val0_tensor = value_net(obs0_tensor, value_net.hidden_state if hasattr(value_net, 'hidden_state') else None)
+        # Call value network with hidden state only if supported
+        if hasattr(value_net, 'hidden_state'):
+            val0_tensor = value_net(obs0_tensor, value_net.hidden_state)
+        else:
+            val0_tensor = value_net(obs0_tensor)
         if val0_tensor.dim() > 0:
             val0_tensor = val0_tensor.squeeze(0)
         val0 = float(val0_tensor.item())
@@ -303,7 +307,11 @@ def run_episode(
         obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
         if obs0_tensor.dim() == 1:
             obs0_tensor = obs0_tensor.unsqueeze(0)
-        val0_tensor = value_net(obs0_tensor, value_net.hidden_state if hasattr(value_net, 'hidden_state') else None)
+        # Call value network with hidden state only if supported
+        if hasattr(value_net, 'hidden_state'):
+            val0_tensor = value_net(obs0_tensor, value_net.hidden_state)
+        else:
+            val0_tensor = value_net(obs0_tensor)
         if val0_tensor.dim() > 0:
             val0_tensor = val0_tensor.squeeze(0)
         val0 = float(val0_tensor.item())
@@ -374,6 +382,8 @@ def main(
     team: str = "default",
     teams_dir: str | None = None,
     load_model: str | None = None,
+    win_rate_threshold: float = 0.6,
+    win_rate_window: int = 50,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -387,9 +397,16 @@ def main(
         Single opponent type for training.
     opponent_mix : str | None
         Mixed opponent types with ratios (e.g., "random:0.3,max:0.3,self:0.4").
+    win_rate_threshold : float
+        Win rate threshold for updating self-play opponent (default: 0.6).
+    win_rate_window : int
+        Number of recent battles to track for win rate calculation (default: 50).
     """
 
     cfg = load_config(config_path)
+    logger.info("Loading configuration from: %s", config_path)
+    
+    # Load all configuration from config file, with command line overrides
     episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
     lr = float(cfg.get("lr", 1e-3))
     gamma = float(cfg.get("gamma", gamma))
@@ -404,6 +421,38 @@ def main(
     if reward_config is not None:
         reward_config = str(reward_config)
     
+    # Training configuration from config file
+    parallel = int(cfg.get("parallel", parallel))
+    checkpoint_interval = int(cfg.get("checkpoint_interval", checkpoint_interval))
+    checkpoint_dir = str(cfg.get("checkpoint_dir", checkpoint_dir))
+    tensorboard = bool(cfg.get("tensorboard", tensorboard))
+    
+    # Team configuration from config file
+    team = str(cfg.get("team", team))
+    teams_dir = cfg.get("teams_dir", teams_dir)
+    if teams_dir is not None:
+        teams_dir = str(teams_dir)
+    
+    # Opponent configuration from config file
+    opponent = cfg.get("opponent", opponent)
+    if opponent is not None:
+        opponent = str(opponent)
+    opponent_mix = cfg.get("opponent_mix", opponent_mix)
+    if opponent_mix is not None:
+        opponent_mix = str(opponent_mix)
+    
+    # Win rate configuration from config file
+    win_rate_threshold = float(cfg.get("win_rate_threshold", win_rate_threshold))
+    win_rate_window = int(cfg.get("win_rate_window", win_rate_window))
+    
+    # Model management from config file
+    load_model = cfg.get("load_model", load_model)
+    if load_model is not None:
+        load_model = str(load_model)
+    save_path = cfg.get("save_model", save_path)
+    if save_path is not None:
+        save_path = str(save_path)
+    
     # Team configuration
     team_mode = team
     if team == "random":
@@ -415,6 +464,28 @@ def main(
         logger.info("Using default team mode")
 
     writer = SummaryWriter() if tensorboard else None
+    
+    # Log final configuration
+    logger.info("=== Final Configuration ===")
+    logger.info("Episodes: %d", episodes)
+    logger.info("Algorithm: %s", algo_name)
+    logger.info("Learning rate: %g", lr)
+    logger.info("PPO epochs: %d", ppo_epochs)
+    logger.info("Parallel environments: %d", parallel)
+    logger.info("Team mode: %s", team)
+    if opponent:
+        logger.info("Single opponent: %s", opponent)
+    elif opponent_mix:
+        logger.info("Mixed opponents: %s", opponent_mix)
+    else:
+        logger.info("Self-play mode")
+        logger.info("Win rate threshold: %.1f%%", win_rate_threshold * 100)
+        logger.info("Win rate window: %d battles", win_rate_window)
+    if load_model:
+        logger.info("Loading model from: %s", load_model)
+    if tensorboard:
+        logger.info("TensorBoard logging enabled")
+    logger.info("==========================")
     
     # Setup opponent pool if opponent_mix is specified
     opponent_pool = None
@@ -505,6 +576,55 @@ def main(
     
     # For tracking opponent usage
     opponent_stats = {}
+    
+    # Win rate based opponent update system
+    recent_battle_results = []  # Store recent battle results (1=win, 0=draw, -1=loss)
+    # Use parameters passed to function
+    opponent_snapshots = {}  # Store opponent network snapshots
+    current_opponent_id = 0  # Track which opponent snapshot is being used
+    last_opponent_update_episode = -1  # Track when opponent was last updated
+
+    def should_update_opponent(episode_num, battle_results, window_size, threshold):
+        """Check if opponent should be updated based on recent win rate."""
+        if len(battle_results) < window_size:
+            return False  # Not enough data yet
+        
+        recent_results = battle_results[-window_size:]
+        wins = sum(1 for result in recent_results if result == 1)
+        win_rate = wins / len(recent_results)
+        
+        logger.info(f"Episode {episode_num}: Recent win rate: {win_rate:.1%} ({wins}/{len(recent_results)})")
+        
+        if win_rate >= threshold:
+            logger.info(f"Win rate {win_rate:.1%} >= {threshold:.1%}, updating opponent")
+            return True
+        return False
+
+    def create_opponent_snapshot(policy_net, value_net, network_config, env, snapshot_id):
+        """Create a frozen snapshot of current networks for opponent."""
+        # Create new networks
+        opponent_policy_net = create_policy_network(
+            env.observation_space[env.agent_ids[1]],
+            env.action_space[env.agent_ids[1]],
+            network_config
+        )
+        opponent_value_net = create_value_network(
+            env.observation_space[env.agent_ids[1]],
+            network_config
+        )
+        
+        # Copy current weights
+        opponent_policy_net.load_state_dict(policy_net.state_dict())
+        opponent_value_net.load_state_dict(value_net.state_dict())
+        
+        # Freeze networks
+        for param in opponent_policy_net.parameters():
+            param.requires_grad = False
+        for param in opponent_value_net.parameters():
+            param.requires_grad = False
+        
+        logger.info(f"Created opponent snapshot {snapshot_id}")
+        return opponent_policy_net, opponent_value_net
 
     for ep in range(start_episode, start_episode + episodes):
         start_time = time.perf_counter()
@@ -533,27 +653,31 @@ def main(
             rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
             
             if opp_type == "self":
-                # Self-play: opponent uses current main agent's weights (frozen)
-                opponent_policy_net = create_policy_network(
-                    env.observation_space[env.agent_ids[1]],
-                    env.action_space[env.agent_ids[1]],
-                    network_config
-                )
-                opponent_value_net = create_value_network(
-                    env.observation_space[env.agent_ids[1]],
-                    network_config
-                )
+                # Self-play with win rate based opponent updates
                 
-                # Copy current weights from main agent
-                opponent_policy_net.load_state_dict(policy_net.state_dict())
-                opponent_value_net.load_state_dict(value_net.state_dict())
-                logger.debug("Self-play: Copied main agent weights to opponent")
+                # Check if we need to update opponent based on recent win rate
+                if ep > 0 and should_update_opponent(ep + 1, recent_battle_results, win_rate_window, win_rate_threshold):
+                    # Create new opponent snapshot
+                    current_opponent_id += 1
+                    opponent_snapshots[current_opponent_id] = create_opponent_snapshot(
+                        policy_net, value_net, network_config, env, current_opponent_id
+                    )
+                    last_opponent_update_episode = ep
+                    # Clear recent results to avoid immediate re-update
+                    recent_battle_results = []
                 
-                # Freeze opponent networks (no learning)
-                for param in opponent_policy_net.parameters():
-                    param.requires_grad = False
-                for param in opponent_value_net.parameters():
-                    param.requires_grad = False
+                # Use existing opponent snapshot or create initial one
+                if current_opponent_id not in opponent_snapshots:
+                    # Create initial opponent snapshot (first episode)
+                    current_opponent_id = 1
+                    opponent_snapshots[current_opponent_id] = create_opponent_snapshot(
+                        policy_net, value_net, network_config, env, current_opponent_id
+                    )
+                    last_opponent_update_episode = ep
+                
+                # Get opponent networks from snapshot
+                opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
+                logger.debug(f"Self-play: Using opponent snapshot {current_opponent_id} (last updated: episode {last_opponent_update_episode + 1})")
                 
                 # Opponent agent without optimizer (no learning)
                 opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
@@ -660,6 +784,24 @@ def main(
         for logs in sub_logs_list:
             for name, val in logs.items():
                 sub_totals[name] = sub_totals.get(name, 0.0) + val
+        
+        # Record battle results for win rate tracking (only for self-play)
+        if "self" in opponents_used and "win_loss" in sub_totals:
+            win_loss_reward = sub_totals["win_loss"]
+            if win_loss_reward > 0:
+                battle_result = 1  # Win
+            elif win_loss_reward < 0:
+                battle_result = -1  # Loss
+            else:
+                battle_result = 0  # Draw
+            
+            recent_battle_results.append(battle_result)
+            
+            # Keep only recent results within window
+            if len(recent_battle_results) > win_rate_window * 2:  # Keep 2x window for safety
+                recent_battle_results = recent_battle_results[-win_rate_window:]
+            
+            logger.debug(f"Battle result recorded: {battle_result} (recent results: {len(recent_battle_results)})")
         
         # Log total reward and sub-reward breakdown
         logger.info(
@@ -824,6 +966,18 @@ if __name__ == "__main__":
         type=str,
         help="path to model file (.pt) to resume training from",
     )
+    parser.add_argument(
+        "--win-rate-threshold",
+        type=float,
+        default=0.6,
+        help="win rate threshold for updating self-play opponent (default: 0.6)",
+    )
+    parser.add_argument(
+        "--win-rate-window",
+        type=int,
+        default=50,
+        help="number of recent battles to track for win rate calculation (default: 50)",
+    )
     args = parser.parse_args()
 
     level = getattr(logging, args.log_level.upper(), logging.INFO)
@@ -852,4 +1006,6 @@ if __name__ == "__main__":
         team=args.team,
         teams_dir=args.teams_dir,
         load_model=args.load_model,
+        win_rate_threshold=args.win_rate_threshold,
+        win_rate_window=args.win_rate_window,
     )

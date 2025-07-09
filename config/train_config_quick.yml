@@ -1,0 +1,44 @@
+# Quick training configuration for testing
+episodes: 5
+lr: 0.001
+batch_size: 512
+buffer_capacity: 1024
+gamma: 0.99
+gae_lambda: 0.95
+clip_range: 0.2
+value_coef: 0.5
+entropy_coef: 0.02
+ppo_epochs: 2
+algorithm: ppo
+reward: composite
+reward_config: config/reward.yaml
+
+# Training configuration
+parallel: 1
+checkpoint_interval: 0
+checkpoint_dir: "checkpoints"
+tensorboard: true
+
+# Team configuration
+team: "default"
+teams_dir: null
+
+# Opponent configuration (mix of opponents for testing)
+opponent: null
+opponent_mix: "random:0.3,max:0.3,self:0.4"
+
+# Self-play win rate based opponent update
+win_rate_threshold: 0.5  # Lower threshold for quick testing
+win_rate_window: 10      # Smaller window for quick testing
+
+# Model management
+load_model: null
+save_model: null
+
+# Network architecture configuration
+network:
+  type: "basic"  # Use basic network for faster training
+  hidden_size: 64
+  use_2layer: false
+  use_lstm: false
+  use_attention: false

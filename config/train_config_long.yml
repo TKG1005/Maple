@@ -1,0 +1,47 @@
+# Long training configuration for production runs
+episodes: 1000
+lr: 0.0003
+batch_size: 4096
+buffer_capacity: 8192
+gamma: 0.999
+gae_lambda: 0.95
+clip_range: 0.2
+value_coef: 0.6
+entropy_coef: 0.005
+ppo_epochs: 6
+algorithm: ppo
+reward: composite
+reward_config: config/reward.yaml
+
+# Training configuration
+parallel: 2
+checkpoint_interval: 50
+checkpoint_dir: "checkpoints"
+tensorboard: true
+
+# Team configuration
+team: "random"
+teams_dir: "config/teams"
+
+# Opponent configuration (pure self-play)
+opponent: null
+opponent_mix: null
+
+# Self-play win rate based opponent update
+win_rate_threshold: 0.65  # Higher threshold for stable learning
+win_rate_window: 100      # Larger window for stable statistics
+
+# Model management
+load_model: null
+save_model: "models/final_model.pt"
+
+# Network architecture configuration
+network:
+  type: "attention"  # Use advanced attention network
+  hidden_size: 256
+  use_2layer: true
+  use_lstm: true
+  use_attention: true
+  lstm_hidden_size: 256
+  attention_heads: 8
+  attention_dropout: 0.1
