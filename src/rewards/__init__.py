@@ -25,6 +25,8 @@ __all__ = [
     "FailAndImmuneReward",
     "SwitchPenaltyReward",
     "PokemonCountReward",
+    "RewardNormalizer",
+    "WindowedRewardNormalizer",
 ]
 
 from .hp_delta import HPDeltaReward
@@ -34,3 +36,4 @@ from .turn_penalty import TurnPenaltyReward
 from .fail_and_immune import FailAndImmuneReward
 from .switch_penalty import SwitchPenaltyReward
 from .pokemon_count import PokemonCountReward
+from .normalizer import RewardNormalizer, WindowedRewardNormalizer

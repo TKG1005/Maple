@@ -14,7 +14,7 @@ class ReinforceAlgorithm(BaseAlgorithm):
     def update(
         self,
         model: nn.Module,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
     ) -> float:
         obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
@@ -26,7 +26,9 @@ class ReinforceAlgorithm(BaseAlgorithm):
         selected = log_probs[torch.arange(len(actions)), actions]
         loss = -(selected * rewards).mean()
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        if optimizer is not None:
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
         return float(loss.detach())

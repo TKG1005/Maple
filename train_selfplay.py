@@ -61,6 +61,11 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
+from src.agents.enhanced_networks import (
+    LSTMPolicyNetwork, LSTMValueNetwork,
+    AttentionPolicyNetwork, AttentionValueNetwork
+)  # noqa: E402
+from src.agents.network_factory import create_policy_network, create_value_network, get_network_info  # noqa: E402
 from src.agents.random_agent import RandomAgent  # noqa: E402
 from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
@@ -68,7 +73,7 @@ from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -79,6 +84,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         reward_config_path=reward_config,
         team_mode=team_mode,
         teams_dir=teams_dir,
+        normalize_rewards=normalize_rewards,
     )
     return env
 
@@ -406,12 +412,29 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
-    policy_net = PolicyNetwork(
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
+    
+    # Get network configuration
+    network_config = cfg.get("network", {})
+    logger.info("Network configuration: %s", network_config)
+    
+    # Create networks using factory
+    policy_net = create_policy_network(
         sample_env.observation_space[sample_env.agent_ids[0]],
         sample_env.action_space[sample_env.agent_ids[0]],
+        network_config
     )
-    value_net = ValueNetwork(sample_env.observation_space[sample_env.agent_ids[0]])
+    value_net = create_value_network(
+        sample_env.observation_space[sample_env.agent_ids[0]],
+        network_config
+    )
+    
+    # Log network information
+    policy_info = get_network_info(policy_net)
+    value_info = get_network_info(value_net)
+    logger.info("Policy network: %s", policy_info)
+    logger.info("Value network: %s", value_info)
+    
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
 
@@ -471,7 +494,7 @@ def main(
         
         for i in range(max(1, parallel)):
             # Create new environment for this episode
-            env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
+            env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
             
             # Determine opponent type for this environment
             if opponent_pool:
@@ -488,8 +511,31 @@ def main(
             rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
             
             if opp_type == "self":
-                # Self-play: both agents are RL agents
-                opponent_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+                # Self-play: opponent uses current main agent's weights (frozen)
+                opponent_policy_net = create_policy_network(
+                    env.observation_space[env.agent_ids[1]],
+                    env.action_space[env.agent_ids[1]],
+                    network_config
+                )
+                opponent_value_net = create_value_network(
+                    env.observation_space[env.agent_ids[1]],
+                    network_config
+                )
+                
+                # Copy current weights from main agent
+                opponent_policy_net.load_state_dict(policy_net.state_dict())
+                opponent_value_net.load_state_dict(value_net.state_dict())
+                logger.debug("Self-play: Copied main agent weights to opponent")
+                
+                # Freeze opponent networks (no learning)
+                for param in opponent_policy_net.parameters():
+                    param.requires_grad = False
+                for param in opponent_value_net.parameters():
+                    param.requires_grad = False
+                
+                # Opponent agent without optimizer (no learning)
+                opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
+                logger.debug("Self-play: Created frozen opponent agent")
                 env.register_agent(opponent_agent, env.agent_ids[1])
                 envs.append(env)
                 agents.append((rl_agent, opponent_agent, opp_type))
@@ -564,7 +610,7 @@ def main(
                 combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
         # Use a temporary agent for updating
-        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
+        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         
         if algo_name == "ppo":
@@ -634,7 +680,7 @@ def main(
 
     if init_obs is not None and init_mask is not None and init_probs is not None:
         # Create a temporary agent for probability comparison
-        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir)
+        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         updated_probs = temp_agent.select_action(init_obs, init_mask)
         diff = updated_probs - init_probs

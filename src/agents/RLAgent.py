@@ -18,7 +18,7 @@ class RLAgent(MapleAgent):
         env: PokemonEnv,
         policy_net: nn.Module,
         value_net: nn.Module,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer | None,
         algorithm: BaseAlgorithm | None = None,
     ) -> None:
         super().__init__(env)
@@ -61,6 +61,9 @@ class RLAgent(MapleAgent):
 
     def update(self, batch: dict[str, torch.Tensor]) -> float:
         """Delegate a training update to the underlying algorithm."""
+        if self.optimizer is None:
+            # This agent is frozen (e.g., self-play opponent), no learning
+            return 0.0
         return self.algorithm.update(self.policy_net, self.optimizer, batch)
 
 

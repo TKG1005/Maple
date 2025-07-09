@@ -14,7 +14,7 @@ class BaseAlgorithm(ABC):
     def update(
         self,
         model: nn.Module,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
     ) -> float:
         """Update ``model`` using ``batch`` and return the training loss."""

@@ -17,7 +17,7 @@ import yaml
 from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
-from src.rewards import HPDeltaReward, CompositeReward
+from src.rewards import HPDeltaReward, CompositeReward, RewardNormalizer
 
 
 class PokemonEnv(gym.Env):
@@ -38,6 +38,7 @@ class PokemonEnv(gym.Env):
         player_names: tuple[str, str] | None = None,
         team_mode: str = "default",
         teams_dir: str | None = None,
+        normalize_rewards: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -71,6 +72,10 @@ class PokemonEnv(gym.Env):
         self.player_names = player_names
         self.team_mode = team_mode
         self.teams_dir = teams_dir
+        self.normalize_rewards = normalize_rewards
+        
+        # マルチエージェント用のエージェントID
+        self.agent_ids = ("player_0", "player_1")
         
         # Initialize team loader for random team mode
         self._team_loader = None
@@ -83,9 +88,12 @@ class PokemonEnv(gym.Env):
 
         self._composite_rewards: dict[str, CompositeReward] = {}
         self._sub_reward_logs: dict[str, dict[str, float]] = {}
-
-        # マルチエージェント用のエージェントID
-        self.agent_ids = ("player_0", "player_1")
+        
+        # Initialize reward normalizers for each agent
+        self._reward_normalizers: dict[str, RewardNormalizer] = {}
+        if self.normalize_rewards:
+            for agent_id in self.agent_ids:
+                self._reward_normalizers[agent_id] = RewardNormalizer()
 
         # timeout 設定を config/env_config.yml から読み込む
         config_path = Path(__file__).resolve().parents[2] / "config" / "env_config.yml"
@@ -749,6 +757,8 @@ class PokemonEnv(gym.Env):
         """HP差報酬に勝敗ボーナスを加算して返す。"""
 
         hp_reward = 0.0
+        raw_reward = 0.0
+        
         if self.reward_type == "hp_delta" and pid in self._hp_delta_rewards:
             hp_reward = self._hp_delta_rewards[pid].calc(battle)
 
@@ -756,9 +766,9 @@ class PokemonEnv(gym.Env):
             if getattr(battle, "finished", False):
                 win_reward = 10.0 if getattr(battle, "won", False) else -10.0
 
-            return float(hp_reward + win_reward)
+            raw_reward = float(hp_reward + win_reward)
 
-        if self.reward_type == "composite" and pid in self._composite_rewards:
+        elif self.reward_type == "composite" and pid in self._composite_rewards:
             total = self._composite_rewards[pid].calc(battle)
             self._sub_reward_logs[pid] = dict(
                 self._composite_rewards[pid].last_values
@@ -770,12 +780,32 @@ class PokemonEnv(gym.Env):
                 win_reward = 10.0 if getattr(battle, "won", False) else -10.0
                 self._sub_reward_logs[pid]["win_loss"] = win_reward
             
-            return float(total + win_reward)
+            raw_reward = float(total + win_reward)
+        else:
+            win_reward = 0.0
+            if getattr(battle, "finished", False):
+                win_reward = 10.0 if getattr(battle, "won", False) else -10.0
+            raw_reward = float(hp_reward + win_reward)
+        
+        # Apply reward normalization if enabled
+        if self.normalize_rewards and pid in self._reward_normalizers:
+            self._reward_normalizers[pid].update(raw_reward)
+            normalized_reward = self._reward_normalizers[pid].normalize(raw_reward)
+            return float(normalized_reward)
+        
+        return raw_reward
 
-        win_reward = 0.0
-        if getattr(battle, "finished", False):
-            win_reward = 10.0 if getattr(battle, "won", False) else -10.0
-        return float(hp_reward + win_reward)
+    def get_reward_normalization_stats(self) -> dict[str, dict[str, float]]:
+        """Get reward normalization statistics for all agents.
+        
+        Returns:
+            Dictionary mapping agent IDs to their normalization stats
+        """
+        stats = {}
+        if self.normalize_rewards:
+            for agent_id, normalizer in self._reward_normalizers.items():
+                stats[agent_id] = normalizer.get_stats()
+        return stats
 
     def render(self) -> None:
         """Render the current battle state to the console."""
