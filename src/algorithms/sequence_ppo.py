@@ -64,7 +64,16 @@ class SequencePPOAlgorithm(BaseAlgorithm):
             
             # Store outputs
             all_logits.append(logits_t.squeeze(0))  # Remove batch dimension
-            all_values.append(value_t.squeeze(0))   # Remove batch dimension
+            # Value network returns scalar, but we need to handle different shapes
+            if value_t.dim() == 2:
+                # If value_t is [1, 1], squeeze to scalar
+                all_values.append(value_t.squeeze())
+            elif value_t.dim() == 1:
+                # If value_t is [1], squeeze to scalar
+                all_values.append(value_t.squeeze(0))
+            else:
+                # If already scalar
+                all_values.append(value_t)
         
         # Stack all outputs
         logits = torch.stack(all_logits, dim=0)  # [seq_len, action_dim]
@@ -163,16 +172,18 @@ class SequencePPOAlgorithm(BaseAlgorithm):
         if optimizer is None:
             return 0.0
             
-        # Assume model is a tuple/dict containing (policy_net, value_net)
-        if isinstance(model, (tuple, list)):
+        # Handle different model formats
+        if isinstance(model, (tuple, list)) and len(model) == 2:
             policy_net, value_net = model
         elif isinstance(model, dict):
             policy_net = model["policy"]
             value_net = model["value"]
         else:
-            # Single model case - assume it's the policy network
-            policy_net = model
-            value_net = model
+            # This is not supported for sequence PPO - we need both networks
+            raise ValueError(
+                "SequencePPOAlgorithm requires both policy and value networks. "
+                "Please pass a tuple (policy_net, value_net) or dict {'policy': policy_net, 'value': value_net}."
+            )
         
         device = next(policy_net.parameters()).device
         
@@ -344,8 +355,17 @@ class SequenceReinforceAlgorithm(BaseAlgorithm):
         """Update model using sequence-based REINFORCE with configurable BPTT length."""
         if optimizer is None:
             return 0.0
+        
+        # Handle different model formats - for REINFORCE we only need policy network
+        if isinstance(model, (tuple, list)):
+            policy_net = model[0]  # Use the first network (policy)
+        elif isinstance(model, dict):
+            policy_net = model["policy"]
+        else:
+            # Single model case - assume it's the policy network
+            policy_net = model
             
-        device = next(model.parameters()).device
+        device = next(policy_net.parameters()).device
         
         # Extract episode lengths from batch (if available)
         episode_lengths = batch.get("episode_lengths", [len(batch["observations"])])
@@ -360,7 +380,7 @@ class SequenceReinforceAlgorithm(BaseAlgorithm):
         
         for seq_idx, sequence in enumerate(sequences):
             # Compute loss for this sequence
-            loss, metrics = self._compute_sequence_loss(model, sequence, device)
+            loss, metrics = self._compute_sequence_loss(policy_net, sequence, device)
             
             # Accumulate loss
             total_loss += loss
@@ -383,7 +403,7 @@ class SequenceReinforceAlgorithm(BaseAlgorithm):
         
         # Gradient clipping
         if self.grad_clip_norm > 0:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=self.grad_clip_norm)
+            torch.nn.utils.clip_grad_norm_(policy_net.parameters(), max_norm=self.grad_clip_norm)
         
         optimizer.step()
         

@@ -42,6 +42,8 @@ from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
 from src.agents.random_agent import RandomAgent  # noqa: E402
 from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
+from src.agents.network_factory import create_policy_network, create_value_network, get_network_info  # noqa: E402
+from src.utils.device_utils import get_device, transfer_to_device, get_device_info  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -85,6 +87,11 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
     """Run one battle and return win flag and total reward."""
 
     env = agent.env
+    
+    # Reset hidden states at episode start
+    if hasattr(agent, 'reset_hidden_states'):
+        agent.reset_hidden_states()
+    
     obs, info, action_mask = env.reset(return_masks=True)
     if info.get("request_teampreview"):
         team_cmd = agent.choose_team(obs)
@@ -106,6 +113,12 @@ def run_episode_multi(
     """Run one battle between two agents and return win flags and rewards."""
 
     env = agent0.env
+    
+    # Reset hidden states at episode start
+    if hasattr(agent0, 'reset_hidden_states'):
+        agent0.reset_hidden_states()
+    if hasattr(agent1, 'reset_hidden_states'):
+        agent1.reset_hidden_states()
     
     observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
@@ -156,7 +169,7 @@ def create_opponent_agent(opponent_type: str, env: PokemonEnv):
 
 
 def evaluate_single(
-    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random", team: str = "default", teams_dir: str | None = None
+    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random", team: str = "default", teams_dir: str | None = None, device: str = "auto"
 ) -> None:
     # Multi-agent環境でRL学習済みエージェント vs 指定した対戦相手
     model_name = Path(model_path).stem
@@ -179,6 +192,11 @@ def evaluate_single(
         team_mode = "default"
         logger.info("Using default team mode")
     
+    # Setup device
+    device_obj = get_device(prefer_gpu=True, device_name=device)
+    device_info = get_device_info(device_obj)
+    logger.info("Device info: %s", device_info)
+    
     # モデルの準備
     state_dict = torch.load(model_path, map_location="cpu")
 
@@ -188,16 +206,94 @@ def evaluate_single(
         # 各バトルごとに新しい環境を作成（ユニークな名前で）
         env = init_env(save_replays=replay_dir, single=False, player_names=(model_name, opponent_name), team_mode=team_mode, teams_dir=teams_dir)
         
+        # Check if state_dict contains network configuration
+        network_config = {}
+        if isinstance(state_dict, dict) and "network_config" in state_dict:
+            network_config = state_dict["network_config"]
+            logger.info("Found network config: %s", network_config)
+        else:
+            # Try to detect network type from state_dict structure
+            if isinstance(state_dict, dict) and "policy" in state_dict:
+                policy_keys = list(state_dict["policy"].keys())
+                if any("lstm" in key for key in policy_keys):
+                    network_config = {
+                        "type": "lstm",
+                        "hidden_size": 128,
+                        "lstm_hidden_size": 128,
+                        "use_lstm": True,
+                        "use_2layer": True
+                    }
+                    logger.info("Detected LSTM network from state_dict structure")
+                elif any("attention" in key for key in policy_keys):
+                    network_config = {
+                        "type": "attention",
+                        "hidden_size": 128,
+                        "use_attention": True,
+                        "use_lstm": False,
+                        "use_2layer": True
+                    }
+                    logger.info("Detected Attention network from state_dict structure")
+                else:
+                    network_config = {
+                        "type": "basic",
+                        "hidden_size": 128,
+                        "use_lstm": False,
+                        "use_attention": False,
+                        "use_2layer": True
+                    }
+                    logger.info("Detected basic network from state_dict structure")
+            elif isinstance(state_dict, dict):
+                # Direct state_dict (old format)
+                direct_keys = list(state_dict.keys())
+                if any("lstm" in key for key in direct_keys):
+                    network_config = {
+                        "type": "lstm",
+                        "hidden_size": 128,
+                        "lstm_hidden_size": 128,
+                        "use_lstm": True,
+                        "use_2layer": True
+                    }
+                    logger.info("Detected LSTM network from direct state_dict")
+                else:
+                    network_config = {
+                        "type": "basic",
+                        "hidden_size": 128,
+                        "use_lstm": False,
+                        "use_attention": False,
+                        "use_2layer": True
+                    }
+                    logger.info("Detected basic network from direct state_dict")
+        
+        logger.info("Using network config: %s", network_config)
+        
         # RL学習済みエージェントの作成 (player_0)
-        policy_net = PolicyNetwork(
-            env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+        policy_net = create_policy_network(
+            env.observation_space[env.agent_ids[0]], 
+            env.action_space[env.agent_ids[0]],
+            network_config
         )
-        value_net = ValueNetwork(env.observation_space[env.agent_ids[0]])
+        value_net = create_value_network(
+            env.observation_space[env.agent_ids[0]],
+            network_config
+        )
+        
+        # Transfer to device
+        policy_net = transfer_to_device(policy_net, device_obj)
+        value_net = transfer_to_device(value_net, device_obj)
+        
+        # Load model weights
         if isinstance(state_dict, dict) and "policy" in state_dict and "value" in state_dict:
             policy_net.load_state_dict(state_dict["policy"])
             value_net.load_state_dict(state_dict["value"])
         else:
             policy_net.load_state_dict(state_dict)
+        
+        # Log network information
+        policy_info = get_network_info(policy_net)
+        value_info = get_network_info(value_net)
+        logger.info("Policy network: %s", policy_info)
+        logger.info("Value network: %s", value_info)
+        
         params = list(policy_net.parameters()) + list(value_net.parameters())
         optimizer = optim.Adam(params, lr=1e-3)
         rl_agent = RLAgent(env, policy_net, value_net, optimizer)
@@ -224,7 +320,7 @@ def evaluate_single(
 
 
 def compare_models(
-    model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays", team: str = "default", teams_dir: str | None = None
+    model_a: str, model_b: str, n: int = 1, replay_dir: str | bool = "replays", team: str = "default", teams_dir: str | None = None, device: str = "auto"
 ) -> None:
     """Evaluate two models against each other and report win rates."""
 
@@ -241,6 +337,11 @@ def compare_models(
         team_mode = "default"
         logger.info("Using default team mode")
     
+    # Setup device
+    device_obj = get_device(prefer_gpu=True, device_name=device)
+    device_info = get_device_info(device_obj)
+    logger.info("Device info: %s", device_info)
+    
     # モデルの準備
     state_dict0 = torch.load(model_a, map_location="cpu")
     state_dict1 = torch.load(model_b, map_location="cpu")
@@ -253,11 +354,56 @@ def compare_models(
         # 各バトルごとに新しい環境を作成（ユニークな名前で）
         env = init_env(save_replays=replay_dir, single=False, player_names=(model_a_name, model_b_name), team_mode=team_mode, teams_dir=teams_dir)
 
+        # Get network configurations with auto-detection
+        def detect_network_config(state_dict, model_name):
+            if isinstance(state_dict, dict) and "network_config" in state_dict:
+                return state_dict["network_config"]
+            elif isinstance(state_dict, dict) and "policy" in state_dict:
+                policy_keys = list(state_dict["policy"].keys())
+                if any("lstm" in key for key in policy_keys):
+                    return {
+                        "type": "lstm",
+                        "hidden_size": 128,
+                        "lstm_hidden_size": 128,
+                        "use_lstm": True,
+                        "use_2layer": True
+                    }
+                elif any("attention" in key for key in policy_keys):
+                    return {
+                        "type": "attention",
+                        "hidden_size": 128,
+                        "use_attention": True,
+                        "use_lstm": False,
+                        "use_2layer": True
+                    }
+            return {
+                "type": "basic",
+                "hidden_size": 128,
+                "use_lstm": False,
+                "use_attention": False,
+                "use_2layer": True
+            }
+        
+        network_config0 = detect_network_config(state_dict0, model_a_name)
+        network_config1 = detect_network_config(state_dict1, model_b_name)
+        logger.info("Model A network config: %s", network_config0)
+        logger.info("Model B network config: %s", network_config1)
+
         # Create player_1 agent first so that registration order is correct
-        policy1 = PolicyNetwork(
-            env.observation_space[env.agent_ids[1]], env.action_space[env.agent_ids[1]]
+        policy1 = create_policy_network(
+            env.observation_space[env.agent_ids[1]], 
+            env.action_space[env.agent_ids[1]],
+            network_config1
         )
-        value1 = ValueNetwork(env.observation_space[env.agent_ids[1]])
+        value1 = create_value_network(
+            env.observation_space[env.agent_ids[1]],
+            network_config1
+        )
+        
+        # Transfer to device
+        policy1 = transfer_to_device(policy1, device_obj)
+        value1 = transfer_to_device(value1, device_obj)
+        
         if isinstance(state_dict1, dict) and "policy" in state_dict1 and "value" in state_dict1:
             policy1.load_state_dict(state_dict1["policy"])
             value1.load_state_dict(state_dict1["value"])
@@ -268,10 +414,20 @@ def compare_models(
         agent1 = RLAgent(env, policy1, value1, opt1)
         env.register_agent(agent1, env.agent_ids[1])
 
-        policy0 = PolicyNetwork(
-            env.observation_space[env.agent_ids[0]], env.action_space[env.agent_ids[0]]
+        policy0 = create_policy_network(
+            env.observation_space[env.agent_ids[0]], 
+            env.action_space[env.agent_ids[0]],
+            network_config0
         )
-        value0 = ValueNetwork(env.observation_space[env.agent_ids[0]])
+        value0 = create_value_network(
+            env.observation_space[env.agent_ids[0]],
+            network_config0
+        )
+        
+        # Transfer to device
+        policy0 = transfer_to_device(policy0, device_obj)
+        value0 = transfer_to_device(value0, device_obj)
+        
         if isinstance(state_dict0, dict) and "policy" in state_dict0 and "value" in state_dict0:
             policy0.load_state_dict(state_dict0["policy"])
             value0.load_state_dict(state_dict0["value"])
@@ -342,13 +498,19 @@ if __name__ == "__main__":
         type=str,
         help="directory containing team files for random team mode",
     )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default="auto",
+        help="device to use for evaluation (auto, cpu, cuda, mps)",
+    )
     args = parser.parse_args()
 
     setup_logging("logs", vars(args))
 
     if args.models:
-        compare_models(args.models[0], args.models[1], args.n, args.replay_dir, args.team, args.teams_dir)
+        compare_models(args.models[0], args.models[1], args.n, args.replay_dir, args.team, args.teams_dir, args.device)
     elif args.model:
-        evaluate_single(args.model, args.n, args.replay_dir, args.opponent, args.team, args.teams_dir)
+        evaluate_single(args.model, args.n, args.replay_dir, args.opponent, args.team, args.teams_dir, args.device)
     else:
         parser.error("--model or --models is required")
