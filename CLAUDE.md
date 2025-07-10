@@ -384,6 +384,94 @@ This ensures compatibility across all network types while maintaining optimal pe
 
 ## Recent Updates (2025-07-10)
 
+### LSTM Learning Optimization and Sequence-Based Training (Latest)
+Implemented comprehensive LSTM learning optimization based on the design document `docs/AI-design/M7/LSTM学習の適正化・バッチ学習方針.md`.
+
+#### Sequence-Based Algorithm Implementation
+**Problem**: Traditional algorithms processed batch data as flattened sequences, breaking temporal dependencies and causing gradient mixing between episodes.
+
+**Solution**: 
+- **SequencePPOAlgorithm**: PPO optimized for LSTM sequence learning
+- **SequenceReinforceAlgorithm**: REINFORCE optimized for LSTM sequence learning
+- **Step-by-step processing**: Each timestep processed individually to maintain LSTM hidden states
+- **Episode boundary preservation**: Hidden states reset at episode boundaries
+
+```python
+# Sequence processing maintains temporal structure
+def _process_sequence_step_by_step(self, policy_net, value_net, obs_sequence, device):
+    policy_hidden = None
+    value_hidden = None
+    for t in range(seq_len):
+        obs_t = obs_sequence[t:t+1]
+        logits_t, policy_hidden = policy_net(obs_t, policy_hidden)
+        value_t, value_hidden = value_net(obs_t, value_hidden)
+        # Store outputs for each timestep
+```
+
+#### Configurable BPTT (Backpropagation Through Time)
+**Features**:
+- **Full Episode BPTT**: `bptt_length: 0` processes entire episodes
+- **Truncated BPTT**: `bptt_length: N` splits episodes into N-step sequences
+- **Gradient Preservation**: Hidden states maintained across truncated sequences
+
+```yaml
+sequence_learning:
+  enabled: true
+  bptt_length: 0      # 0=full episode, >0=truncated
+  grad_clip_norm: 5.0 # Gradient clipping for stability
+```
+
+#### Enhanced Gradient Clipping
+**Implementation**: Added gradient clipping to all algorithms for training stability
+- **Standard Algorithms**: 5.0 norm clipping added to PPO and REINFORCE
+- **Sequence Algorithms**: Configurable clipping (default 5.0, up to 10.0 for complex models)
+
+```python
+# Gradient clipping in all algorithms
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
+```
+
+#### RLAgent Integration Enhancement
+**Problem**: RLAgent only passed policy_net to algorithms, but sequence algorithms need both networks.
+
+**Solution**: Enhanced RLAgent.update() to detect sequence algorithms:
+```python
+def update(self, batch):
+    algorithm_name = type(self.algorithm).__name__
+    if algorithm_name in ["SequencePPOAlgorithm", "SequenceReinforceAlgorithm"]:
+        return self.algorithm.update((self.policy_net, self.value_net), self.optimizer, batch)
+    else:
+        return self.algorithm.update(self.policy_net, self.optimizer, batch)
+```
+
+#### Automatic Algorithm Selection
+**Smart Selection**: Training script automatically chooses sequence algorithms when:
+- `sequence_learning.enabled: true` in config
+- `use_lstm: true` in network config
+
+```python
+if use_sequence_learning and network_config.get("use_lstm", False):
+    algorithm = SequencePPOAlgorithm(bptt_length=bptt_length, grad_clip_norm=grad_clip_norm)
+else:
+    algorithm = PPOAlgorithm(clip_range=clip_range)
+```
+
+#### Episode Length Tracking
+**Data Structure Enhancement**: Added episode_lengths to batch data for proper sequence splitting:
+```python
+batch = {
+    "observations": np.stack([t["obs"] for t in traj]),
+    "actions": np.array([t["action"] for t in traj]),
+    # ... other arrays ...
+    "episode_lengths": np.array([len(traj)], dtype=np.int64),  # NEW
+}
+```
+
+#### Configuration Templates
+**Updated Configs**:
+- `config/train_config.yml`: Testing config with sequence learning enabled
+- `config/train_config_long.yml`: Production config with truncated BPTT (50 steps)
+
 ### LSTM Conflict Resolution and GPU Support
 Implemented comprehensive fixes for LSTM hidden state management and added full GPU acceleration support.
 
