@@ -208,19 +208,35 @@ Fixed critical issue where LSTM networks were not maintaining sequential learnin
 **Implementation Details**:
 ```python
 # In RLAgent.__init__()
-self.has_hidden_states = hasattr(policy_net, 'hidden_state') and (value_net is None or hasattr(value_net, 'hidden_state'))
+self.has_hidden_states = hasattr(policy_net, 'use_lstm') and (policy_net.use_lstm or (hasattr(policy_net, 'use_attention') and policy_net.use_attention))
+self.policy_hidden = None
+self.value_hidden = None
 
 # In RLAgent.select_action()
 if self.has_hidden_states:
     if obs_tensor.dim() == 1:
         obs_tensor = obs_tensor.unsqueeze(0)
-    logits = self.policy_net(obs_tensor, self.policy_net.hidden_state)
+    logits, self.policy_hidden = self.policy_net(obs_tensor, self.policy_hidden)
     if logits.dim() == 2 and logits.size(0) == 1:
         logits = logits.squeeze(0)
+
+# In RLAgent.get_value() (New 2025-07-10)
+if self.has_hidden_states:
+    if obs_tensor.dim() == 1:
+        obs_tensor = obs_tensor.unsqueeze(0)
+    value, self.value_hidden = self.value_net(obs_tensor, self.value_hidden)
+    if value.dim() == 2 and value.size(0) == 1:
+        value = value.squeeze(0)
 
 # In run_episode() and run_episode_with_opponent()
 agent.reset_hidden_states()  # Called at episode start
 ```
+
+**Value Network Hidden State Management (New 2025-07-10)**:
+- Added `RLAgent.get_value()` method to handle value network hidden states
+- Modified training loops to use `agent.get_value()` instead of direct `value_net()` calls
+- Both policy and value networks now maintain separate hidden states
+- Unified interface for both network types through RLAgent
 
 **Testing**: Added comprehensive tests (`test_lstm_sequential_learning.py`) to verify:
 - Hidden states change across action selections

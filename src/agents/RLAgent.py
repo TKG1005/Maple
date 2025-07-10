@@ -80,6 +80,26 @@ class RLAgent(MapleAgent):
         self._logger.debug("%s: chosen action = %s", self.__class__.__name__, action)
         return action
 
+    def get_value(self, observation: np.ndarray) -> float:
+        """Get state value from value network through RLAgent interface."""
+        obs_tensor = torch.as_tensor(observation, dtype=torch.float32, device=next(self.value_net.parameters()).device)
+        
+        # Handle LSTM/Attention networks with hidden states
+        if self.has_hidden_states:
+            # Add batch dimension if needed for LSTM
+            if obs_tensor.dim() == 1:
+                obs_tensor = obs_tensor.unsqueeze(0)
+            # Use stored hidden state
+            value, self.value_hidden = self.value_net(obs_tensor, self.value_hidden)
+            # Remove batch dimension if we added it
+            if value.dim() == 2 and value.size(0) == 1:
+                value = value.squeeze(0)
+        else:
+            # Basic network without hidden states
+            value = self.value_net(obs_tensor)
+        
+        return float(value.item())
+
     def reset_hidden_states(self) -> None:
         """Reset hidden states for LSTM/Attention networks at episode boundaries."""
         if self.has_hidden_states:

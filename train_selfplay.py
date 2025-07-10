@@ -188,17 +188,8 @@ def run_episode_with_opponent(
         else:
             act1 = 0
 
-        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32, device=device)
-        if obs0_tensor.dim() == 1:
-            obs0_tensor = obs0_tensor.unsqueeze(0)
-        # Call value network with hidden state only if supported
-        if hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)):
-            val0_tensor, _ = value_net(obs0_tensor, None)  # Use None for fresh hidden state in training
-        else:
-            val0_tensor = value_net(obs0_tensor)
-        if val0_tensor.dim() > 0:
-            val0_tensor = val0_tensor.squeeze(0)
-        val0 = float(val0_tensor.item())
+        # Get value through RLAgent interface to handle hidden states properly
+        val0 = rl_agent.get_value(obs0)
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
         observations, rewards, terms, truncs, _, next_masks = env.step(
@@ -309,17 +300,9 @@ def run_episode(
         act0 = int(rng.choice(len(probs0), p=probs0))
         act1 = int(rng.choice(len(probs1), p=probs1))
         logp0 = float(np.log(probs0[act0] + 1e-8))
-        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32, device=device)
-        if obs0_tensor.dim() == 1:
-            obs0_tensor = obs0_tensor.unsqueeze(0)
-        # Call value network with hidden state only if supported
-        if hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)):
-            val0_tensor, _ = value_net(obs0_tensor, None)  # Use None for fresh hidden state in training
-        else:
-            val0_tensor = value_net(obs0_tensor)
-        if val0_tensor.dim() > 0:
-            val0_tensor = val0_tensor.squeeze(0)
-        val0 = float(val0_tensor.item())
+        
+        # Get value through RLAgent interface to handle hidden states properly
+        val0 = agent0.get_value(obs0)
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
         observations, rewards, terms, truncs, _, next_masks = env.step(
