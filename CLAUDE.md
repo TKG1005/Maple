@@ -228,7 +228,84 @@ agent.reset_hidden_states()  # Called at episode start
 - Sequential learning produces different outputs for different histories
 - LSTM networks behave differently from basic networks
 
-This fix ensures LSTM networks can properly learn sequential patterns within episodes while maintaining clean state boundaries between episodes.
+### Configuration File System (New 2025-07-10)
+Implemented comprehensive YAML-based configuration management to simplify training execution:
+
+**Problem**: Training required long command lines with many parameters, making it difficult to manage different training scenarios and reproduce experiments.
+
+**Solution**: Created YAML configuration system with multiple templates:
+- `config/train_config.yml`: Default balanced configuration
+- `config/train_config_quick.yml`: Fast testing (5 episodes, mixed opponents)
+- `config/train_config_long.yml`: Production training (1000 episodes, attention networks)
+- `config/train_config_attention.yml`: Pure attention network configuration
+
+**Features**:
+- All training parameters configurable via YAML
+- Command line arguments override config file values
+- Network architecture configuration in config files
+- Detailed configuration logging
+- Parameter validation and type conversion
+
+**Usage Examples**:
+```bash
+# Simple execution with config file
+python train_selfplay.py --config config/train_config_quick.yml
+
+# Config file with parameter override
+python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.001
+```
+
+### Win Rate-Based Opponent Update System (New 2025-07-10)
+Implemented intelligent opponent update system to reduce excessive network copying in self-play:
+
+**Problem**: Traditional self-play copied opponent networks every episode, leading to inefficient learning due to constantly changing opponents.
+
+**Solution**: Conditional opponent updates based on win rate threshold:
+- Monitor recent battle results using win_loss reward component
+- Update opponent network only when win rate exceeds threshold (default 60%)
+- Maintain opponent snapshots for consistent training
+- Configurable win rate threshold and monitoring window
+
+**Implementation**:
+```python
+def should_update_opponent(episode_num, battle_results, window_size, threshold):
+    """Check if opponent should be updated based on recent win rate."""
+    if len(battle_results) < window_size:
+        return False
+    recent_results = battle_results[-window_size:]
+    wins = sum(1 for result in recent_results if result == 1)
+    win_rate = wins / len(recent_results)
+    return win_rate >= threshold
+```
+
+**Configuration**:
+```yaml
+# Self-play win rate based opponent update
+win_rate_threshold: 0.6  # Win rate threshold for updating opponent
+win_rate_window: 50      # Number of recent battles to track
+```
+
+**Benefits**:
+- Reduced network copying frequency
+- More stable learning against consistent opponents
+- Improved training efficiency
+- Configurable thresholds for different scenarios
+
+### Network Forward Method Compatibility Fix (New 2025-07-10)
+Fixed compatibility issue between basic networks and enhanced LSTM/Attention networks:
+
+**Problem**: Basic networks (PolicyNetwork, ValueNetwork) only accept one argument in forward(), while enhanced networks (LSTM, Attention) accept optional hidden state parameters.
+
+**Solution**: Added conditional forward method calls based on network capabilities:
+```python
+# Call value network with hidden state only if supported
+if hasattr(value_net, 'hidden_state'):
+    val0_tensor = value_net(obs0_tensor, value_net.hidden_state)
+else:
+    val0_tensor = value_net(obs0_tensor)
+```
+
+This ensures compatibility across all network types while maintaining optimal performance for each architecture.
 
 ## Project-Specific Rules
 

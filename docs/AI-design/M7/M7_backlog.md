@@ -248,9 +248,9 @@ rewards:
 - [x] B-2 MaxDamageBot 実装
 - [x] B-3 学習相手スケジューラ
 - [x] B-4 複数チームファイルのランダム使用
-- [ ] N-1 MLP 2 層化
-- [ ] N-2 LSTM ヘッダ追加
-- [ ] N-3 アテンション試験フック
+- [x] N-1 MLP 2 層化（基本・LSTM・Attentionネットワーク実装）
+- [x] N-2 LSTM ヘッダ追加（隠れ状態管理とシーケンシャル学習対応）
+- [x] N-3 アテンション試験フック（Multi-head Attentionネットワーク実装）
 - [ ] E-1 PPO エントロピー係数 config 化
 - [ ] E-2 ε-greedy wrapper 実装
 - [ ] V-1 TensorBoard スカラー整理
@@ -261,3 +261,27 @@ rewards:
 - [ ] C-1 GitHub Actions スモーク
 - [ ] C-2 Codex/LLM 用 TODO.md
 - [ ] C-3 Pre-commit Black + ruff
+
+## 新規追加実装 (2025-07-10)
+
+- [x] **設定ファイルシステム**: YAMLベースのパラメータ管理
+  - `config/train_config.yml`: デフォルト設定
+  - `config/train_config_quick.yml`: 高速テスト用
+  - `config/train_config_long.yml`: 本格訓練用
+  - `config/train_config_attention.yml`: Attentionネットワーク特化
+  - コマンドライン引数の簡素化と設定の再利用性向上
+
+- [x] **勝率ベース対戦相手更新システム**: 効率的なセルフプレイ学習
+  - 勝率閾値（デフォルト60%）による条件付き対戦相手更新
+  - 対戦相手スナップショット管理
+  - 過度なネットワークコピー削減による学習効率向上
+  - 設定可能な勝率閾値と監視ウィンドウ
+
+- [x] **LSTM隠れ状態管理修正**: シーケンシャル学習の実現
+  - バッチ処理対応の隠れ状態管理
+  - エピソード境界での隠れ状態リセット
+  - 学習安定性の大幅改善
+
+- [x] **ネットワーク互換性修正**: 全ネットワーク対応
+  - 基本・LSTM・Attentionネットワークの統一インターフェース
+  - 条件分岐による forward メソッド互換性確保

@@ -38,3 +38,59 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   - `WindowedRewardNormalizer` による滑動窓正規化（代替手法）
   - エージェント別の独立した正規化器で学習安定性を向上
   - `PokemonEnv` で自動的に報酬正規化を適用、`normalize_rewards` パラメータで制御可能
+- 2025-07-10 **重要アップデート**: LSTM隠れ状態管理とシーケンシャル学習を修正
+  - `RLAgent` にバッチ処理対応の隠れ状態管理を実装
+  - エピソード境界での隠れ状態リセット機能を追加
+  - LSTM/Attentionネットワークでの学習安定性を大幅改善
+- 2025-07-10 **新機能**: 設定ファイルシステムと勝率ベース対戦相手更新を実装
+  - YAMLベースの包括的なパラメータ管理システム
+  - 勝率閾値（60%）による効率的な対戦相手更新機能
+  - `config/train_config_quick.yml`（高速テスト）、`config/train_config_long.yml`（本格訓練）等の設定テンプレート
+  - コマンドライン引数の大幅簡素化とパラメータ管理の改善
+
+## 新しい使用方法（設定ファイルシステム）
+
+### 設定ファイルベースの訓練
+
+```bash
+# 高速テスト（5エピソード、混合対戦相手）
+python train_selfplay.py --config config/train_config_quick.yml
+
+# 本格訓練（1000エピソード、Attentionネットワーク）
+python train_selfplay.py --config config/train_config_long.yml
+
+# デフォルト設定
+python train_selfplay.py --config config/train_config.yml
+```
+
+### 設定ファイルとコマンドライン引数の組み合わせ
+
+```bash
+# 設定ファイル + 個別パラメータ上書き
+python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.001
+
+# 勝率閾値を変更してセルフプレイ
+python train_selfplay.py --config config/train_config.yml --win-rate-threshold 0.7
+```
+
+### 利用可能な設定ファイル
+
+- `config/train_config.yml`: デフォルト設定（LSTMネットワーク）
+- `config/train_config_quick.yml`: 高速テスト用（基本ネットワーク、混合対戦相手）
+- `config/train_config_long.yml`: 本格訓練用（Attentionネットワーク、1000エピソード）
+- `config/train_config_attention.yml`: Attentionネットワーク特化設定
+
+### 勝率ベース対戦相手更新システム
+
+セルフプレイ時に勝率が設定した閾値（デフォルト60%）を超えた場合のみ対戦相手ネットワークを更新します：
+
+```yaml
+# config/train_config.yml
+win_rate_threshold: 0.6  # 60%の勝率で更新
+win_rate_window: 50      # 最近50戦の勝率を監視
+```
+
+このシステムにより：
+- 過度なネットワークコピーを削減
+- 学習効率の向上
+- 安定した対戦相手との継続的な学習
