@@ -30,7 +30,9 @@ class RLAgent(MapleAgent):
         self._logger.setLevel(logging.DEBUG)
         
         # Check if networks support hidden states (LSTM/Attention)
-        self.has_hidden_states = hasattr(policy_net, 'hidden_state') and (value_net is None or hasattr(value_net, 'hidden_state'))
+        self.has_hidden_states = hasattr(policy_net, 'use_lstm') and (policy_net.use_lstm or (hasattr(policy_net, 'use_attention') and policy_net.use_attention))
+        if value_net is not None:
+            self.has_hidden_states = self.has_hidden_states and (hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)))
         self.policy_hidden = None
         self.value_hidden = None
 
@@ -40,15 +42,15 @@ class RLAgent(MapleAgent):
         """Return action probabilities respecting ``action_mask``."""
         player_id = self._get_player_id()
         self._logger.debug("%s: %s", player_id, action_mask)
-        obs_tensor = torch.as_tensor(observation, dtype=torch.float32)
+        obs_tensor = torch.as_tensor(observation, dtype=torch.float32, device=next(self.policy_net.parameters()).device)
         
         # Handle LSTM/Attention networks with hidden states
         if self.has_hidden_states:
             # Add batch dimension if needed for LSTM
             if obs_tensor.dim() == 1:
                 obs_tensor = obs_tensor.unsqueeze(0)
-            # Use stored hidden state from the network itself
-            logits = self.policy_net(obs_tensor, self.policy_net.hidden_state)
+            # Use stored hidden state
+            logits, self.policy_hidden = self.policy_net(obs_tensor, self.policy_hidden)
             # Remove batch dimension if we added it
             if logits.dim() == 2 and logits.size(0) == 1:
                 logits = logits.squeeze(0)
@@ -81,10 +83,6 @@ class RLAgent(MapleAgent):
     def reset_hidden_states(self) -> None:
         """Reset hidden states for LSTM/Attention networks at episode boundaries."""
         if self.has_hidden_states:
-            if hasattr(self.policy_net, 'reset_hidden'):
-                self.policy_net.reset_hidden()
-            if self.value_net is not None and hasattr(self.value_net, 'reset_hidden'):
-                self.value_net.reset_hidden()
             self.policy_hidden = None
             self.value_hidden = None
             self._logger.debug("Hidden states reset for %s", self._get_player_id())

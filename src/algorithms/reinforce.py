@@ -17,11 +17,19 @@ class ReinforceAlgorithm(BaseAlgorithm):
         optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
     ) -> float:
-        obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
-        actions = torch.as_tensor(batch["actions"], dtype=torch.int64)
-        rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32)
+        # Get device from model parameters
+        device = next(model.parameters()).device
+        
+        obs = torch.as_tensor(batch["observations"], dtype=torch.float32, device=device)
+        actions = torch.as_tensor(batch["actions"], dtype=torch.int64, device=device)
+        rewards = torch.as_tensor(batch["rewards"], dtype=torch.float32, device=device)
 
-        logits = model(obs)
+        # Handle both enhanced networks (return tuple) and basic networks (return single tensor)
+        net_output = model(obs)
+        if isinstance(net_output, tuple):
+            logits, _ = net_output  # Enhanced network returns (logits, hidden_state)
+        else:
+            logits = net_output  # Basic network returns logits only
         log_probs = torch.log_softmax(logits, dim=-1)
         selected = log_probs[torch.arange(len(actions)), actions]
         loss = -(selected * rewards).mean()

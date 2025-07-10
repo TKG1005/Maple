@@ -20,6 +20,9 @@ ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+# Import device utilities
+from src.utils.device_utils import get_device, transfer_to_device, get_device_info
+
 logger = logging.getLogger(__name__)
 
 
@@ -108,6 +111,7 @@ def run_episode_with_opponent(
     value_net: torch.nn.Module,
     gamma: float,
     lam: float,
+    device: torch.device,
     record_init: bool = False,
     opponent_type: str = "unknown",
 ) -> tuple[
@@ -184,12 +188,12 @@ def run_episode_with_opponent(
         else:
             act1 = 0
 
-        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
+        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32, device=device)
         if obs0_tensor.dim() == 1:
             obs0_tensor = obs0_tensor.unsqueeze(0)
         # Call value network with hidden state only if supported
-        if hasattr(value_net, 'hidden_state'):
-            val0_tensor = value_net(obs0_tensor, value_net.hidden_state)
+        if hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)):
+            val0_tensor, _ = value_net(obs0_tensor, None)  # Use None for fresh hidden state in training
         else:
             val0_tensor = value_net(obs0_tensor)
         if val0_tensor.dim() > 0:
@@ -246,6 +250,7 @@ def run_episode(
     value_net: torch.nn.Module,
     gamma: float,
     lam: float,
+    device: torch.device,
     record_init: bool = False,
 ) -> tuple[
     dict[str, np.ndarray],
@@ -304,12 +309,12 @@ def run_episode(
         act0 = int(rng.choice(len(probs0), p=probs0))
         act1 = int(rng.choice(len(probs1), p=probs1))
         logp0 = float(np.log(probs0[act0] + 1e-8))
-        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32)
+        obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32, device=device)
         if obs0_tensor.dim() == 1:
             obs0_tensor = obs0_tensor.unsqueeze(0)
         # Call value network with hidden state only if supported
-        if hasattr(value_net, 'hidden_state'):
-            val0_tensor = value_net(obs0_tensor, value_net.hidden_state)
+        if hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)):
+            val0_tensor, _ = value_net(obs0_tensor, None)  # Use None for fresh hidden state in training
         else:
             val0_tensor = value_net(obs0_tensor)
         if val0_tensor.dim() > 0:
@@ -384,6 +389,7 @@ def main(
     load_model: str | None = None,
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
+    device: str = "auto",
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -521,6 +527,15 @@ def main(
         sample_env.observation_space[sample_env.agent_ids[0]],
         network_config
     )
+    
+    # Setup device (GPU/CPU)
+    device = get_device(prefer_gpu=True, device_name=device)
+    device_info = get_device_info(device)
+    logger.info("Device info: %s", device_info)
+    
+    # Transfer networks to device
+    policy_net = transfer_to_device(policy_net, device)
+    value_net = transfer_to_device(value_net, device)
     
     # Log network information
     policy_info = get_network_info(policy_net)
@@ -705,6 +720,7 @@ def main(
                         value_net,
                         gamma,
                         lam,
+                        device,
                         record_init=(ep == 0 and i == 0),
                         opponent_type=agents[i][2],
                     )
@@ -729,6 +745,7 @@ def main(
                         value_net,
                         gamma,
                         lam,
+                        device,
                         record_init=(ep == 0 and i == 0),
                     )
                     for i in range(len(envs))
@@ -962,6 +979,12 @@ if __name__ == "__main__":
         help="directory containing team files for random team mode",
     )
     parser.add_argument(
+        "--device",
+        type=str,
+        default="auto",
+        help="device to use for training (auto, cpu, cuda, mps)",
+    )
+    parser.add_argument(
         "--load-model",
         type=str,
         help="path to model file (.pt) to resume training from",
@@ -1008,4 +1031,5 @@ if __name__ == "__main__":
         load_model=args.load_model,
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
+        device=args.device,
     )

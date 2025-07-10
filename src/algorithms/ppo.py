@@ -66,14 +66,22 @@ class PPOAlgorithm(BaseAlgorithm):
         batch: Dict[str, torch.Tensor],
     ) -> float:
         policy_net = model
-        obs = torch.as_tensor(batch["observations"], dtype=torch.float32)
-        actions = torch.as_tensor(batch["actions"], dtype=torch.int64)
-        old_log_probs = torch.as_tensor(batch["old_log_probs"], dtype=torch.float32)
-        advantages = torch.as_tensor(batch["advantages"], dtype=torch.float32)
-        returns = torch.as_tensor(batch["returns"], dtype=torch.float32)
-        values = torch.as_tensor(batch.get("values", torch.zeros_like(returns)), dtype=torch.float32)
+        # Get device from model parameters
+        device = next(model.parameters()).device
+        
+        obs = torch.as_tensor(batch["observations"], dtype=torch.float32, device=device)
+        actions = torch.as_tensor(batch["actions"], dtype=torch.int64, device=device)
+        old_log_probs = torch.as_tensor(batch["old_log_probs"], dtype=torch.float32, device=device)
+        advantages = torch.as_tensor(batch["advantages"], dtype=torch.float32, device=device)
+        returns = torch.as_tensor(batch["returns"], dtype=torch.float32, device=device)
+        values = torch.as_tensor(batch.get("values", torch.zeros_like(returns)), dtype=torch.float32, device=device)
 
-        logits = policy_net(obs)
+        # Handle both enhanced networks (return tuple) and basic networks (return single tensor)
+        net_output = policy_net(obs)
+        if isinstance(net_output, tuple):
+            logits, _ = net_output  # Enhanced network returns (logits, hidden_state)
+        else:
+            logits = net_output  # Basic network returns logits only
         log_probs = torch.log_softmax(logits, dim=-1)
         selected = log_probs[torch.arange(len(actions)), actions]
 

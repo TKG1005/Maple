@@ -45,9 +45,8 @@ class LSTMPolicyNetwork(nn.Module):
                 nn.Linear(hidden_size, action_dim),
             )
         
-        self.hidden_state = None
-        
-    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
+        new_hidden = None
         if self.use_lstm:
             if x.dim() == 2:
                 # Add sequence dimension if not present
@@ -62,11 +61,11 @@ class LSTMPolicyNetwork(nn.Module):
                     # Reinitialize hidden state if batch size doesn't match
                     hidden = self.init_hidden(x.size(0), x.device)
             
-            lstm_out, self.hidden_state = self.lstm(x, hidden)
+            lstm_out, new_hidden = self.lstm(x, hidden)
             # Use the last output of the sequence
             x = lstm_out[:, -1, :]
         
-        return self.mlp(x)
+        return self.mlp(x), new_hidden
     
     def init_hidden(self, batch_size: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         """Initialize LSTM hidden state."""
@@ -76,7 +75,8 @@ class LSTMPolicyNetwork(nn.Module):
     
     def reset_hidden(self):
         """Reset hidden state (call at episode boundaries)."""
-        self.hidden_state = None
+        # Hidden state is now managed externally, nothing to reset here
+        pass
 
 
 class LSTMValueNetwork(nn.Module):
@@ -116,9 +116,8 @@ class LSTMValueNetwork(nn.Module):
                 nn.Linear(hidden_size, 1),
             )
         
-        self.hidden_state = None
-        
-    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
+        new_hidden = None
         if self.use_lstm:
             if x.dim() == 2:
                 # Add sequence dimension if not present
@@ -133,11 +132,11 @@ class LSTMValueNetwork(nn.Module):
                     # Reinitialize hidden state if batch size doesn't match
                     hidden = self.init_hidden(x.size(0), x.device)
             
-            lstm_out, self.hidden_state = self.lstm(x, hidden)
+            lstm_out, new_hidden = self.lstm(x, hidden)
             # Use the last output of the sequence
             x = lstm_out[:, -1, :]
         
-        return self.mlp(x).squeeze(-1)
+        return self.mlp(x).squeeze(-1), new_hidden
     
     def init_hidden(self, batch_size: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         """Initialize LSTM hidden state."""
@@ -147,7 +146,8 @@ class LSTMValueNetwork(nn.Module):
     
     def reset_hidden(self):
         """Reset hidden state (call at episode boundaries)."""
-        self.hidden_state = None
+        # Hidden state is now managed externally, nothing to reset here
+        pass
 
 
 class MultiHeadAttention(nn.Module):
@@ -215,7 +215,6 @@ class AttentionPolicyNetwork(nn.Module):
         # LSTM layer (optional)
         if use_lstm:
             self.lstm = nn.LSTM(hidden_size, hidden_size, batch_first=True)
-            self.hidden_state = None
         
         # Attention mechanism (optional)
         if use_attention:
@@ -238,13 +237,14 @@ class AttentionPolicyNetwork(nn.Module):
                 nn.Linear(hidden_size, action_dim),
             )
     
-    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
         # Input projection
         x = self.input_proj(x)
         
         if x.dim() == 2:
             x = x.unsqueeze(1)  # Add sequence dimension
         
+        new_hidden = None
         # LSTM processing
         if self.use_lstm:
             if hidden is None:
@@ -255,7 +255,7 @@ class AttentionPolicyNetwork(nn.Module):
                 if h.size(1) != x.size(0):
                     # Reinitialize hidden state if batch size doesn't match
                     hidden = self.init_hidden(x.size(0), x.device)
-            x, self.hidden_state = self.lstm(x, hidden)
+            x, new_hidden = self.lstm(x, hidden)
         
         # Attention mechanism
         if self.use_attention:
@@ -265,7 +265,7 @@ class AttentionPolicyNetwork(nn.Module):
         # Use the last timestep for output
         x = x[:, -1, :]
         
-        return self.output_mlp(x)
+        return self.output_mlp(x), new_hidden
     
     def init_hidden(self, batch_size: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         """Initialize LSTM hidden state."""
@@ -275,8 +275,8 @@ class AttentionPolicyNetwork(nn.Module):
     
     def reset_hidden(self):
         """Reset hidden state (call at episode boundaries)."""
-        if self.use_lstm:
-            self.hidden_state = None
+        # Hidden state is now managed externally, nothing to reset here
+        pass
 
 
 class AttentionValueNetwork(nn.Module):
@@ -300,7 +300,6 @@ class AttentionValueNetwork(nn.Module):
         # LSTM layer (optional)
         if use_lstm:
             self.lstm = nn.LSTM(hidden_size, hidden_size, batch_first=True)
-            self.hidden_state = None
         
         # Attention mechanism (optional)
         if use_attention:
@@ -323,13 +322,14 @@ class AttentionValueNetwork(nn.Module):
                 nn.Linear(hidden_size, 1),
             )
     
-    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, hidden: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
         # Input projection
         x = self.input_proj(x)
         
         if x.dim() == 2:
             x = x.unsqueeze(1)  # Add sequence dimension
         
+        new_hidden = None
         # LSTM processing
         if self.use_lstm:
             if hidden is None:
@@ -340,7 +340,7 @@ class AttentionValueNetwork(nn.Module):
                 if h.size(1) != x.size(0):
                     # Reinitialize hidden state if batch size doesn't match
                     hidden = self.init_hidden(x.size(0), x.device)
-            x, self.hidden_state = self.lstm(x, hidden)
+            x, new_hidden = self.lstm(x, hidden)
         
         # Attention mechanism
         if self.use_attention:
@@ -350,7 +350,7 @@ class AttentionValueNetwork(nn.Module):
         # Use the last timestep for output
         x = x[:, -1, :]
         
-        return self.output_mlp(x).squeeze(-1)
+        return self.output_mlp(x).squeeze(-1), new_hidden
     
     def init_hidden(self, batch_size: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
         """Initialize LSTM hidden state."""
@@ -360,5 +360,5 @@ class AttentionValueNetwork(nn.Module):
     
     def reset_hidden(self):
         """Reset hidden state (call at episode boundaries)."""
-        if self.use_lstm:
-            self.hidden_state = None
+        # Hidden state is now managed externally, nothing to reset here
+        pass
