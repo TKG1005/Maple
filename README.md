@@ -47,6 +47,12 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
   - 勝率閾値（60%）による効率的な対戦相手更新機能
   - `config/train_config_quick.yml`（高速テスト）、`config/train_config_long.yml`（本格訓練）等の設定テンプレート
   - コマンドライン引数の大幅簡素化とパラメータ管理の改善
+- 2025-07-10 **重要アップデート**: LSTM競合解消とGPU対応を実装
+  - **LSTM並列実行問題の根本解決**: 隠れ状態を各エージェントで独立管理し、並列環境での競合を完全解消
+  - **包括的GPU対応**: NVIDIA CUDA、Apple MPS、CPU自動検出とデバイス間の最適化
+  - **ステートレス設計**: ネットワークが隠れ状態を内部保持せず、戻り値として返す設計に変更
+  - **マルチプラットフォーム対応**: Windows（CUDA）、macOS（MPS）、Linux（CUDA/CPU）で統一的な動作
+  - **パフォーマンス向上**: GPU加速による大幅な学習速度向上とメモリ効率化
 
 ## 新しい使用方法（設定ファイルシステム）
 
@@ -72,8 +78,8 @@ python train_selfplay.py --config config/train_config.yml --win-rate-threshold 0
 
 ### 利用可能な設定ファイル
 
-- `config/train_config.yml`: テスト・短時間駆動用（10エピソード、混合対戦相手、LSTMネットワーク）
-- `config/train_config_long.yml`: 長時間学習用（1000エピソード、セルフプレイ、Attentionネットワーク）
+- `config/train_config.yml`: テスト・短時間駆動用（100エピソード、混合対戦相手、LSTMネットワーク、GPU対応）
+- `config/train_config_long.yml`: 長時間学習用（1000エピソード、セルフプレイ、Attentionネットワーク、GPU最適化）
 
 ### 勝率ベース対戦相手更新システム
 
@@ -89,3 +95,59 @@ win_rate_window: 50      # 最近50戦の勝率を監視
 - 過度なネットワークコピーを削減
 - 学習効率の向上
 - 安定した対戦相手との継続的な学習
+
+## GPU対応とデバイス選択
+
+### 自動デバイス検出
+
+Mapleは利用可能なハードウェアを自動検出し、最適なデバイスを選択します：
+
+```bash
+# 自動検出（推奨）
+python train_selfplay.py --config config/train_config.yml
+# 検出順序: CUDA > Apple MPS > CPU
+
+# 手動デバイス指定
+python train_selfplay.py --device cuda    # NVIDIA GPU強制
+python train_selfplay.py --device mps     # Apple Silicon GPU強制
+python train_selfplay.py --device cpu     # CPU強制
+```
+
+### 対応デバイス
+
+- **NVIDIA CUDA**: Windows/Linux環境でのCUDA対応GPU
+- **Apple MPS**: Apple Silicon Mac（M1/M2/M3）のMetal Performance Shaders
+- **CPU**: 全プラットフォームでのフォールバック実行
+
+### GPU最適化設定
+
+GPU使用時の推奨設定（自動的に適用）：
+
+```yaml
+# GPU最適化された設定例
+batch_size: 2048      # 大きなバッチサイズでGPU効率向上
+buffer_capacity: 4096 # メモリ使用量と性能のバランス
+parallel: 10          # 並列環境数（GPU性能に応じて調整）
+```
+
+## LSTM並列実行の改善
+
+### 問題の解決
+
+以前のバージョンでは、LSTM/Attentionネットワークを並列環境で使用する際に隠れ状態の競合が発生していました。この問題を根本的に解決：
+
+- **エージェント別状態管理**: 各RLAgentが独自の隠れ状態を管理
+- **ステートレスネットワーク**: ネットワーク内部に状態を保持しない設計
+- **エピソード境界リセット**: 適切な隠れ状態のクリア処理
+- **スレッドセーフ**: 並列実行時の安全性を保証
+
+### 使用例
+
+```bash
+# LSTM + 並列実行 + GPU加速
+python train_selfplay.py \
+  --config config/train_config.yml \
+  --parallel 10 \
+  --device mps \
+  --episodes 100
+```

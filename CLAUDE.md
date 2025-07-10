@@ -345,6 +345,9 @@ This ensures compatibility across all network types while maintaining optimal pe
 - Never ignore action masks - always respect valid action constraints
 - **Self-Play**: Never create two learning agents in self-play (use frozen opponent instead)
 - **Reward Normalization**: Don't reset normalizers between episodes (maintains running stats)
+- **LSTM Networks**: Never store hidden states in network instances (use agent-level management)
+- **Device Transfer**: Always check device compatibility before tensor operations
+- **Parallel Training**: Never share mutable hidden states between threads
 
 ## Recent Updates (2025-07-09)
 
@@ -362,3 +365,83 @@ This ensures compatibility across all network types while maintaining optimal pe
 - **Training Config**: Updated `config/train_config.yml` with optimized hyperparameters
 - **Reward Weights**: Adjusted `config/reward.yaml` based on performance analysis
 - **Normalization**: New `normalize_rewards` parameter in environment initialization
+
+## Recent Updates (2025-07-10)
+
+### LSTM Conflict Resolution and GPU Support
+Implemented comprehensive fixes for LSTM hidden state management and added full GPU acceleration support.
+
+#### LSTM Hidden State Management Fix
+**Problem**: LSTM networks stored hidden states internally, causing race conditions in parallel environments where multiple agents shared the same network instance.
+
+**Solution**: 
+- **Stateless Networks**: Refactored all LSTM/Attention networks to return hidden states instead of storing them
+- **Agent-Level State Management**: RLAgent now manages hidden states per agent instance
+- **Episode Boundary Reset**: Proper hidden state reset at episode start/end
+- **Algorithm Compatibility**: Updated PPO and REINFORCE to handle new network interface
+
+**Implementation Details**:
+```python
+# New network interface returns (output, new_hidden_state)
+logits, new_hidden = policy_net(obs_tensor, current_hidden)
+
+# RLAgent manages states per instance
+class RLAgent:
+    def __init__(self, ...):
+        self.policy_hidden = None
+        self.value_hidden = None
+    
+    def reset_hidden_states(self):
+        self.policy_hidden = None
+        self.value_hidden = None
+```
+
+#### GPU Acceleration Support
+Added comprehensive GPU support with automatic device detection and multi-platform compatibility.
+
+**Supported Devices**:
+- **NVIDIA CUDA**: Full support for CUDA-enabled GPUs
+- **Apple MPS**: Native support for Apple Silicon Metal Performance Shaders
+- **CPU Fallback**: Automatic fallback for unsupported hardware
+
+**Device Selection Logic**:
+```python
+# Automatic device detection with intelligent fallback
+device = get_device(prefer_gpu=True, device_name="auto")
+# Priority: CUDA > MPS > CPU
+
+# Manual device specification
+python train_selfplay.py --device cuda    # Force CUDA
+python train_selfplay.py --device mps     # Force Apple MPS
+python train_selfplay.py --device cpu     # Force CPU
+```
+
+**Key Features**:
+- **Automatic Transfer**: Models and tensors automatically moved to selected device
+- **Memory Management**: Proper GPU memory handling and cleanup
+- **Error Handling**: Graceful fallback on device failures
+- **Performance Monitoring**: Device utilization and memory usage logging
+
+#### Parallel Execution Improvements
+- **Thread Safety**: LSTM networks now safe for parallel execution
+- **State Isolation**: Each environment maintains independent hidden states
+- **Network Sharing**: Safe sharing of network weights across threads
+- **Scalability**: Improved performance for parallel training
+
+#### Training Configuration Updates
+Updated default configurations to leverage new capabilities:
+```yaml
+# Enhanced parallel training
+parallel: 10  # Safe LSTM parallel execution
+
+# GPU-optimized settings
+batch_size: 2048  # Larger batches for GPU efficiency
+buffer_capacity: 4096
+
+# LSTM network configuration
+network:
+  type: "lstm"
+  hidden_size: 128
+  lstm_hidden_size: 128
+  use_lstm: true
+```

@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 10
+episodes: 100
 lr: 0.0005
 batch_size: 2048
 buffer_capacity: 4096
@@ -14,22 +14,22 @@ reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 1
+parallel: 10
 checkpoint_interval: 0
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
 # Team configuration
-team: "default"  # Options: default, random
+team: "random"  # Options: default, random
 teams_dir: null  # Directory for random team mode
 
 # Opponent configuration
-opponent: null  # Single opponent type: random, max, rule
-opponent_mix: "random:0.3,max:0.3,self:0.4"  # Mixed opponents for testing
+opponent: max  # Single opponent type: random, max, rule
+opponent_mix: "max:0.5,self:0.5"  # Mixed opponents for testing
 
 # Self-play win rate based opponent update
 win_rate_threshold: 0.6  # Win rate threshold for updating opponent
-win_rate_window: 50      # Number of recent battles to track
+win_rate_window: 100      # Number of recent battles to track
 
 # Model management
 load_model: null  # Path to model file to resume training from
