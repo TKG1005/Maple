@@ -37,6 +37,8 @@ class ReinforceAlgorithm(BaseAlgorithm):
         if optimizer is not None:
             optimizer.zero_grad()
             loss.backward()
+            # Gradient clipping for stability
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
         
         return float(loss.detach())

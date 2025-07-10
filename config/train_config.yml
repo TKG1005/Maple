@@ -14,7 +14,7 @@ reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 50
+parallel: 10
 checkpoint_interval: 0
 checkpoint_dir: "checkpoints"
 tensorboard: true
@@ -45,3 +45,9 @@ network:
   lstm_hidden_size: 128
   attention_heads: 4
   attention_dropout: 0.1
+
+# Sequence learning configuration
+sequence_learning:
+  enabled: true  # Enable sequence-based learning for LSTM
+  bptt_length: 0  # 0 means full episode length, >0 for truncated BPTT
+  grad_clip_norm: 5.0  # Gradient clipping norm

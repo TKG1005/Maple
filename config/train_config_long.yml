@@ -45,3 +45,9 @@ network:
   lstm_hidden_size: 256
   attention_heads: 8
   attention_dropout: 0.1
+
+# Sequence learning configuration
+sequence_learning:
+  enabled: true  # Enable sequence-based learning for LSTM
+  bptt_length: 50  # Use truncated BPTT for long episodes
+  grad_clip_norm: 10.0  # Higher gradient clipping for complex model

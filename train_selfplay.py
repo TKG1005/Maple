@@ -72,7 +72,7 @@ from src.agents.network_factory import create_policy_network, create_value_netwo
 from src.agents.random_agent import RandomAgent  # noqa: E402
 from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
-from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae  # noqa: E402
+from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae, SequencePPOAlgorithm, SequenceReinforceAlgorithm  # noqa: E402
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
 
 
@@ -229,6 +229,7 @@ def run_episode_with_opponent(
         "returns": np.array(returns, dtype=np.float32),
         "values": np.array(values, dtype=np.float32),
         "rewards": np.array(rewards, dtype=np.float32),
+        "episode_lengths": np.array([len(traj)], dtype=np.int64),
     }
 
     return batch, sum(rewards), init_tuple, sub_totals, opponent_type
@@ -342,6 +343,7 @@ def run_episode(
         "returns": np.array(returns, dtype=np.float32),
         "values": np.array(values, dtype=np.float32),
         "rewards": np.array(rewards, dtype=np.float32),
+        "episode_lengths": np.array([len(traj)], dtype=np.int64),
     }
 
     return batch, sum(rewards), init_tuple, sub_totals
@@ -529,16 +531,44 @@ def main(
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
 
-    if algo_name == "ppo":
-        algorithm = PPOAlgorithm(
-            clip_range=clip_range,
-            value_coef=value_coef,
-            entropy_coef=entropy_coef,
-        )
-    elif algo_name == "reinforce":
-        algorithm = ReinforceAlgorithm()
+    # Check if sequence learning is enabled
+    sequence_config = cfg.get("sequence_learning", {})
+    use_sequence_learning = sequence_config.get("enabled", False)
+    bptt_length = sequence_config.get("bptt_length", 0)
+    grad_clip_norm = sequence_config.get("grad_clip_norm", 5.0)
+    
+    # Choose algorithm based on configuration
+    if use_sequence_learning and network_config.get("use_lstm", False):
+        # Use sequence-based algorithms for LSTM networks
+        if algo_name == "ppo":
+            algorithm = SequencePPOAlgorithm(
+                clip_range=clip_range,
+                value_coef=value_coef,
+                entropy_coef=entropy_coef,
+                bptt_length=bptt_length,
+                grad_clip_norm=grad_clip_norm,
+            )
+        elif algo_name == "reinforce":
+            algorithm = SequenceReinforceAlgorithm(
+                bptt_length=bptt_length,
+                grad_clip_norm=grad_clip_norm,
+            )
+        else:
+            raise ValueError(f"Unknown algorithm: {algo_name}")
+        logging.info(f"Using sequence-based {algo_name.upper()} algorithm with BPTT length: {bptt_length}")
     else:
-        raise ValueError(f"Unknown algorithm: {algo_name}")
+        # Use standard algorithms
+        if algo_name == "ppo":
+            algorithm = PPOAlgorithm(
+                clip_range=clip_range,
+                value_coef=value_coef,
+                entropy_coef=entropy_coef,
+            )
+        elif algo_name == "reinforce":
+            algorithm = ReinforceAlgorithm()
+        else:
+            raise ValueError(f"Unknown algorithm: {algo_name}")
+        logging.info(f"Using standard {algo_name.upper()} algorithm")
 
     sample_env.close()
     
@@ -750,10 +780,18 @@ def main(
         combined = {}
         for key in batches[0].keys():
             arrays = [b[key] for b in batches]
-            if hasattr(np, "concatenate"):
-                combined[key] = np.concatenate(arrays, axis=0)
-            else:  # fallback for test stubs
-                combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
+            if key == "episode_lengths":
+                # For episode lengths, concatenate to preserve episode boundaries
+                if hasattr(np, "concatenate"):
+                    combined[key] = np.concatenate(arrays, axis=0)
+                else:  # fallback for test stubs
+                    combined[key] = np.array([item for arr in arrays for item in arr], dtype=np.int64)
+            else:
+                # For other arrays, concatenate along axis=0 as before
+                if hasattr(np, "concatenate"):
+                    combined[key] = np.concatenate(arrays, axis=0)
+                else:  # fallback for test stubs
+                    combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
         # Use a temporary agent for updating
         temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
