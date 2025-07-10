@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 10
+episodes: 500
 lr: 0.0005
 batch_size: 2048
 buffer_capacity: 4096
@@ -14,8 +14,8 @@ reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 10
-checkpoint_interval: 0
+parallel: 5
+checkpoint_interval: 500
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
