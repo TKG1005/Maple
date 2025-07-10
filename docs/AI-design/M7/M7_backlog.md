@@ -265,10 +265,8 @@ rewards:
 ## 新規追加実装 (2025-07-10)
 
 - [x] **設定ファイルシステム**: YAMLベースのパラメータ管理
-  - `config/train_config.yml`: デフォルト設定
-  - `config/train_config_quick.yml`: 高速テスト用
-  - `config/train_config_long.yml`: 本格訓練用
-  - `config/train_config_attention.yml`: Attentionネットワーク特化
+  - `config/train_config.yml`: テスト・短時間駆動用（10エピソード、混合対戦相手、LSTMネットワーク）
+  - `config/train_config_long.yml`: 長時間学習用（1000エピソード、セルフプレイ、Attentionネットワーク）
   - コマンドライン引数の簡素化と設定の再利用性向上
 
 - [x] **勝率ベース対戦相手更新システム**: 効率的なセルフプレイ学習

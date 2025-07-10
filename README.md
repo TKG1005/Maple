@@ -53,14 +53,11 @@ PokemonEnv を利用したポケモンバトル強化学習フレームワーク
 ### 設定ファイルベースの訓練
 
 ```bash
-# 高速テスト（5エピソード、混合対戦相手）
-python train_selfplay.py --config config/train_config_quick.yml
-
-# 本格訓練（1000エピソード、Attentionネットワーク）
-python train_selfplay.py --config config/train_config_long.yml
-
-# デフォルト設定
+# テスト・短時間駆動（10エピソード、混合対戦相手）
 python train_selfplay.py --config config/train_config.yml
+
+# 長時間学習（1000エピソード、セルフプレイ、Attentionネットワーク）
+python train_selfplay.py --config config/train_config_long.yml
 ```
 
 ### 設定ファイルとコマンドライン引数の組み合わせ
@@ -75,10 +72,8 @@ python train_selfplay.py --config config/train_config.yml --win-rate-threshold 0
 
 ### 利用可能な設定ファイル
 
-- `config/train_config.yml`: デフォルト設定（LSTMネットワーク）
-- `config/train_config_quick.yml`: 高速テスト用（基本ネットワーク、混合対戦相手）
-- `config/train_config_long.yml`: 本格訓練用（Attentionネットワーク、1000エピソード）
-- `config/train_config_attention.yml`: Attentionネットワーク特化設定
+- `config/train_config.yml`: テスト・短時間駆動用（10エピソード、混合対戦相手、LSTMネットワーク）
+- `config/train_config_long.yml`: 長時間学習用（1000エピソード、セルフプレイ、Attentionネットワーク）
 
 ### 勝率ベース対戦相手更新システム
 

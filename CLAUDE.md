@@ -233,11 +233,9 @@ Implemented comprehensive YAML-based configuration management to simplify traini
 
 **Problem**: Training required long command lines with many parameters, making it difficult to manage different training scenarios and reproduce experiments.
 
-**Solution**: Created YAML configuration system with multiple templates:
-- `config/train_config.yml`: Default balanced configuration
-- `config/train_config_quick.yml`: Fast testing (5 episodes, mixed opponents)
-- `config/train_config_long.yml`: Production training (1000 episodes, attention networks)
-- `config/train_config_attention.yml`: Pure attention network configuration
+**Solution**: Created YAML configuration system with two main templates:
+- `config/train_config.yml`: Testing and short-term training (10 episodes, mixed opponents, LSTM network)
+- `config/train_config_long.yml`: Long-term training (1000 episodes, self-play, attention network)
 
 **Features**:
 - All training parameters configurable via YAML
@@ -248,8 +246,11 @@ Implemented comprehensive YAML-based configuration management to simplify traini
 
 **Usage Examples**:
 ```bash
-# Simple execution with config file
-python train_selfplay.py --config config/train_config_quick.yml
+# Testing and short-term training
+python train_selfplay.py --config config/train_config.yml
+
+# Long-term production training
+python train_selfplay.py --config config/train_config_long.yml
 
 # Config file with parameter override
 python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.001
