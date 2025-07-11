@@ -6,24 +6,60 @@ import random
 class DamageCalculator:
     def __init__(self, data_loader):
         self.pokemon_data = data_loader.pokemon_stats
+        self.pokemon_stats_dict = data_loader.pokemon_stats_dict  # Fast dictionary lookup
         self.move_data = data_loader.moves
         self.type_chart = data_loader.type_chart
+        self.move_translations = data_loader.move_translations
+        
+        # Type conversion mapping from English to Japanese
+        self.type_conversion = {
+            'Normal': 'ノーマル',
+            'Fire': 'ほのお',
+            'Water': 'みず',
+            'Electric': 'でんき',
+            'Grass': 'くさ',
+            'Ice': 'こおり',
+            'Fighting': 'かくとう',
+            'Poison': 'どく',
+            'Ground': 'じめん',
+            'Flying': 'ひこう',
+            'Psychic': 'エスパー',
+            'Bug': 'むし',
+            'Rock': 'いわ',
+            'Ghost': 'ゴースト',
+            'Dragon': 'ドラゴン',
+            'Dark': 'あく',
+            'Steel': 'はがね',
+            'Fairy': 'フェアリー'
+        }
+
+    def _convert_type_to_japanese(self, type_name):
+        """Convert English type name to Japanese for type chart lookup."""
+        if type_name in self.type_conversion:
+            return self.type_conversion[type_name]
+        return type_name  # Return as-is if already Japanese or unknown
+    
+    def _convert_move_name_to_japanese(self, move_name):
+        """Convert English move name to Japanese using move translations."""
+        translation = self.move_translations[self.move_translations['English Name'] == move_name]
+        if not translation.empty:
+            return translation.iloc[0]['Japanese Name']
+        return move_name  # Return as-is if not found or already Japanese
 
     def _get_modifier(self, modifier_type, attacker, defender, move, field_state):
         modifier = 1.0
         if modifier_type == 'item':
-            
-            
-            
+            # TODO: Implement item modifiers
+            pass
         elif modifier_type == 'ability':
-            
-            
-            
+            # TODO: Implement ability modifiers
+            pass
         elif modifier_type == 'weather':
-            
+            # TODO: Implement weather modifiers
+            pass
         elif modifier_type == 'terrain':
-            
-            
+            # TODO: Implement terrain modifiers
+            pass
         elif modifier_type == 'guard':
             if defender.get('protect', False):
                 modifier *= 0.0 # No damage
@@ -213,3 +249,123 @@ class DamageCalculator:
                 'content': additional_effect_content
             }
         }
+
+    def calculate_damage_expectation_for_ai(self, attacker_stats, target_name, move_name, move_type):
+        """
+        Calculate damage expectation for AI state space observation.
+        
+        Args:
+            attacker_stats (dict): Dictionary containing attacker information
+                - 'attack' or 'special_attack': real stat value
+                - 'rank_attack' or 'rank_special_attack': rank change (-6 to +6)
+                - 'type1', 'type2': attacker types
+                - 'tera_type': tera type (optional)
+                - 'is_terastalized': boolean indicating tera status
+                - 'level': pokemon level (default 50)
+            target_name (str): Name of target Pokemon to look up base stats
+            move_name (str): Name of the move (English or Japanese)
+            move_type (str): Type of the move (English or Japanese)
+            
+        Returns:
+            tuple: (expected_damage_percent, variance_percent)
+                   e.g., (46.5, 1.3) for 45.2~47.8% damage
+        """
+        try:
+            # Convert move name to Japanese if needed
+            japanese_move_name = self._convert_move_name_to_japanese(move_name)
+            
+            # Get target base stats from pokemon_stats dictionary (faster lookup)
+            if target_name not in self.pokemon_stats_dict:
+                return (0.0, 0.0)  # Target not found
+            
+            target_stats = self.pokemon_stats_dict[target_name]
+            
+            # Get move power from moves data
+            move_data = self.move_data[self.move_data['name'] == japanese_move_name]
+            if move_data.empty:
+                return (0.0, 0.0)  # Move not found
+            
+            move_power = move_data.iloc[0]['base_power']
+            move_category = move_data.iloc[0]['category']
+            
+            # Skip non-damaging moves (変化技)
+            if move_category == '変化' or pd.isna(move_power) or move_power <= 0:
+                return (0.0, 0.0)
+            
+            # Determine attack and defense stats based on move category
+            if move_category == '物理':
+                attack_stat = attacker_stats.get('attack', 100)
+                attack_rank = attacker_stats.get('rank_attack', 0)
+                defense_stat = self._calculate_max_stat(target_stats['def'], attacker_stats.get('level', 50), False)
+            elif move_category == '特殊':
+                attack_stat = attacker_stats.get('special_attack', 100)
+                attack_rank = attacker_stats.get('rank_special_attack', 0)
+                defense_stat = self._calculate_max_stat(target_stats['spd'], attacker_stats.get('level', 50), False)
+            else:
+                return (0.0, 0.0)  # Status moves
+            
+            # Apply rank modifiers
+            if attack_rank > 0:
+                attack_stat *= (2 + attack_rank) / 2
+            elif attack_rank < 0:
+                attack_stat *= 2 / (2 - attack_rank)
+            
+            # Basic damage calculation
+            level = attacker_stats.get('level', 50)
+            base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
+            
+            # Type effectiveness
+            defender_type1 = self._convert_type_to_japanese(target_stats['type1'])
+            defender_type2 = self._convert_type_to_japanese(target_stats['type2']) if target_stats['type2'] and str(target_stats['type2']) != 'nan' else None
+            
+            type_effectiveness1_matches = self.type_chart[
+                (self.type_chart['attacking_type'] == move_type) & 
+                (self.type_chart['defending_type'] == defender_type1)
+            ]
+            type_effectiveness1 = type_effectiveness1_matches['multiplier'].iloc[0] if not type_effectiveness1_matches.empty else 1.0
+            
+            type_effectiveness2 = 1.0
+            if defender_type2:
+                type_effectiveness2_matches = self.type_chart[
+                    (self.type_chart['attacking_type'] == move_type) & 
+                    (self.type_chart['defending_type'] == defender_type2)
+                ]
+                type_effectiveness2 = type_effectiveness2_matches['multiplier'].iloc[0] if not type_effectiveness2_matches.empty else 1.0
+            
+            type_effectiveness = type_effectiveness1 * type_effectiveness2
+            base_damage *= type_effectiveness
+            
+            # STAB (Same Type Attack Bonus)
+            attacker_type1 = self._convert_type_to_japanese(attacker_stats.get('type1', ''))
+            attacker_type2 = self._convert_type_to_japanese(attacker_stats.get('type2', ''))
+            tera_type = self._convert_type_to_japanese(attacker_stats.get('tera_type', ''))
+            is_terastalized = attacker_stats.get('is_terastalized', False)
+            
+            # Apply STAB based on tera status
+            if is_terastalized and tera_type:
+                if move_type == tera_type:
+                    base_damage *= 1.5  # Tera STAB
+            else:
+                if move_type == attacker_type1 or move_type == attacker_type2:
+                    base_damage *= 1.5  # Regular STAB
+            
+            # Calculate target max HP
+            target_max_hp = self._calculate_max_stat(target_stats['HP'], level, True)
+            
+            # Calculate damage range (0.85 to 1.0)
+            min_damage = base_damage * 0.85
+            max_damage = base_damage * 1.0
+            
+            # Convert to percentage
+            min_percent = (min_damage / target_max_hp) * 100
+            max_percent = (max_damage / target_max_hp) * 100
+            
+            # Calculate expected value and variance
+            expected_percent = (min_percent + max_percent) / 2
+            variance_percent = (max_percent - min_percent) / 2
+            
+            return (expected_percent, variance_percent)
+            
+        except Exception as e:
+            # Return 0 damage if calculation fails
+            return (0.0, 0.0)

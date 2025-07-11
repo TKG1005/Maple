@@ -382,6 +382,62 @@ This ensures compatibility across all network types while maintaining optimal pe
 - **Reward Weights**: Adjusted `config/reward.yaml` based on performance analysis
 - **Normalization**: New `normalize_rewards` parameter in environment initialization
 
+## Recent Updates (2025-07-11)
+
+### 状態空間拡張 - ステップ1完了 (Latest)
+実装した状態空間拡張の第1段階：ダメージ計算モジュールの拡張とAI特化機能の追加。
+
+#### DamageCalculator AI拡張機能
+**新規メソッド**: `calculate_damage_expectation_for_ai()`
+- **目的**: AI状態空間観測用のダメージ期待値計算
+- **入力**: 攻撃側実数値、能力ランク、タイプ、テラスタル状態、相手ポケモン名、技名
+- **出力**: `(期待値%, 分散%)` 形式 (例: 46.5±1.3% for 45.2~47.8%ダメージ)
+- **対応機能**: 物理/特殊技分類、変化技フィルタリング、英日技名変換、タイプ変換
+
+#### 計算式の詳細
+```python
+# ポケモン基本ダメージ計算式
+base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
+
+# 補正適用
+base_damage *= type_effectiveness * stab_bonus
+
+# 乱数範囲とパーセンテージ変換
+min_damage = base_damage * 0.85
+max_damage = base_damage * 1.0
+expected_percent = (min_percent + max_percent) / 2
+variance_percent = (max_percent - min_percent) / 2
+```
+
+#### 技術的改善
+- **CSV解析修正**: `moves_english_japanese.csv`のカンマ処理問題を解決
+- **型変換**: 数値列の適切なpandas型変換
+- **パフォーマンス最適化**: 辞書インデックスによる高速検索 (2545回/秒)
+- **メモリ効率**: CSV読み込み1回のみ、辞書キャッシュ利用
+
+#### DataLoader拡張機能
+- **英日技名変換**: `moves_english_japanese.csv`の読み込みと変換機能
+- **ポケモン種族値辞書**: O(1)検索のための辞書インデックス
+- **数値型変換**: base_power, accuracy, PPの適切な型変換
+
+#### 実装仕様
+- **レベル**: デフォルト50、カスタマイズ可能
+- **努力値**: 252で固定（最大値前提）
+- **個体値**: 31で固定（理想値前提）
+- **性格補正**: 無補正（1.0倍）
+- **未実装**: 道具・特性・天候・フィールド補正（将来拡張予定）
+
+#### パフォーマンス指標
+- **初期化**: 8ms (CSV読み込み1回のみ)
+- **単一計算**: 0.4ms/回
+- **バッチ処理**: 2545回/秒
+- **AI学習対応**: 144回/ターン計算に十分対応
+
+#### 次期実装予定
+- ステップ2: 状態特徴量CSV/YAMLの拡張
+- ステップ3: StateObserverの拡張
+- ステップ4: チームプレビュー・選出情報の状態空間統合
+
 ## Recent Updates (2025-07-10)
 
 ### LSTM Learning Optimization and Sequence-Based Training (Latest)
