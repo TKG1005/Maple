@@ -6,7 +6,7 @@ from . import RewardBase
 class FailAndImmuneReward(RewardBase):
     """無効行動時のペナルティを与える報酬クラス。"""
 
-    def __init__(self, penalty: float = -0.5) -> None:
+    def __init__(self, penalty: float = -0.1) -> None:
         self.penalty = penalty
 
     def reset(self, battle: object | None = None) -> None:

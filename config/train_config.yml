@@ -1,20 +1,20 @@
 # Default configuration for testing and short-term training
-episodes: 500
-lr: 0.0005
-batch_size: 2048
-buffer_capacity: 4096
+episodes: 10
+lr: 0.0003
+batch_size: 4096
+buffer_capacity: 400000
 gamma: 0.997
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
-entropy_coef: 0.01
+entropy_coef: 0.02
 ppo_epochs: 4
 algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 5
+parallel: 20
 checkpoint_interval: 500
 checkpoint_dir: "checkpoints"
 tensorboard: true
@@ -25,7 +25,7 @@ teams_dir: null  # Directory for random team mode
 
 # Opponent configuration
 opponent: max  # Single opponent type: random, max, rule
-opponent_mix: "max:0.5,self:0.5"  # Mixed opponents for testing
+opponent_mix: null  # Mixed opponents for testing
 
 # Self-play win rate based opponent update
 win_rate_threshold: 0.6  # Win rate threshold for updating opponent
@@ -37,12 +37,12 @@ save_model: null  # Path to save final model
 
 # Network architecture configuration
 network:
-  type: "lstm"  # Options: basic, lstm, attention
-  hidden_size: 128
+  type: "attention"  # Options: basic, lstm, attention
+  hidden_size: 256
   use_2layer: true
   use_lstm: true
   use_attention: false
-  lstm_hidden_size: 128
+  lstm_hidden_size: 256
   attention_heads: 4
   attention_dropout: 0.1
 
@@ -50,4 +50,4 @@ network:
 sequence_learning:
   enabled: true  # Enable sequence-based learning for LSTM
   bptt_length: 0  # 0 means full episode length, >0 for truncated BPTT
-  grad_clip_norm: 5.0  # Gradient clipping norm
+  grad_clip_norm: 2.0  # Gradient clipping norm
