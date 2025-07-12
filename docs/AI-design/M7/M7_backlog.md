@@ -251,7 +251,7 @@ rewards:
 - [x] N-1 MLP 2 層化（基本・LSTM・Attentionネットワーク実装）
 - [x] N-2 LSTM ヘッダ追加（隠れ状態管理とシーケンシャル学習対応）
 - [x] N-3 アテンション試験フック（Multi-head Attentionネットワーク実装）
-- [ ] E-1 PPO エントロピー係数 config 化
+- [x] E-1 PPO エントロピー係数 config 化（config/train_config.ymlで実装済み）
 - [ ] E-2 ε-greedy wrapper 実装
 - [ ] V-1 TensorBoard スカラー整理
 - [ ] V-2 CSV エクスポートユーティリティ
@@ -259,7 +259,7 @@ rewards:
 - [ ] A-1 A2C 実装
 - [ ] A-2 ハイパラ検索スクリプト
 - [ ] C-1 GitHub Actions スモーク
-- [ ] C-2 Codex/LLM 用 TODO.md
+- [x] C-2 Codex/LLM 用 TODO.md（CLAUDE.mdとして実装完了）
 - [ ] C-3 Pre-commit Black + ruff
 
 ## 新規追加実装 (2025-07-10)
@@ -283,3 +283,68 @@ rewards:
 - [x] **ネットワーク互換性修正**: 全ネットワーク対応
   - 基本・LSTM・Attentionネットワークの統一インターフェース
   - 条件分岐による forward メソッド互換性確保
+
+## 新規追加実装 (2025-07-12)
+
+### ポケモン種族名Embedding機能
+
+- [x] **EmbeddingInitializer実装**: 種族値による初期化機能
+  - `src/agents/embedding_initializer.py`: 1025匹の種族値データ自動読み込み
+  - 正規化・Embedding重み設定・乱数初期化機能
+  - CSVから種族値データを抽出して先頭6次元に設定
+
+- [x] **EmbeddingPolicyNetwork/ValueNetwork実装**: ニューラルネットワーク統合
+  - `src/agents/embedding_networks.py`: Policy/Value両ネットワーク対応
+  - Species ID抽出・Embedding統合・特徴量結合機能
+  - 32次元Embedding（6次元種族値＋26次元学習可能）
+
+- [x] **freeze_base_stats機能**: 種族値次元の勾配制御
+  - gradient maskingによる先頭6次元の勾配凍結
+  - register_hook()を使用した効率的な実装
+  - 種族値情報を保持しつつ学習を制御
+
+- [x] **Network Factory統合**: 既存システムとの完全統合
+  - `src/agents/network_factory.py`: "embedding"タイプサポート
+  - 既存の基本・LSTM・Attentionネットワークとの互換性維持
+
+- [x] **Configuration統合**: YAML設定でのEmbedding制御
+  - `config/train_config.yml`: embedding_configセクション追加
+  - embed_dim、vocab_size、freeze_base_stats設定対応
+  - species_indices自動検出機能
+
+- [x] **包括的なUnit Test**: 17個のテストケース実装
+  - `tests/test_embedding_networks.py`: 全機能の動作検証
+  - 重み初期化・gradient masking・統合動作確認
+
+### League Training機能（破滅的忘却対策）
+
+- [x] **Historical Opponent System**: 過去のネットワーク保持機能
+  - 最大5個の過去ネットワークスナップショット管理
+  - 固定対戦相手による破滅的忘却の防止
+  - train_selfplay.pyに統合実装
+
+- [x] **選択アルゴリズム実装**: 3つの履歴選択方法
+  - uniform: 全履歴から均等確率で選択
+  - recent: 新しい履歴を優先的に選択
+  - weighted: 新しさに比例した重み付け選択
+
+- [x] **Configuration対応**: League Training設定
+  - historical_ratio: 履歴対戦の比率（デフォルト0.3）
+  - max_historical: 保持する履歴数（デフォルト5）
+  - selection_method: 選択アルゴリズム指定
+
+### 並列処理最適化
+
+- [x] **TensorBoard分析実行**: 並列効率の詳細分析
+  - parallel=5,10,20,30での時間あたりバトル数測定
+  - Pokemon Showdownサーバーのボトルネック特定
+  - 並列度増加による性能低下の定量化
+
+- [x] **最適設定特定**: parallel=5が最高効率
+  - 0.76 battles/sec（システム全体スループット）
+  - 並列度10以上では逆に性能低下（-33%〜-73%）
+  - エピソード完了時間が並列度に比例して増加
+
+- [x] **設定ファイル最適化**: 実運用設定への反映
+  - `config/train_config.yml`: parallel=5に最適化
+  - 効率的な学習のための推奨設定確立
