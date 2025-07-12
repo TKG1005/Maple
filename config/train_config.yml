@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 100
+episodes: 1
 lr: 0.0003
 batch_size: 4096
 buffer_capacity: 400000
@@ -37,7 +37,7 @@ save_model: null  # Path to save final model
 
 # Network architecture configuration
 network:
-  type: "attention"  # Options: basic, lstm, attention
+  type: "attention"  # Options: basic, lstm, attention, embedding
   hidden_size: 256
   use_2layer: true
   use_lstm: true
@@ -45,6 +45,16 @@ network:
   lstm_hidden_size: 256
   attention_heads: 4
   attention_dropout: 0.1
+  
+  # Pokemon Species Embedding Configuration (only used when type: "embedding")
+  embedding_config:
+    embed_dim: 32  # Embedding dimension (must be >= 6 for base stats)
+    vocab_size: 1026  # 0 (unknown) + 1025 (Pokemon species)
+    freeze_base_stats: false  # Whether to freeze base stats dimensions during training
+    
+    # Species indices in state vector (automatically detected if not provided)
+    # Indices 836-847: my_team[0-5].species_id + opp_team[0-5].species_id
+    species_indices: [836, 837, 838, 839, 840, 841, 842, 843, 844, 845, 846, 847]
 
 # Sequence learning configuration
 sequence_learning:

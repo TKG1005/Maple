@@ -58,8 +58,9 @@ python train_selfplay.py --opponent-mix "random:0.3,max:0.3,self:0.4" --episodes
 python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --team random --opponent-mix "rule:0.5,self:0.5" --episodes 100 --checkpoint-interval 10
 
 # Pokemon Species Embedding Training (New 2025-07-12)
-python train_selfplay.py --config config/train_config_embedding.yml --episodes 100
-python train_selfplay.py --config config/train_config_embedding.yml --episodes 50 --lr 0.0001
+# Change network type to "embedding" in config/train_config.yml, then:
+python train_selfplay.py --episodes 100
+python train_selfplay.py --episodes 50 --lr 0.0001
 ```
 
 ### Testing
@@ -92,8 +93,7 @@ python plot_compare.py
 
 ## Configuration Files
 
-- `config/train_config.yml`: Main training hyperparameters (learning rate, batch size, algorithms)
-- `config/train_config_embedding.yml`: Pokemon species embedding network training configuration
+- `config/train_config.yml`: Main training hyperparameters (learning rate, batch size, algorithms, embedding config)
 - `config/reward.yaml`: Reward component weights and enablement flags
 - `config/env_config.yml`: Environment settings
 - `config/action_map.yml`: Action space configuration
@@ -656,7 +656,7 @@ combined_features = torch.cat([non_species_features, species_embeddings.flatten(
 **Embedding Networks**:
 - **Input**: 1136次元状態空間 → 1508次元（12×32 embedding後）
 - **Parameters**: ~680k total (embedding層32k含む)
-- **Configuration**: `config/train_config_embedding.yml`
+- **Configuration**: `config/train_config.yml` with `type: "embedding"`
 
 ```yaml
 network:
@@ -671,11 +671,11 @@ network:
 #### Training and Usage
 **Embedding Training**:
 ```bash
-# Embedding networkでの学習
-python train_selfplay.py --config config/train_config_embedding.yml --episodes 100
+# Set network.type to "embedding" in config/train_config.yml, then:
+python train_selfplay.py --episodes 100
 
-# カスタム学習率での学習
-python train_selfplay.py --config config/train_config_embedding.yml --lr 0.0001 --episodes 50
+# カスタム学習率での学習  
+python train_selfplay.py --lr 0.0001 --episodes 50
 ```
 
 **Benefits**:
