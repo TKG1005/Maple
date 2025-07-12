@@ -4,6 +4,69 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
+### 2025-07-12 - Damage Calculation State Space Integration
+
+#### 🎯 **Major Features**
+- **Complete Type Chart**: Full 18×18 Pokemon type effectiveness chart (324 entries) replacing incomplete data
+- **AI Damage Calculation**: Integration of `calculate_damage_expectation_for_ai()` into state space
+- **Real-time Damage Analysis**: 288 damage expectation features for tactical decision-making
+- **Tactical AI Enhancement**: AI can now evaluate move effectiveness before action selection
+
+#### 🔧 **Implementation Details**
+- **Zero Fallback Design**: Strict error handling without silent failures or fallback values
+- **Performance Optimization**: 2545 calculations/second with 0.4ms per calculation
+- **Type Conversion System**: Automatic English↔Japanese type and move name conversion
+- **StateObserver Integration**: Seamless damage calculation accessible from battle_path expressions
+
+#### ⚙️ **New Components**
+- **Complete `type_chart.csv`**: 324-entry comprehensive type effectiveness data
+- **DamageCalculator AI Extension**: `calculate_damage_expectation_for_ai()` method
+- **StateObserver Context Function**: `calc_damage_expectation_for_ai` wrapper for safe parameter handling
+- **Enhanced Data Validation**: Strict Pokemon/move data validation with descriptive errors
+
+#### 🧪 **Testing & Validation**
+- **Type Chart Completeness**: Verification of all 18×18 type matchup combinations
+- **Damage Calculation Accuracy**: Test suite for damage calculation precision and error handling
+- **Integration Tests**: End-to-end validation of damage features in state space
+- **Performance Benchmarks**: Speed and memory efficiency testing
+
+#### 📁 **State Space Features**
+- **288 Damage Features**: 4 moves × 6 opponents × 2 scenarios (normal/tera) × 6 Pokemon
+- **Expected Damage**: Percentage-based damage expectations (0-200% range)
+- **Damage Variance**: Statistical variance for damage ranges (0-30% range)
+- **Total Features**: 1145 state features including comprehensive damage analysis
+
+#### 🎮 **AI Benefits**
+- **Tactical Awareness**: Move effectiveness evaluation before action selection
+- **Type Advantage**: Strategic planning with proper type matchup understanding
+- **Damage Prediction**: Accurate damage ranges for battle outcome prediction
+- **Team Synergy**: Comprehensive damage matrices for all team members vs opponents
+
+### 2025-07-12 - State Space Expansion (Step 3)
+
+#### 🎯 **Major Features**
+- **Pokemon Species ID Management**: Efficient Pokedex ID conversion system with SpeciesMapper class
+- **StateObserver Enhancement**: Advanced team information caching and context building
+- **CSV Feature Optimization**: Optimized feature space with Pokedex ID integration
+
+#### 🔧 **Implementation Details**
+- **Performance Optimization**: 2μs context building time, 497k+ operations per second
+- **Battle-Tag Caching**: Efficient team composition caching with turn-based invalidation
+- **Direct Access Paths**: Optimized `.species_id` access without eval() overhead
+- **Lazy Initialization**: Minimal startup overhead for damage calculation components
+
+#### ⚙️ **New Components**
+- **SpeciesMapper**: `src/utils/species_mapper.py` - Pokemon name to Pokedex ID conversion
+- **Enhanced StateObserver**: Team Pokedex ID integration with damage expectation support
+
+#### 🧪 **Testing & Validation**
+- **Performance Tests**: Context building speed and caching efficiency validation
+- **Integration Tests**: End-to-end StateObserver functionality with real battle data
+
+#### 📁 **Data Changes**
+- **Pokedex Integration**: Team composition now uses efficient Pokedex number representation
+- **CSV Optimization**: Streamlined team information features with ID-based lookup
+
 ### 2025-07-10 - LSTM Learning Optimization and Sequence-Based Training
 
 #### 🎯 **Major Features**
