@@ -236,15 +236,17 @@ def evaluate_single(
             # Try to detect network type from state_dict structure
             if isinstance(state_dict, dict) and "policy" in state_dict:
                 policy_keys = list(state_dict["policy"].keys())
-                if any("lstm" in key for key in policy_keys):
+                if any("input_proj" in key for key in policy_keys):
+                    # This is an AttentionNetwork (with or without LSTM)
+                    has_attention_layers = any("attention" in key for key in policy_keys)
                     network_config = {
-                        "type": "lstm",
-                        "hidden_size": 128,
-                        "lstm_hidden_size": 128,
-                        "use_lstm": True,
+                        "type": "attention",
+                        "hidden_size": 256,
+                        "use_attention": has_attention_layers,
+                        "use_lstm": any("lstm" in key for key in policy_keys),
                         "use_2layer": True
                     }
-                    logger.info("Detected LSTM network from state_dict structure")
+                    logger.info("Detected Attention network (with LSTM) from state_dict structure")
                 elif any("attention" in key for key in policy_keys):
                     network_config = {
                         "type": "attention",
@@ -266,11 +268,22 @@ def evaluate_single(
             elif isinstance(state_dict, dict):
                 # Direct state_dict (old format)
                 direct_keys = list(state_dict.keys())
-                if any("lstm" in key for key in direct_keys):
+                if any("input_proj" in key for key in direct_keys):
+                    # This is an AttentionNetwork (with or without LSTM)
+                    has_attention_layers = any("attention" in key for key in direct_keys)
+                    network_config = {
+                        "type": "attention",
+                        "hidden_size": 256,
+                        "use_attention": has_attention_layers,
+                        "use_lstm": any("lstm" in key for key in direct_keys),
+                        "use_2layer": True
+                    }
+                    logger.info("Detected Attention network (with LSTM) from direct state_dict")
+                elif any("lstm" in key for key in direct_keys):
                     network_config = {
                         "type": "lstm",
-                        "hidden_size": 128,
-                        "lstm_hidden_size": 128,
+                        "hidden_size": 256,
+                        "lstm_hidden_size": 256,
                         "use_lstm": True,
                         "use_2layer": True
                     }

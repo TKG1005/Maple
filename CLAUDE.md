@@ -612,7 +612,34 @@ network:
 
 ## Recent Updates (2025-07-12)
 
-### Damage Calculation State Space Integration (Latest)
+### Model Evaluation Shape Mismatch Fix (Latest)
+**Problem**: `evaluate_rl.py`でモデル評価時にshapeサイズのミスマッチエラーが発生していました。
+
+**Root Cause**: 保存されたモデルと評価スクリプトのネットワーク構成が一致していませんでした：
+- 保存されたモデル: `AttentionPolicyNetwork`（`input_proj`, `output_mlp`レイヤー、`hidden_size: 256`）
+- 評価スクリプト: `LSTMPolicyNetwork`（`mlp`レイヤー、`hidden_size: 128`）
+
+**Solution**: 
+- **Network Detection Logic**: `input_proj`キーでAttentionネットワークを正しく識別
+- **Dynamic Configuration**: アテンション機能とLSTM機能を動的に検出
+- **Correct Dimensions**: `hidden_size: 256`に修正
+
+```python
+# Fixed network detection
+if any("input_proj" in key for key in policy_keys):
+    has_attention_layers = any("attention" in key for key in policy_keys)
+    network_config = {
+        "type": "attention",
+        "hidden_size": 256,
+        "use_attention": has_attention_layers,
+        "use_lstm": any("lstm" in key for key in policy_keys),
+        "use_2layer": True
+    }
+```
+
+**Result**: モデル評価が正常に動作し、ネットワーク構成の自動検出が改善されました。
+
+### Damage Calculation State Space Integration
 完全なダメージ計算システムを状態空間に統合し、AIが戦術的判断に活用可能にしました。
 
 #### Complete Type Chart Implementation
