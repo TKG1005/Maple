@@ -2,7 +2,6 @@
 import pandas as pd
 from src.damage.data_loader import DataLoader
 import random
-import logging
 
 class DamageCalculator:
     def __init__(self, data_loader):
@@ -52,8 +51,6 @@ class DamageCalculator:
         for _, row in self.move_translations.iterrows():
             english_name_normalized = row['English Name'].replace(' ', '').lower()
             if english_name_normalized == move_name_normalized:
-                import logging
-                logging.debug(f"Move name normalization: '{move_name}' -> '{row['English Name']}' -> '{row['Japanese Name']}'")
                 return row['Japanese Name']
         
         return move_name  # Return as-is if not found or already Japanese
@@ -350,14 +347,9 @@ class DamageCalculator:
             ValueError: If required data is missing or invalid
             Exception: For any calculation errors
         """
-        # Debug logging for damage calculation inputs
+        # Extract names for error messages
         target_name = target_pokemon.species if hasattr(target_pokemon, 'species') else str(target_pokemon)
         move_name = move_object.id if hasattr(move_object, 'id') else str(move_object)
-        logging.debug(f"calculate_damage_expectation_for_ai called:")
-        logging.debug(f"  attacker_stats: {attacker_stats}")
-        logging.debug(f"  target_pokemon: {target_name}")
-        logging.debug(f"  move_object: {move_name}")
-        logging.debug(f"  move_type: {move_type}")
         
         # Get target base stats from Pokemon object
         if hasattr(target_pokemon, 'base_stats') and target_pokemon.base_stats:
@@ -374,13 +366,11 @@ class DamageCalculator:
                 'type1': target_pokemon.type_1.name if hasattr(target_pokemon, 'type_1') and target_pokemon.type_1 else 'Normal',
                 'type2': target_pokemon.type_2.name if hasattr(target_pokemon, 'type_2') and target_pokemon.type_2 else None
             }
-            logging.debug(f"  Using target base stats from Pokemon object: {target_stats}")
         else:
             # Fallback to CSV lookup
             if target_name not in self.pokemon_stats_dict:
                 raise KeyError(f"Target Pokemon '{target_name}' not found in pokemon_stats data and no base_stats available")
             target_stats = self.pokemon_stats_dict[target_name]
-            logging.debug(f"  Using target base stats from CSV: {target_stats}")
         
         # Get move power and category from Move object
         if hasattr(move_object, 'base_power') and hasattr(move_object, 'category'):
@@ -398,7 +388,6 @@ class DamageCalculator:
             else:
                 move_category = '物理'  # Default fallback
                 
-            logging.debug(f"  Using move data from Move object: power={move_power}, category={move_category}")
         else:
             # Fallback to CSV method
             japanese_move_name = self._convert_move_name_to_japanese(move_name)
@@ -408,7 +397,6 @@ class DamageCalculator:
             
             move_power = move_data.iloc[0]['base_power']
             move_category = move_data.iloc[0]['category']
-            logging.debug(f"  Using move data from CSV: power={move_power}, category={move_category}")
         
         # Skip non-damaging moves (変化技)
         if move_category == '変化' or pd.isna(move_power) or move_power <= 0:
@@ -448,9 +436,7 @@ class DamageCalculator:
             try:
                 move_pokemon_type = PokemonType.from_name(move_type.lower())
                 type_effectiveness = target_pokemon.damage_multiplier(move_pokemon_type)
-                logging.debug(f"  Type effectiveness {move_type} vs {target_pokemon.type_1.name}/{target_pokemon.type_2.name if target_pokemon.type_2 else 'None'}: {type_effectiveness}")
             except Exception as e:
-                logging.warning(f"Failed to calculate type effectiveness using poke-env: {e}, falling back to CSV")
                 # Fallback to CSV method
                 type_effectiveness = self._calculate_type_effectiveness_from_csv(move_type, target_stats)
         else:
@@ -487,13 +473,5 @@ class DamageCalculator:
         expected_percent = (min_percent + max_percent) / 2
         variance_percent = (max_percent - min_percent) / 2
         
-        # Debug logging for damage calculation results
-        logging.debug(f"calculate_damage_expectation_for_ai result:")
-        logging.debug(f"  expected_percent: {expected_percent:.2f}%")
-        logging.debug(f"  variance_percent: {variance_percent:.2f}%")
-        logging.debug(f"  damage_range: {min_percent:.2f}% - {max_percent:.2f}%")
-        logging.debug(f"  move_power: {move_power}, move_category: {move_category}")
-        logging.debug(f"  type_effectiveness: {type_effectiveness}")
-        logging.debug(f"  target_max_hp: {target_max_hp}")
         
         return (expected_percent, variance_percent)

@@ -310,32 +310,17 @@ class StateObserver:
         # Add damage calculation function to context
         damage_calc = self._get_damage_calculator()
         if damage_calc:
-            import logging
-            logging.debug(f"StateObserver: Adding damage calculation function to context")
             # Cache for function results within single observation
             damage_cache = {}
             
             # Create a wrapper function for damage calculation that's accessible from eval()
             def calc_damage_expectation_for_ai(attacker, target, move, terastallized=False):
-                import logging
-                
-                # Debug logging for troubleshooting index errors
-                logging.debug(f"DamageCalc DEBUG - attacker: {attacker}, target: {target}, move: {move}")
-                logging.debug(f"DamageCalc DEBUG - attacker type: {type(attacker)}, target type: {type(target)}, move type: {type(move)}")
-                
-                if attacker is not None:
-                    logging.debug(f"DamageCalc DEBUG - attacker has moves attr: {hasattr(attacker, 'moves')}")
-                    if hasattr(attacker, 'moves'):
-                        logging.debug(f"DamageCalc DEBUG - attacker.moves type: {type(attacker.moves)}, length: {len(attacker.moves) if hasattr(attacker.moves, '__len__') else 'no len'}")
-                        if hasattr(attacker.moves, '__len__'):
-                            for i, m in enumerate(attacker.moves):
-                                logging.debug(f"DamageCalc DEBUG - attacker.moves[{i}]: {m}")
                 
                 # Validate inputs - raise error if any are None/invalid
                 if not attacker or not target or not move:
                     raise ValueError(f"Invalid input: attacker={attacker}, target={target}, move={move}")
                 
-                # Get target name and move name early for logging
+                # Get target name and move name for error messages and caching
                 target_name = target.species if hasattr(target, 'species') else str(target)
                 move_name = move.id if hasattr(move, 'id') else str(move)
                 
@@ -347,12 +332,7 @@ class StateObserver:
                 
                 # Return cached result if available
                 if cache_key in damage_cache:
-                    import logging
-                    logging.debug(f"DamageCalculator cache HIT for {target_name} vs {move_name}")
                     return damage_cache[cache_key]
-                
-                import logging
-                logging.debug(f"DamageCalculator cache MISS for {target_name} vs {move_name}, calculating...")
                 
                 # Extract attacker stats
                 attacker_stats = {
