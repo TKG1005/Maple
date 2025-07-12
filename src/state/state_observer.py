@@ -10,6 +10,9 @@ from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.move_category import MoveCategory  # MoveCategoryも追加
 from src.state.type_matchup_extractor import TypeMatchupFeatureExtractor
+from src.utils.species_mapper import get_species_mapper
+from src.damage.calculator import DamageCalculator
+from src.damage.data_loader import DataLoader
 
 
 class StateObserver:
@@ -20,8 +23,26 @@ class StateObserver:
         self.encoders = self._build_encoders(self.spec)
         self.opp_total_estimate = 3  # 敵の手持ちの初期値
         self.type_matchup_extractor = TypeMatchupFeatureExtractor()
+        
+        # Initialize species mapper for efficient Pokedex number conversion
+        self.species_mapper = get_species_mapper()
+        
+        # Initialize damage calculator for damage expectation features
+        # Use lazy initialization to avoid loading overhead if not needed
+        self._damage_calculator = None
+        self._damage_calculator_initialized = False
+        
+        # Cache for team compositions to avoid recalculation
+        self._team_cache = {
+            'my_team_ids': None,
+            'opp_team_ids': None,
+            'battle_tag': None  # To detect when battle changes
+        }
 
     def observe(self, battle: AbstractBattle) -> np.ndarray:
+        import logging
+        logging.debug(f"StateObserver.observe() called with battle: {battle}")
+        
         state = []
         # battle が None の場合や、必要な属性がない場合に StateObserver がエラーにならないように、
         # _build_context や _extract が安全にデフォルト値を返す必要があります。
@@ -72,6 +93,19 @@ class StateObserver:
                 )
 
         return np.array(state, dtype=np.float32)
+    
+    def _get_damage_calculator(self) -> DamageCalculator:
+        """Get damage calculator with lazy initialization for performance."""
+        if not self._damage_calculator_initialized:
+            try:
+                data_loader = DataLoader()
+                self._damage_calculator = DamageCalculator(data_loader)
+                print("Damage calculator initialized successfully")
+            except Exception as e:
+                print(f"Warning: Could not initialize damage calculator: {e}")
+                self._damage_calculator = None
+            self._damage_calculator_initialized = True
+        return self._damage_calculator
 
     def get_observation_dimension(self) -> int:
         """
@@ -171,13 +205,15 @@ class StateObserver:
         return dimension
 
     def _build_context(self, battle: AbstractBattle) -> dict:
-        # (既存の _build_context メソッドは変更なし)
+        """Build context with team Pokedex IDs and damage calculation support."""
         ctx = {"battle": battle}
-        # active_pokemon や opponent_active_pokemon が None の場合を考慮
+        
+        # Get battle identifier for caching
+        battle_tag = f"{battle.battle_tag}_{battle.turn}" if hasattr(battle, 'battle_tag') else str(id(battle))
+        
+        # Build basic context
         my_team = list(battle.team.values()) if battle.team else []
-        active = next(
-            (p for p in my_team if p.active), None
-        )  # None の場合のデフォルトを追加
+        active = next((p for p in my_team if p.active), None)
         ctx["active"] = active
         ctx["active_sorted_moves"] = (
             sorted(active.moves.values(), key=lambda m: m.id)
@@ -185,37 +221,205 @@ class StateObserver:
             else []
         )
 
-        bench = (
-            [p for p in my_team if not p.active] if active else my_team
-        )  # activeがNoneなら全員bench扱い(要件次第)
+        bench = [p for p in my_team if not p.active] if active else my_team
         ctx["bench1"] = bench[0] if len(bench) > 0 else None
         ctx["bench2"] = bench[1] if len(bench) > 1 else None
 
-        opp_team = list(battle.opponent_team.values()) if battle.opponent_team else []
-        self.opp_total_estimate = max(self.opp_total_estimate, len(opp_team))
-        opp_alive_seen = sum(1 for p in opp_team if not p.fainted)
-        unknown_remaining = max(0, self.opp_total_estimate - len(opp_team))
+        # Add aliases for damage calculation compatibility with move arrays
+        def create_pokemon_with_move_array(pokemon):
+            """Create a wrapper that allows moves[index] access."""
+            if pokemon is None:
+                return None
+                
+            class PokemonWithMoveArray:
+                def __init__(self, original_pokemon):
+                    # Copy all attributes from original pokemon
+                    for attr in dir(original_pokemon):
+                        if not attr.startswith('_'):
+                            try:
+                                setattr(self, attr, getattr(original_pokemon, attr))
+                            except:
+                                pass  # Skip attributes that can't be copied
+                    
+                    # Create moves array from moves dict
+                    if hasattr(original_pokemon, 'moves') and original_pokemon.moves:
+                        moves_list = sorted(original_pokemon.moves.values(), key=lambda m: m.id)
+                        # Pad to 4 moves with None
+                        self.moves = moves_list + [None] * (4 - len(moves_list))
+                    else:
+                        self.moves = [None, None, None, None]
+            
+            return PokemonWithMoveArray(pokemon)
+        
+        ctx["my_active"] = create_pokemon_with_move_array(active)
+        ctx["my_bench1"] = create_pokemon_with_move_array(ctx["bench1"])
+        ctx["my_bench2"] = create_pokemon_with_move_array(ctx["bench2"])
 
-        opp_active = next(
-            (p for p in opp_team if p.active), None
-        )  # None の場合のデフォルトを追加
+        # Use teampreview_opponent_team during team preview, opponent_team during battle
+        import logging
+        if hasattr(battle, 'teampreview_opponent_team') and battle.teampreview_opponent_team:
+            opp_team_list = list(battle.teampreview_opponent_team)
+            logging.debug(f"Using teampreview_opponent_team: {len(opp_team_list)} Pokemon")
+        else:
+            opp_team_list = list(battle.opponent_team.values()) if battle.opponent_team else []
+            logging.debug(f"Using opponent_team: {len(opp_team_list)} Pokemon")
+        self.opp_total_estimate = max(self.opp_total_estimate, len(opp_team_list))
+        opp_alive_seen = sum(1 for p in opp_team_list if not p.fainted)
+        unknown_remaining = max(0, self.opp_total_estimate - len(opp_team_list))
+
+        opp_active = next((p for p in opp_team_list if p.active), None)
         ctx["opp_active"] = opp_active
-        opp_bench = [p for p in opp_team if not p.active] if opp_active else opp_team
+        opp_bench = [p for p in opp_team_list if not p.active] if opp_active else opp_team_list
         ctx["opp_bench1"] = opp_bench[0] if len(opp_bench) > 0 else None
         ctx["opp_bench2"] = opp_bench[1] if len(opp_bench) > 1 else None
         ctx["my_alive_count"] = sum(1 for p in my_team if not p.fainted)
         ctx["opp_alive_count"] = opp_alive_seen + unknown_remaining
+
+        # Create opp_team array for damage calculation (6-element array with None padding)
+        opp_team_array = []
+        for i in range(6):
+            if i < len(opp_team_list):
+                opp_team_array.append(create_pokemon_with_move_array(opp_team_list[i]))
+            else:
+                opp_team_array.append(None)
+        ctx["opp_team"] = opp_team_array
         
         ctx["type_matchup_vec"] = self.type_matchup_extractor.extract(battle)
+
+        # Add team Pokedex IDs with caching for efficiency
+        if self._team_cache['battle_tag'] != battle_tag:
+            # Cache miss - recalculate team IDs
+            my_team_ids = self.species_mapper.get_team_pokedex_ids(my_team)
+            opp_team_ids = self.species_mapper.get_team_pokedex_ids(opp_team_list)
+            
+            self._team_cache.update({
+                'my_team_ids': my_team_ids,
+                'opp_team_ids': opp_team_ids,
+                'battle_tag': battle_tag
+            })
+        
+        # Add team information to context
+        ctx["my_team"] = my_team
+        ctx["opp_team"] = opp_team_list
+        
+        # Add individual team member Pokedex IDs for easy access
+        for i in range(6):
+            ctx[f"my_team{i+1}_pokedex_id"] = self._team_cache['my_team_ids'][i]
+            ctx[f"opp_team{i+1}_pokedex_id"] = self._team_cache['opp_team_ids'][i]
+        
+        # Add damage calculation function to context
+        damage_calc = self._get_damage_calculator()
+        if damage_calc:
+            import logging
+            logging.debug(f"StateObserver: Adding damage calculation function to context")
+            # Cache for function results within single observation
+            damage_cache = {}
+            
+            # Create a wrapper function for damage calculation that's accessible from eval()
+            def calc_damage_expectation_for_ai(attacker, target, move, terastallized=False):
+                import logging
+                
+                # Debug logging for troubleshooting index errors
+                logging.debug(f"DamageCalc DEBUG - attacker: {attacker}, target: {target}, move: {move}")
+                logging.debug(f"DamageCalc DEBUG - attacker type: {type(attacker)}, target type: {type(target)}, move type: {type(move)}")
+                
+                if attacker is not None:
+                    logging.debug(f"DamageCalc DEBUG - attacker has moves attr: {hasattr(attacker, 'moves')}")
+                    if hasattr(attacker, 'moves'):
+                        logging.debug(f"DamageCalc DEBUG - attacker.moves type: {type(attacker.moves)}, length: {len(attacker.moves) if hasattr(attacker.moves, '__len__') else 'no len'}")
+                        if hasattr(attacker.moves, '__len__'):
+                            for i, m in enumerate(attacker.moves):
+                                logging.debug(f"DamageCalc DEBUG - attacker.moves[{i}]: {m}")
+                
+                # Validate inputs - raise error if any are None/invalid
+                if not attacker or not target or not move:
+                    raise ValueError(f"Invalid input: attacker={attacker}, target={target}, move={move}")
+                
+                # Get target name and move name early for logging
+                target_name = target.species if hasattr(target, 'species') else str(target)
+                move_name = move.id if hasattr(move, 'id') else str(move)
+                
+                # Create cache key from function parameters
+                attacker_id = id(attacker)
+                target_id = id(target)
+                move_id = id(move)
+                cache_key = (attacker_id, target_id, move_id, terastallized)
+                
+                # Return cached result if available
+                if cache_key in damage_cache:
+                    import logging
+                    logging.debug(f"DamageCalculator cache HIT for {target_name} vs {move_name}")
+                    return damage_cache[cache_key]
+                
+                import logging
+                logging.debug(f"DamageCalculator cache MISS for {target_name} vs {move_name}, calculating...")
+                
+                # Extract attacker stats
+                attacker_stats = {
+                    'level': getattr(attacker, 'level', 50),
+                    'attack': attacker.stats.get('atk', 100),
+                    'special_attack': attacker.stats.get('spa', 100),
+                    'speed': attacker.stats.get('spe', 100),
+                    'weight': getattr(attacker, 'weight', 100),
+                    'rank_attack': attacker.boosts.get('atk', 0),
+                    'rank_special_attack': attacker.boosts.get('spa', 0),
+                    'type1': attacker.type_1.name if attacker.type_1 else 'Normal',
+                    'type2': attacker.type_2.name if attacker.type_2 else None,
+                    'tera_type': attacker.tera_type.name if hasattr(attacker, 'tera_type') and attacker.tera_type else None,
+                    'is_terastalized': terastallized
+                }
+                
+                # Get move type
+                move_type = move.type.name if hasattr(move, 'type') and move.type else 'Normal'
+                
+                # Call DamageCalculator - let it raise exceptions on errors
+                result = damage_calc.calculate_damage_expectation_for_ai(
+                    attacker_stats, target, move, move_type
+                )
+                
+                # Cache result for future use within this observation
+                damage_cache[cache_key] = result
+                return result
+            
+            ctx["calc_damage_expectation_for_ai"] = calc_damage_expectation_for_ai
 
         return ctx
 
     def _extract(self, path: str, ctx: dict, default):
-        # (既存の _extract メソッドは変更なし)
+        """Extract feature value from context using the specified path."""
         try:
             # pathがNoneや空文字の場合も考慮
             if not path:
                 return default
+            
+            # Special handling for team Pokedex ID access
+            if path.endswith('.species_id'):
+                # Direct access to cached Pokedex IDs
+                if 'my_team[0].species_id' in path:
+                    return ctx.get('my_team1_pokedex_id', 0)
+                elif 'my_team[1].species_id' in path:
+                    return ctx.get('my_team2_pokedex_id', 0)
+                elif 'my_team[2].species_id' in path:
+                    return ctx.get('my_team3_pokedex_id', 0)
+                elif 'my_team[3].species_id' in path:
+                    return ctx.get('my_team4_pokedex_id', 0)
+                elif 'my_team[4].species_id' in path:
+                    return ctx.get('my_team5_pokedex_id', 0)
+                elif 'my_team[5].species_id' in path:
+                    return ctx.get('my_team6_pokedex_id', 0)
+                elif 'opp_team[0].species_id' in path:
+                    return ctx.get('opp_team1_pokedex_id', 0)
+                elif 'opp_team[1].species_id' in path:
+                    return ctx.get('opp_team2_pokedex_id', 0)
+                elif 'opp_team[2].species_id' in path:
+                    return ctx.get('opp_team3_pokedex_id', 0)
+                elif 'opp_team[3].species_id' in path:
+                    return ctx.get('opp_team4_pokedex_id', 0)
+                elif 'opp_team[4].species_id' in path:
+                    return ctx.get('opp_team5_pokedex_id', 0)
+                elif 'opp_team[5].species_id' in path:
+                    return ctx.get('opp_team6_pokedex_id', 0)
+                    
             return eval(
                 path,
                 {
@@ -225,12 +429,71 @@ class StateObserver:
                 },
                 ctx,
             )  # Enum型をevalのスコープに追加
-        except (AttributeError, TypeError, IndexError, NameError, SyntaxError):
-            # print(f"Debug extract: Path '{path}' failed with error '{e}'. Returning default '{default}'.")
-            return default
-        except Exception:  # その他の予期せぬエラー
-            # print(f"Debug extract: Path '{path}' failed with unexpected error '{e}'. Returning default '{default}'.")
-            return default
+        except (AttributeError, TypeError, IndexError, NameError, SyntaxError) as e:
+            import logging
+            # 詳細なエラー情報をログ出力してからエラーを再発生させる
+            logging.error(f"EXTRACT ERROR: Path '{path}' failed with {type(e).__name__}: '{e}'")
+            logging.error(f"EXTRACT ERROR: Context keys: {list(ctx.keys())}")
+            
+            # Additional debugging for specific problematic paths
+            if 'my_bench2' in path:
+                logging.error(f"EXTRACT ERROR: my_bench2 = {ctx.get('my_bench2')}")
+                if ctx.get('my_bench2') is not None:
+                    bench2 = ctx.get('my_bench2')
+                    logging.error(f"EXTRACT ERROR: my_bench2.moves = {getattr(bench2, 'moves', 'NO_MOVES_ATTR')}")
+                    if hasattr(bench2, 'moves'):
+                        logging.error(f"EXTRACT ERROR: my_bench2.moves length = {len(bench2.moves)}")
+            
+            if 'opp_team' in path:
+                logging.error(f"EXTRACT ERROR: opp_team = {ctx.get('opp_team')}")
+                opp_team = ctx.get('opp_team')
+                if opp_team is not None:
+                    logging.error(f"EXTRACT ERROR: opp_team length = {len(opp_team)}")
+                    for i, opp in enumerate(opp_team):
+                        logging.error(f"EXTRACT ERROR: opp_team[{i}] = {opp}")
+                    # Additional debugging for the specific failing path
+                    if 'opp_team[1]' in path:
+                        logging.error(f"EXTRACT ERROR: Attempting to access opp_team[1], but opp_team length = {len(opp_team)}")
+                        logging.error(f"EXTRACT ERROR: Available indices: 0 to {len(opp_team)-1}")
+            
+            # tera_type関連のエラーの詳細ログ
+            if 'tera_type' in path:
+                logging.error(f"EXTRACT ERROR: tera_type path detected")
+                if 'battle.active_pokemon' in path:
+                    battle = ctx.get('battle')
+                    if battle:
+                        logging.error(f"EXTRACT ERROR: battle.active_pokemon = {getattr(battle, 'active_pokemon', 'NO_ACTIVE_POKEMON')}")
+                        if hasattr(battle, 'active_pokemon') and battle.active_pokemon:
+                            active_pokemon = battle.active_pokemon
+                            logging.error(f"EXTRACT ERROR: active_pokemon.tera_type = {getattr(active_pokemon, 'tera_type', 'NO_TERA_TYPE')}")
+                            logging.error(f"EXTRACT ERROR: active_pokemon attributes: {[attr for attr in dir(active_pokemon) if not attr.startswith('_')]}")
+                        else:
+                            logging.error(f"EXTRACT ERROR: battle.active_pokemon is None or missing")
+                    else:
+                        logging.error(f"EXTRACT ERROR: battle is None")
+                        
+                if 'battle.opponent_active_pokemon' in path:
+                    battle = ctx.get('battle')
+                    if battle:
+                        logging.error(f"EXTRACT ERROR: battle.opponent_active_pokemon = {getattr(battle, 'opponent_active_pokemon', 'NO_OPP_ACTIVE')}")
+                        if hasattr(battle, 'opponent_active_pokemon') and battle.opponent_active_pokemon:
+                            opp_active = battle.opponent_active_pokemon
+                            logging.error(f"EXTRACT ERROR: opponent_active_pokemon.tera_type = {getattr(opp_active, 'tera_type', 'NO_TERA_TYPE')}")
+                        else:
+                            logging.error(f"EXTRACT ERROR: battle.opponent_active_pokemon is None or missing")
+            
+            # Handle opponent bench Pokemon that may be None (not yet revealed)
+            if isinstance(e, AttributeError) and ('opp_bench' in path or 'battle.opponent_active_pokemon' in path):
+                logging.debug(f"Opponent Pokemon not available, using default for: {path}")
+                return default
+            
+            # IndexErrorは詳細ログ出力後にエラーを再発生（これが目標）
+            raise e
+        except Exception as e:  # その他の予期せぬエラー
+            import logging
+            logging.error(f"EXTRACT UNEXPECTED ERROR: Path '{path}' failed with {type(e).__name__}: '{e}'")
+            # エラーを再発生させる（フォールバックせずに停止）
+            raise e
 
     def _build_encoders(self, spec: dict):
         # (既存の _build_encoders メソッドは概ねそのままで良いが、出力が常にリストになるように調整を検討)

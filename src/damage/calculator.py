@@ -2,6 +2,7 @@
 import pandas as pd
 from src.damage.data_loader import DataLoader
 import random
+import logging
 
 class DamageCalculator:
     def __init__(self, data_loader):
@@ -41,10 +42,46 @@ class DamageCalculator:
     
     def _convert_move_name_to_japanese(self, move_name):
         """Convert English move name to Japanese using move translations."""
+        # Try exact match first
         translation = self.move_translations[self.move_translations['English Name'] == move_name]
         if not translation.empty:
             return translation.iloc[0]['Japanese Name']
+        
+        # Try case-insensitive match and normalize spaces
+        move_name_normalized = move_name.replace(' ', '').lower()
+        for _, row in self.move_translations.iterrows():
+            english_name_normalized = row['English Name'].replace(' ', '').lower()
+            if english_name_normalized == move_name_normalized:
+                import logging
+                logging.debug(f"Move name normalization: '{move_name}' -> '{row['English Name']}' -> '{row['Japanese Name']}'")
+                return row['Japanese Name']
+        
         return move_name  # Return as-is if not found or already Japanese
+
+    def _calculate_type_effectiveness_from_csv(self, move_type, target_stats):
+        """Calculate type effectiveness using CSV data as fallback."""
+        defender_type1 = self._convert_type_to_japanese(target_stats['type1'])
+        defender_type2 = self._convert_type_to_japanese(target_stats['type2']) if target_stats['type2'] and str(target_stats['type2']) != 'nan' else None
+        move_type_japanese = self._convert_type_to_japanese(move_type)
+        
+        type_effectiveness1_matches = self.type_chart[
+            (self.type_chart['attacking_type'] == move_type_japanese) & 
+            (self.type_chart['defending_type'] == defender_type1)
+        ]
+        if type_effectiveness1_matches.empty:
+            raise ValueError(f"Type effectiveness not found for {move_type_japanese} ({move_type}) vs {defender_type1}")
+        type_effectiveness1 = type_effectiveness1_matches['multiplier'].iloc[0]
+        
+        type_effectiveness2 = 1.0
+        if defender_type2:
+            type_effectiveness2_matches = self.type_chart[
+                (self.type_chart['attacking_type'] == move_type_japanese) & 
+                (self.type_chart['defending_type'] == defender_type2)
+            ]
+            if not type_effectiveness2_matches.empty:
+                type_effectiveness2 = type_effectiveness2_matches['multiplier'].iloc[0]
+        
+        return type_effectiveness1 * type_effectiveness2
 
     def _get_modifier(self, modifier_type, attacker, defender, move, field_state):
         modifier = 1.0
@@ -87,10 +124,27 @@ class DamageCalculator:
             return int(((base_stat * 2 + 31 + 252/4) * level / 100) + 5)
 
     def calculate_damage_range(self, attacker, defender, move, field_state):
+        """
+        Calculate damage range for a move. Raises exceptions on missing data.
         
-        attack_stat = attacker.get('attack')
-        defense_stat = defender.get('defense')
-        move_power = self.move_data[self.move_data['name'] == move['name']]['power'].iloc[0]
+        Raises:
+            KeyError: If required keys are missing from input dictionaries
+            ValueError: If data values are invalid
+        """
+        if 'attack' not in attacker:
+            raise KeyError("Missing 'attack' stat in attacker data")
+        if 'defense' not in defender:
+            raise KeyError("Missing 'defense' stat in defender data")
+        if 'name' not in move:
+            raise KeyError("Missing 'name' in move data")
+        
+        attack_stat = attacker['attack']
+        defense_stat = defender['defense']
+        
+        move_matches = self.move_data[self.move_data['name'] == move['name']]
+        if move_matches.empty:
+            raise KeyError(f"Move '{move['name']}' not found in move data")
+        move_power = move_matches['power'].iloc[0]
 
         # Rank modifiers
         attack_rank = attacker.get('rank_attack', 0)
@@ -107,24 +161,45 @@ class DamageCalculator:
             defense_stat *= 2 / (2 - defense_rank)
 
         # Basic damage calculation
-        base_damage = (((2 * attacker.get('level', 50) / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
+        level = attacker.get('level', 50)  # Level can have a reasonable default
+        base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
 
         # Type effectiveness
-        move_type = self.move_data[self.move_data['name'] == move['name']]['type'].iloc[0]
-        defender_type1 = self.pokemon_data[self.pokemon_data['name'] == defender['name']]['type1'].iloc[0]
-        defender_type2 = self.pokemon_data[self.pokemon_data['name'] == defender['name']]['type2'].iloc[0]
+        move_type = move_matches['type'].iloc[0]
         
-        type_effectiveness1 = self.type_chart[(self.type_chart['attacking_type'] == move_type) & (self.type_chart['defending_type'] == defender_type1)]['multiplier'].iloc[0]
+        if 'name' not in defender:
+            raise KeyError("Missing 'name' in defender data")
+        defender_matches = self.pokemon_data[self.pokemon_data['name'] == defender['name']]
+        if defender_matches.empty:
+            raise KeyError(f"Defender Pokemon '{defender['name']}' not found in pokemon data")
+            
+        defender_type1 = defender_matches['type1'].iloc[0]
+        defender_type2 = defender_matches['type2'].iloc[0]
+        
+        type_eff1_matches = self.type_chart[(self.type_chart['attacking_type'] == move_type) & (self.type_chart['defending_type'] == defender_type1)]
+        if type_eff1_matches.empty:
+            raise ValueError(f"Type effectiveness not found for {move_type} vs {defender_type1}")
+        type_effectiveness1 = type_eff1_matches['multiplier'].iloc[0]
+        
         type_effectiveness2 = 1
         if pd.notna(defender_type2):
-            type_effectiveness2 = self.type_chart[(self.type_chart['attacking_type'] == move_type) & (self.type_chart['defending_type'] == defender_type2)]['multiplier'].iloc[0]
+            type_eff2_matches = self.type_chart[(self.type_chart['attacking_type'] == move_type) & (self.type_chart['defending_type'] == defender_type2)]
+            if type_eff2_matches.empty:
+                raise ValueError(f"Type effectiveness not found for {move_type} vs {defender_type2}")
+            type_effectiveness2 = type_eff2_matches['multiplier'].iloc[0]
         
         type_effectiveness = type_effectiveness1 * type_effectiveness2
         base_damage *= type_effectiveness
 
         # STAB (Same Type Attack Bonus)
-        attacker_type1 = self.pokemon_data[self.pokemon_data['name'] == attacker['name']]['type1'].iloc[0]
-        attacker_type2 = self.pokemon_data[self.pokemon_data['name'] == attacker['name']]['type2'].iloc[0]
+        if 'name' not in attacker:
+            raise KeyError("Missing 'name' in attacker data")
+        attacker_matches = self.pokemon_data[self.pokemon_data['name'] == attacker['name']]
+        if attacker_matches.empty:
+            raise KeyError(f"Attacker Pokemon '{attacker['name']}' not found in pokemon data")
+            
+        attacker_type1 = attacker_matches['type1'].iloc[0]
+        attacker_type2 = attacker_matches['type2'].iloc[0]
         if move_type == attacker_type1 or move_type == attacker_type2:
             base_damage *= 1.5
 
@@ -250,7 +325,7 @@ class DamageCalculator:
             }
         }
 
-    def calculate_damage_expectation_for_ai(self, attacker_stats, target_name, move_name, move_type):
+    def calculate_damage_expectation_for_ai(self, attacker_stats, target_pokemon, move_object, move_type):
         """
         Calculate damage expectation for AI state space observation.
         
@@ -262,110 +337,163 @@ class DamageCalculator:
                 - 'tera_type': tera type (optional)
                 - 'is_terastalized': boolean indicating tera status
                 - 'level': pokemon level (default 50)
-            target_name (str): Name of target Pokemon to look up base stats
-            move_name (str): Name of the move (English or Japanese)
+            target_pokemon: Pokemon object with base_stats and type information
+            move_object: Move object with base_power and category information
             move_type (str): Type of the move (English or Japanese)
             
         Returns:
             tuple: (expected_damage_percent, variance_percent)
                    e.g., (46.5, 1.3) for 45.2~47.8% damage
+                   
+        Raises:
+            KeyError: If target Pokemon or move not found in data
+            ValueError: If required data is missing or invalid
+            Exception: For any calculation errors
         """
-        try:
-            # Convert move name to Japanese if needed
-            japanese_move_name = self._convert_move_name_to_japanese(move_name)
+        # Debug logging for damage calculation inputs
+        target_name = target_pokemon.species if hasattr(target_pokemon, 'species') else str(target_pokemon)
+        move_name = move_object.id if hasattr(move_object, 'id') else str(move_object)
+        logging.debug(f"calculate_damage_expectation_for_ai called:")
+        logging.debug(f"  attacker_stats: {attacker_stats}")
+        logging.debug(f"  target_pokemon: {target_name}")
+        logging.debug(f"  move_object: {move_name}")
+        logging.debug(f"  move_type: {move_type}")
+        
+        # Get target base stats from Pokemon object
+        if hasattr(target_pokemon, 'base_stats') and target_pokemon.base_stats:
+            pokemon_base_stats = target_pokemon.base_stats
             
-            # Get target base stats from pokemon_stats dictionary (faster lookup)
+            # Convert poke-env base_stats format to expected format
+            target_stats = {
+                'HP': pokemon_base_stats.get('hp', 50),
+                'atk': pokemon_base_stats.get('atk', 50), 
+                'def': pokemon_base_stats.get('def', 50),
+                'spa': pokemon_base_stats.get('spa', 50),
+                'spd': pokemon_base_stats.get('spd', 50),
+                'spe': pokemon_base_stats.get('spe', 50),
+                'type1': target_pokemon.type_1.name if hasattr(target_pokemon, 'type_1') and target_pokemon.type_1 else 'Normal',
+                'type2': target_pokemon.type_2.name if hasattr(target_pokemon, 'type_2') and target_pokemon.type_2 else None
+            }
+            logging.debug(f"  Using target base stats from Pokemon object: {target_stats}")
+        else:
+            # Fallback to CSV lookup
             if target_name not in self.pokemon_stats_dict:
-                return (0.0, 0.0)  # Target not found
-            
+                raise KeyError(f"Target Pokemon '{target_name}' not found in pokemon_stats data and no base_stats available")
             target_stats = self.pokemon_stats_dict[target_name]
+            logging.debug(f"  Using target base stats from CSV: {target_stats}")
+        
+        # Get move power and category from Move object
+        if hasattr(move_object, 'base_power') and hasattr(move_object, 'category'):
+            move_power = move_object.base_power
+            move_category_enum = move_object.category
             
-            # Get move power from moves data
+            # Convert MoveCategory enum to Japanese string
+            if hasattr(move_category_enum, 'name'):
+                if move_category_enum.name.lower() == 'physical':
+                    move_category = '物理'
+                elif move_category_enum.name.lower() == 'special':
+                    move_category = '特殊'
+                else:
+                    move_category = '変化'  # Status moves
+            else:
+                move_category = '物理'  # Default fallback
+                
+            logging.debug(f"  Using move data from Move object: power={move_power}, category={move_category}")
+        else:
+            # Fallback to CSV method
+            japanese_move_name = self._convert_move_name_to_japanese(move_name)
             move_data = self.move_data[self.move_data['name'] == japanese_move_name]
             if move_data.empty:
-                return (0.0, 0.0)  # Move not found
+                raise KeyError(f"Move '{japanese_move_name}' (from '{move_name}') not found in moves data")
             
             move_power = move_data.iloc[0]['base_power']
             move_category = move_data.iloc[0]['category']
-            
-            # Skip non-damaging moves (変化技)
-            if move_category == '変化' or pd.isna(move_power) or move_power <= 0:
-                return (0.0, 0.0)
-            
-            # Determine attack and defense stats based on move category
-            if move_category == '物理':
-                attack_stat = attacker_stats.get('attack', 100)
-                attack_rank = attacker_stats.get('rank_attack', 0)
-                defense_stat = self._calculate_max_stat(target_stats['def'], attacker_stats.get('level', 50), False)
-            elif move_category == '特殊':
-                attack_stat = attacker_stats.get('special_attack', 100)
-                attack_rank = attacker_stats.get('rank_special_attack', 0)
-                defense_stat = self._calculate_max_stat(target_stats['spd'], attacker_stats.get('level', 50), False)
-            else:
-                return (0.0, 0.0)  # Status moves
-            
-            # Apply rank modifiers
-            if attack_rank > 0:
-                attack_stat *= (2 + attack_rank) / 2
-            elif attack_rank < 0:
-                attack_stat *= 2 / (2 - attack_rank)
-            
-            # Basic damage calculation
-            level = attacker_stats.get('level', 50)
-            base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
-            
-            # Type effectiveness
-            defender_type1 = self._convert_type_to_japanese(target_stats['type1'])
-            defender_type2 = self._convert_type_to_japanese(target_stats['type2']) if target_stats['type2'] and str(target_stats['type2']) != 'nan' else None
-            
-            type_effectiveness1_matches = self.type_chart[
-                (self.type_chart['attacking_type'] == move_type) & 
-                (self.type_chart['defending_type'] == defender_type1)
-            ]
-            type_effectiveness1 = type_effectiveness1_matches['multiplier'].iloc[0] if not type_effectiveness1_matches.empty else 1.0
-            
-            type_effectiveness2 = 1.0
-            if defender_type2:
-                type_effectiveness2_matches = self.type_chart[
-                    (self.type_chart['attacking_type'] == move_type) & 
-                    (self.type_chart['defending_type'] == defender_type2)
-                ]
-                type_effectiveness2 = type_effectiveness2_matches['multiplier'].iloc[0] if not type_effectiveness2_matches.empty else 1.0
-            
-            type_effectiveness = type_effectiveness1 * type_effectiveness2
-            base_damage *= type_effectiveness
-            
-            # STAB (Same Type Attack Bonus)
-            attacker_type1 = self._convert_type_to_japanese(attacker_stats.get('type1', ''))
-            attacker_type2 = self._convert_type_to_japanese(attacker_stats.get('type2', ''))
-            tera_type = self._convert_type_to_japanese(attacker_stats.get('tera_type', ''))
-            is_terastalized = attacker_stats.get('is_terastalized', False)
-            
-            # Apply STAB based on tera status
-            if is_terastalized and tera_type:
-                if move_type == tera_type:
-                    base_damage *= 1.5  # Tera STAB
-            else:
-                if move_type == attacker_type1 or move_type == attacker_type2:
-                    base_damage *= 1.5  # Regular STAB
-            
-            # Calculate target max HP
-            target_max_hp = self._calculate_max_stat(target_stats['HP'], level, True)
-            
-            # Calculate damage range (0.85 to 1.0)
-            min_damage = base_damage * 0.85
-            max_damage = base_damage * 1.0
-            
-            # Convert to percentage
-            min_percent = (min_damage / target_max_hp) * 100
-            max_percent = (max_damage / target_max_hp) * 100
-            
-            # Calculate expected value and variance
-            expected_percent = (min_percent + max_percent) / 2
-            variance_percent = (max_percent - min_percent) / 2
-            
-            return (expected_percent, variance_percent)
-            
-        except Exception as e:
-            # Return 0 damage if calculation fails
+            logging.debug(f"  Using move data from CSV: power={move_power}, category={move_category}")
+        
+        # Skip non-damaging moves (変化技)
+        if move_category == '変化' or pd.isna(move_power) or move_power <= 0:
             return (0.0, 0.0)
+        
+        # Determine attack and defense stats based on move category
+        if move_category == '物理':
+            if 'attack' not in attacker_stats:
+                raise ValueError(f"Physical attack stat required for move '{move_name}' but not provided")
+            attack_stat = attacker_stats['attack']
+            attack_rank = attacker_stats.get('rank_attack', 0)
+            defense_stat = self._calculate_max_stat(target_stats['def'], attacker_stats.get('level', 50), False)
+        elif move_category == '特殊':
+            if 'special_attack' not in attacker_stats:
+                raise ValueError(f"Special attack stat required for move '{move_name}' but not provided")
+            attack_stat = attacker_stats['special_attack']
+            attack_rank = attacker_stats.get('rank_special_attack', 0)
+            defense_stat = self._calculate_max_stat(target_stats['spd'], attacker_stats.get('level', 50), False)
+        else:
+            raise ValueError(f"Unknown move category '{move_category}' for move '{move_name}'")
+        
+        # Apply rank modifiers
+        if attack_rank > 0:
+            attack_stat *= (2 + attack_rank) / 2
+        elif attack_rank < 0:
+            attack_stat *= 2 / (2 - attack_rank)
+        
+        # Basic damage calculation
+        level = attacker_stats.get('level', 50)
+        base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
+        
+        # Type effectiveness using poke-env's damage_multiplier method
+        if hasattr(target_pokemon, 'damage_multiplier'):
+            # Use Pokemon object's built-in damage calculation
+            # Need to create a PokemonType from move_type string
+            from poke_env.environment.pokemon_type import PokemonType
+            try:
+                move_pokemon_type = PokemonType.from_name(move_type.lower())
+                type_effectiveness = target_pokemon.damage_multiplier(move_pokemon_type)
+                logging.debug(f"  Type effectiveness {move_type} vs {target_pokemon.type_1.name}/{target_pokemon.type_2.name if target_pokemon.type_2 else 'None'}: {type_effectiveness}")
+            except Exception as e:
+                logging.warning(f"Failed to calculate type effectiveness using poke-env: {e}, falling back to CSV")
+                # Fallback to CSV method
+                type_effectiveness = self._calculate_type_effectiveness_from_csv(move_type, target_stats)
+        else:
+            # Fallback to CSV method
+            type_effectiveness = self._calculate_type_effectiveness_from_csv(move_type, target_stats)
+        base_damage *= type_effectiveness
+        
+        # STAB (Same Type Attack Bonus)
+        attacker_type1 = self._convert_type_to_japanese(attacker_stats.get('type1', ''))
+        attacker_type2 = self._convert_type_to_japanese(attacker_stats.get('type2', ''))
+        tera_type = self._convert_type_to_japanese(attacker_stats.get('tera_type', ''))
+        is_terastalized = attacker_stats.get('is_terastalized', False)
+        
+        # Apply STAB based on tera status
+        if is_terastalized and tera_type:
+            if move_type == tera_type:
+                base_damage *= 1.5  # Tera STAB
+        else:
+            if move_type == attacker_type1 or move_type == attacker_type2:
+                base_damage *= 1.5  # Regular STAB
+        
+        # Calculate target max HP
+        target_max_hp = self._calculate_max_stat(target_stats['HP'], level, True)
+        
+        # Calculate damage range (0.85 to 1.0)
+        min_damage = base_damage * 0.85
+        max_damage = base_damage * 1.0
+        
+        # Convert to percentage
+        min_percent = (min_damage / target_max_hp) * 100
+        max_percent = (max_damage / target_max_hp) * 100
+        
+        # Calculate expected value and variance
+        expected_percent = (min_percent + max_percent) / 2
+        variance_percent = (max_percent - min_percent) / 2
+        
+        # Debug logging for damage calculation results
+        logging.debug(f"calculate_damage_expectation_for_ai result:")
+        logging.debug(f"  expected_percent: {expected_percent:.2f}%")
+        logging.debug(f"  variance_percent: {variance_percent:.2f}%")
+        logging.debug(f"  damage_range: {min_percent:.2f}% - {max_percent:.2f}%")
+        logging.debug(f"  move_power: {move_power}, move_category: {move_category}")
+        logging.debug(f"  type_effectiveness: {type_effectiveness}")
+        logging.debug(f"  target_max_hp: {target_max_hp}")
+        
+        return (expected_percent, variance_percent)

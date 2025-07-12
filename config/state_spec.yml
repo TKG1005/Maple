@@ -133,7 +133,7 @@ my_active:
     - 1
   active_boosts_acc:
     dtype: int
-    battle_path: battle.active_pokemon.boosts['acc']
+    battle_path: battle.active_pokemon.boosts['accuracy']
     encoder: linear_scale
     default: '0'
     range:
@@ -144,7 +144,7 @@ my_active:
     - 1
   active_boosts_eve:
     dtype: int
-    battle_path: battle.active_pokemon.boosts['eve']
+    battle_path: battle.active_pokemon.boosts['evasion']
     encoder: linear_scale
     default: '0'
     range:
@@ -157,7 +157,7 @@ my_active:
     dtype: float
     battle_path: active.current_hp_fraction
     encoder: identity
-    default: '0'
+    default: '1'
   active_is_fainted:
     dtype: bool
     battle_path: battle.active_pokemon.fainted
@@ -455,7 +455,8 @@ my_active:
     - tox
   active_teratype:
     dtype: pokemontype(enum)
-    battle_path: battle.active_pokemon.tera_type.name.lower()
+    battle_path: battle.active_pokemon.tera_type.name.lower() if battle.active_pokemon
+      and battle.active_pokemon.tera_type else "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -509,7 +510,7 @@ my_active:
     - water
   active_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: battle.active_pokemon.type_2.name.lower()
+    battle_path: battle.active_pokemon.type_2.name.lower() if battle.active_pokemon.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -603,7 +604,7 @@ opp_active:
     - 1
   opp_active_boosts_acc:
     dtype: int
-    battle_path: battle.opponent_active_pokemon.boosts['acc']
+    battle_path: battle.opponent_active_pokemon.boosts['accuracy']
     encoder: linear_scale
     default: '0'
     range:
@@ -614,7 +615,7 @@ opp_active:
     - 1
   opp_active_boosts_eve:
     dtype: int
-    battle_path: battle.opponent_active_pokemon.boosts['eve']
+    battle_path: battle.opponent_active_pokemon.boosts['evasion']
     encoder: linear_scale
     default: '0'
     range:
@@ -627,7 +628,7 @@ opp_active:
     dtype: float
     battle_path: battle.opponent_active_pokemon.current_hp_fraction
     encoder: identity
-    default: '0'
+    default: '1'
   opp_active_is_fainted:
     dtype: bool
     battle_path: battle.opponent_active_pokemon.fainted
@@ -654,7 +655,8 @@ opp_active:
     - tox
   opp_active_teratype:
     dtype: pokemontype(enum)
-    battle_path: battle.opponent_active_pokemon.tera_type.name.lower()
+    battle_path: battle.opponent_active_pokemon.tera_type.name.lower() if battle.opponent_active_pokemon
+      and battle.opponent_active_pokemon.tera_type else "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -708,7 +710,7 @@ opp_active:
     - water
   opp_active_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: battle.opponent_active_pokemon.type_2.name.lower()
+    battle_path: battle.opponent_active_pokemon.type_2.name.lower() if battle.opponent_active_pokemon and battle.opponent_active_pokemon.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -827,9 +829,9 @@ my_bench1:
     - 1
   my_bench1_current_hp_frac:
     dtype: float
-    battle_path: bench1.current_hp_frac
+    battle_path: bench1.current_hp_fraction
     encoder: identity
-    default: '0'
+    default: '1'
   my_bench1_is_fainted:
     dtype: bool
     battle_path: bench1.fainted
@@ -838,6 +840,310 @@ my_bench1:
   my_bench1_is_terastallized:
     dtype: bool
     battle_path: bench1.is_terastallized
+    encoder: identity
+    default: '0'
+  my_bench1_move1_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].type.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 0 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_move1_base_power:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].base_power
+      if bench1 and bench1.moves and len(bench1.moves) > 0 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench1_move1_acc:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].accuracy if
+      bench1 and bench1.moves and len(bench1.moves) > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move1_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].category.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 0 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench1_move1_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].max_pp if bench1
+      and bench1.moves and len(bench1.moves) > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move1_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].current_pp
+      / sorted(bench1.moves.values(), key=lambda m: m.id)[0].max_pp if bench1 and
+      bench1.moves and len(bench1.moves) > 0 and sorted(bench1.moves.values(), key=lambda
+      m: m.id)[0].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move1_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].current_pp
+      == 1 if bench1 and bench1.moves and len(bench1.moves) > 0 else False'
+    encoder: identity
+    default: '0'
+  my_bench1_move2_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].type.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 1 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_move2_base_power:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].base_power
+      if bench1 and bench1.moves and len(bench1.moves) > 1 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench1_move2_acc:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].accuracy if
+      bench1 and bench1.moves and len(bench1.moves) > 1 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move2_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].category.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 1 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench1_move2_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].max_pp if bench1
+      and bench1.moves and len(bench1.moves) > 1 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move2_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].current_pp
+      / sorted(bench1.moves.values(), key=lambda m: m.id)[1].max_pp if bench1 and
+      bench1.moves and len(bench1.moves) > 1 and sorted(bench1.moves.values(), key=lambda
+      m: m.id)[1].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move2_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].current_pp
+      == 1 if bench1 and bench1.moves and len(bench1.moves) > 1 else False'
+    encoder: identity
+    default: '0'
+  my_bench1_move3_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].type.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 2 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_move3_base_power:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].base_power
+      if bench1 and bench1.moves and len(bench1.moves) > 2 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench1_move3_acc:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].accuracy if
+      bench1 and bench1.moves and len(bench1.moves) > 2 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move3_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].category.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 2 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench1_move3_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].max_pp if bench1
+      and bench1.moves and len(bench1.moves) > 2 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move3_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].current_pp
+      / sorted(bench1.moves.values(), key=lambda m: m.id)[2].max_pp if bench1 and
+      bench1.moves and len(bench1.moves) > 2 and sorted(bench1.moves.values(), key=lambda
+      m: m.id)[2].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move3_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].current_pp
+      == 1 if bench1 and bench1.moves and len(bench1.moves) > 2 else False'
+    encoder: identity
+    default: '0'
+  my_bench1_move4_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].type.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 3 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench1_move4_base_power:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].base_power
+      if bench1 and bench1.moves and len(bench1.moves) > 3 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench1_move4_acc:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].accuracy if
+      bench1 and bench1.moves and len(bench1.moves) > 3 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move4_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].category.name.lower()
+      if bench1 and bench1.moves and len(bench1.moves) > 3 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench1_move4_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].max_pp if bench1
+      and bench1.moves and len(bench1.moves) > 3 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move4_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].current_pp
+      / sorted(bench1.moves.values(), key=lambda m: m.id)[3].max_pp if bench1 and
+      bench1.moves and len(bench1.moves) > 3 and sorted(bench1.moves.values(), key=lambda
+      m: m.id)[3].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench1_move4_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].current_pp
+      == 1 if bench1 and bench1.moves and len(bench1.moves) > 3 else False'
     encoder: identity
     default: '0'
   my_bench1_is_revealed:
@@ -861,7 +1167,8 @@ my_bench1:
     - tox
   my_bench1_teratype:
     dtype: pokemontype(enum)
-    battle_path: bench1.tera_type.name.lower()
+    battle_path: bench1.tera_type.name.lower() if bench1 and bench1.tera_type else
+      "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -915,7 +1222,7 @@ my_bench1:
     - water
   my_bench1_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: bench1.type_2.name.lower()
+    battle_path: bench1.type_2.name.lower() if bench1 and bench1.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1020,9 +1327,9 @@ my_bench2:
     - 1
   my_bench2_current_hp_frac:
     dtype: float
-    battle_path: bench2.current_hp_frac
+    battle_path: bench2.current_hp_fraction
     encoder: nan
-    default: '0'
+    default: '1'
   my_bench2_is_fainted:
     dtype: bool
     battle_path: bench2.fainted
@@ -1031,6 +1338,310 @@ my_bench2:
   my_bench2_is_terastallized:
     dtype: bool
     battle_path: bench2.is_terastallized
+    encoder: identity
+    default: '0'
+  my_bench2_move1_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].type.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 0 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_move1_base_power:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].base_power
+      if bench2 and bench2.moves and len(bench2.moves) > 0 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench2_move1_acc:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].accuracy if
+      bench2 and bench2.moves and len(bench2.moves) > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move1_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].category.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 0 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench2_move1_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].max_pp if bench2
+      and bench2.moves and len(bench2.moves) > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move1_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].current_pp
+      / sorted(bench2.moves.values(), key=lambda m: m.id)[0].max_pp if bench2 and
+      bench2.moves and len(bench2.moves) > 0 and sorted(bench2.moves.values(), key=lambda
+      m: m.id)[0].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move1_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].current_pp
+      == 1 if bench2 and bench2.moves and len(bench2.moves) > 0 else False'
+    encoder: identity
+    default: '0'
+  my_bench2_move2_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].type.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 1 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_move2_base_power:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].base_power
+      if bench2 and bench2.moves and len(bench2.moves) > 1 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench2_move2_acc:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].accuracy if
+      bench2 and bench2.moves and len(bench2.moves) > 1 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move2_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].category.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 1 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench2_move2_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].max_pp if bench2
+      and bench2.moves and len(bench2.moves) > 1 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move2_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].current_pp
+      / sorted(bench2.moves.values(), key=lambda m: m.id)[1].max_pp if bench2 and
+      bench2.moves and len(bench2.moves) > 1 and sorted(bench2.moves.values(), key=lambda
+      m: m.id)[1].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move2_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].current_pp
+      == 1 if bench2 and bench2.moves and len(bench2.moves) > 1 else False'
+    encoder: identity
+    default: '0'
+  my_bench2_move3_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].type.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 2 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_move3_base_power:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].base_power
+      if bench2 and bench2.moves and len(bench2.moves) > 2 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench2_move3_acc:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].accuracy if
+      bench2 and bench2.moves and len(bench2.moves) > 2 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move3_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].category.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 2 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench2_move3_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].max_pp if bench2
+      and bench2.moves and len(bench2.moves) > 2 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move3_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].current_pp
+      / sorted(bench2.moves.values(), key=lambda m: m.id)[2].max_pp if bench2 and
+      bench2.moves and len(bench2.moves) > 2 and sorted(bench2.moves.values(), key=lambda
+      m: m.id)[2].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move3_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].current_pp
+      == 1 if bench2 and bench2.moves and len(bench2.moves) > 2 else False'
+    encoder: identity
+    default: '0'
+  my_bench2_move4_type:
+    dtype: pkemontype
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].type.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 3 else "none"'
+    encoder: onehot
+    default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
+    classes:
+    - none
+    - bug
+    - dark
+    - dragon
+    - electric
+    - fairy
+    - fighting
+    - fire
+    - flying
+    - ghost
+    - grass
+    - ground
+    - ice
+    - normal
+    - poison
+    - psychic
+    - rock
+    - steel
+    - stellar
+    - three_question_marks
+    - water
+  my_bench2_move4_base_power:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].base_power
+      if bench2 and bench2.moves and len(bench2.moves) > 3 else 0'
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 255
+    scale_to:
+    - 0
+    - 1
+  my_bench2_move4_acc:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].accuracy if
+      bench2 and bench2.moves and len(bench2.moves) > 3 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move4_class:
+    dtype: movecategory
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].category.name.lower()
+      if bench2 and bench2.moves and len(bench2.moves) > 3 else "status"'
+    encoder: onehot
+    default: '[0,0,1]'
+    classes:
+    - physical
+    - special
+    - status
+  my_bench2_move4_max_pp:
+    dtype: int
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].max_pp if bench2
+      and bench2.moves and len(bench2.moves) > 3 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move4_pp_frac:
+    dtype: float
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].current_pp
+      / sorted(bench2.moves.values(), key=lambda m: m.id)[3].max_pp if bench2 and
+      bench2.moves and len(bench2.moves) > 3 and sorted(bench2.moves.values(), key=lambda
+      m: m.id)[3].max_pp > 0 else 0'
+    encoder: identity
+    default: '0'
+  my_bench2_move4_pp_is_one:
+    dtype: bool
+    battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].current_pp
+      == 1 if bench2 and bench2.moves and len(bench2.moves) > 3 else False'
     encoder: identity
     default: '0'
   my_bench2_is_revealed:
@@ -1054,7 +1665,8 @@ my_bench2:
     - tox
   my_bench2_teratype:
     dtype: pokemontype(enum)
-    battle_path: bench2.tera_type.name.lower()
+    battle_path: bench2.tera_type.name.lower() if bench2 and bench2.tera_type else
+      "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1108,7 +1720,7 @@ my_bench2:
     - water
   my_bench2_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: bench2.type_2.name.lower()
+    battle_path: bench2.type_2.name.lower() if bench2 and bench2.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1138,7 +1750,7 @@ opp_bench1:
     dtype: float
     battle_path: opp_bench1.current_hp_fraction
     encoder: identity
-    default: '0'
+    default: '1'
   opp_bench1_is_fainted:
     dtype: bool
     battle_path: opp_bench1.fainted
@@ -1156,7 +1768,8 @@ opp_bench1:
     default: '0'
   opp_bench1_teratype:
     dtype: pokemontype(enum)
-    battle_path: opp_bench1.tera_type.name.lower()
+    battle_path: opp_bench1.tera_type.name.lower() if opp_bench1 and opp_bench1.tera_type
+      else "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1210,7 +1823,7 @@ opp_bench1:
     - water
   opp_bench1_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: opp_bench1.type_2.name.lower()
+    battle_path: opp_bench1.type_2.name.lower() if opp_bench1 and opp_bench1.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1240,7 +1853,7 @@ opp_bench2:
     dtype: float
     battle_path: opp_bench2.current_hp_fraction
     encoder: identity
-    default: '0'
+    default: '1'
   opp_bench2_is_fainted:
     dtype: bool
     battle_path: opp_bench2.fainted
@@ -1272,7 +1885,8 @@ opp_bench2:
     - tox
   opp_bench2_teratype:
     dtype: pokemontype(enum)
-    battle_path: opp_bench2.tera_type.name.lower()
+    battle_path: opp_bench2.tera_type.name.lower() if opp_bench2 and opp_bench2.tera_type
+      else "none"
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1326,7 +1940,7 @@ opp_bench2:
     - water
   opp_bench2_secondary_type:
     dtype: pokemontype(enum)
-    battle_path: opp_bench2.type_2.name.lower()
+    battle_path: opp_bench2.type_2.name.lower() if opp_bench2 and opp_bench2.type_2 else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1354,7 +1968,7 @@ opp_bench2:
 field:
   weather:
     dtype: weather
-    battle_path: AbstractBattle.weather[0].name.lower()
+    battle_path: list(battle.weather.keys())[0].name.lower() if battle.weather else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -1370,7 +1984,7 @@ field:
     - unknown
   weather_turn:
     dtype: int
-    battle_path: AbstractBattle.weather[1]
+    battle_path: list(battle.weather.values())[0] if battle.weather else 0
     encoder: identity
     default: '0'
 meta:
@@ -1389,203 +2003,3393 @@ meta:
     battle_path: opp_alive_count
     encoder: identity
     default: '3'
-
-type_matchup:
-  move1_vs_opp_active:
+my_team1:
+  my_team1_pokedex_num:
+    dtype: int
+    battle_path: my_team[0].species_id
+    encoder: identity
+    default: '0'
+my_team2:
+  my_team2_pokedex_num:
+    dtype: int
+    battle_path: my_team[1].species_id
+    encoder: identity
+    default: '0'
+my_team3:
+  my_team3_pokedex_num:
+    dtype: int
+    battle_path: my_team[2].species_id
+    encoder: identity
+    default: '0'
+my_team4:
+  my_team4_pokedex_num:
+    dtype: int
+    battle_path: my_team[3].species_id
+    encoder: identity
+    default: '0'
+my_team5:
+  my_team5_pokedex_num:
+    dtype: int
+    battle_path: my_team[4].species_id
+    encoder: identity
+    default: '0'
+my_team6:
+  my_team6_pokedex_num:
+    dtype: int
+    battle_path: my_team[5].species_id
+    encoder: identity
+    default: '0'
+opp_team1:
+  opp_team1_pokedex_num:
+    dtype: int
+    battle_path: opp_team[0].species_id
+    encoder: identity
+    default: '0'
+opp_team2:
+  opp_team2_pokedex_num:
+    dtype: int
+    battle_path: opp_team[1].species_id
+    encoder: identity
+    default: '0'
+opp_team3:
+  opp_team3_pokedex_num:
+    dtype: int
+    battle_path: opp_team[2].species_id
+    encoder: identity
+    default: '0'
+opp_team4:
+  opp_team4_pokedex_num:
+    dtype: int
+    battle_path: opp_team[3].species_id
+    encoder: identity
+    default: '0'
+opp_team5:
+  opp_team5_pokedex_num:
+    dtype: int
+    battle_path: opp_team[4].species_id
+    encoder: identity
+    default: '0'
+opp_team6:
+  opp_team6_pokedex_num:
+    dtype: int
+    battle_path: opp_team[5].species_id
+    encoder: identity
+    default: '0'
+damage_expectation:
+  active_move1_to_opp1_expected:
     dtype: float
-    battle_path: type_matchup_vec[0]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move1_vs_opp_bench1:
+  active_move1_to_opp1_variance:
     dtype: float
-    battle_path: type_matchup_vec[1]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  move1_vs_opp_bench2:
+  active_move1_to_opp2_expected:
     dtype: float
-    battle_path: type_matchup_vec[2]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move2_vs_opp_active:
+  active_move1_to_opp2_variance:
     dtype: float
-    battle_path: type_matchup_vec[3]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  move2_vs_opp_bench1:
+  active_move1_to_opp3_expected:
     dtype: float
-    battle_path: type_matchup_vec[4]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move2_vs_opp_bench2:
+  active_move1_to_opp3_variance:
     dtype: float
-    battle_path: type_matchup_vec[5]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  move3_vs_opp_active:
+  active_move1_to_opp4_expected:
     dtype: float
-    battle_path: type_matchup_vec[6]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move3_vs_opp_bench1:
+  active_move1_to_opp4_variance:
     dtype: float
-    battle_path: type_matchup_vec[7]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  move3_vs_opp_bench2:
+  active_move1_to_opp5_expected:
     dtype: float
-    battle_path: type_matchup_vec[8]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move4_vs_opp_active:
+  active_move1_to_opp5_variance:
     dtype: float
-    battle_path: type_matchup_vec[9]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  move4_vs_opp_bench1:
+  active_move1_to_opp6_expected:
     dtype: float
-    battle_path: type_matchup_vec[10]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[0])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  move4_vs_opp_bench2:
+  active_move1_to_opp6_variance:
     dtype: float
-    battle_path: type_matchup_vec[11]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[0])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  opp_stab1_vs_my_active:
+  active_move2_to_opp1_expected:
     dtype: float
-    battle_path: type_matchup_vec[12]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[1])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  opp_stab1_vs_my_bench1:
+  active_move2_to_opp1_variance:
     dtype: float
-    battle_path: type_matchup_vec[13]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[1])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  opp_stab1_vs_my_bench2:
+  active_move2_to_opp2_expected:
     dtype: float
-    battle_path: type_matchup_vec[14]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[1])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  opp_stab2_vs_my_active:
+  active_move2_to_opp2_variance:
     dtype: float
-    battle_path: type_matchup_vec[15]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[1])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
-  opp_stab2_vs_my_bench1:
+  active_move2_to_opp3_expected:
     dtype: float
-    battle_path: type_matchup_vec[16]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[1])[0]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 200
     scale_to:
     - 0
     - 1
-  opp_stab2_vs_my_bench2:
+  active_move2_to_opp3_variance:
     dtype: float
-    battle_path: type_matchup_vec[17]
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[1])[1]
     encoder: linear_scale
     default: '0'
     range:
-    - -4
-    - 2
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+damage_expectation_tera:
+  active_tera_move1_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move1_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[0], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[1], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[2], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[3], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[4], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  active_tera_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_active, opp_team[5], my_active.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+damage_expectation_bench1:
+  bench1_move1_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move1_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+damage_expectation_bench1_tera:
+  bench1_tera_move1_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move1_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[0], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[1], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[2], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[3], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[4], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench1_tera_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench1, opp_team[5], my_bench1.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+damage_expectation_bench2:
+  bench2_move1_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[0])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move1_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[0])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[1])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[1])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[2])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[2])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[3])[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[3])[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+damage_expectation_bench2_tera:
+  bench2_tera_move1_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[0],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move1_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[0],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[1],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move2_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[1],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[2],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move3_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[2],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp1_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp1_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[0], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp2_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp2_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[1], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp3_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp3_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[2], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp4_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp4_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[3], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp5_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp5_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[4], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp6_expected:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[3],
+      terastallized=True)[0]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 200
+    scale_to:
+    - 0
+    - 1
+  bench2_tera_move4_to_opp6_variance:
+    dtype: float
+    battle_path: calc_damage_expectation_for_ai(my_bench2, opp_team[5], my_bench2.moves[3],
+      terastallized=True)[1]
+    encoder: linear_scale
+    default: '0'
+    range:
+    - 0
+    - 30
     scale_to:
     - 0
     - 1
