@@ -374,6 +374,7 @@ def main(
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
     device: str = "auto",
+    reset_optimizer: bool = False,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -475,6 +476,8 @@ def main(
         logger.info("Win rate window: %d battles", win_rate_window)
     if load_model:
         logger.info("Loading model from: %s", load_model)
+        if reset_optimizer:
+            logger.info("Optimizer/scheduler reset enabled (--reset-optimizer)")
     if tensorboard:
         logger.info("TensorBoard logging enabled")
     logger.info("==========================")
@@ -603,16 +606,20 @@ def main(
                 optimizer,
                 scheduler,
                 device=device,
-                strict=True
+                strict=True,
+                skip_optimizer=reset_optimizer
             )
             
             start_episode = state_info.get("episode", 0)
             logger.info("Loaded checkpoint from %s (episode %d)", load_model, start_episode)
             
-            if state_info.get("has_optimizer"):
-                logger.info("Loaded optimizer state")
-            if state_info.get("has_scheduler") and scheduler is not None:
-                logger.info("Loaded scheduler state")
+            if reset_optimizer:
+                logger.info("Optimizer and scheduler state reset (--reset-optimizer flag)")
+            else:
+                if state_info.get("optimizer_loaded"):
+                    logger.info("Loaded optimizer state")
+                if state_info.get("scheduler_loaded"):
+                    logger.info("Loaded scheduler state")
                 
             # Fallback for old checkpoints without episode number
             if start_episode == 0:
@@ -1149,6 +1156,11 @@ if __name__ == "__main__":
         help="path to model file (.pt) to resume training from",
     )
     parser.add_argument(
+        "--reset-optimizer",
+        action="store_true",
+        help="reset optimizer and scheduler state when loading a checkpoint",
+    )
+    parser.add_argument(
         "--win-rate-threshold",
         type=float,
         default=0.6,
@@ -1198,4 +1210,5 @@ if __name__ == "__main__":
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
         device=args.device,
+        reset_optimizer=args.reset_optimizer,
     )

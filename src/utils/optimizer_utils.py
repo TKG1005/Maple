@@ -66,7 +66,8 @@ def load_training_state(
     optimizer: torch.optim.Optimizer,
     scheduler: Optional[Any] = None,
     device: torch.device = torch.device("cpu"),
-    strict: bool = True
+    strict: bool = True,
+    skip_optimizer: bool = False
 ) -> Dict[str, Any]:
     """Load complete training state including models, optimizer, and scheduler.
     
@@ -78,6 +79,7 @@ def load_training_state(
         scheduler: Learning rate scheduler to load state into (optional)
         device: Device to map the loaded tensors to
         strict: Whether to strictly enforce that the keys match
+        skip_optimizer: Whether to skip loading optimizer state (for reset)
         
     Returns:
         Dictionary containing loaded state information
@@ -89,21 +91,27 @@ def load_training_state(
     policy_net.load_state_dict(checkpoint["policy"], strict=strict)
     value_net.load_state_dict(checkpoint["value"], strict=strict)
     
-    # Load optimizer state
-    if "optimizer" in checkpoint:
+    # Load optimizer state (unless skipped)
+    optimizer_loaded = False
+    if not skip_optimizer and "optimizer" in checkpoint:
         optimizer.load_state_dict(checkpoint["optimizer"])
         # Transfer optimizer state to correct device
         transfer_optimizer_state_to_device(optimizer, device)
+        optimizer_loaded = True
     
-    # Load scheduler state if available
-    if scheduler is not None and "scheduler" in checkpoint:
+    # Load scheduler state if available (unless optimizer is skipped)
+    scheduler_loaded = False
+    if not skip_optimizer and scheduler is not None and "scheduler" in checkpoint:
         scheduler.load_state_dict(checkpoint["scheduler"])
+        scheduler_loaded = True
     
     # Return additional state information
     result = {
         "episode": checkpoint.get("episode", 0),
         "has_optimizer": "optimizer" in checkpoint,
         "has_scheduler": "scheduler" in checkpoint,
+        "optimizer_loaded": optimizer_loaded,
+        "scheduler_loaded": scheduler_loaded,
     }
     
     # Include any additional state that was saved

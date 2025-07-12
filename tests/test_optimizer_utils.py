@@ -231,6 +231,70 @@ class TestSaveLoadTrainingState:
         finally:
             Path(filepath).unlink(missing_ok=True)
     
+    def test_skip_optimizer_loading(self, sample_networks, sample_optimizer_and_scheduler):
+        """Test skipping optimizer loading with reset flag."""
+        policy_net, value_net = sample_networks
+        optimizer, scheduler = sample_optimizer_and_scheduler
+        
+        # Create some optimizer state by doing a forward/backward pass
+        x = torch.randn(4, 10)
+        loss = policy_net(x).sum() + value_net(x).sum()
+        loss.backward()
+        optimizer.step()
+        
+        with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as f:
+            filepath = f.name
+        
+        try:
+            # Save state with optimizer
+            save_training_state(
+                filepath,
+                policy_net,
+                value_net,
+                optimizer,
+                scheduler,
+                episode=42
+            )
+            
+            # Create new networks and optimizer
+            new_policy_net = SimpleNet(10, 5)
+            new_value_net = SimpleNet(10, 1)
+            new_params = list(new_policy_net.parameters()) + list(new_value_net.parameters())
+            new_optimizer = torch.optim.Adam(new_params, lr=0.001)
+            new_scheduler = torch.optim.lr_scheduler.StepLR(new_optimizer, step_size=10, gamma=0.9)
+            
+            # Store original optimizer state for comparison
+            original_optimizer_state = new_optimizer.state_dict()
+            
+            # Load state with skip_optimizer=True
+            state_info = load_training_state(
+                filepath,
+                new_policy_net,
+                new_value_net,
+                new_optimizer,
+                new_scheduler,
+                device=torch.device("cpu"),
+                skip_optimizer=True
+            )
+            
+            # Check that state was loaded correctly
+            assert state_info["episode"] == 42
+            assert state_info["has_optimizer"] is True  # File had optimizer
+            assert state_info["has_scheduler"] is True  # File had scheduler
+            assert state_info["optimizer_loaded"] is False  # But we skipped loading
+            assert state_info["scheduler_loaded"] is False  # And scheduler too
+            
+            # Check that optimizer state was NOT modified
+            current_optimizer_state = new_optimizer.state_dict()
+            assert current_optimizer_state == original_optimizer_state
+            
+            # Check that network weights were still loaded
+            for p1, p2 in zip(policy_net.parameters(), new_policy_net.parameters()):
+                assert torch.allclose(p1, p2)
+                
+        finally:
+            Path(filepath).unlink(missing_ok=True)
+    
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_device_transfer_during_load(self, sample_networks):
         """Test device transfer when loading checkpoint."""
