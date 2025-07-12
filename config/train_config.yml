@@ -1,20 +1,20 @@
 # Default configuration for testing and short-term training
-episodes: 1
-lr: 0.0003
+episodes: 10000
+lr: 0.0001
 batch_size: 4096
-buffer_capacity: 400000
+buffer_capacity: 800000
 gamma: 0.997
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
-entropy_coef: 0.02
+entropy_coef: 0.05
 ppo_epochs: 4
 algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 20
+parallel: 5
 checkpoint_interval: 500
 checkpoint_dir: "checkpoints"
 tensorboard: true
@@ -24,12 +24,32 @@ team: "random"  # Options: default, random
 teams_dir: null  # Directory for random team mode
 
 # Opponent configuration
-opponent: max  # Single opponent type: random, max, rule
+opponent: self  # Single opponent type: random, max, rule
 opponent_mix: null  # Mixed opponents for testing
 
 # Self-play win rate based opponent update
 win_rate_threshold: 0.8  # Win rate threshold for updating opponent
 win_rate_window: 100      # Number of recent battles to track
+
+# League Training configuration (prevents catastrophic forgetting)
+league_training:
+  enabled: true            # Enable league training (vs historical opponents)
+  historical_ratio: 0.3    # Ratio of battles against historical opponents (0.0-1.0)
+  max_historical: 5        # Maximum number of historical snapshots to keep
+  
+  # Historical opponent selection method:
+  # - "uniform": Random selection from all historical opponents (equal probability)
+  #   Example: snapshots [1,2,3,4,5] → each has 20% selection chance
+  # - "recent": Prefer recent historical opponents (50% from newest half)
+  #   Example: snapshots [1,2,3,4,5] → [4,5] are preferred, [1,2,3] less likely
+  # - "weighted": Weight by recency (newer opponents have higher selection probability)
+  #   Example: snapshots [1,2,3,4,5] → weights [1,2,3,4,5], so 5 is 5x more likely than 1
+  selection_method: "uniform"
+  
+  # Recommended settings:
+  # - Early training: uniform (explore all historical strategies)
+  # - Stable training: recent (focus on recent improvements)
+  # - Fine-tuning: weighted (gradual transition from old to new)
 
 # Model management
 load_model: null  # Path to model file to resume training from
@@ -50,7 +70,7 @@ network:
   embedding_config:
     embed_dim: 32  # Embedding dimension (must be >= 6 for base stats)
     vocab_size: 1026  # 0 (unknown) + 1025 (Pokemon species)
-    freeze_base_stats: false  # Whether to freeze base stats dimensions during training
+    freeze_base_stats: true  # Whether to freeze base stats dimensions during training
     
     # Species indices in state vector (automatically detected if not provided)
     # Indices 836-847: my_team[0-5].species_id + opp_team[0-5].species_id

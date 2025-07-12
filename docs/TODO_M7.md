@@ -67,6 +67,21 @@
 - [ ] A-1 A2C 実装
 - [ ] A-2 ハイパラ検索スクリプト
 
+## ポケモン種族名Embedding (2025-07-12)
+- [x] **EmbeddingInitializer実装**: 種族値による初期化機能
+- [x] **EmbeddingPolicyNetwork実装**: 基本的なEmbedding統合
+- [x] **EmbeddingValueNetwork実装**: Value network対応
+- [x] **Network Factory統合**: 既存システムとの統合
+- [x] **Configuration設定追加**: YAML設定でのEmbedding制御
+- [x] **Unit Test作成**: Embedding層の動作確認（17テストケース）
+- [x] **freeze_base_stats機能**: gradient masking実装
+- [x] **League Training実装**: 破滅的忘却対策
+
+## 並列処理最適化 (2025-07-12)
+- [x] **TensorBoard分析実行**: parallel=5,10,20,30の効率測定
+- [x] **最適設定特定**: parallel=5が最高効率（0.76 battles/sec）
+- [x] **設定ファイル最適化**: train_config.ymlをparallel=5に設定
+
 ## CI / 自動化
 - [ ] C-1 GitHub Actions スモーク
 - [x] C-2 Codex/LLM 用 TODO.md (CLAUDE.md として実装完了)
