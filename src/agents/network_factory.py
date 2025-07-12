@@ -8,6 +8,10 @@ from .enhanced_networks import (
     LSTMPolicyNetwork, LSTMValueNetwork,
     AttentionPolicyNetwork, AttentionValueNetwork
 )
+from .embedding_networks import (
+    EmbeddingPolicyNetwork, EmbeddingValueNetwork,
+    get_embedding_network_info
+)
 
 
 def create_policy_network(
@@ -61,6 +65,15 @@ def create_policy_network(
             use_lstm=use_lstm,
             use_2layer=use_2layer
         )
+    elif network_type == "embedding":
+        embedding_config = config.get("embedding_config", {})
+        return EmbeddingPolicyNetwork(
+            observation_space=observation_space,
+            action_space=action_space,
+            hidden_size=hidden_size,
+            use_2layer=use_2layer,
+            embedding_config=embedding_config
+        )
     else:
         raise ValueError(f"Unknown network type: {network_type}")
 
@@ -111,6 +124,14 @@ def create_value_network(
             use_lstm=use_lstm,
             use_2layer=use_2layer
         )
+    elif network_type == "embedding":
+        embedding_config = config.get("embedding_config", {})
+        return EmbeddingValueNetwork(
+            observation_space=observation_space,
+            hidden_size=hidden_size,
+            use_2layer=use_2layer,
+            embedding_config=embedding_config
+        )
     else:
         raise ValueError(f"Unknown network type: {network_type}")
 
@@ -124,6 +145,10 @@ def get_network_info(network) -> Dict[str, Any]:
     Returns:
         Dictionary with network information
     """
+    # Check if this is an embedding network
+    if isinstance(network, (EmbeddingPolicyNetwork, EmbeddingValueNetwork)):
+        return get_embedding_network_info(network)
+    
     total_params = sum(p.numel() for p in network.parameters())
     trainable_params = sum(p.numel() for p in network.parameters() if p.requires_grad)
     

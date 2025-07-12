@@ -56,6 +56,10 @@ python train_selfplay.py --opponent-mix "random:0.3,max:0.3,self:0.4" --episodes
 
 # Advanced training with multiple options
 python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --team random --opponent-mix "rule:0.5,self:0.5" --episodes 100 --checkpoint-interval 10
+
+# Pokemon Species Embedding Training (New 2025-07-12)
+python train_selfplay.py --config config/train_config_embedding.yml --episodes 100
+python train_selfplay.py --config config/train_config_embedding.yml --episodes 50 --lr 0.0001
 ```
 
 ### Testing
@@ -89,6 +93,7 @@ python plot_compare.py
 ## Configuration Files
 
 - `config/train_config.yml`: Main training hyperparameters (learning rate, batch size, algorithms)
+- `config/train_config_embedding.yml`: Pokemon species embedding network training configuration
 - `config/reward.yaml`: Reward component weights and enablement flags
 - `config/env_config.yml`: Environment settings
 - `config/action_map.yml`: Action space configuration
@@ -133,6 +138,7 @@ The project includes a full Pokemon Showdown server in `pokemon-showdown/` direc
 - **Value Network**: Estimates state values for advantage calculation
 - **Shared Features**: Both networks can share initial layers for efficiency
 - **Action Masking**: Output layer respects valid action constraints
+- **Pokemon Species Embedding**: Converts Pokemon species IDs to dense embeddings initialized with base stats
 
 ## Common Development Patterns
 
@@ -612,7 +618,78 @@ network:
 
 ## Recent Updates (2025-07-12)
 
-### Model Evaluation Shape Mismatch Fix (Latest)
+### Pokemon Species Embedding Implementation (Latest)
+完全なポケモン種族名Embeddingシステムを実装し、AIが戦術的判断でポケモン種族情報を効率的に学習できるようになりました。
+
+#### Pokemon Species Embedding Architecture
+**目的**: ポケモンの種族情報（全国図鑑No.）を32次元のdense embeddingに変換し、種族値の事前知識を活用した効率的な学習を実現
+
+**実装コンポーネント**:
+- **EmbeddingInitializer** (`src/agents/embedding_initializer.py`): 種族値による重み初期化
+- **EmbeddingPolicyNetwork/ValueNetwork** (`src/agents/embedding_networks.py`): Embedding統合ネットワーク
+- **Network Factory Integration**: `type: "embedding"`でのネットワーク作成対応
+
+#### State Vector Integration
+**Species ID Features**: 状態空間の位置836-847に配置された12個のspecies_id特徴量
+- **my_team[0-5].species_id**: 位置836-841 (自チームのポケモン種族)
+- **opp_team[0-5].species_id**: 位置842-847 (相手チームのポケモン種族)
+
+**Embedding Process**:
+```python
+# 状態ベクトルからspecies_idを抽出
+species_ids = state_vector[:, 836:848]  # [batch, 12]
+
+# 32次元embeddingに変換
+species_embeddings = embedding_layer(species_ids)  # [batch, 12, 32]
+
+# 他の特徴量と結合
+combined_features = torch.cat([non_species_features, species_embeddings.flatten()], dim=1)
+```
+
+#### Base Stats Initialization
+**種族値による重み初期化**:
+- **先頭6次元**: HP, Attack, Defense, Sp.Attack, Sp.Defense, Speed（0-1正規化）
+- **残り26次元**: 小さな乱数初期化（学習で最適化）
+- **Pokemon数**: 1025種族 + unknown(0) = 1026語彙サイズ
+
+#### Network Architecture Details
+**Embedding Networks**:
+- **Input**: 1136次元状態空間 → 1508次元（12×32 embedding後）
+- **Parameters**: ~680k total (embedding層32k含む)
+- **Configuration**: `config/train_config_embedding.yml`
+
+```yaml
+network:
+  type: "embedding"
+  embedding_config:
+    embed_dim: 32
+    vocab_size: 1026
+    freeze_base_stats: false
+    species_indices: [836, 837, 838, 839, 840, 841, 842, 843, 844, 845, 846, 847]
+```
+
+#### Training and Usage
+**Embedding Training**:
+```bash
+# Embedding networkでの学習
+python train_selfplay.py --config config/train_config_embedding.yml --episodes 100
+
+# カスタム学習率での学習
+python train_selfplay.py --config config/train_config_embedding.yml --lr 0.0001 --episodes 50
+```
+
+**Benefits**:
+- **効率的学習**: 種族値の事前知識により学習の高速化
+- **汎化性能向上**: 未知のポケモン組み合わせへの対応力向上
+- **特徴量削減**: 個別種族値特徴量の削除により状態空間の効率化
+
+#### Testing and Validation
+**Unit Tests**: `tests/test_embedding_networks.py` - 17テストケース全て通過
+- **Initialization Tests**: 種族値による重み初期化の検証
+- **Forward Pass Tests**: バッチ処理とembedding変換の検証
+- **Integration Tests**: Network Factory統合の検証
+
+### Model Evaluation Shape Mismatch Fix
 **Problem**: `evaluate_rl.py`でモデル評価時にshapeサイズのミスマッチエラーが発生していました。
 
 **Root Cause**: 保存されたモデルと評価スクリプトのネットワーク構成が一致していませんでした：
