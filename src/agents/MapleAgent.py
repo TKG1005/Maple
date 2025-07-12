@@ -63,16 +63,11 @@ class MapleAgent:
         # ``action_mask`` は ``action_helper.get_available_actions`` から得られる
         # ベクトルで、値が 1 のインデックスが選択可能な行動を示す。マスクが無効な
         # 場合は ``action_space`` 全体からサンプリングする。
-        player_id = self._get_player_id()
-        print(f"{player_id}: {action_mask}")
 
         try:
             valid_indices = [i for i, flag in enumerate(action_mask) if flag]
         except Exception:
             valid_indices = []
-
-        player_id = self._get_player_id()
-        print(f"{player_id}: {action_mask}")
 
         if valid_indices:
             action_idx = int(self.env.rng.choice(valid_indices))

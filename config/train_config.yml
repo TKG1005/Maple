@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 10
+episodes: 100
 lr: 0.0003
 batch_size: 4096
 buffer_capacity: 400000
@@ -28,7 +28,7 @@ opponent: max  # Single opponent type: random, max, rule
 opponent_mix: null  # Mixed opponents for testing
 
 # Self-play win rate based opponent update
-win_rate_threshold: 0.6  # Win rate threshold for updating opponent
+win_rate_threshold: 0.8  # Win rate threshold for updating opponent
 win_rate_window: 100      # Number of recent battles to track
 
 # Model management

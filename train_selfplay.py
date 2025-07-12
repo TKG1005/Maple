@@ -37,7 +37,7 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     file_handler.setFormatter(
         logging.Formatter("%(asctime)s %(levelname)s %(message)s")
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     logging.getLogger().addHandler(file_handler)
     logging.info("Run parameters: %s", params)
 
@@ -160,10 +160,7 @@ def run_episode_with_opponent(
         mask0, mask1 = masks
 
     if record_init:
-        init_obs = obs0.copy()
-        init_mask = mask0.copy()
-        init_probs = rl_agent.select_action(init_obs, init_mask)
-        init_tuple = (init_obs, init_mask, init_probs)
+        init_tuple = None
 
     done = False
     traj: List[dict] = []
@@ -285,10 +282,7 @@ def run_episode(
         mask0, mask1 = masks
 
     if record_init:
-        init_obs = obs0.copy()
-        init_mask = mask0.copy()
-        init_probs = agent0.select_action(init_obs, init_mask)
-        init_tuple = (init_obs, init_mask, init_probs)
+        init_tuple = None
 
     done = False
     traj: List[dict] = []
@@ -440,7 +434,9 @@ def main(
     load_model = cfg.get("load_model", load_model)
     if load_model is not None:
         load_model = str(load_model)
-    save_path = cfg.get("save_model", save_path)
+    # Only use config file save_model if no command line argument was provided
+    if save_path is None:
+        save_path = cfg.get("save_model", save_path)
     if save_path is not None:
         save_path = str(save_path)
     
@@ -598,9 +594,6 @@ def main(
             logger.error("Failed to load model from %s: %s", load_model, e)
             raise
 
-    init_obs: np.ndarray | None = None
-    init_mask: np.ndarray | None = None
-    init_probs: np.ndarray | None = None
     
     # For tracking opponent usage
     opponent_stats = {}
@@ -705,11 +698,9 @@ def main(
                 
                 # Get opponent networks from snapshot
                 opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
-                logger.debug(f"Self-play: Using opponent snapshot {current_opponent_id} (last updated: episode {last_opponent_update_episode + 1})")
                 
                 # Opponent agent without optimizer (no learning)
                 opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
-                logger.debug("Self-play: Created frozen opponent agent")
                 env.register_agent(opponent_agent, env.agent_ids[1])
                 envs.append(env)
                 agents.append((rl_agent, opponent_agent, opp_type))
@@ -769,9 +760,6 @@ def main(
             reward_list = [res[1] for res in results]
             sub_logs_list = [res[3] for res in results]
             opponents_used = ["self"] * len(envs)
-
-        if ep == 0 and results[0][2] is not None:
-            init_obs, init_mask, init_probs = results[0][2]
 
         # Close environments
         for env in envs:
@@ -839,7 +827,6 @@ def main(
             if len(recent_battle_results) > win_rate_window * 2:  # Keep 2x window for safety
                 recent_battle_results = recent_battle_results[-win_rate_window:]
             
-            logger.debug(f"Battle result recorded: {battle_result} (recent results: {len(recent_battle_results)})")
         
         # Log total reward and sub-reward breakdown
         logger.info(
@@ -883,20 +870,6 @@ def main(
             percentage = count / sum(opponent_stats.values()) * 100
             logger.info("  %s: %d episodes (%.1f%%)", opp_type, count, percentage)
 
-    if init_obs is not None and init_mask is not None and init_probs is not None:
-        # Create a temporary agent for probability comparison
-        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
-        temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
-        
-        # Reset hidden states before inference to ensure clean state
-        temp_agent.reset_hidden_states()
-        
-        updated_probs = temp_agent.select_action(init_obs, init_mask)
-        diff = updated_probs - init_probs
-        logger.info("Initial probs: %s", np.array2string(init_probs, precision=3))
-        logger.info("Updated probs: %s", np.array2string(updated_probs, precision=3))
-        logger.info("Prob change: %s", np.array2string(diff, precision=3))
-        temp_env.close()
     if writer:
         writer.close()
     if save_path is not None:
@@ -922,6 +895,11 @@ if __name__ == "__main__":
         type=str,
         default="INFO",
         help="logging level (DEBUG, INFO, etc.)",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="enable debug logging (equivalent to --log-level DEBUG)",
     )
     parser.add_argument(
         "--config",
@@ -1024,8 +1002,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    level = getattr(logging, args.log_level.upper(), logging.INFO)
-    logging.basicConfig(level=level, format="%(message)s")
+    # Set log level based on debug flag or log-level argument
+    if args.debug:
+        level = logging.DEBUG
+        log_format = "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s"
+    else:
+        level = getattr(logging, args.log_level.upper(), logging.INFO)
+        log_format = "%(message)s"
+    
+    logging.basicConfig(level=level, format=log_format)
     setup_logging("logs", vars(args))
 
     main(

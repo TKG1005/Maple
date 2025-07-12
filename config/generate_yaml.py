@@ -22,7 +22,7 @@ from poke_env.environment.pokemon_type import PokemonType
 
 CURRENT_DIR = Path(__file__).resolve().parent
 SOURCE_XLSX = (
-    CURRENT_DIR / "state_feature_catalog_temp - シート1.csv"
+    CURRENT_DIR / "state_feature_catalog.csv"
 )  # 入力: Excel 台帳
 TARGET_YAML = CURRENT_DIR / "state_spec.yml"  # 出力: YAML ファイル
 
@@ -46,6 +46,15 @@ def build_yaml(df: pd.DataFrame) -> dict:
             "encoder": str(row.get("Encoder", "identity")).strip(),
             "default": row.get("Default", 0),
         }
+        
+        # Fix quote issues in battle_path for YAML serialization
+        if "battle_path" in entry and isinstance(entry["battle_path"], str):
+            # Replace single quotes with double quotes in else clauses to avoid YAML escaping issues
+            battle_path = entry["battle_path"]
+            if " else 'none'" in battle_path:
+                entry["battle_path"] = battle_path.replace(" else 'none'", ' else "none"')
+            if " else 'status'" in battle_path:
+                entry["battle_path"] = battle_path.replace(" else 'status'", ' else "status"')
 
         # --- 新規追加（Range 列） ---
         range_val = row.get("Range")

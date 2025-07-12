@@ -6,7 +6,7 @@ rewards:
     weight: 1.0
     enabled: true
   fail_immune:
-    weight: 1.0
+    weight: 2.0
     enabled: true
   switch_penalty:
     weight: 1.0
