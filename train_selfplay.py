@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import random
 import sys
 import time
 from datetime import datetime
@@ -74,6 +75,10 @@ from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae, SequencePPOAlgorithm, SequenceReinforceAlgorithm  # noqa: E402
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
+from src.utils.optimizer_utils import (  # noqa: E402
+    save_training_state, load_training_state, 
+    transfer_optimizer_state_to_device, create_scheduler
+)
 
 
 def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True) -> PokemonEnv:
@@ -526,12 +531,30 @@ def main(
     
     params = list(policy_net.parameters()) + list(value_net.parameters())
     optimizer = optim.Adam(params, lr=lr)
+    
+    # Create learning rate scheduler if configured
+    scheduler_config = cfg.get("scheduler", {})
+    scheduler_type = scheduler_config.get("type", "none")
+    scheduler = create_scheduler(optimizer, scheduler_type, **scheduler_config)
 
     # Check if sequence learning is enabled
     sequence_config = cfg.get("sequence_learning", {})
     use_sequence_learning = sequence_config.get("enabled", False)
     bptt_length = sequence_config.get("bptt_length", 0)
     grad_clip_norm = sequence_config.get("grad_clip_norm", 5.0)
+    
+    # League Training configuration
+    league_config = cfg.get("league_training", {})
+    league_enabled = league_config.get("enabled", False)
+    historical_ratio = league_config.get("historical_ratio", 0.3)
+    max_historical = league_config.get("max_historical", 5)
+    selection_method = league_config.get("selection_method", "uniform")
+    
+    logger.info(f"League Training: {'Enabled' if league_enabled else 'Disabled'}")
+    if league_enabled:
+        logger.info(f"  Historical ratio: {historical_ratio:.1%}")
+        logger.info(f"  Max historical: {max_historical}")
+        logger.info(f"  Selection method: {selection_method}")
     
     # Choose algorithm based on configuration
     if use_sequence_learning and network_config.get("use_lstm", False):
@@ -572,24 +595,59 @@ def main(
     start_episode = 0
     if load_model:
         try:
-            checkpoint = torch.load(load_model, map_location="cpu")
-            if isinstance(checkpoint, dict) and "policy" in checkpoint and "value" in checkpoint:
-                policy_net.load_state_dict(checkpoint["policy"])
-                value_net.load_state_dict(checkpoint["value"])
-                logger.info("Loaded model from %s", load_model)
+            # Use new loading function with device support
+            state_info = load_training_state(
+                load_model, 
+                policy_net, 
+                value_net, 
+                optimizer,
+                scheduler,
+                device=device,
+                strict=True
+            )
+            
+            start_episode = state_info.get("episode", 0)
+            logger.info("Loaded checkpoint from %s (episode %d)", load_model, start_episode)
+            
+            if state_info.get("has_optimizer"):
+                logger.info("Loaded optimizer state")
+            if state_info.get("has_scheduler") and scheduler is not None:
+                logger.info("Loaded scheduler state")
                 
-                # Try to extract episode number from filename for resume tracking
+            # Fallback for old checkpoints without episode number
+            if start_episode == 0:
+                model_path = Path(load_model)
+                if "checkpoint_ep" in model_path.stem:
+                    try:
+                        start_episode = int(model_path.stem.split("checkpoint_ep")[1])
+                        logger.info("Extracted episode number from filename: %d", start_episode)
+                    except (ValueError, IndexError):
+                        pass
+                        
+        except KeyError as e:
+            # Try legacy loading for old checkpoints
+            logger.warning("New format loading failed, trying legacy format: %s", e)
+            try:
+                checkpoint = torch.load(load_model, map_location=device)
+                if isinstance(checkpoint, dict) and "policy" in checkpoint:
+                    policy_net.load_state_dict(checkpoint["policy"])
+                    value_net.load_state_dict(checkpoint["value"])
+                else:
+                    # Very old format - single state dict
+                    policy_net.load_state_dict(checkpoint)
+                logger.info("Loaded legacy model format from %s", load_model)
+                
+                # Try to extract episode number from filename
                 model_path = Path(load_model)
                 if "checkpoint_ep" in model_path.stem:
                     try:
                         start_episode = int(model_path.stem.split("checkpoint_ep")[1])
                         logger.info("Resuming from episode %d", start_episode)
                     except (ValueError, IndexError):
-                        logger.warning("Could not extract episode number from filename")
-            else:
-                # Legacy format - single state dict
-                policy_net.load_state_dict(checkpoint)
-                logger.info("Loaded legacy model format from %s", load_model)
+                        pass
+            except Exception as e2:
+                logger.error("Failed to load model from %s: %s", load_model, e2)
+                raise
         except Exception as e:
             logger.error("Failed to load model from %s: %s", load_model, e)
             raise
@@ -620,6 +678,72 @@ def main(
             logger.info(f"Win rate {win_rate:.1%} >= {threshold:.1%}, updating opponent")
             return True
         return False
+
+    def select_historical_opponent(opponent_snapshots, current_opponent_id, selection_method="uniform"):
+        """Select a historical opponent from snapshots.
+        
+        Args:
+            opponent_snapshots: Dict of opponent snapshots {id: (policy_net, value_net)}
+            current_opponent_id: Current opponent ID
+            selection_method: "uniform", "recent", or "weighted"
+            
+        Returns:
+            (policy_net, value_net, opponent_id) or None if no historical opponents
+        """
+        # Get all historical opponents (exclude current)
+        historical_ids = [id for id in opponent_snapshots.keys() if id != current_opponent_id]
+        
+        if not historical_ids:
+            return None
+        
+        if selection_method == "uniform":
+            # Uniform random selection
+            selected_id = random.choice(historical_ids)
+        elif selection_method == "recent":
+            # Prefer recent historical opponents
+            sorted_ids = sorted(historical_ids, reverse=True)
+            # Take top 50% of recent historical opponents
+            recent_ids = sorted_ids[:max(1, len(sorted_ids) // 2)]
+            selected_id = random.choice(recent_ids)
+        elif selection_method == "weighted":
+            # Weight by recency (higher weight for recent opponents)
+            weights = [(id - min(historical_ids) + 1) for id in historical_ids]
+            selected_id = random.choices(historical_ids, weights=weights)[0]
+        else:
+            # Default to uniform
+            selected_id = random.choice(historical_ids)
+        
+        policy_net, value_net = opponent_snapshots[selected_id]
+        return policy_net, value_net, selected_id
+
+    def manage_historical_snapshots(opponent_snapshots, max_historical):
+        """Remove old snapshots to maintain max_historical limit.
+        
+        Args:
+            opponent_snapshots: Dict of snapshots to manage
+            max_historical: Maximum number of snapshots to keep
+        """
+        if len(opponent_snapshots) <= max_historical:
+            return
+        
+        # Sort by ID and keep the most recent ones
+        sorted_ids = sorted(opponent_snapshots.keys())
+        ids_to_remove = sorted_ids[:-max_historical]
+        
+        for id_to_remove in ids_to_remove:
+            del opponent_snapshots[id_to_remove]
+            logger.info(f"Removed historical opponent snapshot {id_to_remove}")
+
+    def should_use_historical_opponent(historical_ratio):
+        """Decide whether to use historical opponent based on ratio.
+        
+        Args:
+            historical_ratio: Probability of using historical opponent (0.0-1.0)
+            
+        Returns:
+            True if should use historical opponent, False for current opponent
+        """
+        return random.random() < historical_ratio
 
     def create_opponent_snapshot(policy_net, value_net, network_config, env, snapshot_id):
         """Create a frozen snapshot of current networks for opponent."""
@@ -686,6 +810,10 @@ def main(
                     last_opponent_update_episode = ep
                     # Clear recent results to avoid immediate re-update
                     recent_battle_results = []
+                    
+                    # Manage historical snapshots
+                    if league_enabled:
+                        manage_historical_snapshots(opponent_snapshots, max_historical)
                 
                 # Use existing opponent snapshot or create initial one
                 if current_opponent_id not in opponent_snapshots:
@@ -696,8 +824,23 @@ def main(
                     )
                     last_opponent_update_episode = ep
                 
-                # Get opponent networks from snapshot
-                opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
+                # League Training: Select opponent (current vs historical)
+                if league_enabled and should_use_historical_opponent(historical_ratio):
+                    # Try to use historical opponent
+                    historical_result = select_historical_opponent(
+                        opponent_snapshots, current_opponent_id, selection_method
+                    )
+                    if historical_result is not None:
+                        opponent_policy_net, opponent_value_net, historical_id = historical_result
+                        logger.debug(f"Episode {ep}: Using historical opponent {historical_id}")
+                        opp_type = f"self_h{historical_id}"  # Mark as historical for tracking
+                    else:
+                        # No historical opponents available, use current
+                        opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
+                        logger.debug(f"Episode {ep}: No historical opponents, using current {current_opponent_id}")
+                else:
+                    # Use current opponent snapshot
+                    opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
                 
                 # Opponent agent without optimizer (no learning)
                 opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
@@ -801,6 +944,20 @@ def main(
         temp_agent.reset_hidden_states()
         
         temp_env.close()
+        
+        # Step the scheduler if we have one
+        if scheduler is not None:
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                # ReduceLROnPlateau needs a metric (use loss)
+                scheduler.step(loss)
+            else:
+                # Other schedulers step on episode/epoch
+                scheduler.step()
+            
+            # Log learning rate if it changed
+            current_lr = optimizer.param_groups[0]['lr']
+            if writer:
+                writer.add_scalar("learning_rate", current_lr, ep + 1)
 
         total_reward = sum(reward_list)
         duration = time.perf_counter() - start_time
@@ -811,8 +968,9 @@ def main(
             for name, val in logs.items():
                 sub_totals[name] = sub_totals.get(name, 0.0) + val
         
-        # Record battle results for win rate tracking (only for self-play)
-        if "self" in opponents_used and "win_loss" in sub_totals:
+        # Record battle results for win rate tracking (self-play including historical)
+        self_opponents = [opp for opp in opponents_used if opp == "self" or opp.startswith("self_h")]
+        if self_opponents and "win_loss" in sub_totals:
             win_loss_reward = sub_totals["win_loss"]
             if win_loss_reward > 0:
                 battle_result = 1  # Win
@@ -852,12 +1010,13 @@ def main(
             try:
                 ckpt_dir.mkdir(parents=True, exist_ok=True)
                 ckpt_path = ckpt_dir / f"checkpoint_ep{ep + 1}.pt"
-                torch.save(
-                    {
-                        "policy": policy_net.state_dict(),
-                        "value": value_net.state_dict(),
-                    },
-                    ckpt_path,
+                save_training_state(
+                    str(ckpt_path),
+                    policy_net,
+                    value_net,
+                    optimizer,
+                    scheduler,
+                    episode=ep + 1
                 )
                 logger.info("Checkpoint saved to %s", ckpt_path)
             except OSError as exc:
@@ -876,12 +1035,13 @@ def main(
         path = Path(save_path)
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            torch.save(
-                {
-                    "policy": policy_net.state_dict(),
-                    "value": value_net.state_dict(),
-                },
-                path,
+            save_training_state(
+                str(path),
+                policy_net,
+                value_net,
+                optimizer,
+                scheduler,
+                episode=start_episode + episodes
             )
             logger.info("Model saved to %s", path)
         except OSError as exc:
