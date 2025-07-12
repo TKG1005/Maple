@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+import yaml
 from pathlib import Path
 from datetime import datetime
 
@@ -12,6 +13,18 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 logger = logging.getLogger(__name__)
+
+
+def load_config(config_path: str) -> dict:
+    """Load configuration from YAML file."""
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        logger.info("Loaded configuration from: %s", config_path)
+        return data
+    except Exception as e:
+        logger.warning("Could not load config from %s: %s", config_path, e)
+        return {}
 
 
 def setup_logging(log_dir: str, params: dict[str, object]) -> None:
@@ -44,6 +57,8 @@ from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 from src.agents.network_factory import create_policy_network, create_value_network, get_network_info  # noqa: E402
 from src.utils.device_utils import get_device, transfer_to_device, get_device_info  # noqa: E402
+from src.algorithms import PPOAlgorithm  # noqa: E402
+from src.teams.team_loader import TeamLoader  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -66,6 +81,13 @@ def init_env(*, save_replays: bool | str = False, single: bool = True, player_na
     else:
         unique_names = None
 
+    # Setup team loader if using random teams
+    team_loader = None
+    if team_mode == "random":
+        if teams_dir is None:
+            teams_dir = str(ROOT_DIR / "config" / "teams")
+        team_loader = TeamLoader(teams_dir)
+
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
         opponent_player=None,
@@ -73,8 +95,7 @@ def init_env(*, save_replays: bool | str = False, single: bool = True, player_na
         action_helper=action_helper,
         save_replays=save_replays,
         player_names=unique_names,
-        team_mode=team_mode,
-        teams_dir=teams_dir,
+        team_loader=team_loader,
     )
     if single:
         return SingleAgentCompatibilityWrapper(env)
@@ -296,7 +317,8 @@ def evaluate_single(
         
         params = list(policy_net.parameters()) + list(value_net.parameters())
         optimizer = optim.Adam(params, lr=1e-3)
-        rl_agent = RLAgent(env, policy_net, value_net, optimizer)
+        algorithm = PPOAlgorithm()  # Default algorithm for evaluation
+        rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
 
         # 対戦相手エージェントの作成 (player_1)
         opponent_agent = create_opponent_agent(opponent, env)
@@ -411,7 +433,8 @@ def compare_models(
             policy1.load_state_dict(state_dict1)
         params1 = list(policy1.parameters()) + list(value1.parameters())
         opt1 = optim.Adam(params1, lr=1e-3)
-        agent1 = RLAgent(env, policy1, value1, opt1)
+        algorithm = PPOAlgorithm()  # Default algorithm for evaluation
+        agent1 = RLAgent(env, policy1, value1, opt1, algorithm=algorithm)
         env.register_agent(agent1, env.agent_ids[1])
 
         policy0 = create_policy_network(
@@ -435,7 +458,8 @@ def compare_models(
             policy0.load_state_dict(state_dict0)
         params0 = list(policy0.parameters()) + list(value0.parameters())
         opt0 = optim.Adam(params0, lr=1e-3)
-        agent0 = RLAgent(env, policy0, value0, opt0)
+        algorithm = PPOAlgorithm()  # Default algorithm for evaluation
+        agent0 = RLAgent(env, policy0, value0, opt0, algorithm=algorithm)
 
         win0, win1, reward0, reward1 = run_episode_multi(agent0, agent1)
         wins0 += int(win0)
@@ -466,6 +490,12 @@ def compare_models(
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description="Evaluate trained RL model")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config/train_config.yml",
+        help="path to configuration file",
+    )
     parser.add_argument("--model", type=str, help="path to model file (.pt)")
     parser.add_argument(
         "--models",
@@ -473,44 +503,68 @@ if __name__ == "__main__":
         metavar=("A", "B"),
         help="two model files for head-to-head evaluation",
     )
-    parser.add_argument("--n", type=int, default=1, help="number of battles")
+    parser.add_argument("--n", type=int, default=None, help="number of battles")
     parser.add_argument(
         "--replay-dir",
         type=str,
-        default="replays",
+        default=None,
         help="directory to save battle replays",
     )
     parser.add_argument(
         "--opponent",
         choices=["random", "max", "rule"],
-        default="random",
+        default=None,
         help="opponent type for single model evaluation (random, max, or rule)",
     )
     parser.add_argument(
         "--team",
         type=str,
         choices=["default", "random"],
-        default="default",
+        default=None,
         help="team selection mode (default or random)",
     )
     parser.add_argument(
         "--teams-dir",
         type=str,
+        default=None,
         help="directory containing team files for random team mode",
     )
     parser.add_argument(
         "--device",
         type=str,
-        default="auto",
+        default=None,
         help="device to use for evaluation (auto, cpu, cuda, mps)",
     )
     args = parser.parse_args()
 
-    setup_logging("logs", vars(args))
+    # Load configuration file
+    config = load_config(args.config)
+
+    # Apply defaults from config file, then override with command line arguments
+    n = args.n if args.n is not None else config.get("episodes", 1)
+    replay_dir = args.replay_dir if args.replay_dir is not None else config.get("replay_dir", "replays")
+    opponent = args.opponent if args.opponent is not None else config.get("opponent", "random")
+    team = args.team if args.team is not None else config.get("team", "default")
+    teams_dir = args.teams_dir if args.teams_dir is not None else config.get("teams_dir", None)
+    device = args.device if args.device is not None else config.get("device", "auto")
+
+    # Setup logging with final parameters
+    final_params = {
+        "config": args.config,
+        "model": args.model,
+        "models": args.models,
+        "n": n,
+        "replay_dir": replay_dir,
+        "opponent": opponent,
+        "team": team,
+        "teams_dir": teams_dir,
+        "device": device,
+    }
+    setup_logging("logs", final_params)
 
     if args.models:
-        compare_models(args.models[0], args.models[1], args.n, args.replay_dir, args.team, args.teams_dir, args.device)
+        compare_models(args.models[0], args.models[1], n, replay_dir, team, teams_dir, device)
     elif args.model:
-        evaluate_single(args.model, args.n, args.replay_dir, args.opponent, args.team, args.teams_dir, args.device)
+        evaluate_single(args.model, n, replay_dir, opponent, team, teams_dir, device)
     else:
         parser.error("--model or --models is required")
