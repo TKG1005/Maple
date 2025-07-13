@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 100
+episodes: 100000
 lr: 0.0001
 batch_size: 4096
 buffer_capacity: 800000
@@ -24,8 +24,8 @@ team: "random"  # Options: default, random
 teams_dir: null  # Directory for random team mode
 
 # Opponent configuration
-opponent: self  # Single opponent type: random, max, rule
-opponent_mix: null  # Mixed opponents for testing
+opponent: null  # Single opponent type: random, max, rule
+opponent_mix: "max:3,self:7"  # Mixed opponents for testing
 
 # Self-play win rate based opponent update
 win_rate_threshold: 0.65  # Win rate threshold for updating opponent
