@@ -1,5 +1,5 @@
 # Default configuration for testing and short-term training
-episodes: 10000
+episodes: 1
 lr: 0.0001
 batch_size: 4096
 buffer_capacity: 800000
@@ -81,3 +81,25 @@ sequence_learning:
   enabled: true  # Enable sequence-based learning for LSTM
   bptt_length: 0  # 0 means full episode length, >0 for truncated BPTT
   grad_clip_norm: 2.0  # Gradient clipping norm
+
+# Scheduler configuration
+scheduler:
+  enabled: false  # Enable learning rate scheduler
+  type: "step"    # Options: step, exponential, cosine, reduce_on_plateau
+  
+  # StepLR configuration
+  step_size: 1000  # Number of episodes between LR reductions
+  gamma: 0.9       # Multiplicative factor for LR decay
+  
+  # ExponentialLR configuration (when type: "exponential")
+  # gamma: 0.99     # Decay factor per episode
+  
+  # CosineAnnealingLR configuration (when type: "cosine")
+  # T_max: 1000     # Maximum number of episodes for cosine cycle
+  # eta_min: 0      # Minimum learning rate
+  
+  # ReduceLROnPlateau configuration (when type: "reduce_on_plateau")
+  # mode: "min"     # "min" for loss, "max" for reward
+  # factor: 0.5     # Factor by which LR will be reduced
+  # patience: 10    # Number of episodes with no improvement after which LR will be reduced
+  # verbose: true   # Print message when LR is reduced
