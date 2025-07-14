@@ -34,6 +34,7 @@ win_rate_window: 100      # Larger window for stable statistics
 # Model management
 load_model: null
 save_model: "models/final_model.pt"
+reset_optimizer: false  # Reset optimizer state when loading a model (useful for device changes)
 
 # Network architecture configuration
 network:

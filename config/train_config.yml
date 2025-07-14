@@ -19,6 +19,9 @@ checkpoint_interval: 500
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
+# Model loading configuration
+reset_optimizer: false  # Reset optimizer state when loading a model (useful for device changes)
+
 # Team configuration
 team: "random"  # Options: default, random
 teams_dir: null  # Directory for random team mode

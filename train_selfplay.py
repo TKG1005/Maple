@@ -368,6 +368,7 @@ def main(
     team: str = "default",
     teams_dir: str | None = None,
     load_model: str | None = None,
+    reset_optimizer: bool = False,
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
     device: str = "auto",
@@ -436,6 +437,9 @@ def main(
     load_model = cfg.get("load_model", load_model)
     if load_model is not None:
         load_model = str(load_model)
+    # Only use config file value if command line flag was not explicitly set
+    if not reset_optimizer:  # If command line flag was not set (False)
+        reset_optimizer = bool(cfg.get("reset_optimizer", reset_optimizer))
     # Only use config file save_model if no command line argument was provided
     if save_path is None:
         save_path = cfg.get("save_model", save_path)
@@ -585,7 +589,7 @@ def main(
                 optimizer=optimizer,
                 scheduler=scheduler,
                 device=device,
-                reset_optimizer=args.reset_optimizer,
+                reset_optimizer=reset_optimizer,
             )
             logger.info("Loaded training state from %s, starting from episode %d", load_model, start_episode)
         except Exception as e:
@@ -1047,6 +1051,7 @@ if __name__ == "__main__":
         team=args.team,
         teams_dir=args.teams_dir,
         load_model=args.load_model,
+        reset_optimizer=args.reset_optimizer,
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
         device=args.device,

@@ -972,3 +972,88 @@ active_tera_type:
 - **Verified Compatibility**: 現在のmodel.ptが全機能で動作確認済み
 - **Performance Optimization**: 評価速度とメモリ使用量の最適化
 - **Documentation**: 完全なデバッグプロセスの文書化
+
+### Training Resume Bug Fix and Optimizer Reset Implementation (Latest)
+訓練再開時の重大なバグを修正し、オプティマイザリセット機能を完全実装しました。
+
+#### Critical Bug Resolution
+**Problem**: `train_selfplay.py`でモデル読み込み時に`args.reset_optimizer`未定義エラーが発生し、学習再開が失敗していました。
+
+**Root Cause Analysis**:
+- `load_training_state`関数呼び出し時に`reset_optimizer`引数を要求
+- `main`関数に`reset_optimizer`引数が未定義
+- コマンドライン引数`--reset-optimizer`は定義済みだが、`main`関数に渡されていない
+- 結果として`AttributeError: 'Namespace' object has no attribute 'reset_optimizer'`が発生
+
+#### Complete Implementation
+**Training Resume Architecture**:
+```python
+# Enhanced main function signature
+def main(
+    load_model: str | None = None,
+    reset_optimizer: bool = False,  # NEW: Added missing argument
+    # ... other arguments
+) -> None:
+
+# Fixed function call with proper argument passing
+load_training_state(
+    checkpoint_path=load_model,
+    policy_net=policy_net,
+    value_net=value_net,
+    optimizer=optimizer,
+    scheduler=scheduler,
+    device=device,
+    reset_optimizer=reset_optimizer,  # FIXED: Use function parameter instead of args
+)
+```
+
+#### Configuration Integration
+**Command Line Arguments**:
+```bash
+# Reset optimizer state when loading (useful for device changes)
+python train_selfplay.py --load-model model.pt --reset-optimizer
+
+# Preserve optimizer state (default behavior)
+python train_selfplay.py --load-model model.pt
+```
+
+**Configuration File Support**:
+```yaml
+# Model loading configuration
+reset_optimizer: false  # Reset optimizer state when loading a model
+```
+
+#### Priority System Implementation
+**Argument Precedence** (Highest to Lowest):
+1. **Command Line Flags**: `--reset-optimizer` (always `True` when specified)
+2. **Configuration File**: `reset_optimizer: true/false`
+3. **Default Value**: `False` (preserve optimizer state)
+
+**Logic Implementation**:
+```python
+# Only use config file value if command line flag was not explicitly set
+if not reset_optimizer:  # If command line flag was not set (False)
+    reset_optimizer = bool(cfg.get("reset_optimizer", reset_optimizer))
+```
+
+#### Use Cases and Benefits
+**When to Use `--reset-optimizer`**:
+- **Device Changes**: Moving model from CPU to GPU or vice versa
+- **Learning Rate Changes**: Starting with fresh optimizer state
+- **Fine-tuning**: Beginning new training phase with different parameters
+- **Debugging**: Isolating optimizer-related issues
+
+**When to Preserve Optimizer State** (default):
+- **Resume Training**: Continue from exactly where training stopped
+- **Checkpoint Recovery**: Maintain learning rate schedules and momentum
+- **Incremental Training**: Add more episodes to existing training
+
+#### Technical Validation
+**Comprehensive Testing**:
+- ✅ Command line argument parsing (`--reset-optimizer` flag)
+- ✅ Configuration file integration (`reset_optimizer: true/false`)
+- ✅ Priority system (command line > config file > default)
+- ✅ Function argument passing (main → load_training_state)
+- ✅ Optimizer state preservation and reset functionality
+
+**Error Resolution**: Complete elimination of `args.reset_optimizer` AttributeError that prevented training resume functionality.

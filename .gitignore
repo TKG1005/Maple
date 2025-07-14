@@ -9,3 +9,5 @@ src/env/__pycache__/
 .vscode
 replays/
 logs/
+runs/
+.gitignore

@@ -4,6 +4,26 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
+### 2025-07-14 - Training Resume Bug Fix & Optimizer Reset Implementation
+
+#### 🐛 **Critical Bug Resolution**
+- **Training Resume Fix**: Resolved `args.reset_optimizer` AttributeError preventing model loading
+- **Missing Argument**: Added `reset_optimizer` parameter to `main()` function signature
+- **Function Call Fix**: Corrected `load_training_state()` argument passing from `args.reset_optimizer` to `reset_optimizer`
+- **Complete Testing**: Verified training resume functionality with both optimizer reset options
+
+#### ⚙️ **Enhanced Configuration System**
+- **Command Line Support**: `--reset-optimizer` flag for resetting optimizer state when loading models
+- **Config File Integration**: Added `reset_optimizer: true/false` to both training configuration files
+- **Priority System**: Command line arguments override config file settings (proper precedence)
+- **Use Case Documentation**: Clear guidance on when to reset vs preserve optimizer state
+
+#### 🔧 **Training Resume Improvements**
+- **Device Transfer**: `--reset-optimizer` useful when moving models between CPU/GPU
+- **Fine-tuning Support**: Fresh optimizer state for new training phases
+- **Checkpoint Recovery**: Preserve learning rate schedules and momentum (default behavior)
+- **Configuration Flexibility**: Both command line and YAML configuration support
+
 ### 2025-07-14 - Evaluation System Debug & Checkpoint Cleanup
 
 #### 🔍 **Model Evaluation System Verification**
