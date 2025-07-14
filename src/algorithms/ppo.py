@@ -65,16 +65,25 @@ class PPOAlgorithm(BaseAlgorithm):
         optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
     ) -> float:
-        policy_net = model
-        # Get device from model parameters
-        device = next(model.parameters()).device
+        # Handle different model formats
+        if isinstance(model, (tuple, list)) and len(model) == 2:
+            policy_net, value_net = model
+            device = next(policy_net.parameters()).device
+        elif isinstance(model, dict):
+            policy_net = model["policy"]
+            value_net = model["value"]
+            device = next(policy_net.parameters()).device
+        else:
+            # Legacy single model case - assume it's the policy network only
+            policy_net = model
+            value_net = None
+            device = next(model.parameters()).device
         
         obs = torch.as_tensor(batch["observations"], dtype=torch.float32, device=device)
         actions = torch.as_tensor(batch["actions"], dtype=torch.int64, device=device)
         old_log_probs = torch.as_tensor(batch["old_log_probs"], dtype=torch.float32, device=device)
         advantages = torch.as_tensor(batch["advantages"], dtype=torch.float32, device=device)
         returns = torch.as_tensor(batch["returns"], dtype=torch.float32, device=device)
-        values = torch.as_tensor(batch.get("values", torch.zeros_like(returns)), dtype=torch.float32, device=device)
 
         # Handle both enhanced networks (return tuple) and basic networks (return single tensor)
         net_output = policy_net(obs)
@@ -84,6 +93,21 @@ class PPOAlgorithm(BaseAlgorithm):
             logits = net_output  # Basic network returns logits only
         log_probs = torch.log_softmax(logits, dim=-1)
         selected = log_probs[torch.arange(len(actions)), actions]
+
+        # Compute values using value network if available, otherwise use pre-computed values
+        if value_net is not None:
+            # Use value network to compute current values (enables value network learning)
+            value_output = value_net(obs)
+            if isinstance(value_output, tuple):
+                values, _ = value_output  # Enhanced network returns (values, hidden_state)
+            else:
+                values = value_output  # Basic network returns values only
+            # Ensure values is 1D
+            if values.dim() > 1:
+                values = values.squeeze(-1)
+        else:
+            # Fallback to pre-computed values (legacy behavior)
+            values = torch.as_tensor(batch.get("values", torch.zeros_like(returns)), dtype=torch.float32, device=device)
 
         loss = compute_ppo_loss(
             selected,
@@ -100,7 +124,13 @@ class PPOAlgorithm(BaseAlgorithm):
             optimizer.zero_grad()
             loss.backward()
             # Gradient clipping for stability
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
+            if isinstance(model, (tuple, list)):
+                # Clip gradients for both networks
+                torch.nn.utils.clip_grad_norm_(policy_net.parameters(), max_norm=5.0)
+                if value_net is not None:
+                    torch.nn.utils.clip_grad_norm_(value_net.parameters(), max_norm=5.0)
+            else:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
         
         return float(loss.detach())

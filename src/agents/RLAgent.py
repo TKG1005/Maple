@@ -113,13 +113,9 @@ class RLAgent(MapleAgent):
             # This agent is frozen (e.g., self-play opponent), no learning
             return 0.0
         
-        # Check if the algorithm is a sequence-based algorithm that needs both networks
-        algorithm_name = type(self.algorithm).__name__
-        if algorithm_name in ["SequencePPOAlgorithm", "SequenceReinforceAlgorithm"]:
-            return self.algorithm.update((self.policy_net, self.value_net), self.optimizer, batch)
-        else:
-            # Standard algorithms only need the policy network
-            return self.algorithm.update(self.policy_net, self.optimizer, batch)
+        # Pass both networks to all algorithms for proper value network learning
+        # Algorithms that don't need value network (like REINFORCE) will ignore it
+        return self.algorithm.update((self.policy_net, self.value_net), self.optimizer, batch)
 
 
 __all__ = ["RLAgent"]
