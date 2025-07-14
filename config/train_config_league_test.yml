@@ -1,0 +1,48 @@
+# Test configuration for League Training
+episodes: 20
+lr: 0.0001
+batch_size: 4096
+buffer_capacity: 800000
+gamma: 0.997
+gae_lambda: 0.95
+clip_range: 0.2
+value_coef: 0.6
+entropy_coef: 0.05
+ppo_epochs: 4
+algorithm: ppo
+reward: composite
+reward_config: config/reward.yaml
+
+# Training configuration
+parallel: 2
+checkpoint_interval: 5
+checkpoint_dir: "checkpoints"
+tensorboard: true
+
+# Team configuration
+team: "default"
+
+# Self-play mode for league training
+opponent: null
+opponent_mix: null
+
+# Self-play win rate based opponent update
+win_rate_threshold: 0.6  # Lower threshold for faster updates in testing
+win_rate_window: 5       # Smaller window for testing
+
+# League Training configuration - ENABLED for testing
+league_training:
+  enabled: true            # Enable league training
+  historical_ratio: 0.5    # 50% historical opponents for testing
+  max_historical: 3        # Keep up to 3 historical snapshots
+  selection_method: "uniform"  # Test uniform selection first
+
+# Network architecture configuration
+network:
+  type: "basic"
+  hidden_size: 128
+  use_2layer: true
+
+# Model management
+load_model: null
+save_model: "model_league_test.pt"

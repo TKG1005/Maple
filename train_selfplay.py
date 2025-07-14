@@ -6,7 +6,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Any
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
@@ -599,6 +599,7 @@ def main(
     
     # For tracking opponent usage
     opponent_stats = {}
+    league_stats = {"current": 0, "historical": 0}  # Track league training usage
     
     # Win rate based opponent update system
     recent_battle_results = []  # Store recent battle results (1=win, 0=draw, -1=loss)
@@ -606,6 +607,23 @@ def main(
     opponent_snapshots = {}  # Store opponent network snapshots
     current_opponent_id = 0  # Track which opponent snapshot is being used
     last_opponent_update_episode = -1  # Track when opponent was last updated
+    
+    # League Training configuration from config file
+    league_config = cfg.get("league_training", {})
+    league_enabled = bool(league_config.get("enabled", False))
+    historical_ratio = float(league_config.get("historical_ratio", 0.3))
+    max_historical = int(league_config.get("max_historical", 5))
+    selection_method = str(league_config.get("selection_method", "uniform"))
+    
+    # Log league training configuration if enabled
+    if league_enabled:
+        logger.info("League Training enabled:")
+        logger.info("  Historical ratio: %.1f%%", historical_ratio * 100)
+        logger.info("  Max historical opponents: %d", max_historical)
+        logger.info("  Selection method: %s", selection_method)
+    
+    # Historical opponents list (ordered by creation time)
+    historical_opponents = []  # List of (snapshot_id, episode_num, policy_net, value_net)
 
     def should_update_opponent(episode_num, battle_results, window_size, threshold):
         """Check if opponent should be updated based on recent win rate."""
@@ -648,6 +666,50 @@ def main(
         
         logger.info(f"Created opponent snapshot {snapshot_id}")
         return opponent_policy_net, opponent_value_net
+    
+    def add_historical_opponent(snapshot_id, episode_num, policy_net, value_net):
+        """Add a new historical opponent and maintain max_historical limit."""
+        historical_opponents.append((snapshot_id, episode_num, policy_net, value_net))
+        
+        # Remove oldest opponents if we exceed max_historical
+        if len(historical_opponents) > max_historical:
+            removed = historical_opponents.pop(0)
+            logger.info(f"Removed oldest historical opponent (snapshot {removed[0]}) to maintain limit of {max_historical}")
+        
+        logger.info(f"Added historical opponent snapshot {snapshot_id} from episode {episode_num}. Total historical: {len(historical_opponents)}")
+    
+    def select_historical_opponent():
+        """Select a historical opponent based on selection_method."""
+        if not historical_opponents:
+            return None
+        
+        if selection_method == "uniform":
+            # Random selection with equal probability
+            idx = np.random.randint(0, len(historical_opponents))
+        elif selection_method == "recent":
+            # 50% chance for newest half, 50% for older half
+            mid = len(historical_opponents) // 2
+            if np.random.random() < 0.5 and len(historical_opponents) > mid:
+                # Select from recent half
+                idx = np.random.randint(mid, len(historical_opponents))
+            else:
+                # Select from older half
+                idx = np.random.randint(0, max(mid, 1))
+        elif selection_method == "weighted":
+            # Weight by recency (newer = higher weight)
+            weights = np.arange(1, len(historical_opponents) + 1, dtype=float)
+            weights = weights / weights.sum()
+            idx = np.random.choice(len(historical_opponents), p=weights)
+        else:
+            raise ValueError(f"Unknown selection method: {selection_method}")
+        
+        snapshot_id, episode_num, policy_net, value_net = historical_opponents[idx]
+        logger.debug(f"Selected historical opponent: snapshot {snapshot_id} from episode {episode_num}")
+        return policy_net, value_net, snapshot_id
+    
+    def should_use_historical_opponent():
+        """Decide whether to use historical opponent based on historical_ratio."""
+        return league_enabled and len(historical_opponents) > 0 and np.random.random() < historical_ratio
 
     for ep in range(start_episode, start_episode + episodes):
         start_time = time.perf_counter()
@@ -682,24 +744,53 @@ def main(
                 if ep > 0 and should_update_opponent(ep + 1, recent_battle_results, win_rate_window, win_rate_threshold):
                     # Create new opponent snapshot
                     current_opponent_id += 1
-                    opponent_snapshots[current_opponent_id] = create_opponent_snapshot(
+                    opponent_policy_net, opponent_value_net = create_opponent_snapshot(
                         policy_net, value_net, network_config, env, current_opponent_id
                     )
+                    opponent_snapshots[current_opponent_id] = (opponent_policy_net, opponent_value_net)
+                    
+                    # Add to historical opponents if league training is enabled
+                    if league_enabled:
+                        add_historical_opponent(current_opponent_id, ep + 1, opponent_policy_net, opponent_value_net)
+                    
                     last_opponent_update_episode = ep
                     # Clear recent results to avoid immediate re-update
                     recent_battle_results = []
                 
-                # Use existing opponent snapshot or create initial one
-                if current_opponent_id not in opponent_snapshots:
-                    # Create initial opponent snapshot (first episode)
-                    current_opponent_id = 1
-                    opponent_snapshots[current_opponent_id] = create_opponent_snapshot(
-                        policy_net, value_net, network_config, env, current_opponent_id
-                    )
-                    last_opponent_update_episode = ep
+                # Decide whether to use historical opponent (league training)
+                use_historical = should_use_historical_opponent()
                 
-                # Get opponent networks from snapshot
-                opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
+                if use_historical:
+                    # Select from historical opponents
+                    hist_result = select_historical_opponent()
+                    if hist_result:
+                        opponent_policy_net, opponent_value_net, hist_snapshot_id = hist_result
+                        logger.debug(f"Using historical opponent from snapshot {hist_snapshot_id}")
+                        league_stats["historical"] += 1
+                    else:
+                        # Fallback to current opponent if no historical available
+                        use_historical = False
+                
+                if not use_historical:
+                    # Use current opponent snapshot or create initial one
+                    if current_opponent_id not in opponent_snapshots:
+                        # Create initial opponent snapshot (first episode)
+                        current_opponent_id = 1
+                        opponent_policy_net, opponent_value_net = create_opponent_snapshot(
+                            policy_net, value_net, network_config, env, current_opponent_id
+                        )
+                        opponent_snapshots[current_opponent_id] = (opponent_policy_net, opponent_value_net)
+                        
+                        # Add initial snapshot to historical if league training is enabled
+                        if league_enabled:
+                            add_historical_opponent(current_opponent_id, ep + 1, opponent_policy_net, opponent_value_net)
+                        
+                        last_opponent_update_episode = ep
+                    else:
+                        # Get opponent networks from current snapshot
+                        opponent_policy_net, opponent_value_net = opponent_snapshots[current_opponent_id]
+                    
+                    league_stats["current"] += 1
                 
                 # Opponent agent without optimizer (no learning)
                 opponent_agent = RLAgent(env, opponent_policy_net, opponent_value_net, None, algorithm=algorithm)
@@ -879,6 +970,18 @@ def main(
         for opp_type, count in opponent_stats.items():
             percentage = count / sum(opponent_stats.values()) * 100
             logger.info("  %s: %d episodes (%.1f%%)", opp_type, count, percentage)
+    
+    # Log league training statistics
+    if league_enabled and league_stats["current"] + league_stats["historical"] > 0:
+        logger.info("League training statistics:")
+        total_self_play = league_stats["current"] + league_stats["historical"]
+        logger.info("  Current opponent: %d episodes (%.1f%%)", 
+                   league_stats["current"], 
+                   league_stats["current"] / total_self_play * 100)
+        logger.info("  Historical opponents: %d episodes (%.1f%%)", 
+                   league_stats["historical"], 
+                   league_stats["historical"] / total_self_play * 100)
+        logger.info("  Total historical snapshots: %d", len(historical_opponents))
 
     if writer:
         writer.close()

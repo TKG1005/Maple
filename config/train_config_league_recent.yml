@@ -1,0 +1,48 @@
+# Test configuration for League Training - Recent Selection Method
+episodes: 10
+lr: 0.0001
+batch_size: 4096
+buffer_capacity: 800000
+gamma: 0.997
+gae_lambda: 0.95
+clip_range: 0.2
+value_coef: 0.6
+entropy_coef: 0.05
+ppo_epochs: 4
+algorithm: ppo
+reward: composite
+reward_config: config/reward.yaml
+
+# Training configuration
+parallel: 1
+checkpoint_interval: 0
+checkpoint_dir: "checkpoints"
+tensorboard: false
+
+# Team configuration
+team: "default"
+
+# Self-play mode for league training
+opponent: null
+opponent_mix: null
+
+# Self-play win rate based opponent update
+win_rate_threshold: 0.4  # Low threshold for frequent updates
+win_rate_window: 3
+
+# League Training configuration - Test RECENT selection
+league_training:
+  enabled: true
+  historical_ratio: 0.7    # 70% historical opponents
+  max_historical: 4        # Keep up to 4 historical snapshots
+  selection_method: "recent"  # Test recent selection
+
+# Network architecture configuration
+network:
+  type: "basic"
+  hidden_size: 64
+  use_2layer: false
+
+# Model management
+load_model: null
+save_model: null
