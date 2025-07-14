@@ -1,21 +1,26 @@
-# Default configuration for testing and short-term training
-episodes: 1
-lr: 0.0001
+# Configuration presets:
+# - For quick testing: episodes=1, parallel=5, lr=0.0001
+# - For development: episodes=50, parallel=20, lr=0.0003  
+# - For production: episodes=1000, parallel=100, lr=0.0003
+
+# Training parameters
+episodes: 1  # Number of episodes to train (1=test, 50=dev, 1000=production)
+lr: 0.0003    # Learning rate (0.0001=conservative, 0.0003=standard, 0.001=aggressive)
 batch_size: 4096
 buffer_capacity: 800000
 gamma: 0.997
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
-entropy_coef: 0.05
+entropy_coef: 0.02
 ppo_epochs: 4
 algorithm: ppo
 reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 5
-checkpoint_interval: 500
+parallel: 5              # Parallel environments (5=test, 20=dev, 100=production)
+checkpoint_interval: 500  # Save checkpoint every N episodes
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
@@ -23,16 +28,16 @@ tensorboard: true
 reset_optimizer: false  # Reset optimizer state when loading a model (useful for device changes)
 
 # Team configuration
-team: "random"  # Options: default, random
-teams_dir: null  # Directory for random team mode
+team: "random"           # Options: default, random
+teams_dir: "config/teams"  # Directory for random team mode
 
 # Opponent configuration
-opponent: self  # Single opponent type: random, max, rule
-opponent_mix: null  # Mixed opponents for testing
+opponent: self           # Single opponent type: random, max, rule, self
+opponent_mix: null       # Mixed opponents (e.g., "random:0.3,max:0.3,self:0.4")
 
 # Self-play win rate based opponent update
-win_rate_threshold: 0.8  # Win rate threshold for updating opponent
-win_rate_window: 100      # Number of recent battles to track
+win_rate_threshold: 0.65  # Win rate threshold for updating opponent (0.6-0.8 recommended)
+win_rate_window: 100       # Number of recent battles to track
 
 # League Training configuration (prevents catastrophic forgetting)
 league_training:
@@ -47,7 +52,7 @@ league_training:
   #   Example: snapshots [1,2,3,4,5] → [4,5] are preferred, [1,2,3] less likely
   # - "weighted": Weight by recency (newer opponents have higher selection probability)
   #   Example: snapshots [1,2,3,4,5] → weights [1,2,3,4,5], so 5 is 5x more likely than 1
-  selection_method: "uniform"
+  selection_method: "recent"
   
   # Recommended settings:
   # - Early training: uniform (explore all historical strategies)
@@ -58,15 +63,15 @@ league_training:
 load_model: null  # Path to model file to resume training from
 save_model: null  # Path to save final model
 
-# Network architecture configuration
+# Network architecture configuration  
 network:
   type: "attention"  # Options: basic, lstm, attention, embedding
   hidden_size: 256
   use_2layer: true
   use_lstm: true
-  use_attention: false
+  use_attention: true   # Enable attention mechanism
   lstm_hidden_size: 256
-  attention_heads: 4
+  attention_heads: 8    # More attention heads for complex patterns
   attention_dropout: 0.1
   
   # Pokemon Species Embedding Configuration (only used when type: "embedding")
@@ -81,9 +86,9 @@ network:
 
 # Sequence learning configuration
 sequence_learning:
-  enabled: true  # Enable sequence-based learning for LSTM
-  bptt_length: 0  # 0 means full episode length, >0 for truncated BPTT
-  grad_clip_norm: 2.0  # Gradient clipping norm
+  enabled: true    # Enable sequence-based learning for LSTM
+  bptt_length: 0  # Truncated BPTT length (0=full episode, 50=recommended for long episodes)
+  grad_clip_norm: 5.0  # Gradient clipping norm (2.0=conservative, 5.0=standard, 10.0=aggressive)
 
 # Scheduler configuration
 scheduler:

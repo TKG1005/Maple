@@ -32,35 +32,31 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ### Training
 ```bash
-# Basic self-play training with default config
-python train_selfplay.py
+# Configuration-based training (recommended approach)
+python train_selfplay.py  # Uses config/train_config.yml with development defaults
 
-# PPO training with custom parameters
-python train_selfplay.py --algo ppo --episodes 100 --ppo-epochs 4 --clip 0.2 --save model.pt
+# Quick testing (override config for minimal training)
+python train_selfplay.py --episodes 1 --parallel 5
 
-# Training with specific reward configuration
-python train_selfplay.py --reward composite --reward-config config/reward.yaml
+# Development training (balanced settings)
+python train_selfplay.py --episodes 50 --parallel 20
 
-# Training with TensorBoard logging
-python train_selfplay.py --tensorboard
+# Production training (full-scale)
+python train_selfplay.py --episodes 1000 --parallel 100
 
-# Resume training from a checkpoint
-python train_selfplay.py --load-model checkpoints/checkpoint_ep14000.pt --episodes 100
+# Resume training from checkpoint
+python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100
 
-# Training with random teams
-python train_selfplay.py --team random --teams-dir config/teams --episodes 50
+# Training with specific network architectures
+python train_selfplay.py --network-type embedding --episodes 50  # Pokemon species embedding
+python train_selfplay.py --network-type attention --episodes 50  # Attention networks
 
-# Training against specific opponents
-python train_selfplay.py --opponent rule --episodes 100
-python train_selfplay.py --opponent-mix "random:0.3,max:0.3,self:0.4" --episodes 100
+# League training (anti-catastrophic forgetting)
+# Enabled by default in config - trains against historical opponents
+python train_selfplay.py --episodes 100  # Uses league_training.enabled: true
 
-# Advanced training with multiple options
-python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --team random --opponent-mix "rule:0.5,self:0.5" --episodes 100 --checkpoint-interval 10
-
-# Pokemon Species Embedding Training (New 2025-07-12)
-# Change network type to "embedding" in config/train_config.yml, then:
-python train_selfplay.py --episodes 100
-python train_selfplay.py --episodes 50 --lr 0.0001
+# Legacy individual parameter training (still supported)
+python train_selfplay.py --algo ppo --episodes 100 --lr 0.0003 --team random
 ```
 
 ### Testing
@@ -93,7 +89,7 @@ python plot_compare.py
 
 ## Configuration Files
 
-- `config/train_config.yml`: Main training hyperparameters (learning rate, batch size, algorithms, embedding config)
+- `config/train_config.yml`: **Unified training configuration** with preset options for testing/development/production
 - `config/reward.yaml`: Reward component weights and enablement flags
 - `config/env_config.yml`: Environment settings
 - `config/action_map.yml`: Action space configuration
@@ -917,7 +913,42 @@ active_tera_type:
 
 ## Recent Updates (2025-07-14)
 
-### Evaluation System Debug and Checkpoint Cleanup (Latest)
+### Configuration Files Unification (Latest)
+Simplified configuration management by consolidating all training configurations into a single file.
+
+#### Unified Configuration System
+**Problem**: Multiple configuration files (`train_config.yml`, `train_config_long.yml`, various league test configs) created confusion and maintenance overhead.
+
+**Solution**: 
+- **Single Configuration File**: All settings consolidated into `config/train_config.yml`
+- **Preset Guidelines**: Clear comments for testing/development/production use cases
+- **Flexible Overrides**: Command-line arguments can override any config value
+- **League Training Integration**: Complete league training configuration included
+
+**Usage Patterns**:
+```bash
+# Development defaults (recommended)
+python train_selfplay.py
+
+# Quick testing override
+python train_selfplay.py --episodes 1 --parallel 5
+
+# Production training override  
+python train_selfplay.py --episodes 1000 --parallel 100
+```
+
+**Configuration Presets**:
+- **Testing**: `episodes=1, parallel=5, lr=0.0001` - Minimal resource usage
+- **Development**: `episodes=50, parallel=20, lr=0.0003` - Balanced training
+- **Production**: `episodes=1000, parallel=100, lr=0.0003` - Full-scale training
+
+**Benefits**:
+- **Simplified Management**: One file to configure all training scenarios
+- **Clear Guidance**: Preset comments guide appropriate usage
+- **Maintained Flexibility**: All command-line overrides still supported
+- **League Training Ready**: Anti-catastrophic forgetting enabled by default
+
+### Evaluation System Debug and Checkpoint Cleanup
 完全なevaluate_rl.pyデバッグとモデル互換性の確認により、評価システムの安定性を確保しました。
 
 #### Model Evaluation System Verification

@@ -4,6 +4,32 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
+### 2025-07-14 - Configuration System Unification & Value Network Bug Fix
+
+#### 🎯 **Configuration Files Unification**
+- **Single Configuration File**: Consolidated all training configurations into `config/train_config.yml`
+- **Preset Guidelines**: Clear comments for testing (1 ep), development (50 ep), production (1000 ep) scenarios
+- **League Training Integration**: Complete anti-catastrophic forgetting system included by default
+- **Simplified Management**: Eliminated configuration file proliferation and maintenance overhead
+
+#### 🐛 **Critical Value Network Bug Fix**
+- **PPO Algorithm Fix**: Value network now correctly updates during training (was using pre-computed values)
+- **Algorithm Unification**: Both PPO and REINFORCE accept consistent network formats
+- **RLAgent Enhancement**: Passes both policy and value networks to all algorithms
+- **Gradient Flow**: Proper backpropagation through value network for improved learning
+
+#### ⚙️ **Enhanced Training Commands**
+```bash
+# Development defaults (recommended)
+python train_selfplay.py
+
+# Quick testing
+python train_selfplay.py --episodes 1 --parallel 5
+
+# Production training  
+python train_selfplay.py --episodes 1000 --parallel 100
+```
+
 ### 2025-07-14 - Training Resume Bug Fix & Optimizer Reset Implementation
 
 #### 🐛 **Critical Bug Resolution**
