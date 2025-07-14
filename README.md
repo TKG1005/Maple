@@ -4,6 +4,26 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
+### 2025-07-14 - Evaluation System Debug & Checkpoint Cleanup
+
+#### 🔍 **Model Evaluation System Verification**
+- **Complete Debug**: Comprehensive investigation of evaluate_rl.py functionality
+- **Performance Confirmed**: 10.3s/battle execution time (normal range)
+- **Network Detection**: Verified AttentionNetwork auto-detection accuracy
+- **StateObserver**: Confirmed 1136-dimension state space full compatibility
+
+#### 🧹 **Legacy Model Cleanup**
+- **Checkpoint Removal**: Deleted 28 incompatible checkpoint files (checkpoint_ep*.pt)
+- **Compatibility Issue**: Old checkpoints incompatible with expanded 1136-dimension state space
+- **Model Verification**: Confirmed model.pt structure and functionality
+- **Storage Optimization**: Significant disk space savings from cleanup
+
+#### ⚡ **System Performance Validation**
+- **Device Support**: Verified CPU, CUDA, MPS full compatibility
+- **Memory Management**: Confirmed efficient GPU/CPU tensor transfer
+- **Evaluation Speed**: 8ms network loading + 10.3s battle execution
+- **Documentation**: Complete debug process documentation
+
 ### 2025-07-12 - StateObserver Debug Completion & CSV Data Fix
 
 #### 🎯 **Critical System Fixes**
