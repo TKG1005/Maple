@@ -316,9 +316,14 @@ class StateObserver:
             # Create a wrapper function for damage calculation that's accessible from eval()
             def calc_damage_expectation_for_ai(attacker, target, move, terastallized=False):
                 
-                # Validate inputs - raise error if any are None/invalid
-                if not attacker or not target or not move:
+                # Validate basic inputs - raise error if attacker or target are None/invalid
+                if not attacker or not target:
                     raise ValueError(f"Invalid input: attacker={attacker}, target={target}, move={move}")
+                
+                # Handle case where move is None (e.g., Pokemon has fewer than 4 moves)
+                # Return safe default values: 0% expected damage, 0% variance
+                if not move:
+                    return (0.0, 0.0)
                 
                 # Get target name and move name for error messages and caching
                 target_name = target.species if hasattr(target, 'species') else str(target)

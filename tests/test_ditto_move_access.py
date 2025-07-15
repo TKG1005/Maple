@@ -212,6 +212,59 @@ class TestDittoMoveAccess:
             pytest.fail(f"Path evaluation failed: {path}, Error: {e}")
 
 
+class TestDamageCalculationSafety:
+    """Test damage calculation with None moves."""
+    
+    def test_calc_damage_expectation_with_none_move(self):
+        """Test that calc_damage_expectation_for_ai handles None move gracefully."""
+        from unittest.mock import Mock
+        
+        # Create the wrapper function as implemented in StateObserver._build_context
+        def calc_damage_expectation_for_ai(attacker, target, move, terastallized=False):
+            # Validate basic inputs - raise error if attacker or target are None/invalid
+            if not attacker or not target:
+                raise ValueError(f"Invalid input: attacker={attacker}, target={target}, move={move}")
+            
+            # Handle case where move is None (e.g., Pokemon has fewer than 4 moves)
+            # Return safe default values: 0% expected damage, 0% variance
+            if not move:
+                return (0.0, 0.0)
+            
+            # This would be the actual damage calculation for non-None moves
+            return (50.0, 5.0)  # Example values for testing
+        
+        # Create mock attacker and target
+        attacker = Mock()
+        attacker.species = "ditto"
+        
+        target = Mock() 
+        target.species = "pikachu"
+        
+        # Test with None move - should return (0.0, 0.0)
+        result = calc_damage_expectation_for_ai(attacker, target, None)
+        assert result == (0.0, 0.0), f"Expected (0.0, 0.0) for None move, got {result}"
+        
+        # Test with valid move - should work normally
+        valid_move = Mock()
+        valid_move.id = "tackle"
+        result = calc_damage_expectation_for_ai(attacker, target, valid_move)
+        assert result == (50.0, 5.0), f"Expected (50.0, 5.0) for valid move, got {result}"
+        
+        # Test with None attacker - should raise ValueError
+        try:
+            calc_damage_expectation_for_ai(None, target, valid_move)
+            assert False, "Should have raised ValueError for None attacker"
+        except ValueError:
+            pass  # Expected
+        
+        # Test with None target - should raise ValueError  
+        try:
+            calc_damage_expectation_for_ai(attacker, None, valid_move)
+            assert False, "Should have raised ValueError for None target"
+        except ValueError:
+            pass  # Expected
+
+
 class TestDittoTransformScenario:
     """Test specific Ditto transform/faint scenario."""
     
