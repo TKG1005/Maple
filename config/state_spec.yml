@@ -234,7 +234,7 @@ my_active:
     default: '0'
   active_move2_type:
     dtype: pkemontype
-    battle_path: active_sorted_moves[1].type.name.lower()
+    battle_path: active_sorted_moves[1].type.name.lower() if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -261,7 +261,7 @@ my_active:
     - water
   active_move2_base_power:
     dtype: int
-    battle_path: active_sorted_moves[1].base_power
+    battle_path: active_sorted_moves[1].base_power if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 0
     encoder: linear_scale
     default: '0'
     range:
@@ -272,12 +272,12 @@ my_active:
     - 1
   active_move2_acc:
     dtype: float
-    battle_path: active_sorted_moves[1].accuracy
+    battle_path: active_sorted_moves[1].accuracy if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 0
     encoder: identity
     default: '0'
   active_move2_class:
     dtype: movecategory
-    battle_path: active_sorted_moves[1].category.name.lower()
+    battle_path: active_sorted_moves[1].category.name.lower() if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 'none'
     encoder: onehot
     default: '[0,0,0]'
     classes:
@@ -286,24 +286,24 @@ my_active:
     - status
   active_move2_max_pp:
     dtype: int
-    battle_path: active_sorted_moves[1].max_pp
+    battle_path: active_sorted_moves[1].max_pp if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 0
     encoder: identity
     default: '0'
   active_move2_pp_frac:
     dtype: float
     battle_path: active_sorted_moves[1].current_pp / active_sorted_moves[1].max_pp
-      if active_sorted_moves[1] and active_sorted_moves[1].max_pp > 0 else 0
+      if len(active_sorted_moves) > 1 and active_sorted_moves[1] and active_sorted_moves[1].max_pp > 0 else 0
     encoder: identity
     default: '0'
   active_move2_pp_is_one:
     dtype: bool
-    battle_path: active_sorted_moves[1].current_pp == 1 if active_sorted_moves[1]
+    battle_path: active_sorted_moves[1].current_pp == 1 if len(active_sorted_moves) > 1 and active_sorted_moves[1]
       else False
     encoder: identity
     default: '0'
   active_move3_type:
     dtype: pkemontype
-    battle_path: active_sorted_moves[2].type.name.lower()
+    battle_path: active_sorted_moves[2].type.name.lower() if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -330,7 +330,7 @@ my_active:
     - water
   active_move3_base_power:
     dtype: int
-    battle_path: active_sorted_moves[2].base_power
+    battle_path: active_sorted_moves[2].base_power if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 0
     encoder: linear_scale
     default: '0'
     range:
@@ -341,12 +341,12 @@ my_active:
     - 1
   active_move3_acc:
     dtype: float
-    battle_path: active_sorted_moves[2].accuracy
+    battle_path: active_sorted_moves[2].accuracy if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 0
     encoder: identity
     default: '0'
   active_move3_class:
     dtype: movecategory
-    battle_path: active_sorted_moves[2].category.name.lower()
+    battle_path: active_sorted_moves[2].category.name.lower() if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 'none'
     encoder: onehot
     default: '[0,0,0]'
     classes:
@@ -355,24 +355,24 @@ my_active:
     - status
   active_move3_max_pp:
     dtype: int
-    battle_path: active_sorted_moves[2].max_pp
+    battle_path: active_sorted_moves[2].max_pp if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 0
     encoder: identity
     default: '0'
   active_move3_pp_frac:
     dtype: float
     battle_path: active_sorted_moves[2].current_pp / active_sorted_moves[2].max_pp
-      if active_sorted_moves[2] and active_sorted_moves[2].max_pp > 0 else 0
+      if len(active_sorted_moves) > 2 and active_sorted_moves[2] and active_sorted_moves[2].max_pp > 0 else 0
     encoder: identity
     default: '0'
   active_move3_pp_is_one:
     dtype: bool
-    battle_path: active_sorted_moves[2].current_pp == 1 if active_sorted_moves[2]
+    battle_path: active_sorted_moves[2].current_pp == 1 if len(active_sorted_moves) > 2 and active_sorted_moves[2]
       else False
     encoder: identity
     default: '0'
   active_move4_type:
     dtype: pkemontype
-    battle_path: active_sorted_moves[3].type.name.lower()
+    battle_path: active_sorted_moves[3].type.name.lower() if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 'none'
     encoder: onehot
     default: '[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]'
     classes:
@@ -399,7 +399,7 @@ my_active:
     - water
   active_move4_base_power:
     dtype: int
-    battle_path: active_sorted_moves[3].base_power
+    battle_path: active_sorted_moves[3].base_power if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 0
     encoder: linear_scale
     default: '0'
     range:
@@ -410,12 +410,12 @@ my_active:
     - 1
   active_move4_acc:
     dtype: float
-    battle_path: active_sorted_moves[3].accuracy
+    battle_path: active_sorted_moves[3].accuracy if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 0
     encoder: identity
     default: '0'
   active_move4_class:
     dtype: movecategory
-    battle_path: active_sorted_moves[3].category.name.lower()
+    battle_path: active_sorted_moves[3].category.name.lower() if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 'none'
     encoder: onehot
     default: '[0,0,0]'
     classes:
@@ -424,18 +424,18 @@ my_active:
     - status
   active_move4_max_pp:
     dtype: int
-    battle_path: active_sorted_moves[3].max_pp
+    battle_path: active_sorted_moves[3].max_pp if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 0
     encoder: identity
     default: '0'
   active_move4_pp_frac:
     dtype: float
     battle_path: active_sorted_moves[3].current_pp / active_sorted_moves[3].max_pp
-      if active_sorted_moves[3] and active_sorted_moves[3].max_pp > 0 else 0
+      if len(active_sorted_moves) > 3 and active_sorted_moves[3] and active_sorted_moves[3].max_pp > 0 else 0
     encoder: identity
     default: '0'
   active_move4_pp_is_one:
     dtype: bool
-    battle_path: active_sorted_moves[3].current_pp == 1 if active_sorted_moves[3]
+    battle_path: active_sorted_moves[3].current_pp == 1 if len(active_sorted_moves) > 3 and active_sorted_moves[3]
       else False
     encoder: identity
     default: '0'
