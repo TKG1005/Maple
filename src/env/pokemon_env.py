@@ -141,12 +141,9 @@ class PokemonEnv(gym.Env):
             agent_id: False for agent_id in self.agent_ids
         }
 
-        # チームプレビューで得た手持ちポケモン一覧と選択されたポケモン種別
+        # チームプレビューで得た手持ちポケモン一覧
         self._team_rosters: dict[str, list[str]] = {
             agent_id: [] for agent_id in self.agent_ids
-        }
-        self._selected_species: dict[str, set[str]] = {
-            agent_id: set() for agent_id in self.agent_ids
         }
 
         # Battle.last_request の更新を追跡するためのキャッシュ
@@ -217,8 +214,7 @@ class PokemonEnv(gym.Env):
 
         When ``with_details`` is ``True`` the mapping contains human readable
         details provided by ``action_helper.get_available_actions_with_details``.
-        The mask is filtered using ``_selected_species`` so that switches to
-        unselected Pokémon become unavailable.
+        The mask shows available actions based on the current battle state.
         """
 
         warnings.warn(
@@ -235,14 +231,6 @@ class PokemonEnv(gym.Env):
             mask, mapping = self.action_helper.get_available_actions_with_details(
                 battle
             )
-            selected = self._selected_species.get(player_id)
-            if selected:
-                for idx, detail in mapping.items():
-                    if (
-                        detail.get("type") == "switch"
-                        and detail.get("id") not in selected
-                    ):
-                        mask[idx] = 0
             self._action_mappings[player_id] = mapping
             return mask, mapping
 
@@ -411,9 +399,7 @@ class PokemonEnv(gym.Env):
 
         # 各プレイヤーの手持ちポケモン種別を保存しておく
         self._team_rosters["player_0"] = [p.species for p in battle0.team.values()]
-        self._selected_species["player_0"] = set(self._team_rosters["player_0"])
         self._team_rosters["player_1"] = [p.species for p in battle1.team.values()]
-        self._selected_species["player_1"] = set(self._team_rosters["player_1"])
 
         self._current_battles = {"player_0": battle0, "player_1": battle1}
 
@@ -584,19 +570,13 @@ class PokemonEnv(gym.Env):
             ]
             self._logger.debug("[DBG] %s available_switches: %s", pid, switches_info)
 
-            selected = self._selected_species.get(pid)
-            if selected:
-                for idx, (atype, sub_idx, disabled) in mapping.items():
-                    if atype == "switch" and not disabled:
-                        try:
-                            pkmn = battle.available_switches[sub_idx]
-                        except IndexError:
-                            continue
-                        if pkmn.species not in selected:
-                            mask[idx] = 0
+
+            # Team restriction system removed - all switches allowed based on battle state only
+
 
             self._action_mappings[pid] = mapping
             masks.append(mask)
+
 
         return tuple(masks)  # type: ignore[return-value]
 
@@ -621,11 +601,7 @@ class PokemonEnv(gym.Env):
                 if act.startswith("/team"):
                     import re
 
-                    indices = [int(x) - 1 for x in re.findall(r"\d", act)]
-                    roster = self._team_rosters.get(agent_id, [])
-                    self._selected_species[agent_id] = {
-                        roster[i] for i in indices if 0 <= i < len(roster)
-                    }
+                    # Team preview selection logic removed - using full team
             else:
                 battle = self._current_battles.get(agent_id)
                 if battle is None:
