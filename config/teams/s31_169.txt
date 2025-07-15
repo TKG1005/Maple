@@ -1,0 +1,67 @@
+Lunala @ Kee Berry  
+Ability: Shadow Shield  
+Level: 50  
+Tera Type: Poison  
+EVs: 212 HP / 244 Def / 4 SpA / 4 SpD / 44 Spe  
+Bold Nature  
+IVs: 0 Atk  
+- Moongeist Beam  
+- Moonblast  
+- Moonlight  
+- Calm Mind  
+
+Ursaluna-Bloodmoon @ Assault Vest  
+Ability: Mind's Eye  
+Level: 50  
+Tera Type: Fire  
+EVs: 12 HP / 236 Atk / 4 Def / 252 SpD / 4 Spe  
+Adamant Nature  
+- Earthquake  
+- Payback  
+- Stone Edge  
+- Ice Punch  
+
+Weezing-Galar @ Rocky Helmet  
+Ability: Neutralizing Gas  
+Level: 50  
+Tera Type: Water  
+EVs: 244 HP / 84 Def / 4 SpA / 156 SpD / 20 Spe  
+Bold Nature  
+IVs: 0 Atk  
+- Toxic  
+- Toxic Spikes  
+- Pain Split  
+- Strange Steam  
+
+Wo-Chien @ Leftovers  
+Ability: Tablets of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 60 Def / 196 SpD  
+Careful Nature  
+IVs: 0 Atk  
+- Foul Play  
+- Leech Seed  
+- Protect  
+- Substitute  
+
+Ditto @ Focus Sash  
+Ability: Imposter  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 252 SpD  
+Serious Nature  
+IVs: 30 Atk  
+- Transform  
+
+Koraidon @ Choice Scarf  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fairy  
+EVs: 124 HP / 196 Atk / 4 Def / 132 SpD / 52 Spe  
+Adamant Nature  
+- Outrage  
+- Flare Blitz  
+- Collision Course  
+- U-turn  
+
