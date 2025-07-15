@@ -82,18 +82,18 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
     # Double-check that switches don't include the active Pokemon
     # This is a workaround for a poke-env bug where active status might be stale
     if active is not None:
-        # Filter out any Pokemon that has the same species as the active Pokemon
-        # This handles Ditto transform cases where identity might be confused
-        active_species = getattr(active, 'species', None)
-        if active_species:
-            switches = [p for p in switches if getattr(p, 'species', '') != active_species]
+        # Use Pokemon's unique identifier (_ident) instead of species name for filtering
+        # This properly handles Ditto transform cases where species changes but identity remains
+        active_ident = getattr(active, '_ident', None)
+        if active_ident:
+            switches = [p for p in switches if getattr(p, '_ident', '') != active_ident]
             if len(switches) != len(battle.available_switches):
                 logger.warning(
                     "Filtered out active Pokemon %s from available_switches. "
                     "Original: %s, Filtered: %s",
-                    active_species,
-                    [getattr(p, 'species', '?') for p in battle.available_switches],
-                    [getattr(p, 'species', '?') for p in switches]
+                    active_ident,
+                    [getattr(p, '_ident', '?') for p in battle.available_switches],
+                    [getattr(p, '_ident', '?') for p in switches]
                 )
 
     mapping: OrderedDict[int, Tuple[str, Union[str, int], bool]] = OrderedDict()
