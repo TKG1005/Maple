@@ -24,10 +24,7 @@ if str(ROOT_DIR) not in sys.path:
 
 logger = logging.getLogger(__name__)
 
-# Ensure bundled ``poke_env`` package is importable without installation
-POKE_ENV_DIR = ROOT_DIR / "copy_of_poke-env"
-if str(POKE_ENV_DIR) not in sys.path:
-    sys.path.insert(0, str(POKE_ENV_DIR))
+# Use poke_env from .venv instead of copy_of_poke-env
 
 from src.agents.MapleAgent import MapleAgent  # noqa: E402
 from src.env.pokemon_env import PokemonEnv  # noqa: E402

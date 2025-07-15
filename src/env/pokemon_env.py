@@ -578,6 +578,26 @@ class PokemonEnv(gym.Env):
                 for p in getattr(battle, "available_switches", [])
             ]
             self._logger.debug("[DBG] %s available_switches: %s", pid, switches_info)
+            
+            # Add additional debug info about the active Pokemon
+            active_pokemon = getattr(battle, "active_pokemon", None)
+            if active_pokemon:
+                self._logger.debug(
+                    "[DBG] %s active_pokemon: species=%s, active=%s, ident=%s",
+                    pid,
+                    getattr(active_pokemon, 'species', '?'),
+                    getattr(active_pokemon, 'active', '?'),
+                    getattr(active_pokemon, '_ident', '?')
+                )
+                
+            # Log all team members' active status
+            team_info = []
+            for poke_id, poke in getattr(battle, "team", {}).items():
+                team_info.append(
+                    f"{poke_id}: {getattr(poke, 'species', '?')} "
+                    f"(active={getattr(poke, 'active', '?')})"
+                )
+            self._logger.debug("[DBG] %s team status: %s", pid, team_info)
 
 
             # Team restriction system removed - all switches allowed based on battle state only
@@ -625,12 +645,23 @@ class PokemonEnv(gym.Env):
                     f"{getattr(p, 'active', False)})"
                     for p in getattr(battle, "available_switches", [])
                 ]
+                
+                # Debug active Pokemon before action
+                active_pokemon = getattr(battle, "active_pokemon", None)
+                active_info = "None"
+                if active_pokemon:
+                    active_info = (
+                        f"{getattr(active_pokemon, 'species', '?')} "
+                        f"(active={getattr(active_pokemon, 'active', '?')})"
+                    )
+                
                 self._logger.debug(
-                    "[DBG] %s mapping=%s sw=%d force=%s info=%s",
+                    "[DBG] %s mapping=%s sw=%d force=%s active=%s switches=%s",
                     agent_id,
                     mapping,
                     len(getattr(battle, "available_switches", [])),
                     getattr(battle, "force_switch", False),
+                    active_info,
                     switch_info,
                 )
 

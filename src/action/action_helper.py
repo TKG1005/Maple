@@ -78,6 +78,23 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
 
     available_move_ids = {m.id for m in battle.available_moves}
     switches: List[Pokemon] = battle.available_switches
+    
+    # Double-check that switches don't include the active Pokemon
+    # This is a workaround for a poke-env bug where active status might be stale
+    if active is not None:
+        # Filter out any Pokemon that has the same species as the active Pokemon
+        # This handles Ditto transform cases where identity might be confused
+        active_species = getattr(active, 'species', None)
+        if active_species:
+            switches = [p for p in switches if getattr(p, 'species', '') != active_species]
+            if len(switches) != len(battle.available_switches):
+                logger.warning(
+                    "Filtered out active Pokemon %s from available_switches. "
+                    "Original: %s, Filtered: %s",
+                    active_species,
+                    [getattr(p, 'species', '?') for p in battle.available_switches],
+                    [getattr(p, 'species', '?') for p in switches]
+                )
 
     mapping: OrderedDict[int, Tuple[str, Union[str, int], bool]] = OrderedDict()
 
