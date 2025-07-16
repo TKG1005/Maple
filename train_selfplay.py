@@ -24,6 +24,8 @@ if str(ROOT_DIR) not in sys.path:
 from src.utils.device_utils import get_device, transfer_to_device, get_device_info
 # Import optimizer utilities
 from src.utils.optimizer_utils import save_training_state, load_training_state, create_scheduler
+# Apply poke-env logging fix
+from src.utils.poke_env_logging_fix import patch_poke_env_logging
 
 logger = logging.getLogger(__name__)
 
@@ -388,6 +390,9 @@ def main(
         Number of recent battles to track for win rate calculation (default: 50).
     """
 
+    # Apply poke-env logging fix before any environment creation
+    patch_poke_env_logging()
+    
     cfg = load_config(config_path)
     logger.info("Loading configuration from: %s", config_path)
     
