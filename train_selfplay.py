@@ -897,14 +897,19 @@ def main(
         
         temp_env.close()
 
-        total_reward = sum(reward_list)
+        total_reward = sum(reward_list) / len(reward_list) if reward_list else 0.0
         duration = time.perf_counter() - start_time
         
-        # Calculate sub-reward totals
+        # Calculate sub-reward totals (average across parallel environments)
         sub_totals = {}
         for logs in sub_logs_list:
             for name, val in logs.items():
                 sub_totals[name] = sub_totals.get(name, 0.0) + val
+        
+        # Average the sub-reward totals
+        if sub_logs_list:
+            for name in sub_totals:
+                sub_totals[name] /= len(sub_logs_list)
         
         # Record battle results for win rate tracking (only for self-play)
         if "self" in opponents_used and "win_loss" in sub_totals:
