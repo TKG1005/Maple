@@ -9,6 +9,10 @@ from poke_env.concurrency import POKE_LOOP
 
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player import Player
+from poke_env.data.gen_data import GenData
+from poke_env.environment.pokemon import Pokemon
+from poke_env.teambuilder.constant_teambuilder import ConstantTeambuilder
+from .custom_battle import CustomBattle
 
 
 class EnvPlayer(Player):
@@ -190,4 +194,65 @@ class EnvPlayer(Player):
         await self.ps_client.send_message(message, battle.battle_tag)
         # 処理した last_request を記録
         self._last_request = battle.last_request
+
+    async def _create_battle(self, split_message: list[str]) -> AbstractBattle:
+        """Override _create_battle to use CustomBattle class for fail/immune tracking.
+        
+        This method is based on the parent class implementation but uses CustomBattle
+        instead of the default Battle class to enable tracking of -fail and -immune messages.
+        """
+        # We check that the battle has the correct format
+        if split_message[1] == self._format and len(split_message) >= 2:
+            # Battle initialisation
+            battle_tag = "-".join(split_message)[1:]
+
+            if battle_tag in self._battles:
+                return self._battles[battle_tag]
+            else:
+                gen = GenData.from_format(self._format).gen
+                if self.format_is_doubles:
+                    from poke_env.environment.double_battle import DoubleBattle
+                    battle: AbstractBattle = DoubleBattle(
+                        battle_tag=battle_tag,
+                        username=self.username,
+                        logger=self.logger,
+                        save_replays=self._save_replays,
+                        gen=gen,
+                    )
+                else:
+                    # Use CustomBattle instead of Battle
+                    battle = CustomBattle(
+                        battle_tag=battle_tag,
+                        username=self.username,
+                        logger=self.logger,
+                        gen=gen,
+                        save_replays=self._save_replays,
+                    )
+
+                # Add our team as teampreview_team, as part of battle initialisation
+                if isinstance(self._team, ConstantTeambuilder):
+                    battle.teampreview_team = set(
+                        [
+                            Pokemon(gen=gen, teambuilder=tb_mon)
+                            for tb_mon in self._team.team
+                        ]
+                    )
+
+                await self._battle_count_queue.put(None)
+                if battle_tag in self._battles:
+                    await self._battle_count_queue.get()
+                    return self._battles[battle_tag]
+                async with self._battle_start_condition:
+                    self._battle_semaphore.release()
+                    self._battle_start_condition.notify_all()
+                    self._battles[battle_tag] = battle
+
+                if self._start_timer_on_battle_start:
+                    await self.ps_client.send_message("/timer on", battle.battle_tag)
+
+                return battle
+        else:
+            self.logger.critical(
+                "Unmanaged battle initialisation message received: %s", split_message
+            )
 

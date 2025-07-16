@@ -13,7 +13,7 @@
 - [x] R-7 毎ターン経過ペナルティ (TurnPenaltyReward として実装完了)
 - [x] R-8 最終味方数-相手数で差分報酬 (PokemonCountReward として実装完了)
 - [ ] R-9 報酬合成管理の強化
-- [x] R-10 無効行動時のボーナス・ペナルティ (FailAndImmuneReward として実装完了)
+- [x] R-10 無効行動時のボーナス・ペナルティ (FailAndImmuneReward として実装完了, 2025-07-16バグ修正完了)
 
 ## 対戦相手の多様化
 - [x] B-1 RandomBot 実装 (実装完了)

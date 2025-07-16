@@ -62,6 +62,9 @@ class CompositeReward(RewardBase):
                 penalty = float(params.get("penalty", -1.0))
                 threshold = int(params.get("threshold", 7))
                 self.rewards[name] = factory(penalty=penalty, threshold=threshold)
+            elif name == "fail_immune":
+                penalty = float(params.get("penalty", -0.1))
+                self.rewards[name] = factory(penalty=penalty)
             else:
                 self.rewards[name] = factory()
             

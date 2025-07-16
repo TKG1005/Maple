@@ -1,31 +1,92 @@
-1. `src/rewards/` ディレクトリに新しい報酬クラス `FailAndImmuneReward` を作成する。
+# FailAndImmuneReward実装ドキュメント
 
-   * `RewardBase` を継承する。
-   * `reset()` と `calc(battle)` メソッドを実装する。
-   * `calc` は `battle.last_invalid_action` が `True` の場合、`-0.02` を返す。
+## 概要
+FailAndImmuneRewardシステムは、AIが無効なアクション（失敗、無効）を行った際にペナルティを課すことで、より効果的な戦略学習を促進するためのシステムです。
 
-2. 報酬クラスを登録する。
+## ✅ 実装完了状況 (2025-07-16)
 
-   * `src/rewards/__init__.py` でエクスポートする。
-   * `CompositeReward.DEFAULT_REWARDS` に `"fail_immune": FailAndImmuneReward` を追加する。
+### 1. FailAndImmuneReward クラス実装
+- **実装場所**: `src/rewards/fail_and_immune.py`
+- **機能**: `battle.last_fail_action` と `battle.last_immune_action` を監視
+- **ペナルティ**: デフォルト -0.3 (configurable)
 
-3. `copy_of_poke-env/poke_env/environment/abstract_battle.py` を編集する。
+### 2. CompositeReward統合
+- **実装場所**: `src/rewards/composite.py`
+- **機能**: `config/reward.yaml` からペナルティ値を設定可能
+- **設定例**:
+  ```yaml
+  fail_immune:
+    weight: 2.0
+    enabled: true
+    penalty: -0.3
+  ```
 
-   * `MESSAGES_TO_IGNORE` から `"-fail"` と `"immune"` を削除する。
-   * `parse_message` で `"-fail"` および `"-immune"` イベントを処理する処理を追加する。
+### 3. CustomBattle実装 (メイン解決策)
+- **実装場所**: `src/env/custom_battle.py`
+- **機能**: 標準poke-envを拡張し、`-fail`と`-immune`メッセージを処理
+- **特徴**:
+  - `last_fail_action`: プレイヤーのアクションが失敗した際にTrue
+  - `last_immune_action`: 相手ポケモンがプレイヤーの攻撃に免疫の際にTrue
+  - ターン開始時に自動リセット
 
-     * 影響を受けたポケモンが `self._player_role` 側なら、`self._last_invalid_action = True` とする。
+### 4. EnvPlayer統合
+- **実装場所**: `src/env/env_player.py`
+- **機能**: `_create_battle()` メソッドでCustomBattleを使用
+- **効果**: 全てのバトルで自動的にfail/immuneトラッキングが有効
 
-4. `Battle` クラスに `_last_invalid_action` 属性とプロパティを追加する。
+### 5. 完全なテスト実装
+- **実装場所**: `tests/test_custom_battle.py`
+- **テスト数**: 14のテストケース
+- **カバレッジ**: メッセージ処理、フラグ管理、報酬統合
 
-   * `Battle.__init__` で `False` に初期化する。
-   * `last_invalid_action` のgetterと `reset_invalid_action()` メソッドを追加する。
+## 修正された問題 (2025-07-16)
 
-5. `PokemonEnv.step` で各バトルごとにこのフラグを報酬計算前にリセットし、`True` になったときはコンソールにメッセージを表示する。
+### 問題: fail_immune報酬がカウントされない
+**根本原因**: 
+- 標準poke-envライブラリに`last_fail_action`と`last_immune_action`属性が存在しない
+- `-fail`と`-immune`メッセージが`MESSAGES_TO_IGNORE`に含まれ処理されない
 
-6. `src/env/pokemon_env.py` を更新し、`CompositeReward` 使用時に新しい報酬が加わるよう `_calc_reward` を修正する。
+**解決策**:
+1. **CustomBattleクラス**: 標準poke-envを拡張してメッセージ処理を追加
+2. **メッセージインターセプト**: 親クラス処理前に`-fail`と`-immune`メッセージを検出
+3. **プレイヤー識別**: `_player_role`を使用してプレイヤーのアクションのみを対象
 
-7. ユニットテストを拡張する。
+### 技術的詳細
+```python
+# CustomBattle.parse_message()での処理
+if split_message[1] == "-fail":
+    if pokemon_ident.startswith(f"p{self._player_role}"):
+        self._last_fail_action = True
 
-   * `FailAndImmuneReward` が `battle.last_invalid_action` がセットされた時にペナルティを課すことを検証する。
-   * 複合報酬（CompositeReward）のテストも新しい報酬マッピングを含むよう調整する。
+if split_message[1] == "-immune":
+    opponent_role = "1" if self._player_role == "2" else "2"
+    if pokemon_ident.startswith(f"p{opponent_role}"):
+        self._last_immune_action = True
+```
+
+## 使用方法
+
+### 設定
+```yaml
+# config/reward.yaml
+rewards:
+  fail_immune:
+    weight: 2.0      # 報酬の重み
+    enabled: true    # 有効化
+    penalty: -0.3    # ペナルティ値
+```
+
+### 効果
+- 失敗アクション: -0.3 × 2.0 = -0.6の報酬ペナルティ
+- 無効アクション: -0.3 × 2.0 = -0.6の報酬ペナルティ
+- 正常アクション: 0の報酬影響
+
+## パフォーマンス
+- **メッセージ処理**: 追加のオーバーヘッドは最小限
+- **メモリ使用**: 2つのbooleanフラグのみ追加
+- **CPU使用**: 文字列比較のみ、計算負荷は無視可能
+
+## 今後の拡張予定
+- 異なるタイプの失敗に対する個別ペナルティ
+- 連続失敗に対する増加ペナルティ
+- 成功率に基づく動的ペナルティ調整

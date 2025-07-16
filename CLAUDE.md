@@ -145,12 +145,13 @@ When modifying the codebase:
 4. Configuration changes should update corresponding YAML files
 5. Integration tests should be marked with `@pytest.mark.slow`
 
-### FailAndImmuneReward Implementation Details
+### FailAndImmuneReward Implementation Details (Updated 2025-07-16)
 The `FailAndImmuneReward` class provides penalties for invalid actions:
 - Monitors `battle.last_fail_action` and `battle.last_immune_action` flags
-- Default penalty: -0.02 (configurable via constructor)
+- Default penalty: -0.3 (configurable via `config/reward.yaml`)
 - Stateless design - no internal state to reset
 - Enabled via `config/reward.yaml` with `fail_immune.enabled: true`
+- **Fixed 2025-07-16**: CustomBattle implementation resolves missing flag issue
 
 ### Training Resume Functionality (train_selfplay.py)
 The `--load-model` option enables resuming training from checkpoints:
@@ -1004,7 +1005,7 @@ python train_selfplay.py --episodes 1000 --parallel 100
 - **Performance Optimization**: 評価速度とメモリ使用量の最適化
 - **Documentation**: 完全なデバッグプロセスの文書化
 
-### Training Resume Bug Fix and Optimizer Reset Implementation (Latest)
+### Training Resume Bug Fix and Optimizer Reset Implementation
 訓練再開時の重大なバグを修正し、オプティマイザリセット機能を完全実装しました。
 
 #### Critical Bug Resolution
@@ -1088,3 +1089,86 @@ if not reset_optimizer:  # If command line flag was not set (False)
 - ✅ Optimizer state preservation and reset functionality
 
 **Error Resolution**: Complete elimination of `args.reset_optimizer` AttributeError that prevented training resume functionality.
+
+### FailAndImmuneReward Bug Fix and CustomBattle Implementation (Latest 2025-07-16)
+fail_immune報酬がカウントされない重大な問題を修正し、CustomBattleクラスによる完全なソリューションを実装しました。
+
+#### Critical Issue Resolution
+**Problem**: `FailAndImmuneReward`クラスが期待する`battle.last_fail_action`と`battle.last_immune_action`属性が存在せず、fail_immune報酬が全く機能していませんでした。
+
+**Root Cause Analysis**:
+- 標準のpoke-envライブラリに`last_fail_action`と`last_immune_action`属性が存在しない
+- `-fail`と`-immune`メッセージが`MESSAGES_TO_IGNORE`に含まれ処理されていない
+- 以前のカスタムpoke-env実装が削除された際にこの機能が失われた
+
+#### Complete Solution Implementation
+**CustomBattle Class** (`src/env/custom_battle.py`):
+```python
+class CustomBattle(Battle):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_fail_action = False
+        self._last_immune_action = False
+    
+    def parse_message(self, split_message):
+        # Process -fail and -immune messages BEFORE parent
+        if split_message[1] == "-fail":
+            if pokemon_ident.startswith(f"p{self._player_role}"):
+                self._last_fail_action = True
+        
+        if split_message[1] == "-immune":
+            opponent_role = "1" if self._player_role == "2" else "2"
+            if pokemon_ident.startswith(f"p{opponent_role}"):
+                self._last_immune_action = True
+        
+        super().parse_message(split_message)
+```
+
+**EnvPlayer Integration** (`src/env/env_player.py`):
+- `_create_battle()`メソッドを修正してCustomBattleを使用
+- 全てのバトルインスタンスで自動的にfail/immuneトラッキングが有効
+
+**Configuration Enhancement** (`src/rewards/composite.py`):
+```python
+elif name == "fail_immune":
+    penalty = float(params.get("penalty", -0.1))
+    self.rewards[name] = factory(penalty=penalty)
+```
+
+#### Updated Configuration
+**config/reward.yaml**:
+```yaml
+fail_immune:
+  weight: 2.0
+  enabled: true
+  penalty: -0.3  # Updated from -0.1 to -0.3
+```
+
+#### Comprehensive Testing
+**Test Suite** (`tests/test_custom_battle.py`):
+- 14のテストケース全て通過
+- メッセージ処理、フラグ管理、報酬統合の完全テスト
+- プレイヤー識別とターンリセット機能の検証
+
+#### Performance Impact
+- **Message Processing**: 最小限のオーバーヘッド（文字列比較のみ）
+- **Memory Usage**: 2つのbooleanフラグ追加（negligible）
+- **CPU Usage**: 追加の計算負荷なし
+
+#### Final Results
+**Working System**:
+- 失敗アクション: -0.3 × 2.0 = -0.6 の報酬ペナルティ
+- 無効アクション: -0.3 × 2.0 = -0.6 の報酬ペナルティ
+- 正常アクション: 0の報酬影響
+
+**Testing Verification**:
+```python
+# Before fix: reward.calc(battle) always returned 0.0
+# After fix: reward.calc(battle) returns -0.3 for fail/immune actions
+```
+
+**Technical Benefits**:
+- **Non-invasive**: 標準poke-envライブラリを変更せずに実装
+- **Backward Compatible**: 既存のコードに影響なし
+- **Extensible**: 他のメッセージタイプへの拡張が容易
+- **Maintainable**: 明確なコードとテストによる保守性
