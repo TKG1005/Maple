@@ -79,20 +79,8 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
     available_move_ids = {m.id for m in battle.available_moves}
     switches: List[Pokemon] = battle.available_switches
     
-    # Debug: Log available switches and their status
-    logger.info(
-        "[ACTION MASK DEBUG] Available switches: %s",
-        [(getattr(p, '_ident', '?'), getattr(p, 'species', '?'), getattr(p, 'pid', '?'),
-          getattr(p, '_current_hp', '?'), getattr(p, 'fainted', '?')) 
-         for p in battle.available_switches]
-    )
-    
     # Filter out fainted Pokemon from switches
     switches = [p for p in switches if not getattr(p, 'fainted', False)]
-    logger.info(
-        "[ACTION MASK DEBUG] Non-fainted switches: %s",
-        [(getattr(p, '_ident', '?'), getattr(p, 'species', '?'), getattr(p, 'pid', '?')) for p in switches]
-    )
     
     # Double-check that switches don't include the active Pokemon
     # This is a workaround for a poke-env bug where active status might be stale
@@ -102,27 +90,9 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
         active_ident = getattr(active, '_ident', None)
         active_species = getattr(active, 'species', 'unknown')
         
-        # Debug: Log Ditto transformation details
-        if 'ditto' in active_species.lower() or any('ditto' in getattr(p, '_ident', '').lower() for p in switches):
-            logger.info(
-                "[DITTO DEBUG] Active: %s (ident=%s, species=%s), Available switches: %s",
-                active,
-                active_ident,
-                active_species,
-                [(getattr(p, '_ident', '?'), getattr(p, 'species', '?')) for p in battle.available_switches]
-            )
         
         if active_ident:
-            original_switches = len(battle.available_switches)
             switches = [p for p in switches if getattr(p, '_ident', '') != active_ident]
-            if len(switches) != original_switches:
-                logger.warning(
-                    "Filtered out active Pokemon %s from available_switches. "
-                    "Original: %s, Filtered: %s",
-                    active_ident,
-                    [getattr(p, '_ident', '?') for p in battle.available_switches],
-                    [getattr(p, '_ident', '?') for p in switches]
-                )
 
     mapping: OrderedDict[int, Tuple[str, Union[str, int], bool]] = OrderedDict()
 
@@ -163,12 +133,6 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
     team_list = list(battle.team.values())
     active_pokemon = getattr(battle, 'active_pokemon', None)
     
-    logger.info(
-        "[MAPPING DEBUG] Team list: %s, Active: %s",
-        [(i, getattr(p, '_ident', '?'), getattr(p, 'species', '?'), getattr(p, 'fainted', '?')) 
-         for i, p in enumerate(team_list)],
-        getattr(active_pokemon, '_ident', '?') if active_pokemon else None
-    )
     
     available_team_positions = []
     for team_idx, team_pokemon in enumerate(team_list):
@@ -195,18 +159,10 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
         # 2. It's not fainted
         can_switch = is_in_available_switches and not is_fainted
         
-        logger.info(
-            "[MAPPING DEBUG] Team idx %d: %s, ident_active=%s, species_active=%s, obj_active=%s, "
-            "in_available=%s, fainted=%s, can_switch=%s",
-            team_idx, getattr(team_pokemon, 'species', '?'),
-            is_active_by_ident, is_active_by_species, is_active_by_object,
-            is_in_available_switches, is_fainted, can_switch
-        )
         
         if can_switch:
             available_team_positions.append(team_idx)
     
-    logger.info("[MAPPING DEBUG] Available team positions for switch: %s", available_team_positions)
     
     # Map switch slots to available team positions
     for i in range(2):  # Only support 2 switch slots (8, 9)
@@ -217,7 +173,6 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
             team_position = None
             disabled = True
         
-        logger.info("[MAPPING DEBUG] Switch slot %d -> team_position=%s, disabled=%s", 8+i, team_position, disabled)
         mapping[8 + i] = ("switch", team_position, disabled)
 
     # Struggle slot 10 (enabled only when no other moves are usable)
@@ -377,22 +332,11 @@ def action_index_to_order_from_mapping(
         
         pokemon_full_ident = f"{player_role}: {pokemon.name}"
         
-        logger.info(
-            "[SWITCH DEBUG] Selected team: %s, Looking for: %s",
-            [mon['ident'] for mon in selected_team],
-            pokemon_full_ident
-        )
         
         # Find position in selected team (1-based for Pokemon Showdown)
         for i, selected_mon in enumerate(selected_team):
             if selected_mon['ident'] == pokemon_full_ident:
                 team_position = i + 1
-                logger.info(
-                    "%s: choose switch to %s (position %d in selected team)",
-                    player.username,
-                    pokemon.species,
-                    team_position
-                )
                 break
         else:
             # Strict error - no fallback
@@ -412,12 +356,6 @@ def action_index_to_order_from_mapping(
                 def message(self) -> str:
                     return f"/choose switch {self.position}"
             
-            logger.info(
-                "[SWITCH FIX] Using position-based switch: position=%d for Pokemon=%s (ident=%s)",
-                team_position,
-                getattr(pokemon, 'species', 'unknown'),
-                getattr(pokemon, '_ident', 'unknown')
-            )
             return PositionalSwitchOrder(team_position)
         else:
             # Strict error - no fallback to avoid species name conflicts
@@ -497,22 +435,11 @@ def action_index_to_order(
         
         pokemon_full_ident = f"{player_role}: {pokemon.name}"
         
-        logger.info(
-            "[SWITCH DEBUG] Selected team: %s, Looking for: %s",
-            [mon['ident'] for mon in selected_team],
-            pokemon_full_ident
-        )
         
         # Find position in selected team (1-based for Pokemon Showdown)
         for i, selected_mon in enumerate(selected_team):
             if selected_mon['ident'] == pokemon_full_ident:
                 team_position = i + 1
-                logger.info(
-                    "%s: choose switch to %s (position %d in selected team)",
-                    player.username,
-                    pokemon.species,
-                    team_position
-                )
                 break
         else:
             # Strict error - no fallback
@@ -532,12 +459,6 @@ def action_index_to_order(
                 def message(self) -> str:
                     return f"/choose switch {self.position}"
             
-            logger.info(
-                "[SWITCH FIX] Using position-based switch: position=%d for Pokemon=%s (ident=%s)",
-                team_position,
-                getattr(pokemon, 'species', 'unknown'),
-                getattr(pokemon, '_ident', 'unknown')
-            )
             return PositionalSwitchOrder(team_position)
         else:
             # Strict error - no fallback to avoid species name conflicts
