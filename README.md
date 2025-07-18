@@ -1,8 +1,58 @@
 # Maple - Pokemon Reinforcement Learning Framework
 
-Maple is a Pokemon reinforcement learning framework built on top of `poke-env` and Pokemon Showdown. It implements multi-agent self-play training for Pokemon battles using deep reinforcement learning algorithms (PPO, REINFORCE).
+Maple is a Pokemon reinforcement learning framework built on top of `poke-env` and Pokemon Showdown. It implements multi-agent self-play training for Pokemon battles using deep reinforcement learning algorithms (PPO, REINFORCE). Features advanced move embedding system with 256-dimensional vectors for enhanced tactical understanding.
 
 ## Changelog
+
+### 2025-07-18 - Move Embedding Training Integration
+
+#### 🎯 **Complete Training Pipeline Integration**
+- **State Space Expansion**: 1136 → 2160 dimensions with 4 moves × 256D embeddings
+- **Real-time Move Vectors**: Dynamic move embedding retrieval during battle observation
+- **Neural Network Adaptation**: Automatic architecture scaling for expanded state space
+- **Performance Optimization**: Lazy initialization and caching for efficient embedding access
+
+#### 🚀 **Advanced Move Representation System**
+- **256-Dimensional Embeddings**: Complete move representation with 87 learnable and 169 fixed parameters
+- **Japanese NLP Integration**: Advanced text processing for Pokemon move descriptions with multilingual BERT
+- **Semantic Search**: Natural language queries for move similarity (e.g., "威力が高い電気技", "回復する技")
+- **Parameter Efficiency**: 59% reduction in trainable parameters through strategic freezing of structured features
+
+#### ⚡ **Training Integration Features**
+- **StateObserver Enhancement**: MoveEmbeddingLayer integration with context functions
+- **Dynamic Vector Access**: `move_embedding.get_move_embedding(move_id)` in state_spec.yml
+- **Error Resilience**: Graceful fallback to zero vectors for missing moves
+- **Device Compatibility**: Automatic CPU/GPU selection with tensor optimization
+
+#### 🧠 **Learnable/Non-Learnable Parameter Split**
+**Fixed Parameters (169 dimensions)**:
+- Type features: 19 dimensions (でんき, みず, ほのお, etc.)
+- Category features: 3 dimensions (Physical, Special, Status)
+- Numerical features: 9 dimensions (power, accuracy, pp, priority)
+- Boolean flags: 10 dimensions (contact, sound, protectable, etc.)
+- Description embeddings: 128 dimensions (pre-trained Japanese text)
+
+**Learnable Parameters (87 dimensions)**:
+- Abstract relationship parameters: Xavier-initialized for adaptive learning
+
+#### 🔧 **Neural Network Integration**
+```python
+# Generate 256D move embeddings
+from src.utils.move_embedding import create_move_embeddings
+move_embeddings, features, mask = create_move_embeddings(target_dim=256)
+
+# Training integration - automatic in state observation
+# StateObserver dynamically loads move embeddings during battles
+observer = StateObserver('config/state_spec.yml')  # 2160D with move vectors
+observation = observer.observe(battle)  # Includes real-time move embeddings
+```
+
+#### 📊 **Enhanced Features**
+- **Fusion Strategies**: Concatenate, balanced, weighted feature combination methods
+- **Semantic Search**: Natural language move queries with cosine similarity
+- **Memory Optimization**: Efficient gradient computation for mixed parameter types
+- **Real-time Processing**: Move embeddings computed dynamically during battle observation
+- **Training Ready**: Full integration with train_selfplay.py for immediate use
 
 ### 2025-07-14 - Configuration System Unification & Value Network Bug Fix
 

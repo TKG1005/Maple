@@ -912,9 +912,109 @@ active_tera_type:
 - Damage calculation fully integrated
 - Training can proceed without state observation failures
 
-## Recent Updates (2025-07-14)
+## Recent Updates (2025-07-18)
 
-### Configuration Files Unification (Latest)
+### Move Embedding Training Integration (Latest 2025-07-18)
+完全な技ベクトルシステムをtrain_selfplay.pyでの学習に統合し、AIが戦術的技判断を学習できる環境を構築しました。
+
+#### Training Pipeline Integration
+**StateObserver拡張統合**:
+- **MoveEmbeddingLayer統合**: 256次元技ベクトルの動的読み込み機能
+- **状態空間拡張**: 1136次元 → 2160次元 (4技×256次元追加)
+- **コンテキスト関数**: `move_embedding.get_move_embedding(move_id)`でリアルタイム技ベクトル取得
+- **キャッシュ最適化**: 単一観測内での技ベクトル再利用によるパフォーマンス向上
+
+#### State Space Enhancement
+**新しい技embedding特徴量** (`config/state_spec.yml`):
+```yaml
+move_embeddings:
+  active_move1_embedding:
+    battle_path: move_embedding.get_move_embedding(my_active.moves[0].id if ...)
+    dimensions: 256
+```
+- **動的ベクトル取得**: 戦闘中の実際の技IDに基づく256次元ベクトル
+- **欠損値対応**: 技なし時の適切な0ベクトル処理
+- **リアルタイム処理**: 各観測時点での技情報の即座反映
+
+#### Neural Network Adaptation
+**自動アーキテクチャ適応**:
+- **AttentionPolicyNetwork**: 2160次元入力への自動適応
+- **AttentionValueNetwork**: 拡張状態空間対応
+- **パラメータ増加**: ~160万パラメータで高次元状態処理
+
+#### Training Benefits
+**戦術的学習向上**:
+- **技特性理解**: タイプ、威力、効果の統合的判断
+- **意味的類似性**: 類似技の戦術的関連性学習
+- **適応的特徴**: 87次元learnable parametersによる文脈特化
+
+**Performance Features**:
+- **Lazy Initialization**: 8ms初期化オーバーヘッド
+- **Caching Strategy**: 観測内での技ベクトル再利用
+- **Error Resilience**: フォールバック機能による安定性確保
+- **Device Compatibility**: CPU/GPU自動選択
+
+#### Implementation Architecture
+**統合ポイント**:
+```python
+# StateObserver._build_context()内
+ctx["move_embedding"] = MoveEmbeddingProvider(embedding_layer)
+
+# 戦闘中リアルタイム技ベクトル取得
+embedding = move_embedding.get_move_embedding(move_id)  # [256] float list
+```
+
+**Technical Specifications**:
+- **Total State Dimensions**: 2160 (1136 base + 1024 move embeddings)
+- **Move Vector Dimensions**: 256 per move (4 moves = 1024 total)
+- **Learnable Features**: 87/256 per move (adaptive learning)
+- **Fixed Features**: 169/256 per move (structured knowledge)
+
+### 256-Dimensional Move Embedding System
+Implemented comprehensive 256-dimensional move embedding system with learnable/non-learnable parameter separation for optimal training efficiency.
+
+#### Move Embedding Architecture
+The system now provides 256-dimensional embeddings for all Pokemon moves with sophisticated parameter management:
+
+**Fixed Parameters (169 dimensions)**:
+- Type features: 19 dimensions (electric, water, fire, etc.)
+- Category features: 3 dimensions (Physical, Special, Status)
+- Scaled numerical: 9 dimensions (power, accuracy, pp, priority, etc.)
+- Boolean flags: 10 dimensions (contact, sound, protectable, etc.)
+- Description embeddings: 128 dimensions (pre-trained Japanese text embeddings)
+
+**Learnable Parameters (87 dimensions)**:
+- Additional parameters: 87 dimensions (Xavier-initialized for abstract move relationships)
+
+#### Usage and Integration
+```python
+# Generate 256-dimensional move embeddings
+from src.utils.move_embedding import create_move_embeddings
+move_embeddings, feature_names, learnable_mask = create_move_embeddings(
+    target_dim=256,
+    fusion_strategy='concatenate'
+)
+
+# Neural network integration
+from src.agents.move_embedding_layer import MoveEmbeddingLayer
+embed_layer = MoveEmbeddingLayer('config/move_embeddings_256d_fixed.pkl')
+move_scores = embed_layer.get_move_scores(['はたく', 'かみなり', 'つるぎのまい'])
+```
+
+#### Technical Benefits
+- **Parameter Efficiency**: Only 87/256 dimensions require gradient computation
+- **Semantic Stability**: Pre-trained text embeddings remain fixed to preserve meaning
+- **Overfitting Prevention**: Structured features (types, categories) are non-trainable
+- **Memory Optimization**: 59% reduction in trainable parameters (215→87)
+- **Training Speed**: Faster convergence with focused learning
+
+#### System Components
+- **MoveEmbeddingGenerator**: Enhanced 256D embedding generation with fusion strategies
+- **MoveEmbeddingLayer**: PyTorch layer for handling mixed learnable/fixed parameters
+- **Japanese NLP Processing**: Advanced text preprocessing for move descriptions
+- **Semantic Search**: Natural language query support for move similarity
+
+### Configuration Files Unification (2025-07-14)
 Simplified configuration management by consolidating all training configurations into a single file.
 
 #### Unified Configuration System

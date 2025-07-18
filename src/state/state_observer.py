@@ -13,6 +13,7 @@ from src.state.type_matchup_extractor import TypeMatchupFeatureExtractor
 from src.utils.species_mapper import get_species_mapper
 from src.damage.calculator import DamageCalculator
 from src.damage.data_loader import DataLoader
+# Avoid circular import by importing MoveEmbeddingLayer only when needed
 
 
 class StateObserver:
@@ -31,6 +32,11 @@ class StateObserver:
         # Use lazy initialization to avoid loading overhead if not needed
         self._damage_calculator = None
         self._damage_calculator_initialized = False
+        
+        # Initialize move embedding layer for move representation
+        # Use lazy initialization to avoid loading overhead if not needed
+        self._move_embedding_layer = None
+        self._move_embedding_initialized = False
         
         # Cache for team compositions to avoid recalculation
         self._team_cache = {
@@ -83,7 +89,25 @@ class StateObserver:
                         [float(x)] if not isinstance(x, list) else [float(i) for i in x]
                     ),
                 )  # デフォルトエンコーダもリストを返すように
-                encoded_val = enc_func(val)
+                
+                # Special handling for move embeddings that return lists directly
+                if isinstance(val, list) and len(val) > 0 and isinstance(val[0], (int, float)):
+                    # This is already a numeric list (like move embedding), use it directly
+                    encoded_val = [float(x) for x in val]
+                else:
+                    # Use encoder function
+                    encoded_val = enc_func(val)
+                    
+                    # Handle multi-dimensional features (like move embeddings)
+                    if isinstance(encoded_val, list) and any(isinstance(item, list) for item in encoded_val):
+                        # Flatten nested lists for move embeddings
+                        flattened = []
+                        for item in encoded_val:
+                            if isinstance(item, list):
+                                flattened.extend([float(x) for x in item])
+                            else:
+                                flattened.append(float(item))
+                        encoded_val = flattened
 
                 # デバッグ用printは条件を絞るか、詳細ログレベルで管理した方が良い
                 
@@ -106,6 +130,23 @@ class StateObserver:
                 self._damage_calculator = None
             self._damage_calculator_initialized = True
         return self._damage_calculator
+    
+    def _get_move_embedding_layer(self):
+        """Get move embedding layer with lazy initialization for performance."""
+        if not self._move_embedding_initialized:
+            try:
+                import torch
+                from src.agents.move_embedding_layer import MoveEmbeddingLayer
+                device = torch.device('cpu')  # Use CPU for state observation
+                # Try to load the saved move embeddings
+                embedding_file = 'config/move_embeddings_256d_fixed.pkl'
+                self._move_embedding_layer = MoveEmbeddingLayer(embedding_file, device)
+                print("Move embedding layer initialized successfully")
+            except Exception as e:
+                print(f"Warning: Could not initialize move embedding layer: {e}")
+                self._move_embedding_layer = None
+            self._move_embedding_initialized = True
+        return self._move_embedding_layer
 
     def get_observation_dimension(self) -> int:
         """
@@ -136,6 +177,12 @@ class StateObserver:
                 # エンコーダにダミーデータ（デフォルト値など）を渡して出力の長さを確認
                 # metaからデフォルト値を取得
                 raw_default = meta.get("default", 0)
+                
+                # Handle special case for move embeddings with dimensions specified
+                if "dimensions" in meta:
+                    dimension += meta["dimensions"]
+                    continue
+                
                 try:
                     # YAMLで '[1,0]' のようにリスト形式で書かれたデフォルト値も評価
                     default_value_for_test = (
@@ -367,6 +414,54 @@ class StateObserver:
                 return result
             
             ctx["calc_damage_expectation_for_ai"] = calc_damage_expectation_for_ai
+        
+        # Add move embedding functionality to context
+        move_embedding_layer = self._get_move_embedding_layer()
+        if move_embedding_layer:
+            # Create a wrapper class to provide convenient move embedding access
+            class MoveEmbeddingProvider:
+                def __init__(self, embedding_layer):
+                    self.embedding_layer = embedding_layer
+                    self.embedding_cache = {}  # Cache embeddings within a single observation
+                
+                def get_move_embedding(self, move_id):
+                    """Get 256-dimensional embedding for a move by its ID."""
+                    if move_id is None:
+                        # Return zero vector for missing moves
+                        return [0.0] * 256
+                    
+                    # Check cache first
+                    if move_id in self.embedding_cache:
+                        return self.embedding_cache[move_id]
+                    
+                    try:
+                        # Get embedding from layer
+                        embedding_tensor = self.embedding_layer.get_move_embedding(move_id)
+                        if embedding_tensor is not None:
+                            # Convert to list and cache
+                            embedding_list = embedding_tensor.detach().cpu().numpy().tolist()
+                            self.embedding_cache[move_id] = embedding_list
+                            return embedding_list
+                        else:
+                            # Move not found, return zero vector
+                            zero_embedding = [0.0] * 256
+                            self.embedding_cache[move_id] = zero_embedding
+                            return zero_embedding
+                    except Exception as e:
+                        print(f"Warning: Failed to get embedding for move {move_id}: {e}")
+                        # Return zero vector on error
+                        zero_embedding = [0.0] * 256
+                        self.embedding_cache[move_id] = zero_embedding
+                        return zero_embedding
+            
+            ctx["move_embedding"] = MoveEmbeddingProvider(move_embedding_layer)
+        else:
+            # Fallback provider that returns zero vectors
+            class FallbackMoveEmbeddingProvider:
+                def get_move_embedding(self, move_id):
+                    return [0.0] * 256
+            
+            ctx["move_embedding"] = FallbackMoveEmbeddingProvider()
 
         return ctx
 

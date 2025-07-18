@@ -5393,3 +5393,31 @@ damage_expectation_bench2_tera:
     scale_to:
     - 0
     - 1
+
+# Move Embedding Features (256 dimensions per move)
+# Active Pokemon Move Embeddings
+move_embeddings:
+  active_move1_embedding:
+    dtype: float
+    battle_path: move_embedding.get_move_embedding(my_active.moves[0].id if my_active and my_active.moves and len(my_active.moves) > 0 and my_active.moves[0] else None)
+    encoder: identity
+    default: '[0.0] * 256'
+    dimensions: 256
+  active_move2_embedding:
+    dtype: float
+    battle_path: move_embedding.get_move_embedding(my_active.moves[1].id if my_active and my_active.moves and len(my_active.moves) > 1 and my_active.moves[1] else None)
+    encoder: identity
+    default: '[0.0] * 256'
+    dimensions: 256
+  active_move3_embedding:
+    dtype: float
+    battle_path: move_embedding.get_move_embedding(my_active.moves[2].id if my_active and my_active.moves and len(my_active.moves) > 2 and my_active.moves[2] else None)
+    encoder: identity
+    default: '[0.0] * 256'
+    dimensions: 256
+  active_move4_embedding:
+    dtype: float
+    battle_path: move_embedding.get_move_embedding(my_active.moves[3].id if my_active and my_active.moves and len(my_active.moves) > 3 and my_active.moves[3] else None)
+    encoder: identity
+    default: '[0.0] * 256'
+    dimensions: 256
