@@ -1,0 +1,1389 @@
+Title: 技リスト (ポケモンSV)｜ポケモン徹底攻略
+
+URL Source: http://yakkun.com/sv/move_list.htm
+
+Markdown Content:
+[3ぼんのや](http://yakkun.com/sv/zukan/search/?move=858)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。50%の確率で、相手の『ぼうぎょ』ランクを1段階下げる。30%の確率で相手をひるませる。
+[アーマーキャノン](http://yakkun.com/sv/zukan/search/?move=905)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 5 直×守○
+1体選択 攻撃後、自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる。
+[アームハンマー](http://yakkun.com/sv/zukan/search/?move=359)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 90 10 直○守○
+1体選択 攻撃後、自分の『すばやさ』ランクが1段階下がる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[アイアンテール](http://yakkun.com/sv/zukan/search/?move=231)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 75 15 直○守○
+1体選択 30%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[アイアンヘッド](http://yakkun.com/sv/zukan/search/?move=442)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 30%の確率で相手をひるませる。
+[アイアンローラー](http://yakkun.com/sv/zukan/search/?move=813)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)130 100 5 直○守○
+1体選択 場の状態『グラスフィールド』『ミストフィールド』『エレキフィールド』『サイコフィールド』を解除し、元に戻す。いずれの状態でもない時は技が失敗する。
+[アイススピナー](http://yakkun.com/sv/zukan/search/?move=876)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 場の状態『グラスフィールド』『ミストフィールド』『エレキフィールド』『サイコフィールド』を解除し、元に戻す。
+[アイスハンマー](http://yakkun.com/sv/zukan/search/?move=641)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 90 10 直○守○
+1体選択 攻撃後、自分の『すばやさ』ランクが1段階下がる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[あおいほのお](http://yakkun.com/sv/zukan/search/?move=551)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 85 5 直×守○
+1体選択 20%の確率で相手を『やけど』状態にする。
+[アクアカッター](http://yakkun.com/sv/zukan/search/?move=910)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[アクアジェット](http://yakkun.com/sv/zukan/search/?move=453)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 20 直○守○
+1体選択 必ず先制できる(優先度:+1)。
+[アクアステップ](http://yakkun.com/sv/zukan/search/?move=887)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 100%の確率で自分の『すばやさ』ランクが1段階上がる。
+[アクアテール](http://yakkun.com/sv/zukan/search/?move=401)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 90 10 直○守○
+1体選択 通常攻撃。
+[アクアブレイク](http://yakkun.com/sv/zukan/search/?move=664)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 100 10 直○守○
+1体選択 20%の確率で、相手の『ぼうぎょ』ランクを1段階下げる。
+[アクアリング](http://yakkun.com/sv/zukan/search/?move=392)[みず](http://yakkun.com/sv/move_list.htm?type=10)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 使用後、毎ターン、HPが最大HPの1/16ずつ回復する。
+[あくうせつだん](http://yakkun.com/sv/zukan/search/?move=460)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 95 5 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[アクセルブレイク](http://yakkun.com/sv/zukan/search/?move=893)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守○
+1体選択 相手の弱点をつくと、ダメージが4/3倍(1.33倍)になる。
+[アクセルロック](http://yakkun.com/sv/zukan/search/?move=626)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 20 直○守○
+1体選択 必ず先制できる(優先度:+1)。
+[あくのはどう](http://yakkun.com/sv/zukan/search/?move=399)[あく](http://yakkun.com/sv/move_list.htm?type=16)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+1体選択 20%の確率で相手をひるませる。
+[あくび](http://yakkun.com/sv/zukan/search/?move=281)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 次のターン終了時に相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。ただし、そのポケモンが交代されると効果は消える。
+[アクロバット](http://yakkun.com/sv/zukan/search/?move=512)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)55 100 15 直○守○
+1体選択 自分が道具を持っていない時、威力が2倍になる。
+[あさのひざし](http://yakkun.com/sv/zukan/search/?move=234)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが、天気が通常の時は最大HPの1/2、『にほんばれ』の時は最大HPの2/3、『あめ』『ゆき』『すなあらし』の時は最大HPの1/4回復する。
+[アシストパワー](http://yakkun.com/sv/zukan/search/?move=500)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)20 100 10 直×守○
+1体選択 自分のいずれかの能力ランクが1つ上がる度に威力が20上がる。
+[アシッドボム](http://yakkun.com/sv/zukan/search/?move=491)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 20 直×守○
+1体選択 100%の確率で相手の『とくぼう』ランクを2段階下げる。
+[アストラルビット](http://yakkun.com/sv/zukan/search/?move=840)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 5 直×守○
+相手全体 通常攻撃。
+[あなをほる](http://yakkun.com/sv/zukan/search/?move=91)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 1ターン目に地中に潜り、2ターン目に攻撃する。地中にいる間は『じしん』『マグニチュード』以外の技を受けない。
+[あばれる](http://yakkun.com/sv/zukan/search/?move=37)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 10 直○守○
+ランダム1体 2～3ターン連続で攻撃し、その後自分は1～4ターンの間『こんらん』状態になる。
+[あまいかおり](http://yakkun.com/sv/zukan/search/?move=230)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+相手全体 相手の回避率を2段階下げる。
+[あまえる](http://yakkun.com/sv/zukan/search/?move=204)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の『こうげき』ランクを2段階下げる。
+[あまごい](http://yakkun.com/sv/zukan/search/?move=240)[みず](http://yakkun.com/sv/move_list.htm?type=10)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+全体の場 5ターンの間、天気を『あめ』にする。『みず』タイプの技のダメージが1.5倍になり、『ほのお』タイプの技のダメージが半減する。
+[あやしいひかり](http://yakkun.com/sv/zukan/search/?move=109)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手を1～4ターンの間『こんらん』状態にする。
+[アロマミスト](http://yakkun.com/sv/zukan/search/?move=584)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+味方1体 味方1体の『とくぼう』を1段階上げる(ダブルバトル用)。この技は『ダイウォール』の効果も受けない。
+[アンコール](http://yakkun.com/sv/zukan/search/?move=227)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 5 直×守○
+1体選択 3ターンの間、相手は最後に使用した技しか使えなくなる。ただし、PPが0になると解除される。相手の技が『ものまね』『ゆびをふる』『オウムがえし』『へんしん』『わるあがき』『スケッチ』『ねごと』『アンコール』『しぜんのちから』『ねこのて』『さきどり』『まねっこ』『ダイマックスほう』『バーンアクセル』『ダークアクセル』『ポイズンアクセル』『ファイトアクセル』『マジカルアクセル』の場合は失敗する。ダイマックスしているポケモンには無効。なお、ダイマックス技や第7世代のZワザは影響を受けずに使うことができる。
+[あんこくきょうだ](http://yakkun.com/sv/zukan/search/?move=832)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 5 直○守○
+1体選択 必ず急所に当たる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[いあいぎり](http://yakkun.com/sv/zukan/search/?move=15)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 95 30 直○守○
+1体選択 通常攻撃。
+[いえき](http://yakkun.com/sv/zukan/search/?move=380)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手の特性を無効にする。ただし、『バトルスイッチ』『ばけのかわ』などフォルムに関わる特性や、一部の固有の特性などには効かない。
+[イカサマ](http://yakkun.com/sv/zukan/search/?move=492)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)95 100 15 直○守○
+1体選択 自分の『こうげき』ではなく、相手の『こうげき』の能力値でダメージ計算する。
+[いかりのこな](http://yakkun.com/sv/zukan/search/?move=476)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 必ず先制できる(優先度:+2)。そのターンの相手の技をすべて自分が受ける。ただし、全体技には効果がない。『くさ』タイプや特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。ダブルバトル用。
+[いかりのまえば](http://yakkun.com/sv/zukan/search/?move=162)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-90 10 直○守○
+1体選択 相手のHPを残りHPの半分にする。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[いじげんホール](http://yakkun.com/sv/zukan/search/?move=615)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80-5 直×守×
+1体選択 相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。相手の『みがわり』状態を貫通する。
+[いじげんラッシュ](http://yakkun.com/sv/zukan/search/?move=616)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100-5 直×守×
+1体選択 相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。相手の『みがわり』状態を貫通する。攻撃後、自分の『ぼうぎょ』ランクが1段階下がる。なお、『ときはなたれしフーパ』以外のポケモンが使用した場合、失敗する。
+[いたみわけ](http://yakkun.com/sv/zukan/search/?move=220)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守○
+1体選択 自分と相手のHPを2匹の残りHPの平均値にする(足して2で割る)。ダイマックス時は、もとのHPで平均値を計算して、もとのHPと平均値との差分値を現在のダイマックス時のHPから増減する。
+[いちゃもん](http://yakkun.com/sv/zukan/search/?move=259)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 使用後、相手は同じ技を連続で出せなくなる。ダイマックスしている相手には無効。
+[いっちょうあがり](http://yakkun.com/sv/zukan/search/?move=871)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直×守○
+1体選択 ダブルバトルでは口の中にいる味方のシャリタツの姿によって能力のランクが上がる。『シャリタツ(そった)』の時は『こうげき』ランク、『シャリタツ(たれた)』の時は『ぼうぎょ』ランク、『シャリタツ(のびた)』の時は『すばやさ』ランクが1段階上がる(v1.2.0より前のバージョンでは、技が外れても発動する)。
+[いてつくしせん](http://yakkun.com/sv/zukan/search/?move=836)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手を『こおり』状態にする。
+[いとをはく](http://yakkun.com/sv/zukan/search/?move=81)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-95 40 直×守○
+相手全体 相手の『すばやさ』ランクを2段階下げる。
+[イナズマドライブ](http://yakkun.com/sv/zukan/search/?move=894)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直○守○
+1体選択 相手の弱点をつくと、ダメージが4/3倍(1.33倍)になる。
+[いにしえのうた](http://yakkun.com/sv/zukan/search/?move=547)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 100 10 直×守○
+相手全体 それぞれ10%の確率で相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。音系の技。相手の『みがわり』状態を貫通する。
+[いのちがけ](http://yakkun.com/sv/zukan/search/?move=515)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 5 直×守○
+1体選択 自分のHPを0にし、その分のダメージを相手に与える。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[いのちのしずく](http://yakkun.com/sv/zukan/search/?move=773)[みず](http://yakkun.com/sv/move_list.htm?type=10)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+味方全体 自分と味方全体のHPをそれぞれ最大HPの1/4ずつ回復する。特性『ちょすい』『よびみず』の味方は特性が発動するため、この技の効果は無効。この技は『ダイウォール』の効果も受けない。
+[いばる](http://yakkun.com/sv/zukan/search/?move=207)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-85 15 直×守○
+1体選択 相手を1～4ターンの間『こんらん』状態にするが、相手の『こうげき』ランクを2段階上げてしまう。
+[いびき](http://yakkun.com/sv/zukan/search/?move=173)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 15 直×守○
+1体選択 自分が『ねむり』状態の時のみ使用可能。30%の確率で相手をひるませる。音系の技。相手の『みがわり』状態を貫通する。
+[いやしのすず](http://yakkun.com/sv/zukan/search/?move=215)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+味方全体 自分と味方全体のポケモンの状態異常を治す。音系の技。味方が『みがわり』状態でも効果が発生する。この技は『ダイウォール』の効果も受けない。
+[いやしのねがい](http://yakkun.com/sv/zukan/search/?move=361)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が『ひんし』になる代わりに、次に出す自分のポケモンの状態異常とHPが全回復する。
+[いやしのはどう](http://yakkun.com/sv/zukan/search/?move=505)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 相手は最大HPの1/2回復する。(ダブルバトルで味方に使うと良い)
+[いやなおと](http://yakkun.com/sv/zukan/search/?move=103)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-85 40 直×守○
+1体選択 相手の『ぼうぎょ』ランクを2段階下げる。音系の技。相手の『みがわり』状態を貫通する。
+[いわおとし](http://yakkun.com/sv/zukan/search/?move=88)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 90 15 直×守○
+1体選択 通常攻撃。
+[いわくだき](http://yakkun.com/sv/zukan/search/?move=249)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 15 直○守○
+1体選択 50%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[いわなだれ](http://yakkun.com/sv/zukan/search/?move=157)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 90 10 直×守○
+相手全体 30%の確率で相手をひるませる。
+[インファイト](http://yakkun.com/sv/zukan/search/?move=370)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 攻撃後、自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる。
+[ウェーブタックル](http://yakkun.com/sv/zukan/search/?move=849)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 10 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。
+[ウェザーボール](http://yakkun.com/sv/zukan/search/?move=311)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 10 直×守○
+1体選択 天気が『にほんばれ』の時は『ほのお』タイプ、『あめ』の時は『みず』タイプ、『ゆき』の時は『こおり』タイプ、『すなあらし』の時は『いわ』タイプになり、威力が2倍になる。ダイマックス技や第7世代のZワザもタイプが変わる。
+[うずしお](http://yakkun.com/sv/zukan/search/?move=250)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)35 85 15 直×守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。相手が『ダイビング』を使っている時でも命中し、ダメージが2倍になる。
+[うそなき](http://yakkun.com/sv/zukan/search/?move=313)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の『とくぼう』ランクを2段階下げる。
+[うたう](http://yakkun.com/sv/zukan/search/?move=47)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-55 15 直×守○
+1体選択 相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。音系の技。相手の『みがわり』状態を貫通する。
+[うたかたのアリア](http://yakkun.com/sv/zukan/search/?move=624)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+自分以外全体 相手の『やけど』状態を治す。音系の技。相手の『みがわり』状態を貫通する。
+[うちおとす](http://yakkun.com/sv/zukan/search/?move=479)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 15 直×守○
+1体選択 特性『ふゆう』や、『ひこう』タイプのポケモンに『じめん』タイプの技が当たるようになる。また、技『そらをとぶ』『とびはねる』『でんじふゆう』『テレキネシス』の効果が解除され、『でんじふゆう』『テレキネシス』は使用できなくなる。『フリーフォール』状態の相手にも命中する。
+[ウッドハンマー](http://yakkun.com/sv/zukan/search/?move=452)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 15 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。
+[ウッドホーン](http://yakkun.com/sv/zukan/search/?move=532)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 10 直○守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[うっぷんばらし](http://yakkun.com/sv/zukan/search/?move=823)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 5 直○守○
+1体選択 そのターンの間に自分の能力ランクを下げられていると、威力が2倍になる(通常は後攻で攻撃する必要があるが、場に出た時に能力ランクを下げられた場合も対象となる)。
+[うつしえ](http://yakkun.com/sv/zukan/search/?move=882)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守×
+不定 自分と味方を相手と同じ特性にする。
+[うらみ](http://yakkun.com/sv/zukan/search/?move=180)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手の最後に使った技のPPを4減らす。
+[うらみつらみ](http://yakkun.com/sv/zukan/search/?move=856)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 100 10 直×守○
+1体選択 100%の確率で相手の『こうげき』ランクを1段階下げる。
+[エアカッター](http://yakkun.com/sv/zukan/search/?move=314)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 95 25 直×守○
+相手全体 急所に当たりやすい(急所ランク:+1)。
+[エアスラッシュ](http://yakkun.com/sv/zukan/search/?move=403)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 95 15 直×守○
+1体選択 30%の確率で相手をひるませる。
+[エアロブラスト](http://yakkun.com/sv/zukan/search/?move=177)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 95 5 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[エコーボイス](http://yakkun.com/sv/zukan/search/?move=497)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 15 直×守○
+1体選択 毎ターン、誰かが技『エコーボイス』を使う度に威力が高くなっていく。音系の技。相手の『みがわり』状態を貫通する。
+[えだづき](http://yakkun.com/sv/zukan/search/?move=767)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 40 直○守○
+1体選択 通常攻撃。
+[エナジーボール](http://yakkun.com/sv/zukan/search/?move=412)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[エレキネット](http://yakkun.com/sv/zukan/search/?move=527)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)55 95 15 直×守○
+相手全体 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[エレキフィールド](http://yakkun.com/sv/zukan/search/?move=603)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、場の状態を『エレキフィールド』にする。『ひこう』タイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、『ねむり』『あくび』(ねむけ)状態にならず、また『でんき』タイプの技の威力が1.3倍になる(第7世代までは1.5倍)。すでに『ねむり』状態の場合は回復しない。道具『エレキシード』を持ったポケモンは『ぼうぎょ』ランクが1段階上がる。
+[エレキボール](http://yakkun.com/sv/zukan/search/?move=486)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 10 直×守○
+1体選択 相手より『すばやさ』が高いほど威力が高くなる。1倍未満は40、2倍未満は60、3倍未満は80、4倍未満は120、それ以上は150。
+[エレクトロビーム](http://yakkun.com/sv/zukan/search/?move=920)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 100 10 直×守○
+1体選択 1ターン目に100%の確率で自分の『とくこう』ランクを1段階上げ、2ターン目で攻撃する。天気が『あめ』の時は1ターンためずに攻撃できる。
+[えんまく](http://yakkun.com/sv/zukan/search/?move=108)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の命中率を1段階下げる。
+[オーバードライブ](http://yakkun.com/sv/zukan/search/?move=768)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+相手全体 音系の技。相手の『みがわり』状態を貫通する。
+[オーバーヒート](http://yakkun.com/sv/zukan/search/?move=315)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 90 5 直×守○
+1体選択 攻撃後、100%の確率で自分の『とくこう』ランクが2段階下がる。
+[オーラウイング](http://yakkun.com/sv/zukan/search/?move=855)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。攻撃後、100%の確率で自分の『すばやさ』ランクが1段階上がる。
+[オーラぐるま](http://yakkun.com/sv/zukan/search/?move=765)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)110 100 10 直×守○
+1体選択 100%の確率で自分の『すばやさ』ランクが1段階上がる。自分の『モルペコ』のフォルムが『まんぷくもよう』の時は『でんき』タイプ、『はらぺこもよう』の時は『あく』タイプの技になる。
+[オーロラビーム](http://yakkun.com/sv/zukan/search/?move=62)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 20 直×守○
+1体選択 10%の確率で相手の『こうげき』ランクを1段階下げる。
+[オーロラベール](http://yakkun.com/sv/zukan/search/?move=658)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+味方の場 天気が『ゆき』状態の時のみ使用でき、5ターンの間、自分と味方が受ける相手の物理攻撃と特殊攻撃のダメージを半分にする。味方が複数の場合は半分ではなく2/3になる。急所に当たった場合は軽減されない。交代しても効果は続く。
+[おいかぜ](http://yakkun.com/sv/zukan/search/?move=366)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+味方の場 4ターンの間、自分と味方の『すばやさ』が2倍になる。
+[おいわい](http://yakkun.com/sv/zukan/search/?move=609)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+自分 効果なし。
+[おかたづけ](http://yakkun.com/sv/zukan/search/?move=897)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 お互いの『みがわり』状態、両方の場の『まきびし』『ステルスロック』『ねばねばネット』『どくびし』の効果を解除する。また、自分の『こうげき』と『すばやさ』ランクが1段階ずつ上がる。
+[おきみやげ](http://yakkun.com/sv/zukan/search/?move=262)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 自分が『ひんし』になる代わりに、相手の『こうげき』『とくこう』ランクを2段階ずつ下げる。
+[おさきにどうぞ](http://yakkun.com/sv/zukan/search/?move=495)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+1体選択 相手は『すばやさ』に関係なく、この技を受けた直後に行動できるようになる。ダブルバトル用。
+[おたけび](http://yakkun.com/sv/zukan/search/?move=567)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 30 直×守○
+1体選択 相手の『こうげき』『とくこう』ランクを1段階ずつ下げる。音系の技。相手の『みがわり』状態を貫通する。
+[おだてる](http://yakkun.com/sv/zukan/search/?move=260)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手を1～4ターンの間『こんらん』状態にするが、相手の『とくこう』ランクを1段階上げてしまう。
+[おちゃかい](http://yakkun.com/sv/zukan/search/?move=734)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体 場にいるすべてのポケモンが、それぞれが持っている『きのみ』を即座に使って効果を発動させる。
+[おどろかす](http://yakkun.com/sv/zukan/search/?move=310)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 100 15 直○守○
+1体選択 30%の確率で相手をひるませる。
+[おにび](http://yakkun.com/sv/zukan/search/?move=261)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-85 15 直×守○
+1体選択 相手を『やけど』状態にする。『ほのお』タイプには無効。
+[おはかまいり](http://yakkun.com/sv/zukan/search/?move=869)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 10 直×守○
+1体選択 これまでに『ひんし』状態になった味方のポケモン1体につき、威力が50上がる。
+[かいでんぱ](http://yakkun.com/sv/zukan/search/?move=595)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の『とくこう』ランクを2段階下げる。
+[かいりき](http://yakkun.com/sv/zukan/search/?move=70)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 通常攻撃。
+[カウンター](http://yakkun.com/sv/zukan/search/?move=68)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 20 直○守○
+不定 相手の物理攻撃のダメージの2倍をその相手に与える。『ダブルバトル』の時は最後に受けた技のみ有効になる。必ず後攻になる(優先度:-5)。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[かえんぐるま](http://yakkun.com/sv/zukan/search/?move=172)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 25 直○守○
+1体選択 10%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[かえんのまもり](http://yakkun.com/sv/zukan/search/?move=923)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の攻撃技を受けない。また、直接攻撃をしてきた相手を『やけど』状態にする。連続で使うと失敗しやすくなる。
+[かえんほうしゃ](http://yakkun.com/sv/zukan/search/?move=53)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 15 直×守○
+1体選択 10%の確率で相手を『やけど』状態にする。
+[かえんボール](http://yakkun.com/sv/zukan/search/?move=762)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 90 5 直×守○
+1体選択 10%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[かかとおとし](http://yakkun.com/sv/zukan/search/?move=868)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 90 10 直○守○
+1体選択 30%の確率で相手を1～4ターンの間『こんらん』状態にする。攻撃が外れたり、相手の技『まもる』などで失敗すると、自分の最大HPの半分のダメージを自分が受ける。
+[かげうち](http://yakkun.com/sv/zukan/search/?move=425)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 30 直○守○
+1体選択 必ず先制できる(優先度:+1)。
+[かげぬい](http://yakkun.com/sv/zukan/search/?move=622)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直×守○
+1体選択『ゴースト』タイプではない相手は逃げたり、交代できなくなる。自分が場を離れると効果は消える。
+[かげぶんしん](http://yakkun.com/sv/zukan/search/?move=104)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 自分の回避率を1段階上げる。
+[かぜおこし](http://yakkun.com/sv/zukan/search/?move=16)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 35 直×守○
+1体選択 相手が技『そらをとぶ』『とびはねる』『フリーフォール』を使っている時でも命中し、ダメージが2倍になる。
+[かたきうち](http://yakkun.com/sv/zukan/search/?move=514)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 5 直○守○
+1体選択 前のターンに味方のポケモンが倒されていると威力が2倍になる。
+[かたくなる](http://yakkun.com/sv/zukan/search/?move=106)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分 自分の『ぼうぎょ』ランクを1段階上げる。
+[カタストロフィ](http://yakkun.com/sv/zukan/search/?move=892)[あく](http://yakkun.com/sv/move_list.htm?type=16)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-90 10 直×守○
+1体選択 相手のHPを残りHPの半分にする。タイプ相性の影響を受けない。
+[かなしばり](http://yakkun.com/sv/zukan/search/?move=50)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手が最後に使った技を4ターンの間使えなくする。
+[かふんだんご](http://yakkun.com/sv/zukan/search/?move=642)[むし](http://yakkun.com/sv/move_list.htm?type=6)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 15 直×守○
+1体選択 味方に使った場合、ダメージではなく味方のHPを最大HPの1/2回復する。
+[かみくだく](http://yakkun.com/sv/zukan/search/?move=242)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 20%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[かみつく](http://yakkun.com/sv/zukan/search/?move=44)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 25 直○守○
+1体選択 30%の確率で相手をひるませる。
+[かみなり](http://yakkun.com/sv/zukan/search/?move=87)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 70 10 直×守○
+1体選択 30%の確率で相手を『まひ』状態にする。天気が『あめ』の時は必ず命中し、『にほんばれ』の時は命中率が50%になる。相手が技『そらをとぶ』『とびはねる』『フリーフォール』を使っている時でも命中する。
+[かみなりあらし](http://yakkun.com/sv/zukan/search/?move=862)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 80 10 直×守○
+相手全体 20%の確率で相手を『まひ』状態にする。天気が『あめ』の時は必ず命中する。
+[かみなりのキバ](http://yakkun.com/sv/zukan/search/?move=422)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 95 15 直○守○
+1体選択 10%の確率で相手を『まひ』状態にするか、ひるませる。
+[かみなりパンチ](http://yakkun.com/sv/zukan/search/?move=9)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 15 直○守○
+1体選択 10%の確率で相手を『まひ』状態にする。特性『てつのこぶし』の時、威力が1.2倍になる。
+[からげんき](http://yakkun.com/sv/zukan/search/?move=263)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直○守○
+1体選択 自分が『どく』『まひ』『やけど』状態の時、威力が2倍になる。『やけど』による『こうげき』の半減の影響を受けない。
+[からにこもる](http://yakkun.com/sv/zukan/search/?move=110)[みず](http://yakkun.com/sv/move_list.htm?type=10)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+自分 自分の『ぼうぎょ』ランクを1段階上げる。
+[からをやぶる](http://yakkun.com/sv/zukan/search/?move=504)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がり、『こうげき』『とくこう』『すばやさ』ランクが2段階ずつ上がる。
+[かわらわり](http://yakkun.com/sv/zukan/search/?move=280)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 15 直○守○
+1体選択 相手の技『リフレクター』『オーロラベール』の効果を受けず、相手の技『リフレクター』『ひかりのかべ』『オーロラベール』を壊す。
+[ガードシェア](http://yakkun.com/sv/zukan/search/?move=470)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の『ぼうぎょ』と『とくぼう』を足して半分に分ける。
+[ガードスワップ](http://yakkun.com/sv/zukan/search/?move=385)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の『ぼうぎょ』『とくぼう』ランクを入れ替える。
+[がむしゃら](http://yakkun.com/sv/zukan/search/?move=283)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 5 直○守○
+1体選択 相手の残りHPから自分の残りHPを引いた分のダメージを与える。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[ガリョウテンセイ](http://yakkun.com/sv/zukan/search/?move=614)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 100%の確率で自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる。
+[がんせきアックス](http://yakkun.com/sv/zukan/search/?move=845)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 90 15 直○守○
+1体選択 攻撃後、相手の場を『ステルスロック』状態にする。
+[がんせきふうじ](http://yakkun.com/sv/zukan/search/?move=317)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 95 15 直×守○
+1体選択 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[がんせきほう](http://yakkun.com/sv/zukan/search/?move=439)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[きあいだま](http://yakkun.com/sv/zukan/search/?move=411)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 70 5 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[きあいだめ](http://yakkun.com/sv/zukan/search/?move=116)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分『きゅうしょアップ』状態(急所ランク2段階)となり、今後自分の技が急所に当たりやすくなる。(すでに『きゅうしょアップ』状態の時は失敗する)
+[きあいパンチ](http://yakkun.com/sv/zukan/search/?move=264)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)150 100 20 直○守○
+1体選択 必ず後攻になり(優先度:-3)、攻撃するまでに技を受けると失敗してしまう。特性『てつのこぶし』の時、威力が1.2倍になる。
+[きしかいせい](http://yakkun.com/sv/zukan/search/?move=179)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 15 直○守○
+1体選択 自分の残りHPが少ないほど威力が高くなる。(威力は20～200)
+[キノコのほうし](http://yakkun.com/sv/zukan/search/?move=147)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。『くさ』タイプや特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。
+[きまぐレーザー](http://yakkun.com/sv/zukan/search/?move=922)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 5 直×守○
+1体選択 30%程度の確率で、威力が2倍になる。
+[きゅうけつ](http://yakkun.com/sv/zukan/search/?move=141)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[きょけんとつげき](http://yakkun.com/sv/zukan/search/?move=877)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 次の自分のターンまで、相手から自分への攻撃が必ず命中し、受けるダメージが2倍になる。
+[きょじゅうざん](http://yakkun.com/sv/zukan/search/?move=763)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守○
+1体選択 通常攻撃。(第8世代では相手がダイマックスしていると、ダメージが2倍になる)
+[きょじゅうだん](http://yakkun.com/sv/zukan/search/?move=764)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守○
+1体選択 通常攻撃。(第8世代では相手がダイマックスしていると、ダメージが2倍になる)
+[キラースピン](http://yakkun.com/sv/zukan/search/?move=881)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 100 15 直○守○
+相手全体 自分が受けている技『うずしお』『からではさむ』『サンダープリズン』『しめつける』『すなじごく』『トラバサミ』『ほのおのうず』『マグマストーム』『まきつく』『やどりぎのタネ』および自分の場の『ステルスロック』『どくびし』『まきびし』『ねばねばネット』の効果を解除する。また、100%の確率で相手を『どく』状態にする。
+[きりさく](http://yakkun.com/sv/zukan/search/?move=163)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[きりばらい](http://yakkun.com/sv/zukan/search/?move=432)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守○
+1体選択 相手の回避率を1段階下げる。相手の場の『しろいきり』『ひかりのかべ』『リフレクター』『しんぴのまもり』『オーロラベール』、両方の場の『まきびし』『どくびし』『ステルスロック』『ねばねばネット』、さらに第8世代からは『エレキフィールド』『グラスフィールド』『サイコフィールド』『ミストフィールド』の効果を解除する。相手が『みがわり』状態の場合、回避率を下げる効果のみ失敗する。
+[きんぞくおん](http://yakkun.com/sv/zukan/search/?move=319)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-85 40 直×守○
+1体選択 音系の技。相手の『とくぼう』ランクを2段階下げる。
+[ギアチェンジ](http://yakkun.com/sv/zukan/search/?move=508)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『すばやさ』ランクが2段階、『こうげき』ランクが1段階上がる。
+[ギガインパクト](http://yakkun.com/sv/zukan/search/?move=416)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)150 90 5 直○守○
+1体選択 使用した次のターンは行動できない。
+[ギガドレイン](http://yakkun.com/sv/zukan/search/?move=202)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 100 10 直×守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[クイックターン](http://yakkun.com/sv/zukan/search/?move=827)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 20 直○守○
+1体選択 攻撃後、手持ちのポケモンと入れ替わる。
+[くさのちかい](http://yakkun.com/sv/zukan/search/?move=520)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 ダブルバトルで、技『ほのおのちかい』と組み合わせて使用すると4ターンの間毎ターン『ほのお』タイプ以外の相手にダメージを与え、技『みずのちかい』と組み合わせて使用すると4ターンの間相手の『すばやさ』が下がる。また、威力が150になる。
+[くさむすび](http://yakkun.com/sv/zukan/search/?move=447)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 20 直○守○
+1体選択 相手の『おもさ』が重いほど威力が高くなる。10kg未満は20、25kg未満は40、50kg未満は60、100kg未満は80、200kg未満は100、それ以上は120。ダイマックスしている相手には無効。
+[くさわけ](http://yakkun.com/sv/zukan/search/?move=900)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 20 直○守○
+1体選択 100%の確率で自分の『すばやさ』ランクが1段階上がる。
+[くすぐる](http://yakkun.com/sv/zukan/search/?move=321)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の『こうげき』『ぼうぎょ』ランクを1段階ずつ下げる。
+[くちばしキャノン](http://yakkun.com/sv/zukan/search/?move=640)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 15 直×守○
+1体選択 必ず後攻になる(優先度:-3)。技が発動する前に直接攻撃を受けると、そのポケモンを『やけど』状態にする。技はそのまま受ける。
+[くらいつく](http://yakkun.com/sv/zukan/search/?move=728)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 自分と相手のどちらかが『ひんし』になるまで、どちらも逃げたり交代できなくなる。自分か相手が『ゴースト』タイプの場合は追加効果はない。
+[クラブハンマー](http://yakkun.com/sv/zukan/search/?move=152)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 90 10 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[クリアスモッグ](http://yakkun.com/sv/zukan/search/?move=499)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50-15 直×守○
+1体選択 相手の能力ランクの変化を元に戻す。
+[くろいきり](http://yakkun.com/sv/zukan/search/?move=114)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+全体の場 すべてのポケモンの能力ランクの変化を元に戻す。
+[くろいまなざし](http://yakkun.com/sv/zukan/search/?move=212)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+1体選択『ゴースト』タイプではない相手は逃げたり、交代できなくなる。自分が場を離れると効果は消える。
+[クロスサンダー](http://yakkun.com/sv/zukan/search/?move=559)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直×守○
+1体選択 相手・味方を問わず同じターンに技『クロスフレイム』が使われていると、威力が2倍になる。
+[クロスチョップ](http://yakkun.com/sv/zukan/search/?move=238)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 80 5 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[クロスフレイム](http://yakkun.com/sv/zukan/search/?move=558)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+1体選択 相手・味方を問わず同じターンに技『クロスサンダー』が使われていると、威力が2倍になる。
+[クロスポイズン](http://yakkun.com/sv/zukan/search/?move=440)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直○守○
+1体選択 10%の確率で相手を『どく』状態にする。急所に当たりやすい(急所ランク:+1)。
+[クロロブラスト](http://yakkun.com/sv/zukan/search/?move=850)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 95 5 直×守○
+1体選択 攻撃後、自分の最大HPの半分だけ自分もダメージを受ける。
+[グラススライダー](http://yakkun.com/sv/zukan/search/?move=818)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)55 100 20 直○守○
+1体選択 場の状態が『グラスフィールド』で、自分が『ひこう』タイプや特性『ふゆう』などではなく地面にいる時、必ず先制できる(優先度:+1)。
+[グラスフィールド](http://yakkun.com/sv/zukan/search/?move=568)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、場の状態を『グラスフィールド』にする。『ひこう』タイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、毎ターン最大HPの1/16ずつ回復し、また『くさ』タイプの技の威力が1.3倍になり(第7世代までは1.5倍)、技『じしん』『じならし』『マグニチュード』の受けるダメージが半減する。道具『グラスシード』を持ったポケモンは『ぼうぎょ』ランクが1段階上がる。
+[けたぐり](http://yakkun.com/sv/zukan/search/?move=67)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 20 直○守○
+1体選択 相手の『おもさ』が重いほど威力が高くなる。10kg未満は20、25kg未満は40、50kg未満は60、100kg未満は80、200kg未満は100、それ以上は120。ダイマックスしている相手には無効。
+[げきりん](http://yakkun.com/sv/zukan/search/?move=200)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 10 直○守○
+ランダム1体 2～3ターン連続で攻撃し、その後自分は1～4ターンの間『こんらん』状態になる。
+[ゲップ](http://yakkun.com/sv/zukan/search/?move=599)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 90 10 直×守○
+1体選択 この技は『きのみ』を食べると使えるようになる。
+[げんしのちから](http://yakkun.com/sv/zukan/search/?move=246)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 5 直×守○
+1体選択 10%の確率で自分の『こうげき』『ぼうぎょ』『とくこう』『とくぼう』『すばやさ』ランクが1段階ずつ上がる。
+[コーチング](http://yakkun.com/sv/zukan/search/?move=826)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+味方全体 自分を除く味方全体の『こうげき』『ぼうぎょ』ランクが1段階ずつ上がる(ダブルバトル用)。この技は『ダイウォール』の効果も受けない。
+[コートチェンジ](http://yakkun.com/sv/zukan/search/?move=738)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守×
+全体の場 お互いの場の状態『オーロラベール』『おいかぜ』『しろいきり』『しんぴのまもり』『ステルスロック』『どくびし』『ねばねばネット』『ひかりのかべ』『まきびし』『リフレクター』『キョダイベンタツ』『キョダイゴクエン』『キョダイホウゲキ』『キョダイフンセキ』『キョダイコウジン』を入れ替える。経過ターン数は引き継がれる。
+[コールドフレア](http://yakkun.com/sv/zukan/search/?move=554)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 90 5 直×守○
+1体選択 1ターン目は攻撃せずに、2ターン目で攻撃する。30%の確率で相手を『やけど』状態にする。
+[こうげきしれい](http://yakkun.com/sv/zukan/search/?move=454)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[こうごうせい](http://yakkun.com/sv/zukan/search/?move=235)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが、天気が通常の時は最大HPの1/2、『にほんばれ』の時は最大HPの2/3、『あめ』『ゆき』『すなあらし』の時は最大HPの1/4回復する。
+[こうそくいどう](http://yakkun.com/sv/zukan/search/?move=97)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分 自分の『すばやさ』ランクが2段階上がる。
+[こうそくスピン](http://yakkun.com/sv/zukan/search/?move=229)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 40 直○守○
+1体選択 自分が受けている技『うずしお』『からではさむ』『サンダープリズン』『しめつける』『すなじごく』『トラバサミ』『ほのおのうず』『マグマストーム』『まきつく』『やどりぎのタネ』および自分の場の『ステルスロック』『どくびし』『まきびし』『ねばねばネット』の効果を解除する。第8世代からは、攻撃後、100%の確率で自分の『すばやさ』ランクが1段階上がる。(第7世代までは威力20)
+[こおりのいぶき](http://yakkun.com/sv/zukan/search/?move=524)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 90 10 直×守○
+1体選択 必ず急所に当たる。
+[こおりのキバ](http://yakkun.com/sv/zukan/search/?move=423)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 95 15 直○守○
+1体選択 10%の確率で相手を『こおり』状態にするか、ひるませる。
+[こおりのつぶて](http://yakkun.com/sv/zukan/search/?move=420)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 30 直×守○
+1体選択 必ず先制できる(優先度:+1)。
+[こがらしあらし](http://yakkun.com/sv/zukan/search/?move=861)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 80 10 直×守○
+相手全体 30%の確率で、相手の『すばやさ』ランクを1段階下げる。天気が『あめ』の時は必ず命中する。
+[こごえるかぜ](http://yakkun.com/sv/zukan/search/?move=196)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)55 95 15 直×守○
+相手全体 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[こごえるせかい](http://yakkun.com/sv/zukan/search/?move=549)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 95 10 直×守○
+相手全体 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[コスモパワー](http://yakkun.com/sv/zukan/search/?move=322)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ上がる。
+[コットンガード](http://yakkun.com/sv/zukan/search/?move=538)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『ぼうぎょ』ランクが3段階上がる。
+[こなゆき](http://yakkun.com/sv/zukan/search/?move=181)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 25 直×守○
+相手全体 10%の確率で相手を『こおり』状態にする。
+[このは](http://yakkun.com/sv/zukan/search/?move=621)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 40 直×守○
+1体選択 通常攻撃。
+[このゆびとまれ](http://yakkun.com/sv/zukan/search/?move=266)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 必ず先制できる(優先度:+2)。そのターンの相手の技をすべて自分が受ける。ただし、全体技には効果がない。ダブルバトル用。
+[コメットパンチ](http://yakkun.com/sv/zukan/search/?move=309)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 90 10 直○守○
+1体選択 20%の確率で自分の『こうげき』ランクが1段階上がる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[こらえる](http://yakkun.com/sv/zukan/search/?move=203)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制できる(優先度:+4)。そのターンに『ひんし』状態になる攻撃を受けてもHPが1残る。連続で使うと失敗しやすくなる。
+[ころがる](http://yakkun.com/sv/zukan/search/?move=205)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 90 20 直○守○
+1体選択 外れるまで5ターン連続で攻撃し、攻撃が当たる度に威力が倍増する(最大480)。事前に技『まるくなる』を使っていると威力が2倍になる。
+[こわいかお](http://yakkun.com/sv/zukan/search/?move=184)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手の『すばやさ』ランクを2段階下げる。
+[こんげんのはどう](http://yakkun.com/sv/zukan/search/?move=613)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 85 10 直×守○
+相手全体 通常攻撃。
+[ゴーストダイブ](http://yakkun.com/sv/zukan/search/?move=591)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直○守×
+1体選択 1ターン目に消えて、2ターン目に攻撃する。消えている間はほとんどの技を受けない。相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。(なお、第7世代以降は相手が『ちいさくなる』を使っている時の必中2倍効果はない)
+[ゴールドラッシュ](http://yakkun.com/sv/zukan/search/?move=889)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 5 直×守○
+相手全体 攻撃後、自分の『とくこう』ランクが1段階下がる。また、戦闘終了後にお金が(自分のレベル×攻撃回数×5)円多く手に入る。
+[ゴッドバード](http://yakkun.com/sv/zukan/search/?move=143)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)140 90 5 直×守○
+1体選択 1ターン目は攻撃せずに、2ターン目で攻撃する。30%の確率で相手をひるませる。急所に当たりやすい(急所ランク:+1)。
+[さいきのいのり](http://yakkun.com/sv/zukan/search/?move=878)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--1 直×守×
+自分 手持ちの『ひんし』状態のポケモンを、最大HPの半分だけ回復させる。
+[サイケこうせん](http://yakkun.com/sv/zukan/search/?move=60)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 20 直×守○
+1体選択 10%の確率で相手を1～4ターンの間『こんらん』状態にする。
+[サイコカッター](http://yakkun.com/sv/zukan/search/?move=427)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[サイコキネシス](http://yakkun.com/sv/zukan/search/?move=94)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[サイコショック](http://yakkun.com/sv/zukan/search/?move=473)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 相手の『とくぼう』ではなく、相手の『ぼうぎょ』の能力値でダメージ計算する。
+[サイコノイズ](http://yakkun.com/sv/zukan/search/?move=932)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 100 10 直×守○
+1体選択 100%の確率で、相手は2ターンの間『かいふくふうじ』状態となり、回復系の技『あさのひざし』『いやしのねがい』『いやしのはどう』『ウッドホーン』『かいふくしれい』『ギガドレイン』『きゅうけつ』『こうごうせい』『じこさいせい』『じょうか』『すいとる』『すなあつめ』『タマゴうみ』『ちからをすいとる』『つきのひかり』『デスウイング』『ドレインキッス』『ドレインパンチ』『なまける』『ねがいごと』『ねむる』『のみこむ』『はねやすめ』『パラボラチャージ』『フラワーヒール』『みかづきのまい』『ミルクのみ』『メガドレイン』『ゆめくい』『いのちのしずく』『ジャングルヒール』『みかづきのいのり』『さいきのいのり』『むねんのつるぎ』『シャカシャカほう』が使えなくなり、また特性や道具、場の状態などでHPが回復しなくなる。音系の技。相手の『みがわり』状態を貫通する。
+[サイコファング](http://yakkun.com/sv/zukan/search/?move=666)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 100 10 直○守○
+1体選択 相手の技『リフレクター』『オーロラベール』の効果を受けず、相手の技『リフレクター』『ひかりのかべ』『オーロラベール』を壊す。
+[サイコフィールド](http://yakkun.com/sv/zukan/search/?move=634)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、場の状態を『サイコフィールド』にする。『ひこう』タイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、相手(味方は含まない)の先制技を受けなくなり、また『エスパー』タイプの技の威力が1.3倍になる(第7世代までは1.5倍)。道具『サイコシード』を持ったポケモンは『とくぼう』ランクが1段階上がる。
+[サイコブースト](http://yakkun.com/sv/zukan/search/?move=354)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 90 5 直×守○
+1体選択 攻撃後、100%の確率で自分の『とくこう』ランクが2段階下がる。
+[サイコブレイク](http://yakkun.com/sv/zukan/search/?move=540)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 10 直×守○
+1体選択 相手の『とくぼう』ではなく、相手の『ぼうぎょ』の能力値でダメージ計算する。
+[サイコブレイド](http://yakkun.com/sv/zukan/search/?move=890)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 場の状態が『エレキフィールド』の時、技の威力が1.5倍になる。
+[サイドチェンジ](http://yakkun.com/sv/zukan/search/?move=502)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 必ず先制できる(優先度:+2)。自分と味方1体の位置を交代する。ダブルバトル用。第9世代からは、連続で使うと失敗しやすくなる。
+[さいはい](http://yakkun.com/sv/zukan/search/?move=629)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守○
+1体選択 相手が最後に使用した技をその場でもう一度使わせる。『はかいこうせん』など反動のある技や、ターン技、ダイマックス技、『ダイマックスほう』など一部の技は失敗する。
+[さいみんじゅつ](http://yakkun.com/sv/zukan/search/?move=95)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-60 20 直×守○
+1体選択 相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。
+[さきおくり](http://yakkun.com/sv/zukan/search/?move=511)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手は『すばやさ』に関係なく、行動が最後になる。ダブルバトル用。
+[さばきのつぶて](http://yakkun.com/sv/zukan/search/?move=449)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 10 直×守○
+1体選択 持たせた『プレート』によって『タイプ』が変わる。
+[さむいギャグ](http://yakkun.com/sv/zukan/search/?move=896)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 手持ちのポケモンと入れ替わる。また、5ターンの間、天気を『ゆき』にする(『こおり』タイプのポケモンは、『ぼうぎょ』が1.5倍になる)。
+[さわぐ](http://yakkun.com/sv/zukan/search/?move=253)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+ランダム1体 3ターン連続で攻撃し、その間はすべてのポケモンが『ねむり』状態にならない。音系の技。相手の『みがわり』状態を貫通する。
+[サンダーダイブ](http://yakkun.com/sv/zukan/search/?move=931)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 95 15 直○守○
+1体選択 攻撃が外れたり、相手の技『まもる』などで失敗すると、自分の最大HPの半分のダメージを自分が受ける。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。
+[サンダープリズン](http://yakkun.com/sv/zukan/search/?move=834)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 90 15 直×守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[シードフレア](http://yakkun.com/sv/zukan/search/?move=465)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 85 5 直×守○
+1体選択 40%の確率で相手の『とくぼう』ランクを2段階下げる。
+[シェルアームズ](http://yakkun.com/sv/zukan/search/?move=816)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 この技の分類は、物理・特殊それぞれの場合のダメージを比較して、大きい方の分類で攻撃する(物理の場合は自分の『こうげき』と相手の『ぼうぎょ』でダメージ計算)。20%の確率で相手を『どく』状態にする。
+[シェルブレード](http://yakkun.com/sv/zukan/search/?move=534)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 95 10 直○守○
+1体選択 50%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[しおづけ](http://yakkun.com/sv/zukan/search/?move=879)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 15 直×守○
+1体選択 追加効果として相手を『しおづけ』状態にして、毎ターン終了後、相手の最大HPの1/8のダメージを与える。相手が『はがね』や『みず』タイプの場合は、毎ターン最大HPの1/4のダメージになる。
+[しおふき](http://yakkun.com/sv/zukan/search/?move=323)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 100 5 直×守○
+相手全体 自分のHPが少ないほど技の威力が下がる。(150×自分の残りHP÷自分の最大HP)が威力。
+[しおみず](http://yakkun.com/sv/zukan/search/?move=362)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 10 直×守○
+1体選択 相手のHPが最大HPの半分以下の時、威力が2倍になる。
+[シザークロス](http://yakkun.com/sv/zukan/search/?move=404)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 通常攻撃。
+[したでなめる](http://yakkun.com/sv/zukan/search/?move=122)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 100 30 直○守○
+1体選択 30%の確率で相手を『まひ』状態にする。
+[しっとのほのお](http://yakkun.com/sv/zukan/search/?move=822)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 5 直×守○
+相手全体 100%の確率で、そのターンの間に能力ランクが上がった相手ポケモンを『やけど』状態にする(通常は後攻で攻撃する必要があるが、場に出た時に能力ランクが上がった場合も対象となる)。
+[しっぺがえし](http://yakkun.com/sv/zukan/search/?move=371)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 10 直○守○
+1体選択 自分が後攻の時、威力が2倍になる。
+[しっぽきり](http://yakkun.com/sv/zukan/search/?move=895)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分のHPを最大HPの半分だけ減らして『みがわり』状態となり、『みがわり』状態のまま手持ちのポケモンに入れ替わる。『みがわり』のHPは最大HPの1/4になる。
+[しっぽをふる](http://yakkun.com/sv/zukan/search/?move=39)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 30 直×守○
+相手全体 相手の『ぼうぎょ』ランクを1段階下げる。
+[しねんのずつき](http://yakkun.com/sv/zukan/search/?move=428)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 90 15 直○守○
+1体選択 20%の確率で相手をひるませる。
+[しびれごな](http://yakkun.com/sv/zukan/search/?move=78)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-75 30 直×守○
+1体選択 相手を『まひ』状態にする。『でんき』タイプや『くさ』タイプ、特性『ぼうじん』、『ぼうじんゴーグル』を持っているのポケモンには無効。
+[しめつける](http://yakkun.com/sv/zukan/search/?move=20)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)15 85 20 直○守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[シャカシャカほう](http://yakkun.com/sv/zukan/search/?move=917)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 90 15 直×守○
+相手全体 相手に与えたダメージの半分だけ自分のHPが回復する。また、20%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。また、相手の『こおり』状態を治す。
+[シャドークロー](http://yakkun.com/sv/zukan/search/?move=421)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 15 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[シャドーダイブ](http://yakkun.com/sv/zukan/search/?move=467)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守×
+1体選択 1ターン目に消えて、2ターン目に攻撃する。消えている間はほとんどの技を受けない。相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。
+[シャドーパンチ](http://yakkun.com/sv/zukan/search/?move=325)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60-20 直○守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。特性『てつのこぶし』の時、威力が1.2倍になる。
+[シャドーボール](http://yakkun.com/sv/zukan/search/?move=247)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+1体選択 20%の確率で相手の『とくぼう』ランクを1段階下げる。
+[シャドーレイ](http://yakkun.com/sv/zukan/search/?move=637)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+1体選択 相手の特性の影響を受けずに攻撃する。
+[しょうりのまい](http://yakkun.com/sv/zukan/search/?move=852)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『こうげき』『ぼうぎょ』『すばやさ』ランクを1段階ずつ上げる。
+[しろいきり](http://yakkun.com/sv/zukan/search/?move=54)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+味方の場 5ターンの間、自分と味方のポケモンは能力ランクを下げられなくなる。交代しても効果は続く。
+[しんくうは](http://yakkun.com/sv/zukan/search/?move=410)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 30 直×守○
+1体選択 必ず先制できる(優先度:+1)。
+[しんそく](http://yakkun.com/sv/zukan/search/?move=245)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 5 直○守○
+1体選択 必ず先制できる(優先度:+2)。
+[しんぴのちから](http://yakkun.com/sv/zukan/search/?move=847)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 90 10 直×守○
+1体選択 100%の確率で自分の『とくこう』ランクを1段階上げる。
+[しんぴのつるぎ](http://yakkun.com/sv/zukan/search/?move=548)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)85 100 10 直×守○
+1体選択 相手の『とくぼう』ではなく、相手の『ぼうぎょ』の能力値でダメージ計算する。
+[しんぴのまもり](http://yakkun.com/sv/zukan/search/?move=219)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--25 直×守×
+味方の場 5ターンの間、自分と味方のポケモンは状態異常にならなくなる。交代しても効果は続く。
+[シンプルビーム](http://yakkun.com/sv/zukan/search/?move=493)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の特性が『たんじゅん』になる。(ダブルバトルで味方に使うと良い)
+[Gのちから](http://yakkun.com/sv/zukan/search/?move=770)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直×守○
+1体選択 100%の確率で相手の『ぼうぎょ』ランクを1段階下げる。場が『じゅうりょく』状態の時、威力が1.5倍になる。
+[ジェットパンチ](http://yakkun.com/sv/zukan/search/?move=872)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 15 直○守○
+1体選択 必ず先制できる(優先度:+1)。特性『てつのこぶし』の時、威力が1.2倍になる。
+[じこあんじ](http://yakkun.com/sv/zukan/search/?move=244)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+1体選択 相手の能力ランクの変化を、すべて自分にコピーする。
+[じこさいせい](http://yakkun.com/sv/zukan/search/?move=105)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復する。
+[じごくづき](http://yakkun.com/sv/zukan/search/?move=663)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 相手は2ターンの間、音系の技『いにしえのうた』『いびき』『いやしのすず』『いやなおと』『うたう』『うたかたのアリア』『エコーボイス』『おしゃべり』『おたけび』『きんぞくおん』『くさぶえ』『さわぐ』『スケイルノイズ』『すてゼリフ』『チャームボイス』『ちょうおんぱ』『とおぼえ』『ないしょばなし』『なきごえ』『バークアウト』『ハイパーボイス』『ばくおんぱ』『ほえる』『ほろびのうた』『むしのさざめき』『りんしょう』『ソウルビート』『オーバードライブ』『ぶきみなじゅもん』『フレアソング』『みわくのボイス』『サイコノイズ』を使えなくなる。
+[じしん](http://yakkun.com/sv/zukan/search/?move=89)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 10 直×守○
+自分以外全体 相手が技『あなをほる』を使っている時でも命中し、ダメージが2倍になる。
+[じたばた](http://yakkun.com/sv/zukan/search/?move=175)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 15 直○守○
+1体選択 自分の残りHPが少ないほど威力が高くなる。(威力は20～200)
+[じだんだ](http://yakkun.com/sv/zukan/search/?move=655)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 10 直○守○
+1体選択 前のターンで自分が使った技が外れたり失敗したり、『まひ』『こんらん』『ひるみ』状態などで行動できなかった場合、威力が2倍になる。
+[じならし](http://yakkun.com/sv/zukan/search/?move=523)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 20 直×守○
+自分以外全体 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[じばく](http://yakkun.com/sv/zukan/search/?move=120)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)200 100 5 直×守○
+自分以外全体 攻撃後、自分が『ひんし』状態になる。
+[じばそうさ](http://yakkun.com/sv/zukan/search/?move=600)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+味方全体 自分と味方全体の特性が『プラス』『マイナス』のポケモンの『ぼうぎょ』『とくぼう』ランクが1段階ずつ上がる。なお、『ダイウォール』は貫通しない。
+[ジャイロボール](http://yakkun.com/sv/zukan/search/?move=360)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 5 直○守○
+1体選択 相手より『すばやさ』が低いほど威力が高くなる。(25×相手のすばやさ÷自分のすばやさ)+1が威力になる。ただし最大威力は150。小数点以下は切り捨て。
+[じゃどくのくさり](http://yakkun.com/sv/zukan/search/?move=934)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+1体選択 50%の確率で相手を『もうどく』状態にする。『もうどく』状態は通常の『どく』状態と違い、受けるダメージが1/16、2/16、3/16・・・と増えていく。
+[じゃれつく](http://yakkun.com/sv/zukan/search/?move=587)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 90 10 直○守○
+1体選択 10%の確率で相手の『こうげき』ランクを1段階下げる。
+[ジャングルヒール](http://yakkun.com/sv/zukan/search/?move=831)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+味方全体 自分と味方全体のHPが最大HPの1/4ずつ回復し、状態異常も回復する。
+[じゅうでん](http://yakkun.com/sv/zukan/search/?move=268)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 一度だけ次回使う自分の『でんき』タイプの技の威力が2倍になる(第8世代までは次のターンまでだけ)。自分の『とくぼう』ランクが1段階上がる。
+[10まんばりき](http://yakkun.com/sv/zukan/search/?move=659)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)95 95 10 直○守○
+1体選択 通常攻撃。
+[10まんボルト](http://yakkun.com/sv/zukan/search/?move=85)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 15 直×守○
+1体選択 10%の確率で相手を『まひ』状態にする。
+[じゅうりょく](http://yakkun.com/sv/zukan/search/?move=356)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+全体の場 5ターンの間、すべてのポケモンの命中率が5/3倍(約1.67倍、1.6倍の説もあり)になる。また、特性『ふゆう』や、『ひこう』タイプのポケモンに『じめん』タイプの技が当たるようになる。技『そらをとぶ』『はねる』『とびげり』『とびひざげり』『とびはねる』『でんじふゆう』『フライングプレス』『フリーフォール』が使えなくなり、使用している場合は解除される。『テレキネシス』を受けなくなり、受けている場合は解除される。技『Gのちから』の威力が1.5倍になる。
+[じわれ](http://yakkun.com/sv/zukan/search/?move=90)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-30 5 直×守○
+1体選択 相手を『ひんし』状態にする。相手のレベルが自分より高いと失敗する。(30＋自分のレベル－相手のレベル)が命中率になる。『ひこう』タイプには無効だが、それ以外のタイプ相性の影響を受けない。ダイマックスしている相手には無効。
+[じんつうりき](http://yakkun.com/sv/zukan/search/?move=326)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 20 直×守○
+1体選択 10%の確率で相手をひるませる。
+[じんらい](http://yakkun.com/sv/zukan/search/?move=924)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 5 直×守○
+1体選択 必ず先制できる(優先度:+1)。そのターン相手が選んだ技が攻撃技ではない場合や、優先度などの関係ですでに攻撃を終えていた場合は失敗する。相手が『ねむり』『こおり』状態でも攻撃技を選択していれば成功する。
+[スイープビンタ](http://yakkun.com/sv/zukan/search/?move=541)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 85 10 直○守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[すいとる](http://yakkun.com/sv/zukan/search/?move=71)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)20 100 25 直×守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[すいりゅうれんだ](http://yakkun.com/sv/zukan/search/?move=833)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 100 5 直○守○
+1体選択 1ターンに外れるまで最大3回連続で攻撃する。必ず急所に当たる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[スキルスワップ](http://yakkun.com/sv/zukan/search/?move=285)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の特性を入れ替える。ただし、『ふしぎなまもり』など一部の固有な特性は入れ替えられない。ダイマックスしている相手には無効。
+[スケイルショット](http://yakkun.com/sv/zukan/search/?move=814)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 90 20 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。その後、自分の『ぼうぎょ』ランクが1段階下がり、『すばやさ』ランクが1段階上がる。
+[スケイルノイズ](http://yakkun.com/sv/zukan/search/?move=632)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 100 5 直×守○
+相手全体 攻撃後、自分の『ぼうぎょ』ランクが1段階下がる。音系の技。相手の『みがわり』状態を貫通する。
+[スケッチ](http://yakkun.com/sv/zukan/search/?move=166)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--1 直×守×
+1体選択 この技を忘れて、相手が最後に使った技を覚える。戦闘終了後も元に戻らない。(通信対戦などでは元に戻る)
+[スチームバースト](http://yakkun.com/sv/zukan/search/?move=617)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 95 5 直×守○
+1体選択 30%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。また、相手の『こおり』状態を治す。
+[すてゼリフ](http://yakkun.com/sv/zukan/search/?move=604)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の『こうげき』『とくこう』ランクを1段階下げたあと、手持ちのポケモンと入れ替わる。音系の技。相手の『みがわり』状態を貫通する。
+[すてみタックル](http://yakkun.com/sv/zukan/search/?move=38)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 15 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。
+[ステルスロック](http://yakkun.com/sv/zukan/search/?move=446)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+相手の場 使用後、相手はポケモンを交代する度に、出てきたポケモンは最大HPの1/8のダメージを受ける。『タイプ』相性の影響を受け、例えば4倍弱点の場合は最大HPの1/2のダメージとなる。
+[ストーンエッジ](http://yakkun.com/sv/zukan/search/?move=444)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 80 5 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[すなあつめ](http://yakkun.com/sv/zukan/search/?move=647)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復する。ただし、天気が『すなあらし』の時は最大HPの2/3回復する。
+[すなあらし](http://yakkun.com/sv/zukan/search/?move=201)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、天気を『すなあらし』にする。『いわ』『じめん』『はがね』タイプではないポケモンは、毎ターン最大HPの1/16のダメージを受ける。また、『いわ』タイプのポケモンは『とくぼう』が1.5倍になる。
+[すなかけ](http://yakkun.com/sv/zukan/search/?move=28)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の命中率を1段階下げる。
+[すなじごく](http://yakkun.com/sv/zukan/search/?move=328)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)35 85 15 直×守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[スパーク](http://yakkun.com/sv/zukan/search/?move=209)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 20 直○守○
+1体選択 30%の確率で相手を『まひ』状態にする。
+[スピードスター](http://yakkun.com/sv/zukan/search/?move=129)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60-20 直×守○
+相手全体 自分の命中率、相手の回避率に関係なく必ず命中する。
+[スピードスワップ](http://yakkun.com/sv/zukan/search/?move=667)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の『すばやさ』を入れ替える。
+[スマートホーン](http://yakkun.com/sv/zukan/search/?move=653)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70-10 直○守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[スモッグ](http://yakkun.com/sv/zukan/search/?move=123)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)30 70 20 直×守○
+1体選択 40%の確率で相手を『どく』状態にする。
+[すりかえ](http://yakkun.com/sv/zukan/search/?move=415)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手と自分が持っている道具を入れ替える。片方しか道具を持っていない場合も成功する。
+[スレッドトラップ](http://yakkun.com/sv/zukan/search/?move=867)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の攻撃技を受けない。また、直接攻撃をしてきた相手の『すばやさ』ランクを1段階下げる。連続で使うと失敗しやすくなる。
+[ずつき](http://yakkun.com/sv/zukan/search/?move=29)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 15 直○守○
+1体選択 30%の確率で相手をひるませる。
+[せいちょう](http://yakkun.com/sv/zukan/search/?move=74)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『こうげき』『とくこう』ランクが1段階ずつ上がる。天気が『にほんばれ』の時は、2段階ずつ上がる。
+[せいなるつるぎ](http://yakkun.com/sv/zukan/search/?move=533)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直○守○
+1体選択 相手の能力ランクの変化に関係なく、ダメージを与える。
+[せいなるほのお](http://yakkun.com/sv/zukan/search/?move=221)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 95 5 直×守○
+1体選択 50%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[ぜったいれいど](http://yakkun.com/sv/zukan/search/?move=329)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-30 5 直×守○
+1体選択 相手を『ひんし』状態にする。相手のレベルが自分より高いと失敗する。(30＋自分のレベル－相手のレベル)が命中率になる。第7世代以降は『こおり』タイプ以外のポケモンが使うと命中率が下がり(20＋自分のレベル－相手のレベル？)、また相手が『こおり』タイプの場合は効果がない。ダイマックスしている相手にも無効。
+[ソーラービーム](http://yakkun.com/sv/zukan/search/?move=76)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 10 直×守○
+1体選択 1ターン目は攻撃せずに、2ターン目で攻撃する。天気が『にほんばれ』の時は1ターンためずに攻撃でき、『あめ』『ゆき』『すなあらし』の時は威力が半分になる。
+[ソーラーブレード](http://yakkun.com/sv/zukan/search/?move=627)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)125 100 10 直○守○
+1体選択 1ターン目は攻撃せずに、2ターン目で攻撃する。天気が『にほんばれ』の時は1ターンためずに攻撃でき、『あめ』『ゆき』『すなあらし』の時は威力が半分になる。
+[ソウルクラッシュ](http://yakkun.com/sv/zukan/search/?move=771)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 15 直○守○
+1体選択 100%の確率で相手の『とくこう』ランクを1段階下げる。
+[ソウルビート](http://yakkun.com/sv/zukan/search/?move=757)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 自分のHPを最大HPの1/3だけ減らし、自分のすべての『のうりょく』ランクを1段階ずつ上げる。音系の技。
+[そらをとぶ](http://yakkun.com/sv/zukan/search/?move=19)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 95 15 直○守○
+1体選択 1ターン目に空中へ飛び上がり、2ターン目に攻撃する。空中にいる間は『うちおとす』『かぜおこし』『かみなり』『サウザンアロー』『スカイアッパー』『たつまき』『ぼうふう』以外の技を受けない。
+[タールショット](http://yakkun.com/sv/zukan/search/?move=731)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の『すばやさ』ランクを1段階下げる。また、相手の弱点に『ほのお』タイプを追加する。
+[たいあたり](http://yakkun.com/sv/zukan/search/?move=33)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 35 直○守○
+1体選択 通常攻撃。
+[タキオンカッター](http://yakkun.com/sv/zukan/search/?move=926)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50-10 直×守○
+1体選択 1ターンに2回連続で攻撃する。自分の命中率、相手の回避率に関係なく必ず命中する。
+[たきのぼり](http://yakkun.com/sv/zukan/search/?move=127)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 20%の確率で相手をひるませる。
+[たくわえる](http://yakkun.com/sv/zukan/search/?move=254)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『ぼうぎょ』『とくぼう』ランクを1段階ずつ上げる。技『のみこむ』『はきだす』の効果を上げる。3回までたくわえることができる。
+[たたきつける](http://yakkun.com/sv/zukan/search/?move=21)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 75 20 直○守○
+1体選択 通常攻撃。
+[たたりめ](http://yakkun.com/sv/zukan/search/?move=506)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 10 直×守○
+1体選択 相手が状態異常の時、威力が2倍になる。
+[たつまき](http://yakkun.com/sv/zukan/search/?move=239)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 20 直×守○
+相手全体 20%の確率で相手をひるませる。相手が技『そらをとぶ』『とびはねる』『フリーフォール』を使っている時でも命中し、ダメージが2倍になる。
+[たてこもる](http://yakkun.com/sv/zukan/search/?move=857)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『ぼうぎょ』ランクを2段階上げる。
+[タネばくだん](http://yakkun.com/sv/zukan/search/?move=402)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直×守○
+1体選択 通常攻撃。
+[タネマシンガン](http://yakkun.com/sv/zukan/search/?move=331)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 100 30 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[タマゴうみ](http://yakkun.com/sv/zukan/search/?move=135)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復する。
+[ダークホール](http://yakkun.com/sv/zukan/search/?move=464)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-50 10 直×守○
+相手全体 相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。『ダークライ』以外のポケモンが使うと失敗する。
+[だいちのちから](http://yakkun.com/sv/zukan/search/?move=414)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[だいちのはどう](http://yakkun.com/sv/zukan/search/?move=820)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 10 直×守○
+1体選択 場の状態がフィールドで、自分が『ひこう』タイプや特性『ふゆう』などではなく地面にいる時、技のタイプが変化し、威力も2倍になる(フィールドの1.3倍の効果もさらに加わる)。『グラスフィールド』の時は『くさ』タイプ、『ミストフィールド』の時は『フェアリー』タイプ、『エレキフィールド』の時は『でんき』タイプ、『サイコフィールド』の時は『エスパー』タイプの技となる。
+[だいばくはつ](http://yakkun.com/sv/zukan/search/?move=153)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)250 100 5 直×守○
+自分以外全体 攻撃後、自分が『ひんし』状態になる。
+[ダイビング](http://yakkun.com/sv/zukan/search/?move=291)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 1ターン目に水中へ潜り、2ターン目に攻撃する。水中にいる間は『なみのり』『うずしお』以外の技を受けない。
+[だいふんげき](http://yakkun.com/sv/zukan/search/?move=848)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 10 直×守○
+ランダム1体 2～3ターン連続で攻撃し、その後自分は1～4ターンの間『こんらん』状態になる。
+[ダイマックスほう](http://yakkun.com/sv/zukan/search/?move=726)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+1体選択 通常攻撃。(第8世代では相手がダイマックスしていると、ダメージが2倍になる)
+[だいもんじ](http://yakkun.com/sv/zukan/search/?move=126)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 85 5 直×守○
+1体選択 10%の確率で相手を『やけど』状態にする。
+[ダイヤストーム](http://yakkun.com/sv/zukan/search/?move=611)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 95 5 直×守○
+相手全体 50%の確率で自分の『ぼうぎょ』ランクが2段階上がる。
+[だくりゅう](http://yakkun.com/sv/zukan/search/?move=330)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 85 10 直×守○
+相手全体 30%の確率で相手の命中率を1段階下げる。
+[ダストシュート](http://yakkun.com/sv/zukan/search/?move=441)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 80 5 直×守○
+1体選択 30%の確率で相手を『どく』状態にする。
+[ダブルアタック](http://yakkun.com/sv/zukan/search/?move=458)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)35 90 10 直○守○
+1体選択 1ターンに2回連続で攻撃する。
+[ダブルウイング](http://yakkun.com/sv/zukan/search/?move=829)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 90 10 直○守○
+1体選択 1ターンに2回連続で攻撃する。
+[ダメおし](http://yakkun.com/sv/zukan/search/?move=372)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 10 直○守○
+1体選択 そのターン、相手が既にダメージを受けている時、威力が2倍になる。
+[だんがいのつるぎ](http://yakkun.com/sv/zukan/search/?move=612)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 85 10 直×守○
+相手全体 通常攻撃。
+[ちいさくなる](http://yakkun.com/sv/zukan/search/?move=107)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の回避率を2段階上げる。ただし、技『サンダーダイブ』『のしかかり』『ふみつけ』『ドラゴンダイブ』『ハードローラー』『ハイパーダーククラッシャー』『フライングプレス』『ヒートスタンプ』『ヘビーボンバー』は必ず命中し威力2倍で受けるようになってしまう(ヒートスタンプは第6世代以降、ヘビーボンバーは第7世代以降。なお、ゴーストダイブは第6世代のみ)。
+[ちからをすいとる](http://yakkun.com/sv/zukan/search/?move=644)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手の『こうげき』の能力値と同じ値だけ自分のHPを回復し、相手の『こうげき』ランクを1段階下げる。特性などでランクが下がらない場合は、回復の効果のみ発動する。すでにランクが最低の場合は失敗する。
+[ちきゅうなげ](http://yakkun.com/sv/zukan/search/?move=69)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 20 直○守○
+1体選択 自分のレベルと同じ値の固定ダメージを与える。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[チャージビーム](http://yakkun.com/sv/zukan/search/?move=451)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 90 10 直×守○
+1体選択 70%の確率で自分の『とくこう』ランクが1段階上がる。
+[チャームボイス](http://yakkun.com/sv/zukan/search/?move=566)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40-15 直×守○
+相手全体 自分の命中率、相手の回避率に関係なく必ず命中する。音系の技。相手の『みがわり』状態を貫通する。
+[ちょうおんぱ](http://yakkun.com/sv/zukan/search/?move=48)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-55 20 直×守○
+1体選択 相手を1～4ターンの間『こんらん』状態にする。音系の技。相手の『みがわり』状態を貫通する。
+[ちょうのまい](http://yakkun.com/sv/zukan/search/?move=483)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『とくこう』『とくぼう』『すばやさ』ランクが1段階ずつ上がる。
+[ちょうはつ](http://yakkun.com/sv/zukan/search/?move=269)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 3ターンの間、相手は攻撃技しか出せなくなる。(変化技を使えなくする)
+[ついばむ](http://yakkun.com/sv/zukan/search/?move=365)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 20 直○守○
+1体選択 相手が持っているバトルに効果のある『きのみ』を奪って、自分に使う。
+[ツインビーム](http://yakkun.com/sv/zukan/search/?move=903)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 10 直×守○
+1体選択 1ターンに2回連続で攻撃する。
+[つきのひかり](http://yakkun.com/sv/zukan/search/?move=236)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが、天気が通常の時は最大HPの1/2、『にほんばれ』の時は最大HPの2/3、『あめ』『ゆき』『すなあらし』の時は最大HPの1/4回復する。
+[つけあがる](http://yakkun.com/sv/zukan/search/?move=656)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)20 100 10 直○守○
+1体選択 自分のいずれかの能力ランクが1つ上がる度に威力が20上がる。
+[つじぎり](http://yakkun.com/sv/zukan/search/?move=400)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 15 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[ツタこんぼう](http://yakkun.com/sv/zukan/search/?move=919)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 10 直×守○
+1体選択『オーガポン』が使う場合、持たせた「おめん」によるフォルムに合わせて、技が『くさ』『ほのお』『みず』『いわ』タイプのいずれかに変化する。また、急所に当たりやすい(急所ランク:+1)。
+[つっぱり](http://yakkun.com/sv/zukan/search/?move=292)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)15 100 20 直○守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[つつく](http://yakkun.com/sv/zukan/search/?move=64)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)35 100 35 直○守○
+1体選択 通常攻撃。
+[つのでつく](http://yakkun.com/sv/zukan/search/?move=30)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 25 直○守○
+1体選択 通常攻撃。
+[つのドリル](http://yakkun.com/sv/zukan/search/?move=32)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-30 5 直○守○
+1体選択 相手を『ひんし』状態にする。相手のレベルが自分より高いと失敗する。(30＋自分のレベル－相手のレベル)が命中率になる。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。ダイマックスしている相手には無効。
+[つばさでうつ](http://yakkun.com/sv/zukan/search/?move=17)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 35 直○守○
+1体選択 通常攻撃。
+[つばめがえし](http://yakkun.com/sv/zukan/search/?move=332)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60-20 直○守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[つぶらなひとみ](http://yakkun.com/sv/zukan/search/?move=563)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 30 直×守○
+1体選択 必ず先制できる(優先度:+1)。相手の『こうげき』ランクを1段階下げる。
+[つぼをつく](http://yakkun.com/sv/zukan/search/?move=367)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分か味方 ランダムで『こうげき』『ぼうぎょ』『とくこう』『とくぼう』『すばやさ』『回避率』『命中率』ランクのどれか1つが2段階上がる。この技は『ダイウォール』の効果も受けない。
+[つめとぎ](http://yakkun.com/sv/zukan/search/?move=468)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 自分の『こうげき』『命中率』ランクが1段階ずつ上がる。
+[つららおとし](http://yakkun.com/sv/zukan/search/?move=556)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 90 10 直×守○
+1体選択 30%の確率で相手をひるませる。
+[つららばり](http://yakkun.com/sv/zukan/search/?move=333)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 100 30 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[つるぎのまい](http://yakkun.com/sv/zukan/search/?move=14)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『こうげき』ランクを2段階上げる。
+[つるのムチ](http://yakkun.com/sv/zukan/search/?move=22)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)45 100 25 直○守○
+1体選択 通常攻撃。
+[てかげん](http://yakkun.com/sv/zukan/search/?move=610)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 40 直○守○
+1体選択 この技のダメージで相手のHPが0になる時、相手のHPを1にする。野生のポケモンを捕まえる時に便利。
+[テクスチャー](http://yakkun.com/sv/zukan/search/?move=160)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分 自分の『タイプ』を、自分の一番上の技と同じタイプに変える。
+[テクスチャー2](http://yakkun.com/sv/zukan/search/?move=176)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+1体選択 自分の『タイプ』を相手が最後に使った技が効きづらいタイプに変える。どのタイプになるかはランダム。
+[てだすけ](http://yakkun.com/sv/zukan/search/?move=270)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+味方1体 必ず先制できる(優先度:+5)。使用したターンの間、味方の技の威力を1.5倍にする。
+[てっていこうせん](http://yakkun.com/sv/zukan/search/?move=778)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 95 5 直×守○
+1体選択 自分のHPを最大HPの半分だけ減らす。『まもる』などで技が防がれた場合も、自分のHPは減る。
+[てっぺき](http://yakkun.com/sv/zukan/search/?move=334)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 自分の『ぼうぎょ』ランクを2段階上げる。
+[テラクラスター](http://yakkun.com/sv/zukan/search/?move=921)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 5 直×守○
+1体選択『テラパゴス(ステラ)』がステラフォルムの時に使用すると、相手全体が攻撃対象となり、また技のタイプが『ステラ』タイプになる(テラスタルしている相手にはダメージが2倍、その他は1倍)。
+[テラバースト](http://yakkun.com/sv/zukan/search/?move=866)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 自分がテラスタル状態の時、技のタイプが自分のテラスタイプになる。その際、この技の分類は、自分の攻撃と特攻の高い方となるため、『こうげき』のほうが高い場合は物理技となる。
+[テレポート](http://yakkun.com/sv/zukan/search/?move=100)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 必ず後攻になる(優先度:-6)。手持ちのポケモンと入れ替わる。(第7世代までは、野生のポケモンとの戦闘を終了する効果だった)
+[てをつなぐ](http://yakkun.com/sv/zukan/search/?move=701)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+味方1体 効果なし。
+[てんしのキッス](http://yakkun.com/sv/zukan/search/?move=186)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-75 10 直×守○
+1体選択 相手を1～4ターンの間『こんらん』状態にする。
+[であいがしら](http://yakkun.com/sv/zukan/search/?move=646)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直○守○
+1体選択 必ず先制できる(優先度:+2)。ただし、出た最初のターンしか成功しない。
+[DDラリアット](http://yakkun.com/sv/zukan/search/?move=623)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 100 10 直○守○
+1体選択 相手の能力ランクの変化に関係なく、ダメージを与える。
+[デカハンマー](http://yakkun.com/sv/zukan/search/?move=908)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)160 100 5 直×守○
+1体選択 この技は2回連続で出すことができない。
+[デコレーション](http://yakkun.com/sv/zukan/search/?move=759)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+1体選択 相手の『こうげき』『とくこう』ランクを2段階ずつ上げる(主にダブルバトルで味方に使うと良い)。この技は『ダイウォール』の効果も受けない。
+[でんきショック](http://yakkun.com/sv/zukan/search/?move=84)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 30 直×守○
+1体選択 10%の確率で相手を『まひ』状態にする。
+[でんげきは](http://yakkun.com/sv/zukan/search/?move=351)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60-20 直×守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[でんこうせっか](http://yakkun.com/sv/zukan/search/?move=98)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 30 直○守○
+1体選択 必ず先制できる(優先度:+1)。
+[でんこうそうげき](http://yakkun.com/sv/zukan/search/?move=907)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 攻撃後、自分は『でんき』タイプではなくなる。自分が『でんき』タイプではない時は失敗する。
+[でんじは](http://yakkun.com/sv/zukan/search/?move=86)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-90 20 直×守○
+1体選択 相手を『まひ』状態にする。『じめん』タイプや『でんき』タイプには無効。
+[でんじふゆう](http://yakkun.com/sv/zukan/search/?move=393)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 5ターンの間、『ふゆう』状態となり、『じめん』タイプの技や、『グラスフィールド』『ミストフィールド』『エレキフィールド』『サイコフィールド』などの効果を受けなくなる。
+[でんじほう](http://yakkun.com/sv/zukan/search/?move=192)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 50 5 直×守○
+1体選択 100%の確率で相手を『まひ』状態にする。
+[トーチカ](http://yakkun.com/sv/zukan/search/?move=643)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の攻撃を防ぐと同時に、直接攻撃をした相手を『どく』状態にする。連続で使うと失敗しやすくなる。ダイマックス技や第7世代のZワザの攻撃技は貫通し、1/4のダメージを受ける。
+[とおせんぼう](http://yakkun.com/sv/zukan/search/?move=335)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+1体選択『ゴースト』タイプではない相手は逃げたり、交代できなくなる。自分が場を離れると効果は消える。
+[とおぼえ](http://yakkun.com/sv/zukan/search/?move=336)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+味方全体 自分と味方全体の『こうげき』ランクを1段階ずつ上げる(第7世代までは、対象は自分のみ)。第8世代からは、音系の技。この技は『ダイウォール』の効果も受けない。
+[ときのほうこう](http://yakkun.com/sv/zukan/search/?move=459)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[とぐろをまく](http://yakkun.com/sv/zukan/search/?move=489)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『こうげき』『ぼうぎょ』『命中率』ランクが1段階ずつ上がる。
+[とける](http://yakkun.com/sv/zukan/search/?move=151)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『ぼうぎょ』ランクを2段階上げる。
+[とっしん](http://yakkun.com/sv/zukan/search/?move=36)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 85 20 直○守○
+1体選択 相手に与えたダメージの1/4を自分も受ける。
+[とっておき](http://yakkun.com/sv/zukan/search/?move=387)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)140 100 5 直○守○
+1体選択 この技は自分の持っている他の技をすべて使うと使えるようになる。
+[とどめばり](http://yakkun.com/sv/zukan/search/?move=579)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 25 直○守○
+1体選択 この技で相手を倒すと、自分の『こうげき』ランクが3段階上がる。
+[とびかかる](http://yakkun.com/sv/zukan/search/?move=665)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 100%の確率で相手の『こうげき』ランクを1段階下げる。
+[とびつく](http://yakkun.com/sv/zukan/search/?move=899)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 20 直○守○
+1体選択 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[とびはねる](http://yakkun.com/sv/zukan/search/?move=340)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 85 5 直○守○
+1体選択 1ターン目に空中へ飛び上がり、2ターン目に攻撃する。空中にいる間は『うちおとす』『かぜおこし』『かみなり』『サウザンアロー』『スカイアッパー』『たつまき』『ぼうふう』以外の技を受けない。30%の確率で相手を『まひ』状態にする。
+[とびひざげり](http://yakkun.com/sv/zukan/search/?move=136)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)130 90 10 直○守○
+1体選択 攻撃が外れたり、相手の技『まもる』などで失敗すると、自分の最大HPの半分のダメージを自分が受ける。
+[ともえなげ](http://yakkun.com/sv/zukan/search/?move=509)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 90 10 直○守○
+1体選択 必ず後攻になる(優先度:-6)。攻撃後、相手のポケモンを強制的に交代させる。野生のポケモンの場合は戦闘を終了する。ダイマックスしている相手には追加効果は無効。
+[トライアタック](http://yakkun.com/sv/zukan/search/?move=161)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 20%の確率で相手を『まひ』『やけど』『こおり』状態のうちの1つにする。どの状態異常になるかはランダム。
+[トリック](http://yakkun.com/sv/zukan/search/?move=271)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手と自分が持っている道具を入れ替える。片方しか道具を持っていない場合も成功する。
+[トリックフラワー](http://yakkun.com/sv/zukan/search/?move=885)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70-10 直×守○
+1体選択 必ず急所に当たる。自分の命中率、相手の回避率に関係なく必ず命中する。
+[トリックルーム](http://yakkun.com/sv/zukan/search/?move=433)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+全体の場 5ターンの間、『すばやさ』が低いポケモンから攻撃できるようになる。ただし、必ず先制できる技には無効。もう1度使用すると元に戻る。必ず後攻になる(優先度:-7)。
+[トリプルアクセル](http://yakkun.com/sv/zukan/search/?move=828)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)20 90 10 直○守○
+1体選択 1ターンに外れるまで最大3回連続で攻撃する。攻撃が当たる度に威力が20ずつ増える。
+[トリプルキック](http://yakkun.com/sv/zukan/search/?move=167)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)10 90 10 直○守○
+1体選択 1ターンに外れるまで最大3回連続で攻撃する。攻撃が当たる度に威力が10ずつ増える。
+[トリプルダイブ](http://yakkun.com/sv/zukan/search/?move=880)[みず](http://yakkun.com/sv/move_list.htm?type=10)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 95 10 直○守○
+1体選択 1ターンに3回連続で攻撃する。
+[トロピカルキック](http://yakkun.com/sv/zukan/search/?move=628)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 15 直○守○
+1体選択 100%の確率で相手の『こうげき』ランクを1段階下げる。
+[とんぼがえり](http://yakkun.com/sv/zukan/search/?move=369)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 20 直○守○
+1体選択 攻撃後、手持ちのポケモンと入れ替わる。
+[どくガス](http://yakkun.com/sv/zukan/search/?move=139)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-90 40 直×守○
+相手全体 相手を『どく』状態にする。『どく』タイプや『はがね』タイプには無効。
+[どくづき](http://yakkun.com/sv/zukan/search/?move=398)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 20 直○守○
+1体選択 30%の確率で相手を『どく』状態にする。
+[どくどく](http://yakkun.com/sv/zukan/search/?move=92)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-90 10 直×守○
+1体選択 相手を『もうどく』状態にする。『もうどく』状態は通常の『どく』状態と違い、受けるダメージが1/16、2/16、3/16・・・と増えていく。『どく』タイプのポケモンが使うと必ず命中する。『どく』タイプや『はがね』タイプには無効。
+[どくどくのキバ](http://yakkun.com/sv/zukan/search/?move=305)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 15 直○守○
+1体選択 50%の確率で相手を『もうどく』状態にする。『もうどく』状態は通常の『どく』状態と違い、受けるダメージが1/16、2/16、3/16・・・と増えていく。
+[どくのいと](http://yakkun.com/sv/zukan/search/?move=661)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手を『どく』状態にし、さらに『すばやさ』ランクを1段階下げる。
+[どくのこな](http://yakkun.com/sv/zukan/search/?move=77)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-75 35 直×守○
+1体選択 相手を『どく』状態にする。『どく』タイプや『はがね』タイプ、『くさ』タイプ、特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。
+[どくばり](http://yakkun.com/sv/zukan/search/?move=40)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)15 100 35 直×守○
+1体選択 30%の確率で相手を『どく』状態にする。
+[どくばりセンボン](http://yakkun.com/sv/zukan/search/?move=854)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 10 直×守○
+1体選択 50%の確率で相手を『どく』状態にする。また、相手が『どく』状態の時、威力が2倍になる。
+[どくびし](http://yakkun.com/sv/zukan/search/?move=390)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+相手の場 相手の場を『どくびし』状態にし、相手はポケモンを交代する度に、出したポケモンが『どく』状態になる。2回使うと『もうどく』状態になる。『どく』『はがね』『ひこう』タイプ、特性『ふゆう』のポケモンは効果を受けない。『どく』タイプのポケモンが出ると効果がなくなる。
+[どげざつき](http://yakkun.com/sv/zukan/search/?move=775)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80-10 直○守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する
+[ドゲザン](http://yakkun.com/sv/zukan/search/?move=884)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85-10 直○守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[ドラゴンアロー](http://yakkun.com/sv/zukan/search/?move=733)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 10 直×守○
+1体選択 1ターンに2回連続で攻撃する。相手が2匹いる場合は、それぞれに1回ずつ攻撃する。ただし、技『まもる』やタイプ相性などでダメージを与えられない時は片方に2回攻撃する。
+[ドラゴンエール](http://yakkun.com/sv/zukan/search/?move=928)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+味方全体 自分を除く味方全体を『きゅうしょアップ』状態(急所ランク1段階)にして、今後使う技が急所に当たりやすくなる(すでに『きゅうしょアップ』状態の時は失敗する)。対象の味方が『ドラゴン』タイプの場合は、2段階上がる。
+[ドラゴンエナジー](http://yakkun.com/sv/zukan/search/?move=835)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 100 5 直×守○
+相手全体 自分のHPが少ないほど技の威力が下がる。(150×自分の残りHP÷自分の最大HP)が威力。
+[ドラゴンクロー](http://yakkun.com/sv/zukan/search/?move=337)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 通常攻撃。
+[ドラゴンダイブ](http://yakkun.com/sv/zukan/search/?move=407)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 75 10 直○守○
+1体選択 20%の確率で相手をひるませる。相手が『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。
+[ドラゴンテール](http://yakkun.com/sv/zukan/search/?move=525)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 90 10 直○守○
+1体選択 必ず後攻になる(優先度:-6)。攻撃後、相手のポケモンを強制的に交代させる。野生のポケモンの場合は戦闘を終了する。ダイマックスしている相手には追加効果は無効。
+[ドラゴンハンマー](http://yakkun.com/sv/zukan/search/?move=635)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直○守○
+1体選択 通常攻撃。
+[ドラムアタック](http://yakkun.com/sv/zukan/search/?move=760)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直×守○
+1体選択 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[ドリルくちばし](http://yakkun.com/sv/zukan/search/?move=65)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 20 直○守○
+1体選択 通常攻撃。
+[ドリルライナー](http://yakkun.com/sv/zukan/search/?move=529)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 95 10 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[ドレインキッス](http://yakkun.com/sv/zukan/search/?move=564)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 10 直○守○
+1体選択 相手に与えたダメージの3/4だけ自分のHPが回復する。
+[ドレインパンチ](http://yakkun.com/sv/zukan/search/?move=409)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 10 直○守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。特性『てつのこぶし』の時、威力が1.2倍になる。
+[どろかけ](http://yakkun.com/sv/zukan/search/?move=189)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)20 100 10 直×守○
+1体選択 100%の確率で相手の命中率を1段階下げる。
+[どろぼう](http://yakkun.com/sv/zukan/search/?move=168)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 25 直○守○
+1体選択 相手が持っている道具を自分の物にする。自分が既に道具を持っている場合は失敗するが、技『はたきおとす』で自分の道具が無効化されている時は奪う事ができ、道具は上書きされる。トレーナー戦の場合はバトル終了後になくなる。
+[ドわすれ](http://yakkun.com/sv/zukan/search/?move=133)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『とくぼう』ランクを2段階上げる。
+[ないしょばなし](http://yakkun.com/sv/zukan/search/?move=576)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+1体選択 相手の『とくこう』ランクを1段階下げる。自分の命中率、相手の回避率に関係なく必ず命中する。相手の『まもる』『みきり』『トーチカ』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。音系の技。相手の『みがわり』状態を貫通する。
+[ナイトバースト](http://yakkun.com/sv/zukan/search/?move=539)[あく](http://yakkun.com/sv/move_list.htm?type=16)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)85 95 10 直×守○
+1体選択 40%の確率で相手の命中率を1段階下げる。
+[ナイトヘッド](http://yakkun.com/sv/zukan/search/?move=101)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 15 直×守○
+1体選択 自分のレベルと同じ値の固定ダメージを与える。『ノーマル』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[なかまづくり](http://yakkun.com/sv/zukan/search/?move=494)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の特性を自分と同じ特性にする。ダイマックスしている相手には無効。
+[なかよくする](http://yakkun.com/sv/zukan/search/?move=560)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+1体選択 相手の『こうげき』ランクを1段階下げる。自分の命中率、相手の回避率に関係なく必ず命中する。相手の『まもる』『みきり』『トーチカ』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。相手の『みがわり』状態を貫通する。
+[なきごえ](http://yakkun.com/sv/zukan/search/?move=45)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 40 直×守○
+相手全体 相手の『こうげき』ランクを1段階下げる。音系の技。相手の『みがわり』状態を貫通する。
+[なげつける](http://yakkun.com/sv/zukan/search/?move=374)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直×守○
+1体選択 自分の持っている道具によって効果が変化する。投げつけた道具はなくなる。
+[なまける](http://yakkun.com/sv/zukan/search/?move=303)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復する。
+[なみだめ](http://yakkun.com/sv/zukan/search/?move=662)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+1体選択 相手の『こうげき』『とくこう』ランクを1段階ずつ下げる。自分の命中率、相手の回避率に関係なく必ず命中する。相手の『まもる』『みきり』『トーチカ』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない(『ダイウォール』を除く)。
+[なみのり](http://yakkun.com/sv/zukan/search/?move=57)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 15 直×守○
+自分以外全体 相手が『ダイビング』を使っている時でも命中し、ダメージが2倍になる。
+[なやみのタネ](http://yakkun.com/sv/zukan/search/?move=388)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 10 直×守○
+1体選択 相手の特性を『ふみん』にする。ただし、『なまけ』『バトルスイッチ』など一部の固有な特性の場合は失敗する。
+[なりきり](http://yakkun.com/sv/zukan/search/?move=272)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+1体選択 自分の特性を相手の特性と同じにする。ただし、『ふしぎなまもり』など一部の固有な特性はコピーできない。
+[ニードルガード](http://yakkun.com/sv/zukan/search/?move=571)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の攻撃を防ぐと同時に、直接攻撃をした相手に相手の最大HPの1/8のダメージを与える。連続で使うと失敗しやすくなる。ダイマックス技や第7世代のZワザの攻撃技は貫通し、1/4のダメージを受ける。
+[にぎりつぶす](http://yakkun.com/sv/zukan/search/?move=462)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 5 直○守○
+1体選択 相手の残りHPが多いほど威力が高くなる。(120×相手の残りHP÷相手の最大HP)が威力になる。
+[ニトロチャージ](http://yakkun.com/sv/zukan/search/?move=488)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 20 直○守○
+1体選択 100%の確率で自分の『すばやさ』ランクが1段階上がる。
+[にどげり](http://yakkun.com/sv/zukan/search/?move=24)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 100 30 直○守○
+1体選択 1ターンに2回連続で攻撃する。
+[にほんばれ](http://yakkun.com/sv/zukan/search/?move=241)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+全体の場 5ターンの間、天気を『にほんばれ』にする。『ほのお』タイプの技のダメージが1.5倍になり、『みず』タイプの技のダメージが半減する。『こおり』状態にならない。
+[にらみつける](http://yakkun.com/sv/zukan/search/?move=43)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 30 直×守○
+相手全体 相手の『ぼうぎょ』ランクを1段階下げる。
+[ねがいごと](http://yakkun.com/sv/zukan/search/?move=273)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 次のターンの終了時にHPが最大HPの半分回復する。交代した場合は同じ位置にいるポケモンが回復する。
+[ねこだまし](http://yakkun.com/sv/zukan/search/?move=252)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 10 直○守○
+1体選択 必ず先制でき(優先度:+3)、100%の確率で相手をひるませる。ただし、出た最初のターンしか成功しない。
+[ネコにこばん](http://yakkun.com/sv/zukan/search/?move=6)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 20 直×守○
+1体選択 戦闘終了後にお金が(自分のレベル×攻撃回数×5)円多く手に入る。
+[ねごと](http://yakkun.com/sv/zukan/search/?move=214)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が『ねむり』状態の時のみ使用可能。自分の持っている技のうち1つをランダムで使う。PPが減少するのはこの技のみ。
+[ネズミざん](http://yakkun.com/sv/zukan/search/?move=875)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)20 90 10 直○守○
+1体選択 1ターンに外れるまで最大10回連続で攻撃する。
+[ねっさのあらし](http://yakkun.com/sv/zukan/search/?move=863)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 80 10 直×守○
+相手全体 20%の確率で相手を『やけど』状態にする。天気が『あめ』の時は必ず命中する。
+[ねっさのだいち](http://yakkun.com/sv/zukan/search/?move=830)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 10 直×守○
+1体選択 30%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[ねっとう](http://yakkun.com/sv/zukan/search/?move=503)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+1体選択 30%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。また、相手の『こおり』状態を治す。
+[ねっぷう](http://yakkun.com/sv/zukan/search/?move=257)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)95 90 10 直×守○
+相手全体 10%の確率で相手を『やけど』状態にする。
+[ねばねばネット](http://yakkun.com/sv/zukan/search/?move=601)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+相手の場 使用後、相手はポケモンを交代する度に、出てきたポケモンの『すばやさ』ランクが1段階下がる。『ひこう』タイプや特性『ふゆう』のポケモンは影響を受けない。
+[ねむりごな](http://yakkun.com/sv/zukan/search/?move=79)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-75 15 直×守○
+1体選択 相手を2～4ターン(実質1～3ターン)の間『ねむり』状態にする。『くさ』タイプや特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。
+[ねむる](http://yakkun.com/sv/zukan/search/?move=156)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPと状態異常をすべて回復した後、2ターンの間『ねむり』状態になる。
+[ねらいうち](http://yakkun.com/sv/zukan/search/?move=727)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+1体選択 急所に当たりやすい(急所ランク:+1)。特性『ひらいしん』『よびみず』や技『いかりのこな』『このゆびとまれ』『サイドチェンジ』『スポットライト』の攻撃対象を変更する効果の影響を受けずに攻撃できる。
+[ねをはる](http://yakkun.com/sv/zukan/search/?move=275)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 使用後、毎ターン、HPが最大HPの1/16ずつ回復するが、交代できなくなる。自分が『ひこう』タイプや、特性『ふゆう』のポケモンの場合は『じめん』タイプの技が当たるようになる。
+[ねんりき](http://yakkun.com/sv/zukan/search/?move=93)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 25 直×守○
+1体選択 10%の確率で相手を1～4ターンの間『こんらん』状態にする。
+[のしかかり](http://yakkun.com/sv/zukan/search/?move=34)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 100 15 直○守○
+1体選択 30%の確率で相手を『まひ』状態にする。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。
+[のみこむ](http://yakkun.com/sv/zukan/search/?move=256)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 技『たくわえる』を使った数だけHPが多く回復する。1つの時は最大HPの1/4、2つの時は最大HPの1/2、3つの時は全回復する。技『たくわえる』で上がった『ぼうぎょ』『とくぼう』ランクは元に戻る。技『たくわえる』を使っていない時は失敗する。
+[のろい](http://yakkun.com/sv/zukan/search/?move=174)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+不定 自分のタイプが『ゴースト』タイプの時は自分のHPを最大HPの半分だけ減らして、相手を『のろい』状態にする。『のろい』状態になると毎ターン、HPが最大HPの1/4ずつ減る。それ以外のポケモンの場合『すばやさ』ランクが1段階下がり、『こうげき』『ぼうぎょ』ランクが1段階ずつ上がる。
+[ハートスワップ](http://yakkun.com/sv/zukan/search/?move=391)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手のすべての能力ランクを入れ替える。
+[ハードプラント](http://yakkun.com/sv/zukan/search/?move=338)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[ハードプレス](http://yakkun.com/sv/zukan/search/?move=927)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直○守○
+1体選択 相手の残りHPが多いほど威力が高くなる。(100×相手の残りHP÷相手の最大HP)が威力になる。
+[はいすいのじん](http://yakkun.com/sv/zukan/search/?move=730)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 自分のすべての『のうりょく』ランクが1段階ずつ上がるが、逃げたり交代できなくなる。2回目からは失敗する。なお、自分が『ゴースト』タイプの場合は逃げたり交代できる。
+[ハイドロカノン](http://yakkun.com/sv/zukan/search/?move=308)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[ハイドロスチーム](http://yakkun.com/sv/zukan/search/?move=891)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+1体選択 天気が『にほんばれ』の時、技の威力が下がらず、1.5倍になる。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。また、相手の『こおり』状態を治す。
+[ハイドロポンプ](http://yakkun.com/sv/zukan/search/?move=56)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 80 5 直×守○
+1体選択 通常攻撃。
+[ハイパードリル](http://yakkun.com/sv/zukan/search/?move=902)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守×
+1体選択 相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない。
+[ハイパーボイス](http://yakkun.com/sv/zukan/search/?move=304)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+相手全体 音系の技。相手の『みがわり』状態を貫通する。
+[はいよるいちげき](http://yakkun.com/sv/zukan/search/?move=821)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 90 10 直○守○
+1体選択 100%の確率で、相手の『とくこう』ランクを1段階下げる
+[はかいこうせん](http://yakkun.com/sv/zukan/search/?move=63)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[はがねのつばさ](http://yakkun.com/sv/zukan/search/?move=211)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 90 25 直○守○
+1体選択 10%の確率で自分の『ぼうぎょ』ランクが1段階上がる。
+[はきだす](http://yakkun.com/sv/zukan/search/?move=255)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 10 直×守○
+1体選択 技『たくわえる』を使った数だけ威力が高くなる。1つの時は100、2つの時は200、3つの時は300になる。技『たくわえる』で上がった『ぼうぎょ』『とくぼう』ランクは元に戻る。技『たくわえる』を使っていない時は失敗する。
+[ハサミギロチン](http://yakkun.com/sv/zukan/search/?move=12)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-30 5 直○守○
+1体選択 相手を『ひんし』状態にする。相手のレベルが自分より高いと失敗する。(30＋自分のレベル－相手のレベル)が命中率になる。『ゴースト』タイプには無効だが、それ以外のタイプ相性の影響を受けない。ダイマックスしている相手には無効。
+[はさむ](http://yakkun.com/sv/zukan/search/?move=11)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)55 100 30 直○守○
+1体選択 通常攻撃。
+[はたきおとす](http://yakkun.com/sv/zukan/search/?move=282)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 20 直○守○
+1体選択 相手が道具を持っている場合、ダメージが1.5倍になり、さらに道具を持っていない状態にする。戦闘終了後、道具は元に戻る。
+[はたく](http://yakkun.com/sv/zukan/search/?move=1)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 35 直○守○
+1体選択 通常攻撃。
+[はっけい](http://yakkun.com/sv/zukan/search/?move=395)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 10 直○守○
+1体選択 30%の確率で相手を『まひ』状態にする。
+[はっぱカッター](http://yakkun.com/sv/zukan/search/?move=75)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)55 95 25 直×守○
+相手全体 急所に当たりやすい(急所ランク:+1)。
+[ハッピータイム](http://yakkun.com/sv/zukan/search/?move=608)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+味方の場 戦闘後に得られる賞金が2倍になる。
+[はどうだん](http://yakkun.com/sv/zukan/search/?move=396)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80-20 直×守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[はなびらのまい](http://yakkun.com/sv/zukan/search/?move=80)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 10 直○守○
+ランダム1体 2～3ターン連続で攻撃し、その後自分は1～4ターンの間『こんらん』状態になる。
+[はなふぶき](http://yakkun.com/sv/zukan/search/?move=577)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直×守○
+自分以外全体 通常攻撃。
+[はねやすめ](http://yakkun.com/sv/zukan/search/?move=355)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復するが、そのターンは『ひこう』タイプではなくなる。
+[はねる](http://yakkun.com/sv/zukan/search/?move=150)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+自分 何も起こらない。
+[ハバネロエキス](http://yakkun.com/sv/zukan/search/?move=873)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守○
+1体選択 相手の『こうげき』ランクを2段階上げ、『ぼうぎょ』ランクを2段階下げる。
+[はめつのねがい](http://yakkun.com/sv/zukan/search/?move=353)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 100 5 直×守×
+1体選択 2ターン後に攻撃する。交代した場合は同じ位置にいるポケモンに攻撃する。タイプ相性の影響を受ける。
+[はやてがえし](http://yakkun.com/sv/zukan/search/?move=933)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 15 直○守○
+1体選択 必ず先制できる(優先度:+3)。相手を100%の確率でひるませる。ただし、そのターン相手が選んだ技が先制技ではない場合や、すでに攻撃を終えていた場合は失敗する。
+[はらだいこ](http://yakkun.com/sv/zukan/search/?move=187)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分のHPを最大HPの半分だけ減らす代わりに、自分の『こうげき』ランクを最大まで上げる。
+[はるのあらし](http://yakkun.com/sv/zukan/search/?move=846)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 80 5 直×守○
+相手全体 30%の確率で相手の『こうげき』ランクを1段階下げる。
+[バークアウト](http://yakkun.com/sv/zukan/search/?move=555)[あく](http://yakkun.com/sv/move_list.htm?type=16)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)55 95 15 直×守○
+相手全体 100%の確率で相手の『とくこう』ランクを1段階下げる。音系の技。相手の『みがわり』状態を貫通する。
+[ばかぢから](http://yakkun.com/sv/zukan/search/?move=276)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 攻撃後、自分の『こうげき』『ぼうぎょ』ランクが1段階ずつ下がる。
+[ばくおんぱ](http://yakkun.com/sv/zukan/search/?move=605)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 100 10 直×守○
+自分以外全体 音系の技。相手の『みがわり』状態を貫通する。
+[ばくれつパンチ](http://yakkun.com/sv/zukan/search/?move=223)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 50 5 直○守○
+1体選択 100%の確率で相手を1～4ターンの間『こんらん』状態にする。特性『てつのこぶし』の時、威力が1.2倍になる。
+[バトンタッチ](http://yakkun.com/sv/zukan/search/?move=226)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+自分 他の味方のポケモンと交代し、かかっていた補助効果を引き継ぐ。
+[バブルこうせん](http://yakkun.com/sv/zukan/search/?move=61)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 20 直×守○
+1体選択 10%の確率で相手の『すばやさ』ランクを1段階下げる。
+[バリアーラッシュ](http://yakkun.com/sv/zukan/search/?move=843)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 90 10 直○守○
+1体選択 攻撃後、100%の確率で自分の『ぼうぎょ』ランクが1段階上がる。
+[バレットパンチ](http://yakkun.com/sv/zukan/search/?move=418)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 30 直○守○
+1体選択 必ず先制できる(優先度:+1)。特性『てつのこぶし』の時、威力が1.2倍になる。
+[パラボラチャージ](http://yakkun.com/sv/zukan/search/?move=569)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 20 直×守○
+自分以外全体 相手に与えたダメージの半分だけ自分のHPが回復する。
+[パワーウィップ](http://yakkun.com/sv/zukan/search/?move=438)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 85 10 直○守○
+1体選択 通常攻撃。
+[パワーシェア](http://yakkun.com/sv/zukan/search/?move=471)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の『こうげき』と『とくこう』を足して半分に分ける。
+[パワーシフト](http://yakkun.com/sv/zukan/search/?move=844)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『こうげき』と『ぼうぎょ』を入れ替える。『ランク』は変化しない。
+[パワージェム](http://yakkun.com/sv/zukan/search/?move=408)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 20 直×守○
+1体選択 通常攻撃。
+[パワースワップ](http://yakkun.com/sv/zukan/search/?move=384)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 自分と相手の『こうげき』『とくこう』ランクを入れ替える。
+[パワートリック](http://yakkun.com/sv/zukan/search/?move=379)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『こうげき』と『ぼうぎょ』を入れ替える。『ランク』は変化しない。
+[パワフルエッジ](http://yakkun.com/sv/zukan/search/?move=925)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)95 100 5 直○守×
+1体選択 相手の『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない。
+[ヒートスタンプ](http://yakkun.com/sv/zukan/search/?move=535)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直○守○
+1体選択 自分の『おもさ』が相手より重いほど威力が高くなる。相手の『おもさ』が自分の1/5以下なら120、1/4以下なら100、1/3以下なら80、1/2以下なら60、それ以上なら40。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。ダイマックスしている相手には無効。
+[ひかりのかべ](http://yakkun.com/sv/zukan/search/?move=113)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+味方の場 5ターンの間、相手の特殊攻撃のダメージを半分にする。味方が複数の場合は半分ではなく2/3になる。急所に当たった場合は軽減されない。交代しても効果は続く。
+[ひけん・ちえなみ](http://yakkun.com/sv/zukan/search/?move=860)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 90 15 直○守○
+1体選択 攻撃後、相手の場を『まきびし』状態にする。
+[ひっかく](http://yakkun.com/sv/zukan/search/?move=10)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 35 直○守○
+1体選択 通常攻撃。
+[ひっくりかえす](http://yakkun.com/sv/zukan/search/?move=588)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守○
+1体選択 相手のすべての能力ランクのプラスとマイナスを逆にする。
+[ひのこ](http://yakkun.com/sv/zukan/search/?move=52)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 25 直×守○
+1体選択 10%の確率で相手を『やけど』状態にする。
+[ひゃっきやこう](http://yakkun.com/sv/zukan/search/?move=859)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 15 直×守○
+1体選択 30%の確率で相手を『やけど』状態にする。相手が状態異常の時、威力が2倍になる。
+[ひやみず](http://yakkun.com/sv/zukan/search/?move=901)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 20 直×守○
+1体選択 100%の確率で相手の『こうげき』ランクを1段階下げる。
+[ひょうざんおろし](http://yakkun.com/sv/zukan/search/?move=851)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 85 10 直×守○
+1体選択 30%の確率で相手をひるませる。
+[びりびりちくちく](http://yakkun.com/sv/zukan/search/?move=649)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択 30%の確率で相手をひるませる。
+[ビルドアップ](http://yakkun.com/sv/zukan/search/?move=339)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『こうげき』『ぼうぎょ』ランクを1段階ずつ上げる。
+[ファストガード](http://yakkun.com/sv/zukan/search/?move=501)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+味方の場 必ず先制でき(優先度:+3)、そのターンの間、自分と味方は相手の先制攻撃の技を受けない。特性の効果による先制攻撃も受けない。
+[ふいうち](http://yakkun.com/sv/zukan/search/?move=389)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)70 100 5 直○守○
+1体選択 必ず先制できる(優先度:+1)。そのターン相手が選んだ技が攻撃技ではない場合や、優先度などの関係ですでに攻撃を終えていた場合は失敗する。相手が『ねむり』『こおり』状態でも攻撃技を選択していれば成功する。
+[ふういん](http://yakkun.com/sv/zukan/search/?move=286)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が場を離れるまで、自分が覚えている技と同じ技を相手のポケモンは使えなくなる。
+[フェアリーロック](http://yakkun.com/sv/zukan/search/?move=582)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 次のターン終了まで、すべての『ゴースト』タイプではないポケモンは逃げたり交代できなくなる。
+[フェイタルクロー](http://yakkun.com/sv/zukan/search/?move=842)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 50%の確率で、相手を『どく』『まひ』『ねむり』状態のいずれかにする。
+[フェイント](http://yakkun.com/sv/zukan/search/?move=364)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)30 100 10 直×守×
+1体選択 必ず先制できる(優先度:+2)。相手が技『まもる』『みきり』『たたみがえし』『トーチカ』『キングシールド』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』『ファストガード』『ワイドガード』をしている場合は、その効果を解除して攻撃できる(使用していない場合は通常攻撃)。『ダイウォール』は解除はできないが、貫通する。
+[フェザーダンス](http://yakkun.com/sv/zukan/search/?move=297)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手の『こうげき』ランクを2段階下げる。
+[フォトンゲイザー](http://yakkun.com/sv/zukan/search/?move=704)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+1体選択 自分の『こうげき』と『とくこう』の能力値の高い方でダメージ計算する。また、相手の特性の影響を受けずに攻撃する。
+[ふきとばし](http://yakkun.com/sv/zukan/search/?move=18)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+1体選択 必ず後攻になる(優先度:-6)。相手のポケモンを強制的に交代させる。野生のポケモンの場合は戦闘を終了する。自分の命中率、相手の回避率に関係なく必ず命中する。相手の『まもる』『みきり』『トーチカ』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない。相手の『みがわり』状態を貫通する。ダイマックスしている相手には無効。野生のポケモンの場合、相手が自分のレベルより高い場合は失敗する。
+[ふくろだたき](http://yakkun.com/sv/zukan/search/?move=251)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直×守○
+1体選択 自分を含む『ひんし』や状態異常でない『てもち』のポケモンの数だけ攻撃する。
+[ふしょくガス](http://yakkun.com/sv/zukan/search/?move=825)[どく](http://yakkun.com/sv/move_list.htm?type=3)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 40 直×守○
+自分以外全体 道具を持っているポケモンは、道具を持っていない状態になる。
+[ふぶき](http://yakkun.com/sv/zukan/search/?move=59)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 70 5 直×守○
+相手全体 10%の確率で相手を『こおり』状態にする。天気が『ゆき』の時は必ず命中する。
+[ふみつけ](http://yakkun.com/sv/zukan/search/?move=23)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 20 直○守○
+1体選択 30%の確率で相手をひるませる。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。
+[フライングプレス](http://yakkun.com/sv/zukan/search/?move=574)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 95 10 直○守○
+1体選択 この技は『かくとう』タイプであると同時に『ひこう』タイプでもある。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる。
+[フラフラダンス](http://yakkun.com/sv/zukan/search/?move=298)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+自分以外全体 相手を1～4ターンの間『こんらん』状態にする。
+[フラワーヒール](http://yakkun.com/sv/zukan/search/?move=645)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 相手は最大HPの1/2回復する。ただし、『グラスフィールド』の時は最大HPの2/3回復する。(ダブルバトルで味方に使うと良い)
+[フリーズドライ](http://yakkun.com/sv/zukan/search/?move=586)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 20 直×守○
+1体選択 10%の確率で相手を『こおり』状態にする。この技は『みず』タイプにも効果抜群になる。
+[フリーズボルト](http://yakkun.com/sv/zukan/search/?move=553)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)140 90 5 直×守○
+1体選択 1ターン目は攻撃せずに、2ターン目で攻撃する。30%の確率で相手を『まひ』状態にする。
+[フルールカノン](http://yakkun.com/sv/zukan/search/?move=639)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 90 5 直×守○
+1体選択 攻撃後、自分の『とくこう』ランクが2段階下がる。
+[ふるいたてる](http://yakkun.com/sv/zukan/search/?move=526)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--30 直×守×
+自分 自分の『こうげき』『とくこう』ランクが1段階ずつ上がる。
+[フレアソング](http://yakkun.com/sv/zukan/search/?move=886)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 100%の確率で自分の『とくこう』ランクを1段階上げる。音系の技。相手の『みがわり』状態を貫通する。
+[フレアドライブ](http://yakkun.com/sv/zukan/search/?move=394)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 15 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。10%の確率で相手を『やけど』状態にする。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[ふんえん](http://yakkun.com/sv/zukan/search/?move=436)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+自分以外全体 30%の確率で相手を『やけど』状態にする。
+[ふんか](http://yakkun.com/sv/zukan/search/?move=284)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 100 5 直×守○
+相手全体 自分のHPが少ないほど技の威力が下がる。(150×自分の残りHP÷自分の最大HP)が威力。
+[ふんどのこぶし](http://yakkun.com/sv/zukan/search/?move=904)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 10 直○守○
+1体選択 これまでに受けた攻撃1回につき、威力が50上がる(最大威力350)。手持ちに戻っても、リセットされない。特性『てつのこぶし』の時、威力が1.2倍になる。
+[Vジェネレート](http://yakkun.com/sv/zukan/search/?move=557)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)180 95 5 直○守○
+1体選択 攻撃後、自分の『すばやさ』『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる。
+[ぶきみなじゅもん](http://yakkun.com/sv/zukan/search/?move=841)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 5 直×守○
+1体選択 相手の最後に使った技のPPを3減らす。音系の技。相手の『みがわり』状態を貫通する。
+[ぶちかまし](http://yakkun.com/sv/zukan/search/?move=853)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直○守○
+1体選択 攻撃後、自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ下がる。特性『てつのこぶし』の時、威力が1.2倍になる。
+[ブラストバーン](http://yakkun.com/sv/zukan/search/?move=307)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)150 90 5 直×守○
+1体選択 使用した次のターンは行動できない。
+[ブラッドムーン](http://yakkun.com/sv/zukan/search/?move=916)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)140 100 5 直×守○
+1体選択 この技は2回連続で出すことができない。
+[ブリザードランス](http://yakkun.com/sv/zukan/search/?move=839)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 5 直×守○
+相手全体 通常攻撃。
+[ブレイククロー](http://yakkun.com/sv/zukan/search/?move=306)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 95 10 直○守○
+1体選択 50%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[ブレイズキック](http://yakkun.com/sv/zukan/search/?move=299)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)85 90 10 直○守○
+1体選択 10%の確率で相手を『やけど』状態にする。急所に当たりやすい(急所ランク:+1)。
+[ブレイブチャージ](http://yakkun.com/sv/zukan/search/?move=865)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守×
+自分 自分の状態異常を治す。自分の『とくこう』『とくぼう』ランクが1段階ずつ上がる。
+[ブレイブバード](http://yakkun.com/sv/zukan/search/?move=413)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 15 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。
+[ぶんまわす](http://yakkun.com/sv/zukan/search/?move=652)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 20 直○守○
+自分以外全体 通常攻撃。
+[プリズムレーザー](http://yakkun.com/sv/zukan/search/?move=670)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)160 100 10 直×守○
+1体選択 使用した次のターンは行動できない。
+[プレゼント](http://yakkun.com/sv/zukan/search/?move=217)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-90 15 直×守○
+1体選択 40%の確率で威力40、30%で威力80、10%の確率で威力120になり、20%の確率で相手のHPを最大HPの1/4回復する。
+[ヘドロウェーブ](http://yakkun.com/sv/zukan/search/?move=482)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)95 100 10 直×守○
+自分以外全体 10%の確率で相手を『どく』状態にする。
+[ヘドロこうげき](http://yakkun.com/sv/zukan/search/?move=124)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 20 直×守○
+1体選択 30%の確率で相手を『どく』状態にする。
+[ヘドロばくだん](http://yakkun.com/sv/zukan/search/?move=188)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 30%の確率で相手を『どく』状態にする。
+[ヘビーボンバー](http://yakkun.com/sv/zukan/search/?move=484)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直○守○
+1体選択 自分の『おもさ』が相手より重いほど威力が高くなる。相手の『おもさ』が自分の1/5以下なら120、1/4以下なら100、1/3以下なら80、1/2以下なら60、それより大きければ40。相手が技『ちいさくなる』を使用していると必ず命中し、威力が2倍になる(第7世代以降)。ダイマックスしている相手には無効。
+[へびにらみ](http://yakkun.com/sv/zukan/search/?move=137)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 30 直×守○
+1体選択 相手を『まひ』状態にする。『でんき』タイプには無効。
+[へんしん](http://yakkun.com/sv/zukan/search/?move=144)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+1体選択 一時的に、相手と同じナンバー・グラフィックス・能力値・個体値・ランク・特性・技になる。ただしHP・持ち物・状態異常などはコピーされずそのままとなり、技のPPはすべて5になる。交代すると元に戻る。ダイマックスしている相手をコピーすると、元のポケモンの姿になる。
+[ベノムショック](http://yakkun.com/sv/zukan/search/?move=474)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)65 100 10 直×守○
+1体選択 相手が『どく』状態の時、威力が2倍になる。
+[ホイールスピン](http://yakkun.com/sv/zukan/search/?move=874)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守○
+1体選択 攻撃後、自分の『すばやさ』ランクが2段階下がる。
+[ほうでん](http://yakkun.com/sv/zukan/search/?move=435)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 15 直×守○
+自分以外全体 30%の確率で相手を『まひ』状態にする。
+[ほうふく](http://yakkun.com/sv/zukan/search/?move=909)[あく](http://yakkun.com/sv/move_list.htm?type=16)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直○守○
+不定 そのターンに最後に受けた技のダメージの1.5倍をその相手に与える。ダメージを受けていない時は失敗する。タイプ相性の影響を受けない。
+[ほえる](http://yakkun.com/sv/zukan/search/?move=46)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+1体選択 必ず後攻になる(優先度:-6)。相手のポケモンを強制的に交代させる。野生のポケモンの場合は戦闘を終了する。自分の命中率、相手の回避率に関係なく必ず命中する。相手の『まもる』『みきり』『トーチカ』『ニードルガード』『ブロッキング』『スレッドトラップ』『かえんのまもり』の効果を受けない。音系の技。相手の『みがわり』状態を貫通する。ダイマックスしている相手には無効。野生のポケモンの場合、相手が自分のレベルより高い場合は失敗する。
+[ほおばる](http://yakkun.com/sv/zukan/search/?move=729)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が持っている『きのみ』を即座に使って効果を発動させ、さらに自分の『ぼうぎょ』ランクを2段階上げる。
+[ほしがる](http://yakkun.com/sv/zukan/search/?move=343)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 25 直○守○
+1体選択 相手が持っている道具を自分の物にする。自分が既に道具を持っている場合は失敗するが、技『はたきおとす』で自分の道具が無効化されている時は奪う事ができ、道具は上書きされる。トレーナー戦の場合はバトル終了後になくなる。
+[ほたるび](http://yakkun.com/sv/zukan/search/?move=294)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『とくこう』ランクが3段階上がる。
+[ほっぺすりすり](http://yakkun.com/sv/zukan/search/?move=565)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)20 100 20 直○守○
+1体選択 100%の確率で相手を『まひ』状態にする。
+[ほのおのうず](http://yakkun.com/sv/zukan/search/?move=83)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)35 85 15 直×守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[ほのおのキバ](http://yakkun.com/sv/zukan/search/?move=424)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 95 15 直○守○
+1体選択 10%の確率で相手を『やけど』状態にするか、ひるませる。
+[ほのおのちかい](http://yakkun.com/sv/zukan/search/?move=519)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 ダブルバトルで、技『くさのちかい』と組み合わせて使用すると4ターンの間毎ターン『ほのお』タイプ以外の相手にダメージを与え、技『みずのちかい』と組み合わせて使用すると4ターンの間技の追加効果が出やすくなる。また、威力が150になる。
+[ほのおのパンチ](http://yakkun.com/sv/zukan/search/?move=7)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 15 直○守○
+1体選択 10%の確率で相手を『やけど』状態にする。特性『てつのこぶし』の時、威力が1.2倍になる。
+[ほのおのまい](http://yakkun.com/sv/zukan/search/?move=552)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 50%の確率で自分の『とくこう』ランクが1段階上がる。
+[ほのおのムチ](http://yakkun.com/sv/zukan/search/?move=669)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 15 直○守○
+1体選択 100%の確率で相手の『ぼうぎょ』ランクを1段階下げる。
+[ほろびのうた](http://yakkun.com/sv/zukan/search/?move=195)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+全体 3ターン終了後に、この技を使った時に出ていた自分を含むすべてのポケモンは『ひんし』状態になる。それまでに交代したポケモンは効果が消える。音系の技。相手の『みがわり』状態を貫通する。
+[ボーンラッシュ](http://yakkun.com/sv/zukan/search/?move=198)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 90 10 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[ぼうぎょしれい](http://yakkun.com/sv/zukan/search/?move=455)[むし](http://yakkun.com/sv/move_list.htm?type=6)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分の『ぼうぎょ』『とくぼう』ランクが1段階ずつ上がる。
+[ぼうふう](http://yakkun.com/sv/zukan/search/?move=542)[ひこう](http://yakkun.com/sv/move_list.htm?type=2)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)110 70 10 直×守○
+1体選択 30%の確率で、相手を2～5ターンの間『こんらん』状態にする。天気が『あめ』の時は必ず命中し、『にほんばれ』の時は命中率が50%になる。相手が技『そらをとぶ』『とびはねる』『フリーフォール』を使っている時でも命中する。
+[ボディプレス](http://yakkun.com/sv/zukan/search/?move=758)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 100 10 直○守○
+1体選択『こうげき』ではなく、自分の『ぼうぎょ』と『ぼうぎょ』ランクを『こうげき』の数値にしてダメージ計算する。
+[ボルテッカー](http://yakkun.com/sv/zukan/search/?move=344)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 100 15 直○守○
+1体選択 相手に与えたダメージの33%を自分も受ける。10%の確率で相手を『まひ』状態にする。
+[ボルトチェンジ](http://yakkun.com/sv/zukan/search/?move=521)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 20 直×守○
+1体選択 攻撃後、手持ちのポケモンと入れ替わる。
+[ポイズンテール](http://yakkun.com/sv/zukan/search/?move=342)[どく](http://yakkun.com/sv/move_list.htm?type=3)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 100 25 直○守○
+1体選択 10%の確率で相手を『どく』状態にする。急所に当たりやすい(急所ランク:+1)。
+[ポルターガイスト](http://yakkun.com/sv/zukan/search/?move=824)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[物理](http://yakkun.com/sv/move_list.htm?cat=1)110 90 5 直×守○
+1体選択 相手が道具を持っていない時は失敗する。なお、相手の道具を無効にする効果はない。
+[まきつく](http://yakkun.com/sv/zukan/search/?move=35)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)15 90 20 直○守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[まきびし](http://yakkun.com/sv/zukan/search/?move=191)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+相手の場 使用後、相手はポケモンを交代する度にダメージを受ける。3回まで使うことができ、1回の時は相手の最大HPの1/8、2回の時は相手の最大HPの1/6、3回の時は相手の最大HPの1/4のダメージを与える。『ひこう』タイプ、特性『ふゆう』のポケモンはダメージを受けない。
+[マグマストーム](http://yakkun.com/sv/zukan/search/?move=463)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 75 5 直×守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[マジカルシャイン](http://yakkun.com/sv/zukan/search/?move=580)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+相手全体 通常攻撃。
+[マジカルフレイム](http://yakkun.com/sv/zukan/search/?move=572)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)75 100 10 直×守○
+1体選択 100%の確率で相手の『とくこう』ランクを1段階下げる。
+[マジカルリーフ](http://yakkun.com/sv/zukan/search/?move=345)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60-20 直×守○
+1体選択 自分の命中率、相手の回避率に関係なく必ず命中する。
+[マジックルーム](http://yakkun.com/sv/zukan/search/?move=478)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、すべてのポケモンの道具の効果がなくなる。
+[マッドショット](http://yakkun.com/sv/zukan/search/?move=341)[じめん](http://yakkun.com/sv/move_list.htm?type=4)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)55 95 15 直×守○
+1体選択 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[マッハパンチ](http://yakkun.com/sv/zukan/search/?move=183)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 30 直○守○
+1体選択 必ず先制できる(優先度:+1)。特性『てつのこぶし』の時、威力が1.2倍になる。
+[まとわりつく](http://yakkun.com/sv/zukan/search/?move=562)[むし](http://yakkun.com/sv/move_list.htm?type=6)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)20 100 20 直○守○
+1体選択 4～5ターンの間、毎ターン終了後最大HPの1/8のダメージを与え、その間『ゴースト』タイプではない相手は逃げたり交代できない。
+[まねっこ](http://yakkun.com/sv/zukan/search/?move=383)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 最後に使われた技で相手に攻撃する。自分の技も対象となる。最後の技がダイマックス技の場合、元となった技が使われる。
+[まほうのこな](http://yakkun.com/sv/zukan/search/?move=732)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手を『エスパー』タイプにする。『くさ』タイプや特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。
+[まもる](http://yakkun.com/sv/zukan/search/?move=182)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の技を受けない。連続で使うと失敗しやすくなる。ダイマックス技や第7世代のZワザの攻撃技は貫通し、1/4のダメージを受ける。
+[まるくなる](http://yakkun.com/sv/zukan/search/?move=111)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--40 直×守×
+自分 自分の『ぼうぎょ』ランクを1段階上げる。
+[みかづきのいのり](http://yakkun.com/sv/zukan/search/?move=864)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+味方全体 自分と味方全体のHPが最大HPの1/4ずつ回復し、状態異常も回復する。
+[みかづきのまい](http://yakkun.com/sv/zukan/search/?move=461)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が『ひんし』になる代わりに、次に出す自分のポケモンのすべての状態が全回復する。
+[みがわり](http://yakkun.com/sv/zukan/search/?move=164)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分のHPを最大HPの1/4だけ減らして、減らしたHPと同じHPの自分の分身を作り、分身のHPが0になるまですべての攻撃を自分の代わりに分身が受ける。分身は状態異常にならない。ただし、音系の技などはそのまま受ける。相手のダイマックス技も防げるが、自分がダイマックスすると分身が消える。
+[みきり](http://yakkun.com/sv/zukan/search/?move=197)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 必ず先制でき(優先度:+4)、そのターンの間、相手の技を受けない。連続で使うと失敗しやすくなる。ダイマックス技や第7世代のZワザの攻撃技は貫通し、1/4のダメージを受ける。
+[ミサイルばり](http://yakkun.com/sv/zukan/search/?move=42)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 95 20 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[ミストバースト](http://yakkun.com/sv/zukan/search/?move=817)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 5 直×守○
+自分以外全体 攻撃後、自分が『ひんし』状態になる。場の状態が『ミストフィールド』で、自分が『ひこう』タイプや特性『ふゆう』などではなく地面にいる時、威力が1.5倍になる。
+[ミストフィールド](http://yakkun.com/sv/zukan/search/?move=590)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、場の状態を『ミストフィールド』にする。『ひこう』タイプや特性『ふゆう』などではない地面にいるすべてのポケモンは、状態異常にならず、また『ドラゴン』タイプの技の受けるダメージが半減する。すでに状態異常の場合は回復しない。道具『ミストシード』を持ったポケモンは『とくぼう』ランクが1段階上がる。
+[ミストボール](http://yakkun.com/sv/zukan/search/?move=296)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)95 100 5 直×守○
+1体選択 50%の確率で相手の『とくこう』ランクを1段階下げる。
+[みずあめボム](http://yakkun.com/sv/zukan/search/?move=918)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 85 10 直×守○
+1体選択 100%の確率で、相手を『あめまみれ』状態にする。3ターンの間、毎ターン終了時に相手の『すばやさ』ランクが1段階下がる。
+[みずしゅりけん](http://yakkun.com/sv/zukan/search/?move=570)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)15 100 20 直×守○
+1体選択 必ず先制できる(優先度:+1)。1ターンに2～5回連続で攻撃する。
+[みずでっぽう](http://yakkun.com/sv/zukan/search/?move=55)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 25 直×守○
+1体選択 通常攻撃。
+[みずのちかい](http://yakkun.com/sv/zukan/search/?move=518)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 ダブルバトルで、技『ほのおのちかい』と組み合わせて使用すると4ターンの間技の追加効果が出やすくなり、技『くさのちかい』と組み合わせて使用すると4ターンの間相手の『すばやさ』が下がる。また、威力が150になる。この技は、特性『よびみず』の攻撃対象を変更する効果の影響を受けずに攻撃できる。
+[みずのはどう](http://yakkun.com/sv/zukan/search/?move=352)[みず](http://yakkun.com/sv/move_list.htm?type=10)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 20 直×守○
+1体選択 20%の確率で相手を1～4ターンの間『こんらん』状態にする。
+[みずびたし](http://yakkun.com/sv/zukan/search/?move=487)[みず](http://yakkun.com/sv/move_list.htm?type=10)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手を『みず』タイプにする。
+[みだれづき](http://yakkun.com/sv/zukan/search/?move=31)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)15 85 20 直○守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[みだれひっかき](http://yakkun.com/sv/zukan/search/?move=154)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)18 80 15 直○守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[みちづれ](http://yakkun.com/sv/zukan/search/?move=194)[ゴースト](http://yakkun.com/sv/move_list.htm?type=7)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 次の自分のターンまでに相手の攻撃で『ひんし』状態になると、相手も『ひんし』状態になる。ダイマックスしている相手には効果がない。第7世代以降は、連続で使うと必ず失敗する。
+[みねうち](http://yakkun.com/sv/zukan/search/?move=206)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 100 40 直○守○
+1体選択 この技のダメージで相手のHPが0になる時、相手のHPを1にする。野生のポケモンを捕まえる時に便利。
+[ミラーコート](http://yakkun.com/sv/zukan/search/?move=243)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)-100 20 直×守○
+不定 相手の特殊攻撃のダメージの2倍をその相手に与える。『ダブルバトル』の時は最後に受けた技のみ有効になる。必ず後攻になる(優先度:-5)。『あく』タイプには無効だが、それ以外のタイプ相性の影響を受けない。
+[ミラータイプ](http://yakkun.com/sv/zukan/search/?move=513)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--15 直×守○
+1体選択 自分の『タイプ』を相手と同じ『タイプ』にする。相手がテラスタルしている時はテラスタイプをコピーするが、相手が『ステラ』タイプにテラスタルしている場合は元のタイプをコピーする。
+[みらいよち](http://yakkun.com/sv/zukan/search/?move=248)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 100 10 直×守×
+1体選択 2ターン後に攻撃する。交代した場合は同じ位置にいるポケモンに攻撃する。タイプ相性の影響を受ける。
+[ミルクのみ](http://yakkun.com/sv/zukan/search/?move=208)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守×
+自分 HPが最大HPの半分回復する。
+[みわくのボイス](http://yakkun.com/sv/zukan/search/?move=929)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 100%の確率で、そのターンの間に能力ランクが上がった相手ポケモンを1～4ターンの間『こんらん』状態にする(通常は後攻で攻撃する必要があるが、場に出た時に能力ランクが上がった場合も対象となる)。音系の技。相手の『みがわり』状態を貫通する。
+[みをけずる](http://yakkun.com/sv/zukan/search/?move=883)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分のHPを最大HPの半分だけ減らす代わりに、自分の『こうげき』『とくこう』『すばやさ』ランクが2段階ずつ上がる。
+[ムーンフォース](http://yakkun.com/sv/zukan/search/?move=578)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)95 100 15 直×守○
+1体選択 30%の確率で相手の『とくこう』ランクを1段階下げる。
+[むしくい](http://yakkun.com/sv/zukan/search/?move=450)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 20 直○守○
+1体選択 相手が持っているバトルに効果のある『きのみ』を奪って、自分に使う。
+[むしのさざめき](http://yakkun.com/sv/zukan/search/?move=405)[むし](http://yakkun.com/sv/move_list.htm?type=6)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。音系の技。相手の『みがわり』状態を貫通する。
+[むしのていこう](http://yakkun.com/sv/zukan/search/?move=522)[むし](http://yakkun.com/sv/move_list.htm?type=6)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)50 100 20 直×守○
+相手全体 100%の確率で相手の『とくこう』ランクを1段階下げる。
+[むねんのつるぎ](http://yakkun.com/sv/zukan/search/?move=906)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直○守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[めいそう](http://yakkun.com/sv/zukan/search/?move=347)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『とくこう』『とくぼう』ランクが1段階ずつ上がる。
+[メガトンキック](http://yakkun.com/sv/zukan/search/?move=25)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 75 5 直○守○
+1体選択 通常攻撃。
+[メガトンパンチ](http://yakkun.com/sv/zukan/search/?move=5)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)80 85 20 直○守○
+1体選択 通常攻撃。特性『てつのこぶし』の時、威力が1.2倍になる。
+[メガドレイン](http://yakkun.com/sv/zukan/search/?move=72)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 15 直×守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。
+[メガホーン](http://yakkun.com/sv/zukan/search/?move=224)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)120 85 10 直○守○
+1体選択 通常攻撃。
+[めざめるダンス](http://yakkun.com/sv/zukan/search/?move=625)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 15 直×守○
+1体選択 この技の『タイプ』は、自分の『タイプ1』と同じになる。テラスタル時は、テラスタイプと同じタイプになる。
+[メタルクロー](http://yakkun.com/sv/zukan/search/?move=232)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50 95 35 直○守○
+1体選択 10%の確率で自分の『こうげき』ランクが1段階上がる。
+[メタルバースト](http://yakkun.com/sv/zukan/search/?move=368)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)-100 10 直×守○
+不定 そのターンに最後に受けた技のダメージの1.5倍をその相手に与える。ダメージを受けていない時は失敗する。タイプ相性の影響を受けない。
+[メテオドライブ](http://yakkun.com/sv/zukan/search/?move=636)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[物理](http://yakkun.com/sv/move_list.htm?cat=1)100 100 5 直○守○
+1体選択 相手の特性の影響を受けずに攻撃する。
+[メテオビーム](http://yakkun.com/sv/zukan/search/?move=815)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)120 90 10 直×守○
+1体選択 1ターン目に100%の確率で自分の『とくこう』ランクを1段階上げ、2ターン目で攻撃する。
+[メロメロ](http://yakkun.com/sv/zukan/search/?move=213)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 15 直×守○
+1体選択 相手が自分とは異なる性別の場合、相手を『メロメロ』状態にする。『メロメロ』状態になると、50%の確率で相手は自分に攻撃できなくなる。自分と相手の性別が同じ時や、どちらかが性別不明の場合は失敗する。
+[もえあがるいかり](http://yakkun.com/sv/zukan/search/?move=837)[あく](http://yakkun.com/sv/move_list.htm?type=16)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+相手全体 20%の確率で相手をひるませる。
+[もえつきる](http://yakkun.com/sv/zukan/search/?move=657)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 100 5 直×守○
+1体選択 攻撃後、自分は『ほのお』タイプではなくなる。自分が『ほのお』タイプではない時は失敗する。自分が『こおり』状態の時でも使う事ができ、使うと『こおり』状態が治る。
+[ものまね](http://yakkun.com/sv/zukan/search/?move=102)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守○
+1体選択 一時的に、相手が最後に自分に使った技が使えるようになる。PPはコピーした技のポイントアップ未使用時の最大値となる。交代すると元に戻る。相手の技が『ものまね』『ゆびをふる』『オウムがえし』『へんしん』『わるあがき』『スケッチ』『ねごと』『しぜんのちから』『ねこのて』『さきどり』『まねっこ』『おしゃべり』『ゲップ』『おいわい』『てをつなぐ』『ダイマックスほう』『きょじゅうざん』『きょじゅうだん』『バーンアクセル』『ダークアクセル』『ポイズンアクセル』『ファイトアクセル』『マジカルアクセル』『テラクラスター』やダイマックス技の場合は失敗する。
+[もりののろい](http://yakkun.com/sv/zukan/search/?move=581)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 20 直×守○
+1体選択 相手の『タイプ』に『くさ』タイプを追加する。
+[もろはのずつき](http://yakkun.com/sv/zukan/search/?move=457)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)150 80 5 直○守○
+1体選択 相手に与えたダメージの1/2を自分も受ける。
+[やきつくす](http://yakkun.com/sv/zukan/search/?move=510)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 15 直×守○
+相手全体 相手の持っている『きのみ』や『ノーマルジュエル』を使えなくする。
+[やけっぱち](http://yakkun.com/sv/zukan/search/?move=930)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 10 直○守○
+1体選択 前のターンで自分が使った技が外れたり失敗したり、『まひ』『こんらん』『ひるみ』状態などで行動できなかった場合、威力が2倍になる。
+[やどりぎのタネ](http://yakkun.com/sv/zukan/search/?move=73)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-90 10 直×守○
+1体選択 使用後、毎ターン、相手のHPを最大HPの1/8ずつ減らし、その分自分のHPを回復させる。自分は交代しても効果が引き継ぐ。『くさ』タイプのポケモンには無効。
+[ゆきげしき](http://yakkun.com/sv/zukan/search/?move=898)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、天気を『ゆき』にする(『こおり』タイプのポケモンは、『ぼうぎょ』が1.5倍になる)。
+[ゆきなだれ](http://yakkun.com/sv/zukan/search/?move=419)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 10 直○守○
+1体選択 そのターンに相手の技のダメージを受けると威力が2倍になる。必ず後攻になる(優先度:-4)。
+[ゆびをふる](http://yakkun.com/sv/zukan/search/?move=118)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 ほぼすべての技の中からランダムで1つ使う。
+[ゆめくい](http://yakkun.com/sv/zukan/search/?move=138)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 100 15 直×守○
+1体選択 相手に与えたダメージの半分だけ自分のHPが回復する。相手が『ねむり』状態の時だけ成功する。
+[ようかいえき](http://yakkun.com/sv/zukan/search/?move=51)[どく](http://yakkun.com/sv/move_list.htm?type=3)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 30 直×守○
+相手全体 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[ようせいのかぜ](http://yakkun.com/sv/zukan/search/?move=561)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)40 100 30 直×守○
+1体選択 通常攻撃。
+[らいげき](http://yakkun.com/sv/zukan/search/?move=550)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)130 85 5 直○守○
+1体選択 20%の確率で相手を『まひ』状態にする。
+[ライジングボルト](http://yakkun.com/sv/zukan/search/?move=819)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)70 100 20 直×守○
+1体選択 場の状態が『エレキフィールド』で、なおかつ相手が『ひこう』タイプや特性『ふゆう』などではなく地面にいる時、威力が2倍になる(自分も地面にいれば、フィールドの1.3倍の効果もさらに加わる)。
+[らいめいげり](http://yakkun.com/sv/zukan/search/?move=838)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直○守○
+1体選択 100%の確率で、相手の『ぼうぎょ』ランクを1段階下げる。
+[ラスターカノン](http://yakkun.com/sv/zukan/search/?move=430)[はがね](http://yakkun.com/sv/move_list.htm?type=8)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 10%の確率で相手の『とくぼう』ランクを1段階下げる。
+[ラスターパージ](http://yakkun.com/sv/zukan/search/?move=295)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)95 100 5 直×守○
+1体選択 50%の確率で相手の『とくぼう』ランクを1段階下げる。
+[リーフストーム](http://yakkun.com/sv/zukan/search/?move=437)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 90 5 直×守○
+1体選択 攻撃後、100%の確率で自分の『とくこう』ランクが2段階下がる。
+[リーフブレード](http://yakkun.com/sv/zukan/search/?move=348)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直○守○
+1体選択 急所に当たりやすい(急所ランク:+1)。
+[リサイクル](http://yakkun.com/sv/zukan/search/?move=278)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+自分 自分が最後に使用した持ち物の道具を手に入れる。道具を持っている場合は失敗する。
+[リフレクター](http://yakkun.com/sv/zukan/search/?move=115)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+味方の場 5ターンの間、相手の物理攻撃のダメージを半分にする。味方が複数の場合は半分ではなく2/3になる。急所に当たった場合は軽減されない。交代しても効果は続く。
+[りゅうせいぐん](http://yakkun.com/sv/zukan/search/?move=434)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)130 90 5 直×守○
+1体選択 攻撃後、100%の確率で自分の『とくこう』ランクが2段階下がる。
+[りゅうのいぶき](http://yakkun.com/sv/zukan/search/?move=225)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 20 直×守○
+1体選択 30%の確率で相手を『まひ』状態にする。
+[りゅうのはどう](http://yakkun.com/sv/zukan/search/?move=406)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)85 100 10 直×守○
+1体選択 通常攻撃。
+[りゅうのまい](http://yakkun.com/sv/zukan/search/?move=349)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『こうげき』『すばやさ』ランクを1段階ずつ上げる。
+[りんごさん](http://yakkun.com/sv/zukan/search/?move=769)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 100%の確率で相手の『とくぼう』ランクを1段階下げる。
+[りんしょう](http://yakkun.com/sv/zukan/search/?move=496)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)60 100 15 直×守○
+1体選択 同じターンに他のポケモンも『りんしょう』を使おうとすると、『すばやさ』に関係なく最初に使用したポケモンに続いて使用でき、最初以外の『りんしょう』は威力が2倍になる。音系の技。相手の『みがわり』状態を貫通する。(ダブルバトル用)
+[ルミナコリジョン](http://yakkun.com/sv/zukan/search/?move=870)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 100%の確率で相手の『とくぼう』ランクを2段階下げる。
+[レイジングブル](http://yakkun.com/sv/zukan/search/?move=888)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 10 直○守○
+1体選択『ケンタロス(パルデア)』が使う場合、自分のフォルムに合わせて『かくとう』『ほのお』『みず』タイプのいずれかに変化する。相手の技『リフレクター』『オーロラベール』の効果を受けず、相手の技『リフレクター』『ひかりのかべ』『オーロラベール』を壊す。
+[れいとうパンチ](http://yakkun.com/sv/zukan/search/?move=8)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[物理](http://yakkun.com/sv/move_list.htm?cat=1)75 100 15 直○守○
+1体選択 10%の確率で相手を『こおり』状態にする。特性『てつのこぶし』の時、威力が1.2倍になる。
+[れいとうビーム](http://yakkun.com/sv/zukan/search/?move=58)[こおり](http://yakkun.com/sv/move_list.htm?type=14)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 100 10 直×守○
+1体選択 10%の確率で相手を『こおり』状態にする。
+[れんごく](http://yakkun.com/sv/zukan/search/?move=517)[ほのお](http://yakkun.com/sv/move_list.htm?type=9)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)100 50 5 直×守○
+1体選択 100%の確率で相手を『やけど』状態にする。
+[れんぞくぎり](http://yakkun.com/sv/zukan/search/?move=210)[むし](http://yakkun.com/sv/move_list.htm?type=6)[物理](http://yakkun.com/sv/move_list.htm?cat=1)40 95 20 直○守○
+1体選択 連続で使用すると攻撃が当たる度に威力が倍増していく(最大160)。攻撃が外れたり連続で使用しないと元に戻る。
+[ローキック](http://yakkun.com/sv/zukan/search/?move=490)[かくとう](http://yakkun.com/sv/move_list.htm?type=1)[物理](http://yakkun.com/sv/move_list.htm?cat=1)65 100 20 直○守○
+1体選択 100%の確率で相手の『すばやさ』ランクを1段階下げる。
+[ロックオン](http://yakkun.com/sv/zukan/search/?move=199)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--5 直×守○
+1体選択 次のターン、使った相手に自分の技が必ず命中する。
+[ロックカット](http://yakkun.com/sv/zukan/search/?move=397)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『すばやさ』ランクが2段階上がる。
+[ロックブラスト](http://yakkun.com/sv/zukan/search/?move=350)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[物理](http://yakkun.com/sv/move_list.htm?cat=1)25 90 10 直×守○
+1体選択 1ターンに2～5回連続で攻撃する。
+[ワイドガード](http://yakkun.com/sv/zukan/search/?move=469)[いわ](http://yakkun.com/sv/move_list.htm?type=5)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+味方の場 必ず先制でき(優先度:+3)、そのターンの間、自分と味方は相手や味方が使った複数のポケモンが対象の技を受けない。
+[ワイドフォース](http://yakkun.com/sv/zukan/search/?move=812)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)80 100 10 直×守○
+1体選択 場の状態が『サイコフィールド』で、自分が『ひこう』タイプや特性『ふゆう』などではなく地面にいる時、威力が1.5倍になり(フィールドの1.3倍の効果もさらに加わる)、また相手全体を攻撃する(その時ダブルバトルではダメージは0.75倍)。
+[ワイドブレイカー](http://yakkun.com/sv/zukan/search/?move=766)[ドラゴン](http://yakkun.com/sv/move_list.htm?type=15)[物理](http://yakkun.com/sv/move_list.htm?cat=1)60 100 15 直○守○
+相手全体 100%の確率で相手の『こうげき』ランクを1段階下げる。
+[ワイルドボルト](http://yakkun.com/sv/zukan/search/?move=528)[でんき](http://yakkun.com/sv/move_list.htm?type=12)[物理](http://yakkun.com/sv/move_list.htm?cat=1)90 100 15 直○守○
+1体選択 相手に与えたダメージの1/4を自分も受ける。
+[わたほうし](http://yakkun.com/sv/zukan/search/?move=178)[くさ](http://yakkun.com/sv/move_list.htm?type=11)[変化](http://yakkun.com/sv/move_list.htm?cat=0)-100 40 直×守○
+相手全体 相手の『すばやさ』ランクを2段階下げる。『くさ』タイプや特性『ぼうじん』、道具『ぼうじんゴーグル』を持っているポケモンには無効。
+[わるあがき](http://yakkun.com/sv/zukan/search/?move=165)[ノーマル](http://yakkun.com/sv/move_list.htm?type=0)[物理](http://yakkun.com/sv/move_list.htm?cat=1)50-1 直○守○
+ランダム1体 すべての技のPPが0になる等して使える技がなくなると使える。自分の最大HPの1/4を自分も受ける。『タイプ』に関係なくダメージを与える。
+[わるだくみ](http://yakkun.com/sv/zukan/search/?move=417)[あく](http://yakkun.com/sv/move_list.htm?type=16)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--20 直×守×
+自分 自分の『とくこう』ランクを2段階上げる。
+[ワンダースチーム](http://yakkun.com/sv/zukan/search/?move=772)[フェアリー](http://yakkun.com/sv/move_list.htm?type=17)[特殊](http://yakkun.com/sv/move_list.htm?cat=2)90 95 10 直×守○
+1体選択 20%の確率で相手を1～4ターンの間『こんらん』状態にする。
+[ワンダールーム](http://yakkun.com/sv/zukan/search/?move=472)[エスパー](http://yakkun.com/sv/move_list.htm?type=13)[変化](http://yakkun.com/sv/move_list.htm?cat=0)--10 直×守×
+全体の場 5ターンの間、すべてのポケモンの『ぼうぎょ』と『とくぼう』の能力値が入れ替わる。もう1度使用すると元に戻る。

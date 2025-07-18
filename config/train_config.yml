@@ -5,14 +5,14 @@
 
 # Training parameters
 episodes: 10  # Number of episodes to train (1=test, 50=dev, 1000=production)
-lr: 0.0003    # Learning rate (0.0001=conservative, 0.0003=standard, 0.001=aggressive)
+lr: 0.0001    # Learning rate (0.0001=conservative, 0.0003=standard, 0.001=aggressive)
 batch_size: 4096
 buffer_capacity: 800000
 gamma: 0.997
 gae_lambda: 0.95
 clip_range: 0.2
 value_coef: 0.6
-entropy_coef: 0.05
+entropy_coef: 0.03
 ppo_epochs: 4
 algorithm: ppo
 reward: composite
@@ -36,8 +36,8 @@ opponent: self           # Single opponent type: random, max, rule, self
 opponent_mix: null       # Mixed opponents (e.g., "random:0.3,max:0.3,self:0.4")
 
 # Self-play win rate based opponent update
-win_rate_threshold: 0.65  # Win rate threshold for updating opponent (0.6-0.8 recommended)
-win_rate_window: 100       # Number of recent battles to track
+win_rate_threshold: 0.7  # Win rate threshold for updating opponent (0.6-0.8 recommended)
+win_rate_window: 200       # Number of recent battles to track
 
 # League Training configuration (prevents catastrophic forgetting)
 league_training:
