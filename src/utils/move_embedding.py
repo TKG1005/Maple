@@ -325,9 +325,9 @@ class MoveEmbeddingGenerator:
             # Mark structured features as non-learnable
             for col in structured_cols:
                 learnable_mask[col] = False
-            # Mark text features as learnable
+            # Mark text features as non-learnable (fixed as requested)
             for col in desc_cols:
-                learnable_mask[col] = True
+                learnable_mask[col] = False
             
         elif fusion_strategy == "balanced":
             # Balance structured and text features
@@ -341,9 +341,9 @@ class MoveEmbeddingGenerator:
             # Mark structured features as non-learnable
             for col in structured_cols:
                 learnable_mask[col] = False
-            # Mark text features as learnable
+            # Mark text features as non-learnable (fixed as requested)
             for col in desc_cols:
-                learnable_mask[col] = True
+                learnable_mask[col] = False
             
         elif fusion_strategy == "weighted":
             # Weighted combination
@@ -369,9 +369,9 @@ class MoveEmbeddingGenerator:
             # Mark structured features as non-learnable
             for col in structured_cols:
                 learnable_mask[f'struct_w_{col}'] = False
-            # Mark text features as learnable
+            # Mark text features as non-learnable (fixed as requested)
             for col in desc_cols:
-                learnable_mask[f'text_w_{col}'] = True
+                learnable_mask[f'text_w_{col}'] = False
             
         else:
             raise ValueError(f"Unknown fusion strategy: {fusion_strategy}")

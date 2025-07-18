@@ -308,7 +308,19 @@ class TestMoveEmbeddingGenerator:
         assert learnable_count > 0, "Should have some learnable features"
         assert non_learnable_count > 0, "Should have some non-learnable features"
         
+        # Check that description embeddings are non-learnable (fixed)
+        desc_features = [name for name in feature_names if name.startswith('desc_emb_')]
+        for desc_feature in desc_features:
+            assert not learnable_mask[desc_feature], f"Description feature {desc_feature} should be non-learnable"
+        
+        # Check that only additional parameters are learnable
+        learnable_features = [name for name, is_learnable in learnable_mask.items() if is_learnable]
+        for learnable_feature in learnable_features:
+            assert learnable_feature.startswith('learnable_'), f"Only additional parameters should be learnable, but {learnable_feature} is learnable"
+        
         print(f"256D test: {learnable_count} learnable, {non_learnable_count} non-learnable")
+        print(f"Description embeddings fixed: {len(desc_features)} features")
+        print(f"Only additional parameters learnable: {len(learnable_features)} features")
 
 
 class TestConvenienceFunction:
