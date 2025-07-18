@@ -275,17 +275,23 @@ class MoveEmbeddingGenerator:
         return df_with_embeddings
     
     def assemble_final_features(self, df: pd.DataFrame, 
-                               fusion_strategy: str = "concatenate") -> Tuple[np.ndarray, List[str]]:
+                               fusion_strategy: str = "concatenate",
+                               target_dim: int = 256) -> Tuple[np.ndarray, List[str], Dict[str, bool]]:
         """
         Assemble the final feature vector for each move with enhanced fusion strategy.
+        Now supports 256-dimensional embeddings with learnable parameters.
         Based on the design document: docs/AI-design/M7/技の説明をベクトル化.md
         
         Args:
             df: Processed DataFrame
             fusion_strategy: Strategy for combining features ('concatenate', 'balanced', 'weighted')
+            target_dim: Target dimension for final embedding (default: 256)
             
         Returns:
-            Tuple of (feature_matrix, feature_names)
+            Tuple of (feature_matrix, feature_names, learnable_mask)
+            - feature_matrix: (n_moves, target_dim) array
+            - feature_names: List of feature names
+            - learnable_mask: Dict mapping feature names to whether they are learnable
         """
         # Identify feature columns
         type_cols = [col for col in df.columns if col.startswith('type_')]
@@ -301,40 +307,46 @@ class MoveEmbeddingGenerator:
         ]
         available_flags = [flag for flag in boolean_flags if flag in df.columns]
         
-        # Structured features (non-text)
+        # Structured features (non-text) - these will be NON-LEARNABLE
         structured_cols = type_cols + category_cols + scaled_cols + available_flags
         
+        # Create learnable mask
+        learnable_mask = {}
+        
         if fusion_strategy == "concatenate":
-            # Simple concatenation as before
-            self.feature_columns = structured_cols + desc_cols
-            feature_matrix = df[self.feature_columns].values.astype(np.float32)
-            
-        elif fusion_strategy == "balanced":
-            # Balance structured and text features to equal dimensions
-            # This follows the document's recommendation: 128 + 128 → 256
+            # Simple concatenation with extension to target_dim
             structured_matrix = df[structured_cols].values.astype(np.float32)
             text_matrix = df[desc_cols].values.astype(np.float32)
             
-            # If text features are more than structured, they're already reduced by PCA
-            # If structured features are more, we could apply PCA here too
-            target_dim = min(len(desc_cols), 128)  # Target balanced dimension
+            # Base features (non-learnable)
+            base_features = np.concatenate([structured_matrix, text_matrix], axis=1)
+            base_feature_names = structured_cols + desc_cols
             
-            if structured_matrix.shape[1] > target_dim:
-                # Apply PCA to structured features too
-                from sklearn.decomposition import PCA
-                struct_pca = PCA(n_components=target_dim)
-                structured_matrix = struct_pca.fit_transform(structured_matrix)
-                struct_cols_names = [f'struct_{i}' for i in range(target_dim)]
-            else:
-                struct_cols_names = structured_cols
-                
-            # Combine balanced features
-            feature_matrix = np.concatenate([structured_matrix, text_matrix], axis=1)
-            self.feature_columns = struct_cols_names + desc_cols
+            # Mark structured features as non-learnable
+            for col in structured_cols:
+                learnable_mask[col] = False
+            # Mark text features as learnable
+            for col in desc_cols:
+                learnable_mask[col] = True
+            
+        elif fusion_strategy == "balanced":
+            # Balance structured and text features
+            structured_matrix = df[structured_cols].values.astype(np.float32)
+            text_matrix = df[desc_cols].values.astype(np.float32)
+            
+            # Base features (keep original structure)
+            base_features = np.concatenate([structured_matrix, text_matrix], axis=1)
+            base_feature_names = structured_cols + desc_cols
+            
+            # Mark structured features as non-learnable
+            for col in structured_cols:
+                learnable_mask[col] = False
+            # Mark text features as learnable
+            for col in desc_cols:
+                learnable_mask[col] = True
             
         elif fusion_strategy == "weighted":
-            # Weighted combination giving more importance to text features
-            # Based on the document's emphasis on semantic understanding
+            # Weighted combination
             structured_matrix = df[structured_cols].values.astype(np.float32)
             text_matrix = df[desc_cols].values.astype(np.float32)
             
@@ -351,18 +363,70 @@ class MoveEmbeddingGenerator:
             text_matrix *= text_weight
             
             # Combine weighted features
-            feature_matrix = np.concatenate([structured_matrix, text_matrix], axis=1)
-            self.feature_columns = [f'struct_w_{col}' for col in structured_cols] + [f'text_w_{col}' for col in desc_cols]
+            base_features = np.concatenate([structured_matrix, text_matrix], axis=1)
+            base_feature_names = [f'struct_w_{col}' for col in structured_cols] + [f'text_w_{col}' for col in desc_cols]
+            
+            # Mark structured features as non-learnable
+            for col in structured_cols:
+                learnable_mask[f'struct_w_{col}'] = False
+            # Mark text features as learnable
+            for col in desc_cols:
+                learnable_mask[f'text_w_{col}'] = True
             
         else:
             raise ValueError(f"Unknown fusion strategy: {fusion_strategy}")
         
+        # Calculate how many additional dimensions we need
+        current_dim = base_features.shape[1]
+        additional_dim = target_dim - current_dim
+        
+        if additional_dim > 0:
+            # Add random learnable parameters
+            print(f"Adding {additional_dim} learnable parameters for enhanced representation...")
+            
+            # Initialize additional parameters with Xavier/Glorot initialization
+            # This gives better initial values than pure random
+            additional_features = np.random.randn(base_features.shape[0], additional_dim).astype(np.float32)
+            additional_features *= np.sqrt(2.0 / (current_dim + additional_dim))  # Xavier initialization
+            
+            # Create names for additional features
+            additional_names = [f'learnable_{i}' for i in range(additional_dim)]
+            
+            # All additional features are learnable
+            for name in additional_names:
+                learnable_mask[name] = True
+            
+            # Combine base features with additional learnable parameters
+            feature_matrix = np.concatenate([base_features, additional_features], axis=1)
+            self.feature_columns = base_feature_names + additional_names
+            
+        elif additional_dim < 0:
+            # Need to reduce dimensions
+            print(f"Reducing dimensions by {-additional_dim} to reach target {target_dim}...")
+            feature_matrix = base_features[:, :target_dim]
+            self.feature_columns = base_feature_names[:target_dim]
+            
+            # Update learnable mask
+            learnable_mask = {name: learnable_mask[name] for name in self.feature_columns}
+            
+        else:
+            # Perfect fit
+            feature_matrix = base_features
+            self.feature_columns = base_feature_names
+        
         print(f"Final feature matrix shape: {feature_matrix.shape}")
+        print(f"Target dimension: {target_dim}")
         print(f"Fusion strategy: {fusion_strategy}")
         print(f"Feature categories: {len(type_cols)} types, {len(category_cols)} categories, "
               f"{len(scaled_cols)} scaled, {len(available_flags)} flags, {len(desc_cols)} descriptions")
         
-        return feature_matrix, self.feature_columns
+        # Count learnable vs non-learnable features
+        learnable_count = sum(learnable_mask.values())
+        non_learnable_count = len(learnable_mask) - learnable_count
+        print(f"Learnable features: {learnable_count}")
+        print(f"Non-learnable features: {non_learnable_count}")
+        
+        return feature_matrix, self.feature_columns, learnable_mask
     
     def create_move_embedding_dict(self, df: pd.DataFrame, feature_matrix: np.ndarray) -> Dict[str, np.ndarray]:
         """
@@ -389,18 +453,21 @@ class MoveEmbeddingGenerator:
         return move_embeddings
     
     def generate_embeddings(self, save_path: Optional[str] = None, 
-                           fusion_strategy: str = "concatenate") -> Tuple[Dict[str, np.ndarray], List[str]]:
+                           fusion_strategy: str = "concatenate",
+                           target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], Dict[str, bool]]:
         """
-        Generate complete move embeddings with enhanced fusion strategies.
+        Generate complete move embeddings with enhanced fusion strategies and 256-dimensional vectors.
         
         Args:
             save_path: Optional path to save the embeddings
             fusion_strategy: Strategy for combining features ('concatenate', 'balanced', 'weighted')
+            target_dim: Target dimension for embeddings (default: 256)
             
         Returns:
-            Tuple of (move_embeddings_dict, feature_names)
+            Tuple of (move_embeddings_dict, feature_names, learnable_mask)
         """
         print("Starting enhanced move embedding generation...")
+        print(f"Target dimension: {target_dim}")
         print(f"Fusion strategy: {fusion_strategy}")
         print(f"Japanese model: {self.japanese_model}")
         print(f"Advanced preprocessing: {self.use_advanced_preprocessing}")
@@ -417,28 +484,30 @@ class MoveEmbeddingGenerator:
         # Create description embeddings with enhanced processing
         df = self.create_description_embeddings(df)
         
-        # Assemble final features with fusion strategy
-        feature_matrix, feature_names = self.assemble_final_features(df, fusion_strategy)
+        # Assemble final features with fusion strategy and target dimension
+        feature_matrix, feature_names, learnable_mask = self.assemble_final_features(df, fusion_strategy, target_dim)
         
         # Create move embedding dictionary
         move_embeddings = self.create_move_embedding_dict(df, feature_matrix)
         
         # Save if requested
         if save_path:
-            self.save_embeddings(move_embeddings, feature_names, save_path)
+            self.save_embeddings(move_embeddings, feature_names, save_path, learnable_mask)
         
         print(f"Generated embeddings for {len(move_embeddings)} moves")
-        return move_embeddings, feature_names
+        return move_embeddings, feature_names, learnable_mask
     
     def save_embeddings(self, move_embeddings: Dict[str, np.ndarray], 
-                       feature_names: List[str], save_path: str):
+                       feature_names: List[str], save_path: str, 
+                       learnable_mask: Optional[Dict[str, bool]] = None):
         """
-        Save embeddings to disk.
+        Save embeddings to disk with learnable mask information.
         
         Args:
             move_embeddings: Dictionary of move embeddings
             feature_names: List of feature names
             save_path: Path to save the embeddings
+            learnable_mask: Dictionary indicating which features are learnable
         """
         save_dir = Path(save_path).parent
         save_dir.mkdir(parents=True, exist_ok=True)
@@ -447,6 +516,7 @@ class MoveEmbeddingGenerator:
             'move_embeddings': move_embeddings,
             'feature_names': feature_names,
             'feature_columns': self.feature_columns,  # Store feature columns for semantic search
+            'learnable_mask': learnable_mask,  # Store learnable mask for training
             'embedding_dim': len(feature_names),
             'scaler': self.scaler,
             'pca': self.pca,
@@ -458,22 +528,26 @@ class MoveEmbeddingGenerator:
             pickle.dump(embedding_data, f)
         
         print(f"Saved embeddings to {save_path}")
+        if learnable_mask:
+            learnable_count = sum(learnable_mask.values())
+            print(f"Saved learnable mask: {learnable_count}/{len(learnable_mask)} features are learnable")
     
-    def load_embeddings(self, load_path: str) -> Tuple[Dict[str, np.ndarray], List[str]]:
+    def load_embeddings(self, load_path: str) -> Tuple[Dict[str, np.ndarray], List[str], Optional[Dict[str, bool]]]:
         """
-        Load embeddings from disk.
+        Load embeddings from disk with learnable mask information.
         
         Args:
             load_path: Path to load the embeddings from
             
         Returns:
-            Tuple of (move_embeddings_dict, feature_names)
+            Tuple of (move_embeddings_dict, feature_names, learnable_mask)
         """
         with open(load_path, 'rb') as f:
             embedding_data = pickle.load(f)
         
         move_embeddings = embedding_data['move_embeddings']
         feature_names = embedding_data['feature_names']
+        learnable_mask = embedding_data.get('learnable_mask', None)
         
         # Restore components
         self.scaler = embedding_data.get('scaler', self.scaler)
@@ -484,7 +558,11 @@ class MoveEmbeddingGenerator:
         
         print(f"Loaded embeddings for {len(move_embeddings)} moves from {load_path}")
         print(f"Feature columns restored: {len(self.feature_columns) if self.feature_columns else 0}")
-        return move_embeddings, feature_names
+        if learnable_mask:
+            learnable_count = sum(learnable_mask.values())
+            print(f"Learnable mask restored: {learnable_count}/{len(learnable_mask)} features are learnable")
+        
+        return move_embeddings, feature_names, learnable_mask
     
     def semantic_search(self, query: str, move_embeddings: Dict[str, np.ndarray], 
                        top_k: int = 5) -> List[Tuple[str, float]]:
@@ -551,32 +629,41 @@ class MoveEmbeddingGenerator:
 def create_move_embeddings(moves_csv_path: str = "config/moves.csv", 
                           save_path: str = "config/move_embeddings.pkl",
                           fusion_strategy: str = "concatenate",
-                          japanese_model: bool = True) -> Tuple[Dict[str, np.ndarray], List[str]]:
+                          japanese_model: bool = True,
+                          target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], Dict[str, bool]]:
     """
-    Convenience function to create move embeddings with enhanced options.
+    Convenience function to create move embeddings with enhanced options and 256-dimensional vectors.
     
     Args:
         moves_csv_path: Path to the moves CSV file
         save_path: Path to save the embeddings
         fusion_strategy: Strategy for combining features ('concatenate', 'balanced', 'weighted')
         japanese_model: Whether to use Japanese-specific model
+        target_dim: Target dimension for embeddings (default: 256)
         
     Returns:
-        Tuple of (move_embeddings_dict, feature_names)
+        Tuple of (move_embeddings_dict, feature_names, learnable_mask)
     """
     generator = MoveEmbeddingGenerator(moves_csv_path, japanese_model=japanese_model)
-    return generator.generate_embeddings(save_path, fusion_strategy=fusion_strategy)
+    return generator.generate_embeddings(save_path, fusion_strategy=fusion_strategy, target_dim=target_dim)
 
 
 if __name__ == "__main__":
-    # Example usage
-    move_embeddings, feature_names = create_move_embeddings()
+    # Example usage with 256-dimensional embeddings
+    move_embeddings, feature_names, learnable_mask = create_move_embeddings()
     
     # Print some statistics
     print(f"\nEmbedding Statistics:")
     print(f"Number of moves: {len(move_embeddings)}")
     print(f"Embedding dimension: {len(feature_names)}")
     print(f"Feature names: {feature_names[:10]}...")  # Show first 10 features
+    
+    # Show learnable vs non-learnable features
+    if learnable_mask:
+        learnable_count = sum(learnable_mask.values())
+        non_learnable_count = len(learnable_mask) - learnable_count
+        print(f"Learnable features: {learnable_count}")
+        print(f"Non-learnable features: {non_learnable_count}")
     
     # Show example embedding
     example_move = "はたく"
@@ -585,3 +672,4 @@ if __name__ == "__main__":
         print(f"\nExample embedding for '{example_move}':")
         print(f"Shape: {embedding.shape}")
         print(f"First 10 values: {embedding[:10]}")
+        print(f"Value range: [{embedding.min():.3f}, {embedding.max():.3f}]")

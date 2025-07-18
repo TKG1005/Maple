@@ -142,7 +142,7 @@ class TestMoveEmbeddingGenerator:
         df = self.generator.scale_numerical_features(df)
         df = self.generator.create_description_embeddings(df)
         
-        feature_matrix, feature_names = self.generator.assemble_final_features(df)
+        feature_matrix, feature_names, learnable_mask = self.generator.assemble_final_features(df)
         
         # Check feature matrix shape
         assert feature_matrix.shape[0] == len(df)
@@ -153,6 +153,10 @@ class TestMoveEmbeddingGenerator:
         
         # Check that feature names are strings
         assert all(isinstance(name, str) for name in feature_names)
+        
+        # Check learnable mask
+        assert len(learnable_mask) == len(feature_names)
+        assert isinstance(learnable_mask, dict)
     
     def test_create_move_embedding_dict(self):
         """Test move embedding dictionary creation."""
@@ -161,7 +165,7 @@ class TestMoveEmbeddingGenerator:
         df = self.generator.scale_numerical_features(df)
         df = self.generator.create_description_embeddings(df)
         
-        feature_matrix, feature_names = self.generator.assemble_final_features(df)
+        feature_matrix, feature_names, learnable_mask = self.generator.assemble_final_features(df)
         move_embeddings = self.generator.create_move_embedding_dict(df, feature_matrix)
         
         # Check that embeddings are created for all moves
@@ -178,11 +182,12 @@ class TestMoveEmbeddingGenerator:
     
     def test_generate_embeddings(self):
         """Test complete embedding generation."""
-        move_embeddings, feature_names = self.generator.generate_embeddings()
+        move_embeddings, feature_names, learnable_mask = self.generator.generate_embeddings()
         
         # Check that embeddings are generated
         assert len(move_embeddings) > 0
         assert len(feature_names) > 0
+        assert learnable_mask is not None
         
         # Check that all test moves are present
         for move_name in self.test_data['name']:
@@ -193,19 +198,25 @@ class TestMoveEmbeddingGenerator:
             embedding = move_embeddings[move_name]
             assert embedding.shape[0] == len(feature_names)
             assert embedding.dtype == np.float32
+            
+        # Check learnable mask
+        assert len(learnable_mask) == len(feature_names)
+        assert isinstance(learnable_mask, dict)
+        assert all(isinstance(v, bool) for v in learnable_mask.values())
     
     def test_fusion_strategies(self):
         """Test different fusion strategies."""
         strategies = ['concatenate', 'balanced', 'weighted']
         
         for strategy in strategies:
-            move_embeddings, feature_names = self.generator.generate_embeddings(
+            move_embeddings, feature_names, learnable_mask = self.generator.generate_embeddings(
                 fusion_strategy=strategy
             )
             
             # Check that embeddings are generated
             assert len(move_embeddings) > 0
             assert len(feature_names) > 0
+            assert learnable_mask is not None
             
             # Check that all test moves are present
             for move_name in self.test_data['name']:
@@ -235,7 +246,7 @@ class TestMoveEmbeddingGenerator:
     def test_semantic_search(self):
         """Test semantic search functionality."""
         # Generate embeddings first
-        move_embeddings, feature_names = self.generator.generate_embeddings()
+        move_embeddings, feature_names, learnable_mask = self.generator.generate_embeddings()
         
         # Test semantic search
         query = "攻撃力を上げる"
@@ -253,21 +264,22 @@ class TestMoveEmbeddingGenerator:
     def test_save_and_load_embeddings(self):
         """Test saving and loading embeddings."""
         # Generate embeddings
-        move_embeddings, feature_names = self.generator.generate_embeddings()
+        move_embeddings, feature_names, learnable_mask = self.generator.generate_embeddings()
         
         # Save to temporary file
         temp_save = tempfile.NamedTemporaryFile(suffix='.pkl', delete=False)
         temp_save.close()
         
         try:
-            self.generator.save_embeddings(move_embeddings, feature_names, temp_save.name)
+            self.generator.save_embeddings(move_embeddings, feature_names, temp_save.name, learnable_mask)
             
             # Load embeddings
-            loaded_embeddings, loaded_features = self.generator.load_embeddings(temp_save.name)
+            loaded_embeddings, loaded_features, loaded_mask = self.generator.load_embeddings(temp_save.name)
             
             # Check that loaded data matches original
             assert len(loaded_embeddings) == len(move_embeddings)
             assert loaded_features == feature_names
+            assert loaded_mask == learnable_mask
             
             # Check specific embeddings
             for move_name in self.test_data['name']:
@@ -278,6 +290,25 @@ class TestMoveEmbeddingGenerator:
         finally:
             if os.path.exists(temp_save.name):
                 os.unlink(temp_save.name)
+    
+    def test_256_dimensional_embeddings(self):
+        """Test that embeddings are exactly 256 dimensions."""
+        move_embeddings, feature_names, learnable_mask = self.generator.generate_embeddings(target_dim=256)
+        
+        # Check dimension
+        assert len(feature_names) == 256
+        for move_name in self.test_data['name']:
+            embedding = move_embeddings[move_name]
+            assert embedding.shape[0] == 256
+            
+        # Check that we have both learnable and non-learnable features
+        learnable_count = sum(learnable_mask.values())
+        non_learnable_count = 256 - learnable_count
+        
+        assert learnable_count > 0, "Should have some learnable features"
+        assert non_learnable_count > 0, "Should have some non-learnable features"
+        
+        print(f"256D test: {learnable_count} learnable, {non_learnable_count} non-learnable")
 
 
 class TestConvenienceFunction:
@@ -294,7 +325,7 @@ class TestConvenienceFunction:
         temp_save.close()
         
         try:
-            move_embeddings, feature_names = create_move_embeddings(
+            move_embeddings, feature_names, learnable_mask = create_move_embeddings(
                 moves_csv_path="config/moves.csv",
                 save_path=temp_save.name
             )
@@ -302,6 +333,7 @@ class TestConvenienceFunction:
             # Check that embeddings are generated
             assert len(move_embeddings) > 0
             assert len(feature_names) > 0
+            assert learnable_mask is not None
             
             # Check that save file exists
             assert os.path.exists(temp_save.name)
