@@ -1,0 +1,66 @@
+Miraidon @ Eject Pack  
+Ability: Hadron Engine  
+Level: 50  
+Tera Type: Fire  
+EVs: 4 Def / 252 SpA / 252 Spe  
+Timid Nature  
+- Electro Drift  
+- Draco Meteor  
+- Overheat  
+- Protect  
+
+Calyrex-Ice @ Loaded Dice  
+Ability: As One (Glastrier)  
+Level: 50  
+Tera Type: Water  
+EVs: 252 HP / 212 Atk / 44 SpD  
+Adamant Nature  
+- Icicle Spear  
+- Bullet Seed  
+- High Horsepower  
+- Trick Room  
+
+Mimikyu @ Rocky Helmet  
+Ability: Disguise  
+Level: 50  
+Tera Type: Ghost  
+EVs: 100 HP / 156 Atk / 252 Def  
+Adamant Nature  
+- Play Rough  
+- Shadow Sneak  
+- Curse  
+- Trick Room  
+
+Sneasler @ Electric Seed  
+Ability: Unburden  
+Level: 50  
+Tera Type: Flying  
+EVs: 124 HP / 212 Atk / 20 Def / 4 SpD / 148 Spe  
+Adamant Nature  
+- Close Combat  
+- Acrobatics  
+- Taunt  
+- Swords Dance  
+
+Ting-Lu @ Sitrus Berry  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Poison  
+EVs: 244 HP / 4 Atk / 36 Def / 220 SpD / 4 Spe  
+Careful Nature  
+- Earthquake  
+- Stealth Rock  
+- Spikes  
+- Whirlwind  
+
+Ogerpon-Hearthflame (F) @ Hearthflame Mask  
+Ability: Mold Breaker  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 28 Atk / 44 Def / 164 SpD / 20 Spe  
+Careful Nature  
+- Ivy Cudgel  
+- Encore  
+- Swords Dance  
+- Synthesis  
+
