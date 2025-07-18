@@ -87,7 +87,7 @@ def analyze_move_types(move_embeddings: dict[str, np.ndarray],
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Demo move embedding functionality")
+    parser = argparse.ArgumentParser(description="Demo enhanced move embedding functionality")
     parser.add_argument("--moves-csv", default="config/moves.csv", 
                        help="Path to moves CSV file")
     parser.add_argument("--query-move", default="はたく", 
@@ -96,15 +96,26 @@ def main():
                        help="Number of similar moves to show")
     parser.add_argument("--analyze-types", action="store_true", 
                        help="Analyze moves by type")
+    parser.add_argument("--fusion-strategy", default="balanced", 
+                       choices=["concatenate", "balanced", "weighted"],
+                       help="Fusion strategy for combining features")
+    parser.add_argument("--japanese-model", action="store_true", default=True,
+                       help="Use Japanese-specific model")
+    parser.add_argument("--semantic-search", action="store_true",
+                       help="Perform semantic search demo")
     
     args = parser.parse_args()
     
-    print("=== Pokemon Move Embedding Demo ===")
+    print("=== Enhanced Pokemon Move Embedding Demo ===")
     print(f"Loading moves from: {args.moves_csv}")
+    print(f"Fusion strategy: {args.fusion_strategy}")
+    print(f"Japanese model: {args.japanese_model}")
     
-    # Generate embeddings
-    generator = MoveEmbeddingGenerator(args.moves_csv)
-    move_embeddings, feature_names = generator.generate_embeddings()
+    # Generate embeddings with enhanced options
+    generator = MoveEmbeddingGenerator(args.moves_csv, japanese_model=args.japanese_model)
+    move_embeddings, feature_names = generator.generate_embeddings(
+        fusion_strategy=args.fusion_strategy
+    )
     
     print(f"Generated embeddings for {len(move_embeddings)} moves")
     print(f"Feature dimension: {len(feature_names)}")
@@ -119,6 +130,26 @@ def main():
             print(f"  {i}. {move_name} (similarity: {similarity:.3f})")
     else:
         print(f"No similar moves found for '{args.query_move}'")
+    
+    # Semantic search demo
+    if args.semantic_search:
+        print(f"\n=== Semantic Search Demo ===")
+        semantic_queries = [
+            "攻撃力を上げる技",
+            "リフレクター系の技", 
+            "回復技",
+            "状態異常を与える技",
+            "先制技"
+        ]
+        
+        for query in semantic_queries:
+            print(f"\nQuery: '{query}'")
+            results = generator.semantic_search(query, move_embeddings, top_k=3)
+            if results:
+                for i, (move_name, similarity) in enumerate(results, 1):
+                    print(f"  {i}. {move_name} (similarity: {similarity:.3f})")
+            else:
+                print("  No results found")
     
     # Analyze by types if requested
     if args.analyze_types:

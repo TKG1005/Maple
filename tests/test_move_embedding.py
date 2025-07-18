@@ -194,6 +194,62 @@ class TestMoveEmbeddingGenerator:
             assert embedding.shape[0] == len(feature_names)
             assert embedding.dtype == np.float32
     
+    def test_fusion_strategies(self):
+        """Test different fusion strategies."""
+        strategies = ['concatenate', 'balanced', 'weighted']
+        
+        for strategy in strategies:
+            move_embeddings, feature_names = self.generator.generate_embeddings(
+                fusion_strategy=strategy
+            )
+            
+            # Check that embeddings are generated
+            assert len(move_embeddings) > 0
+            assert len(feature_names) > 0
+            
+            # Check that all test moves are present
+            for move_name in self.test_data['name']:
+                assert move_name in move_embeddings
+                embedding = move_embeddings[move_name]
+                assert embedding.shape[0] == len(feature_names)
+                assert embedding.dtype == np.float32
+    
+    def test_japanese_text_preprocessing(self):
+        """Test Japanese text preprocessing."""
+        # Test with various Japanese text inputs
+        test_cases = [
+            ("通常攻撃。", "通常攻撃。"),
+            ("", "通常攻撃。"),
+            ("【特殊】攻撃力を上げる", "特殊攻撃力を上げる。"),
+            ("長い説明文" * 50, "長い説明文" * 32 + "。"),  # Should be truncated
+            ("改行\nあり\nテスト", "改行 あり テスト。"),
+        ]
+        
+        for input_text, expected_output in test_cases:
+            result = self.generator.preprocess_japanese_text(input_text)
+            # Check that preprocessing produces reasonable output
+            assert isinstance(result, str)
+            assert len(result) > 0
+            assert result.endswith('。')
+    
+    def test_semantic_search(self):
+        """Test semantic search functionality."""
+        # Generate embeddings first
+        move_embeddings, feature_names = self.generator.generate_embeddings()
+        
+        # Test semantic search
+        query = "攻撃力を上げる"
+        results = self.generator.semantic_search(query, move_embeddings, top_k=3)
+        
+        # Check results format
+        assert isinstance(results, list)
+        assert len(results) <= 3
+        
+        for move_name, similarity in results:
+            assert isinstance(move_name, str)
+            assert isinstance(similarity, (float, np.floating))
+            assert move_name in move_embeddings
+    
     def test_save_and_load_embeddings(self):
         """Test saving and loading embeddings."""
         # Generate embeddings
