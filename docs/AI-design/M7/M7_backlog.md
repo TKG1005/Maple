@@ -168,7 +168,7 @@ rewards:
 | ID  | タスク                          | 対象ファイル               | 技術要件／検証 |
 |-----|-------------------------------|----------------------------|----------------|
 | E-1 | PPO エントロピー係数 config 化   | `train/ppo_trainer.py`     | `--entropy_coef 0.01` CLI。エントロピー平均を TensorBoard 出力。 |
-| E-2 | ε-greedy wrapper 実装           | `agents/action_wrapper.py` | ε を線形減衰 (0.05→0) オプション。ランダム行動率を毎試合ログ。 |
+| E-2 | ε-greedy wrapper 実装           | `agents/action_wrapper.py` | ε を線形or指数減衰 (1→0.1) オプション。ランダム行動(探索)率を毎試合ログ。 |
 
 ---
 
@@ -251,7 +251,7 @@ rewards:
 - [x] N-1 MLP 2 層化（基本・LSTM・Attentionネットワーク実装）
 - [x] N-2 LSTM ヘッダ追加（隠れ状態管理とシーケンシャル学習対応）
 - [x] N-3 アテンション試験フック（Multi-head Attentionネットワーク実装）
-- [x] E-1 PPO エントロピー係数 config 化（config/train_config.ymlで実装済み）
+- [x] E-1 PPO エントロピー係数 config 化（config/train_config.ymlで実装済み + TensorBoard出力実装完了）
 - [ ] E-2 ε-greedy wrapper 実装
 - [ ] V-1 TensorBoard スカラー整理
 - [ ] V-2 CSV エクスポートユーティリティ

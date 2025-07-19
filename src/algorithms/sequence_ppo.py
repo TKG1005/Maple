@@ -167,7 +167,7 @@ class SequencePPOAlgorithm(BaseAlgorithm):
         model: nn.Module,
         optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
-    ) -> float:
+    ) -> float | tuple[float, float]:
         """Update model using sequence-based PPO with configurable BPTT length."""
         if optimizer is None:
             return 0.0
@@ -234,6 +234,9 @@ class SequencePPOAlgorithm(BaseAlgorithm):
         
         optimizer.step()
         
+        # Return loss and entropy if available
+        if "entropy" in total_metrics:
+            return float(total_loss.detach()), float(total_metrics["entropy"])
         return float(total_loss.detach())
 
 

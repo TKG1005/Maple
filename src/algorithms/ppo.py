@@ -19,13 +19,28 @@ def compute_ppo_loss(
     clip_range: float = 0.2,
     value_coef: float = 0.5,
     entropy_coef: float = 0.01,
-) -> torch.Tensor:
-    """Return clipped PPO loss value.
+    return_entropy: bool = False,
+) -> torch.Tensor | tuple[torch.Tensor, float]:
+    """Return clipped PPO loss value, optionally with entropy.
 
     This function works with real :mod:`torch` tensors.  When ``torch`` is not
     available (as in the lightweight test environment), the inputs can be Python
     lists of floats.  In that case, operations fall back to ``math`` and list
     comprehensions.
+    
+    Args:
+        new_log_probs: Log probabilities from current policy
+        old_log_probs: Log probabilities from old policy
+        advantages: Advantage estimates
+        returns: Return estimates
+        values: Value estimates
+        clip_range: PPO clipping parameter
+        value_coef: Value loss coefficient
+        entropy_coef: Entropy coefficient
+        return_entropy: If True, return (loss, entropy) tuple
+        
+    Returns:
+        Loss value, or (loss, entropy) if return_entropy=True
     """
     if hasattr(torch, "exp"):
         ratio = torch.exp(new_log_probs - old_log_probs)
@@ -33,7 +48,11 @@ def compute_ppo_loss(
         policy_loss = -torch.min(ratio * advantages, clipped_ratio * advantages).mean()
         value_loss = 0.5 * (returns - values).pow(2).mean()
         entropy = -(new_log_probs.exp() * new_log_probs).sum(-1).mean()
-        return policy_loss + value_coef * value_loss - entropy_coef * entropy
+        total_loss = policy_loss + value_coef * value_loss - entropy_coef * entropy
+        
+        if return_entropy:
+            return total_loss, float(entropy.detach())
+        return total_loss
 
     ratio = [math.exp(n - o) for n, o in zip(new_log_probs, old_log_probs)]
     clipped_ratio = [max(min(r, 1.0 + clip_range), 1.0 - clip_range) for r in ratio]
@@ -43,7 +62,11 @@ def compute_ppo_loss(
     value_loss = 0.5 * sum(value_terms) / len(value_terms)
     entropy_terms = [-math.exp(n) * n for n in new_log_probs]
     entropy = sum(entropy_terms) / len(entropy_terms)
-    return policy_loss + value_coef * value_loss - entropy_coef * entropy
+    total_loss = policy_loss + value_coef * value_loss - entropy_coef * entropy
+    
+    if return_entropy:
+        return total_loss, entropy
+    return total_loss
 
 
 class PPOAlgorithm(BaseAlgorithm):
@@ -64,7 +87,7 @@ class PPOAlgorithm(BaseAlgorithm):
         model: nn.Module,
         optimizer: torch.optim.Optimizer | None,
         batch: Dict[str, torch.Tensor],
-    ) -> float:
+    ) -> float | tuple[float, float]:
         # Handle different model formats
         if isinstance(model, (tuple, list)) and len(model) == 2:
             policy_net, value_net = model
@@ -109,7 +132,7 @@ class PPOAlgorithm(BaseAlgorithm):
             # Fallback to pre-computed values (legacy behavior)
             values = torch.as_tensor(batch.get("values", torch.zeros_like(returns)), dtype=torch.float32, device=device)
 
-        loss = compute_ppo_loss(
+        result = compute_ppo_loss(
             selected,
             old_log_probs,
             advantages,
@@ -118,7 +141,10 @@ class PPOAlgorithm(BaseAlgorithm):
             clip_range=self.clip_range,
             value_coef=self.value_coef,
             entropy_coef=self.entropy_coef,
+            return_entropy=True,
         )
+        
+        loss, entropy = result
 
         if optimizer is not None:
             optimizer.zero_grad()
@@ -133,7 +159,7 @@ class PPOAlgorithm(BaseAlgorithm):
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
         
-        return float(loss.detach())
+        return float(loss.detach()), float(entropy)
 
 
 __all__ = ["compute_ppo_loss", "PPOAlgorithm"]

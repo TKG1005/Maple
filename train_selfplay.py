@@ -881,16 +881,39 @@ def main(
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         
         if algo_name == "ppo":
+            entropy_list = []
             for i in range(ppo_epochs):
-                loss = temp_agent.update(combined)
+                result = temp_agent.update(combined)
+                if isinstance(result, tuple) and len(result) == 2:
+                    loss, entropy = result
+                    entropy_list.append(entropy)
+                else:
+                    loss = result
+                    entropy = None
                 logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
                 if writer:
                     writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+                    if entropy is not None:
+                        writer.add_scalar("entropy", entropy, ep * ppo_epochs + i)
+            
+            # Log average entropy for the episode
+            if entropy_list and writer:
+                avg_entropy = sum(entropy_list) / len(entropy_list)
+                writer.add_scalar("entropy_avg", avg_entropy, ep + 1)
+                logger.info("Episode %d average entropy %.4f", ep + 1, avg_entropy)
         else:
-            loss = temp_agent.update(combined)
+            result = temp_agent.update(combined)
+            if isinstance(result, tuple) and len(result) == 2:
+                loss, entropy = result
+            else:
+                loss = result
+                entropy = None
             logger.info("Episode %d loss %.4f", ep + 1, loss)
             if writer:
                 writer.add_scalar("loss", loss, ep + 1)
+                if entropy is not None:
+                    writer.add_scalar("entropy", entropy, ep + 1)
+                    logger.info("Episode %d entropy %.4f", ep + 1, entropy)
         
         # Reset hidden states after training to ensure clean state for next episode
         temp_agent.reset_hidden_states()
