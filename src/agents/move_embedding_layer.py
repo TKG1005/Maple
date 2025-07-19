@@ -112,7 +112,7 @@ class MoveEmbeddingLayer(nn.Module):
     
     def forward(self, move_indices: torch.Tensor) -> torch.Tensor:
         """
-        Forward pass to get move embeddings.
+        Forward pass to get move embeddings using optimized index_select.
         
         Args:
             move_indices: Tensor of move indices [batch_size] or [batch_size, num_moves]
@@ -120,21 +120,25 @@ class MoveEmbeddingLayer(nn.Module):
         Returns:
             Move embeddings [batch_size, embedding_dim] or [batch_size, num_moves, embedding_dim]
         """
-        # Get learnable and non-learnable parts
-        learnable_part = self.learnable_embeddings[move_indices]  # [batch_size, num_learnable]
-        non_learnable_part = self.non_learnable_embeddings[move_indices]  # [batch_size, num_non_learnable]
+        # Flatten indices for index_select
+        original_shape = move_indices.shape
+        flat_indices = move_indices.view(-1)
         
-        # Reconstruct full embedding
-        batch_shape = learnable_part.shape[:-1]
-        full_embedding = torch.zeros(batch_shape + (self.embedding_dim,), device=self.device)
+        # Use index_select for efficient gathering (single memory access)
+        learnable_part = torch.index_select(self.learnable_embeddings, 0, flat_indices)
+        non_learnable_part = torch.index_select(self.non_learnable_embeddings, 0, flat_indices)
         
-        # Fill in learnable features
-        full_embedding[..., self.learnable_indices] = learnable_part
+        # Pre-allocate full embedding tensor
+        batch_size = flat_indices.shape[0]
+        full_embedding = torch.empty(batch_size, self.embedding_dim, device=self.device, dtype=torch.float32)
         
-        # Fill in non-learnable features
-        full_embedding[..., self.non_learnable_indices] = non_learnable_part
+        # Use advanced indexing to fill both parts in one operation each
+        full_embedding[:, self.learnable_indices] = learnable_part
+        full_embedding[:, self.non_learnable_indices] = non_learnable_part
         
-        return full_embedding
+        # Reshape back to original shape + embedding dimension
+        final_shape = original_shape + (self.embedding_dim,)
+        return full_embedding.view(final_shape)
     
     def get_move_index(self, move_name: str) -> int:
         """Get the index for a move name."""
