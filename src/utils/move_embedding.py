@@ -17,6 +17,7 @@ import os
 import pickle
 import re
 from pathlib import Path
+from collections import OrderedDict
 
 
 class MoveEmbeddingGenerator:
@@ -276,7 +277,7 @@ class MoveEmbeddingGenerator:
     
     def assemble_final_features(self, df: pd.DataFrame, 
                                fusion_strategy: str = "concatenate",
-                               target_dim: int = 256) -> Tuple[np.ndarray, List[str], Dict[str, bool]]:
+                               target_dim: int = 256) -> Tuple[np.ndarray, List[str], OrderedDict[str, bool]]:
         """
         Assemble the final feature vector for each move with enhanced fusion strategy.
         Now supports 256-dimensional embeddings with learnable parameters.
@@ -291,7 +292,7 @@ class MoveEmbeddingGenerator:
             Tuple of (feature_matrix, feature_names, learnable_mask)
             - feature_matrix: (n_moves, target_dim) array
             - feature_names: List of feature names
-            - learnable_mask: Dict mapping feature names to whether they are learnable
+            - learnable_mask: OrderedDict mapping feature names to whether they are learnable (preserves order)
         """
         # Identify feature columns
         type_cols = [col for col in df.columns if col.startswith('type_')]
@@ -310,8 +311,8 @@ class MoveEmbeddingGenerator:
         # Structured features (non-text) - these will be NON-LEARNABLE
         structured_cols = type_cols + category_cols + scaled_cols + available_flags
         
-        # Create learnable mask
-        learnable_mask = {}
+        # Create learnable mask with OrderedDict to preserve order
+        learnable_mask = OrderedDict()
         
         if fusion_strategy == "concatenate":
             # Simple concatenation with extension to target_dim
@@ -406,8 +407,11 @@ class MoveEmbeddingGenerator:
             feature_matrix = base_features[:, :target_dim]
             self.feature_columns = base_feature_names[:target_dim]
             
-            # Update learnable mask
-            learnable_mask = {name: learnable_mask[name] for name in self.feature_columns}
+            # Update learnable mask, maintaining order
+            new_learnable_mask = OrderedDict()
+            for name in self.feature_columns:
+                new_learnable_mask[name] = learnable_mask[name]
+            learnable_mask = new_learnable_mask
             
         else:
             # Perfect fit
@@ -454,7 +458,7 @@ class MoveEmbeddingGenerator:
     
     def generate_embeddings(self, save_path: Optional[str] = None, 
                            fusion_strategy: str = "concatenate",
-                           target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], Dict[str, bool]]:
+                           target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], OrderedDict[str, bool]]:
         """
         Generate complete move embeddings with enhanced fusion strategies and 256-dimensional vectors.
         
@@ -499,7 +503,7 @@ class MoveEmbeddingGenerator:
     
     def save_embeddings(self, move_embeddings: Dict[str, np.ndarray], 
                        feature_names: List[str], save_path: str, 
-                       learnable_mask: Optional[Dict[str, bool]] = None):
+                       learnable_mask: Optional[OrderedDict[str, bool]] = None):
         """
         Save embeddings to disk with learnable mask information.
         
@@ -532,7 +536,7 @@ class MoveEmbeddingGenerator:
             learnable_count = sum(learnable_mask.values())
             print(f"Saved learnable mask: {learnable_count}/{len(learnable_mask)} features are learnable")
     
-    def load_embeddings(self, load_path: str) -> Tuple[Dict[str, np.ndarray], List[str], Optional[Dict[str, bool]]]:
+    def load_embeddings(self, load_path: str) -> Tuple[Dict[str, np.ndarray], List[str], Optional[OrderedDict[str, bool]]]:
         """
         Load embeddings from disk with learnable mask information.
         
@@ -548,6 +552,15 @@ class MoveEmbeddingGenerator:
         move_embeddings = embedding_data['move_embeddings']
         feature_names = embedding_data['feature_names']
         learnable_mask = embedding_data.get('learnable_mask', None)
+        
+        # Convert old dict learnable_mask to OrderedDict if needed
+        if learnable_mask is not None and not isinstance(learnable_mask, OrderedDict):
+            # Preserve the order from feature_names
+            ordered_mask = OrderedDict()
+            for feature_name in feature_names:
+                if feature_name in learnable_mask:
+                    ordered_mask[feature_name] = learnable_mask[feature_name]
+            learnable_mask = ordered_mask
         
         # Restore components
         self.scaler = embedding_data.get('scaler', self.scaler)
@@ -630,7 +643,7 @@ def create_move_embeddings(moves_csv_path: str = "config/moves.csv",
                           save_path: str = "config/move_embeddings.pkl",
                           fusion_strategy: str = "concatenate",
                           japanese_model: bool = True,
-                          target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], Dict[str, bool]]:
+                          target_dim: int = 256) -> Tuple[Dict[str, np.ndarray], List[str], OrderedDict[str, bool]]:
     """
     Convenience function to create move embeddings with enhanced options and 256-dimensional vectors.
     

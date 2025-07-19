@@ -11,6 +11,7 @@ import numpy as np
 from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 import pickle
+from collections import OrderedDict
 
 
 class MoveEmbeddingLayer(nn.Module):
@@ -43,11 +44,13 @@ class MoveEmbeddingLayer(nn.Module):
         self.move_to_idx = {name: idx for idx, name in enumerate(self.move_names)}
         
         # Separate learnable and non-learnable features
+        # Use feature_names order as the canonical order
         self.learnable_indices = []
         self.non_learnable_indices = []
         
         for idx, feature_name in enumerate(self.feature_names):
-            if self.learnable_mask[feature_name]:
+            # Check mask using feature name (not relying on dict iteration order)
+            if feature_name in self.learnable_mask and self.learnable_mask[feature_name]:
                 self.learnable_indices.append(idx)
             else:
                 self.non_learnable_indices.append(idx)
@@ -92,6 +95,18 @@ class MoveEmbeddingLayer(nn.Module):
         move_embeddings = embedding_data['move_embeddings']
         feature_names = embedding_data['feature_names']
         learnable_mask = embedding_data['learnable_mask']
+        
+        # Ensure learnable_mask is ordered consistently with feature_names
+        if not isinstance(learnable_mask, OrderedDict):
+            ordered_mask = OrderedDict()
+            for feature_name in feature_names:
+                if feature_name in learnable_mask:
+                    ordered_mask[feature_name] = learnable_mask[feature_name]
+                else:
+                    # Default to False if missing (shouldn't happen)
+                    print(f"Warning: Feature '{feature_name}' not found in learnable_mask, defaulting to False")
+                    ordered_mask[feature_name] = False
+            learnable_mask = ordered_mask
         
         return move_embeddings, feature_names, learnable_mask
     
