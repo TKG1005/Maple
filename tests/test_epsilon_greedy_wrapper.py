@@ -161,14 +161,11 @@ class TestEpsilonGreedyWrapper:
     
     def test_unknown_decay_strategy(self, mock_agent):
         """Test error handling for unknown decay strategy."""
-        wrapper = EpsilonGreedyWrapper(
-            wrapped_agent=mock_agent,
-            decay_strategy="unknown"
-        )
-        wrapper.step_count = 1
-        
         with pytest.raises(ValueError, match="Unknown decay strategy"):
-            wrapper._update_epsilon()
+            wrapper = EpsilonGreedyWrapper(
+                wrapped_agent=mock_agent,
+                decay_strategy="unknown"
+            )
     
     def test_exploration_vs_exploitation(self, epsilon_wrapper):
         """Test exploration vs exploitation behavior."""
@@ -329,10 +326,11 @@ class TestEpsilonGreedyWrapper:
         # Check updated stats
         stats = wrapper.get_exploration_stats()
         assert stats['total_actions'] == 10
-        # With epsilon > 0.1, all actions should be counted as exploration
-        assert stats['random_actions'] == 10
-        assert stats['exploration_rate'] == 1.0
-        assert stats['random_action_rate'] == 1.0  # All actions were random
+        # With epsilon = 0.8, approximately 80% of actions should be counted as exploration
+        # We allow some variance due to randomness
+        assert 5 <= stats['random_actions'] <= 10  # Should be around 8, but allow variance
+        assert 0.5 <= stats['exploration_rate'] <= 1.0
+        assert 0.5 <= stats['random_action_rate'] <= 1.0
         
         # Check additional detailed statistics
         assert 'decay_mode' in stats

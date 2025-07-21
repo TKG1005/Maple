@@ -172,22 +172,41 @@ class EpsilonGreedyWrapper(MapleAgent):
             # Fallback to uniform if something went wrong
             mixed_probs = uniform_probs.copy()
         
-        # Update exploration statistics based on how much we deviated from policy
+        # Update exploration statistics
         self._exploration_stats['total_actions'] += 1
-        # Consider it "exploration" if epsilon contributed significantly
-        if self.epsilon > 0.1:  # Threshold for considering it exploration
-            self._exploration_stats['random_actions'] += 1
-        self._exploration_stats['exploration_rate'] = (
-            self._exploration_stats['random_actions'] / self._exploration_stats['total_actions']
-        )
         
         # Return mixed probabilities or sampled action based on original wrapped agent behavior
         if isinstance(policy_result, np.ndarray):
+            # Track exploration based on how much epsilon contributed to the final distribution
+            # This is an approximation: we count it as exploration if a random choice would have been made
+            rng = getattr(self.env, "rng", np.random.default_rng())
+            if rng.random() < self.epsilon:
+                self._exploration_stats['random_actions'] += 1
+            
+            # Update exploration rate
+            self._exploration_stats['exploration_rate'] = (
+                self._exploration_stats['random_actions'] / self._exploration_stats['total_actions']
+                if self._exploration_stats['total_actions'] > 0 else 0.0
+            )
+            
             return mixed_probs
         else:
-            # Sample from mixed distribution
+            # Sample from mixed distribution using on-policy approach
             rng = getattr(self.env, "rng", np.random.default_rng())
-            return int(rng.choice(len(mixed_probs), p=mixed_probs))
+            action = int(rng.choice(len(mixed_probs), p=mixed_probs))
+            
+            # Track if this action was influenced by exploration
+            # We use a probabilistic approach: with probability epsilon, we count it as exploration
+            if rng.random() < self.epsilon:
+                self._exploration_stats['random_actions'] += 1
+            
+            # Update exploration rate
+            self._exploration_stats['exploration_rate'] = (
+                self._exploration_stats['random_actions'] / self._exploration_stats['total_actions']
+                if self._exploration_stats['total_actions'] > 0 else 0.0
+            )
+            
+            return action
     
     def act(self, observation: np.ndarray, action_mask: np.ndarray) -> int:
         """Sample an action index using ε-greedy strategy."""
