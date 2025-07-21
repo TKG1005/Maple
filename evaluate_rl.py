@@ -240,8 +240,18 @@ def evaluate_single(
                     input_dim = state_dict["policy"]["model.0.weight"].shape[1]
                     logger.info("Detected input dimension: %d", input_dim)
                 
-                # Determine hidden size from first layer
-                hidden_size = 256 if "model.0.weight" in state_dict["policy"] and state_dict["policy"]["model.0.weight"].shape[0] == 256 else 128
+                # Determine hidden size from actual layer dimensions
+                hidden_size = 128  # default
+                
+                # For Attention networks, get hidden size from input_proj layer
+                if any("input_proj" in key for key in policy_keys):
+                    if "input_proj.weight" in state_dict["policy"]:
+                        hidden_size = state_dict["policy"]["input_proj.weight"].shape[0]
+                        logger.info("Detected hidden_size from input_proj: %d", hidden_size)
+                # For basic networks, get hidden size from first model layer
+                elif "model.0.weight" in state_dict["policy"]:
+                    hidden_size = state_dict["policy"]["model.0.weight"].shape[0]
+                    logger.info("Detected hidden_size from model.0: %d", hidden_size)
                 
                 if any("input_proj" in key for key in policy_keys):
                     # This is an AttentionNetwork (with or without LSTM)
