@@ -4,6 +4,126 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
+### 2025-07-21 - ε-greedy Exploration System Completion & Bug Fixes
+
+#### 🐛 **Critical Epsilon Decay Fix**
+- **Problem Resolved**: Fixed epsilon decay not working due to episode count resetting to 0
+- **Root Cause**: New `EpsilonGreedyWrapper` instances were created each episode, losing episode progression
+- **Solution**: Implemented external episode count passing to maintain epsilon continuity across episodes
+- **Verification**: Confirmed proper epsilon decay (1.000→0.995→0.991...) in TensorBoard logs
+
+#### 🔧 **Enhanced EpsilonGreedyWrapper Architecture**
+- **External Episode Count**: Added `initial_episode_count` parameter for cross-episode persistence
+- **Training Loop Integration**: Updated `train_selfplay.py` to pass episode numbers to wrappers
+- **TensorBoard Logging**: Fixed episode count display to show proper progression (1→2→3...)
+- **Parallel Training Support**: Ensured epsilon values work correctly in multi-environment training
+
+#### ✅ **Complete System Verification**
+```
+Episode 1: ε=1.0000, episode_count=1, progress=0.5%
+Episode 2: ε=0.9952, episode_count=2, progress=1.0%  
+Episode 3: ε=0.9905, episode_count=3, progress=1.5%
+```
+- **18 Test Cases**: All tests passing with comprehensive coverage
+- **Production Ready**: Full integration with all network architectures and algorithms
+- **TensorBoard Metrics**: Complete exploration analytics visualization
+
+### 2025-07-20 - Enhanced ε-greedy with On-Policy Learning & Episode-Based Decay
+
+#### 🎯 **On-Policy ε-greedy Implementation**
+- **Theoretical Correctness**: Implemented on-policy distribution mixing for Policy Gradient methods
+- **Distribution Mixing**: `mixed_prob = (1-ε) × policy_prob + ε × uniform_prob`
+- **PPO Compatibility**: Proper importance sampling with mixed distributions
+- **Learning Stability**: Consistent probability distributions between action selection and training
+
+#### 📈 **Episode-Based Decay System**
+- **Decay Mode Options**: `"step"` (per-action) and `"episode"` (per-episode) decay modes
+- **Predictable Control**: Episode-based decay for consistent exploration scheduling
+- **Linear Formula**: Supports theoretical `ε_t = ε_start × (1 – t/T)` decay pattern
+- **Bug Fixes**: Corrected exponential decay formula that was causing premature epsilon reduction
+
+#### ⚙️ **Enhanced CLI Configuration**
+```bash
+# New command-line options for epsilon configuration
+--epsilon-enabled              # Enable ε-greedy exploration
+--epsilon-start 1.0           # Initial exploration rate
+--epsilon-end 0.05            # Final exploration rate  
+--epsilon-decay-steps 1000    # Number of episodes/steps for decay
+--epsilon-decay-strategy exponential  # Decay strategy: linear/exponential
+--epsilon-decay-mode episode  # Decay mode: step/episode
+```
+
+#### 🧪 **Comprehensive Testing & Validation**
+- **21 Test Cases**: All tests passing including new on-policy mixing tests
+- **Numerical Verification**: Mathematical validation of probability distribution mixing
+- **CLI Integration**: Full testing of command-line argument parsing and priority handling
+- **Production Ready**: Theoretical correctness with practical reliability
+
+#### 📊 **Updated Configuration Defaults**
+```yaml
+# config/train_config.yml - Optimized defaults
+exploration:
+  epsilon_greedy:
+    enabled: true
+    epsilon_start: 1.0
+    epsilon_end: 0.05        # Improved final exploration rate
+    decay_steps: 1000        # Episode-appropriate decay period
+    decay_strategy: "exponential"
+    decay_mode: "episode"    # New episode-based decay mode
+```
+
+### 2025-07-20 - ε-greedy Exploration Strategy Implementation (E-2 Task)
+
+#### 🎯 **Complete ε-greedy Exploration System**
+- **EpsilonGreedyWrapper**: Universal wrapper for all MapleAgent instances with ε-greedy exploration
+- **Dual Decay Strategies**: Linear and exponential decay options (1.0 → 0.1) over configurable steps
+- **Real-time Statistics**: Automatic tracking and logging of exploration rates per episode
+- **TensorBoard Integration**: Live monitoring of ε-values, random actions, and exploration rates
+
+#### 🧠 **Exploration Algorithm Implementation**
+- **ε-probability**: Uniform random selection from valid actions
+- **(1-ε)-probability**: Delegate to wrapped agent's policy
+- **Episode Management**: Automatic statistics reset between episodes
+- **Action Masking**: Respects valid action constraints during exploration
+
+#### ⚙️ **Configuration & Training Integration**
+```yaml
+# config/train_config.yml
+exploration:
+  epsilon_greedy:
+    enabled: true            # Enable ε-greedy exploration
+    epsilon_start: 1.0      # Initial exploration rate (100%)
+    epsilon_end: 0.1        # Final exploration rate (10%)
+    decay_steps: 1000       # Steps for decay schedule
+    decay_strategy: "linear" # Decay method: linear/exponential
+```
+
+```bash
+# Training with ε-greedy exploration enabled
+python train_selfplay.py --episodes 50 --tensorboard
+
+# Exploration logs automatically included:
+# Episode 1 exploration: ε=0.991, random actions=45/67 (67.2%)
+```
+
+#### 🧪 **Comprehensive Testing Suite**
+- **18 Test Cases**: Complete validation of all wrapper functionality
+- **Mock Integration**: Thorough testing of exploration vs exploitation behavior
+- **Decay Validation**: Numerical verification of both linear and exponential decay
+- **Statistics Testing**: Validation of exploration rate calculations and episode resets
+- **Production Ready**: All tests passing, validated for deployment
+
+#### 🚀 **Performance & Benefits**
+- **Minimal Overhead**: Simple probability check with negligible impact
+- **Universal Compatibility**: Works with RLAgent, RandomAgent, and all MapleAgent subclasses
+- **Learning Enhancement**: Prevents local optima and encourages strategy diversity
+- **Gradual Convergence**: Smooth transition from exploration to exploitation
+
+#### 💡 **Learning Improvement Effects**
+- **Strategy Diversity**: Early exploration discovers varied tactics
+- **Local Optima Avoidance**: Random actions break out of suboptimal solutions
+- **Smooth Transition**: Configurable decay enables balanced exploration-exploitation
+
 ### 2025-07-18 - Move Embedding Training Integration
 
 #### 🎯 **Complete Training Pipeline Integration**

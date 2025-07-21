@@ -65,6 +65,7 @@ from src.env.pokemon_env import PokemonEnv  # noqa: E402
 from src.state.state_observer import StateObserver  # noqa: E402
 from src.action import action_helper  # noqa: E402
 from src.agents import PolicyNetwork, ValueNetwork, RLAgent  # noqa: E402
+from src.agents.action_wrapper import EpsilonGreedyWrapper  # noqa: E402
 from src.agents.enhanced_networks import (
     LSTMPolicyNetwork, LSTMValueNetwork,
     AttentionPolicyNetwork, AttentionValueNetwork
@@ -371,6 +372,13 @@ def main(
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
     device: str = "auto",
+    # Epsilon-greedy exploration parameters
+    epsilon_enabled: bool | None = None,
+    epsilon_start: float | None = None,
+    epsilon_end: float | None = None,
+    epsilon_decay_steps: int | None = None,
+    epsilon_decay_strategy: str | None = None,
+    epsilon_decay_mode: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -610,12 +618,33 @@ def main(
     current_opponent_id = 0  # Track which opponent snapshot is being used
     last_opponent_update_episode = -1  # Track when opponent was last updated
     
+    # Exploration configuration from config file and CLI overrides (E-2 task)
+    exploration_config = cfg.get("exploration", {})
+    epsilon_config = exploration_config.get("epsilon_greedy", {})
+    
+    # Apply CLI overrides if provided, otherwise use config values
+    epsilon_enabled = epsilon_enabled if epsilon_enabled is not None else bool(epsilon_config.get("enabled", False))
+    epsilon_start = epsilon_start if epsilon_start is not None else float(epsilon_config.get("epsilon_start", 1.0))
+    epsilon_end = epsilon_end if epsilon_end is not None else float(epsilon_config.get("epsilon_end", 0.1))
+    epsilon_decay_steps = epsilon_decay_steps if epsilon_decay_steps is not None else int(epsilon_config.get("decay_steps", 10000))
+    epsilon_decay_strategy = epsilon_decay_strategy if epsilon_decay_strategy is not None else str(epsilon_config.get("decay_strategy", "linear"))
+    epsilon_decay_mode = epsilon_decay_mode if epsilon_decay_mode is not None else str(epsilon_config.get("decay_mode", "step"))
+    
     # League Training configuration from config file
     league_config = cfg.get("league_training", {})
     league_enabled = bool(league_config.get("enabled", False))
     historical_ratio = float(league_config.get("historical_ratio", 0.3))
     max_historical = int(league_config.get("max_historical", 5))
     selection_method = str(league_config.get("selection_method", "uniform"))
+    
+    # Log exploration configuration if enabled
+    if epsilon_enabled:
+        logger.info("ε-greedy exploration enabled:")
+        logger.info("  Initial ε: %.3f", epsilon_start)
+        logger.info("  Final ε: %.3f", epsilon_end)
+        logger.info("  Decay steps: %d", epsilon_decay_steps)
+        logger.info("  Decay strategy: %s", epsilon_decay_strategy)
+        logger.info("  Decay mode: %s", epsilon_decay_mode)
     
     # Log league training configuration if enabled
     if league_enabled:
@@ -626,6 +655,31 @@ def main(
     
     # Historical opponents list (ordered by creation time)
     historical_opponents = []  # List of (snapshot_id, episode_num, policy_net, value_net)
+    
+    def wrap_with_epsilon_greedy(agent, env, episode_num=0):
+        """Wrap agent with ε-greedy exploration if enabled."""
+        if epsilon_enabled:
+            logger.info(f"Wrapping {type(agent).__name__} with ε-greedy exploration:")
+            logger.info(f"  ε_start={epsilon_start}, ε_end={epsilon_end}")
+            logger.info(f"  decay_steps={epsilon_decay_steps}, strategy={epsilon_decay_strategy}")
+            logger.info(f"  decay_mode={epsilon_decay_mode}")
+            logger.info(f"  episode_count={episode_num}")
+            
+            wrapped_agent = EpsilonGreedyWrapper(
+                wrapped_agent=agent,
+                epsilon_start=epsilon_start,
+                epsilon_end=epsilon_end,
+                decay_steps=epsilon_decay_steps,
+                decay_strategy=epsilon_decay_strategy,
+                decay_mode=epsilon_decay_mode,
+                env=env,
+                initial_episode_count=episode_num
+            )
+            logger.info(f"Successfully wrapped agent. New type: {type(wrapped_agent).__name__}")
+            return wrapped_agent
+        else:
+            logger.info("ε-greedy exploration is disabled")
+        return agent
 
     def should_update_opponent(episode_num, battle_results, window_size, threshold):
         """Check if opponent should be updated based on recent win rate."""
@@ -738,6 +792,9 @@ def main(
             
             # Create agents based on opponent type
             rl_agent = RLAgent(env, policy_net, value_net, optimizer, algorithm=algorithm)
+            
+            # Apply ε-greedy wrapper if enabled (E-2 task)
+            rl_agent = wrap_with_epsilon_greedy(rl_agent, env, ep)
             
             if opp_type == "self":
                 # Self-play with win rate based opponent updates
@@ -965,6 +1022,56 @@ def main(
             breakdown_parts = [f"{name}: {val:.3f}" for name, val in sorted(sub_totals.items())]
             logger.info("Episode %d reward breakdown: %s", ep + 1, ", ".join(breakdown_parts))
         
+        # Log and record ε-greedy exploration statistics (E-2 task)
+        episode_epsilon_stats = None
+        if epsilon_enabled:
+            # Debug: Check if agent is properly wrapped
+            agent_type = type(rl_agent).__name__
+            has_exploration_stats = hasattr(rl_agent, 'get_exploration_stats')
+            has_reset_stats = hasattr(rl_agent, 'reset_episode_stats')
+            logger.debug(f"Agent type: {agent_type}, has_exploration_stats: {has_exploration_stats}, has_reset_stats: {has_reset_stats}")
+            
+            if has_exploration_stats:
+                try:
+                    # IMPORTANT: Get stats BEFORE resetting to get current episode's data
+                    episode_epsilon_stats = rl_agent.get_exploration_stats()
+                    
+                    # Reset episode statistics for next episode (this will update episode_count for episode-based decay)
+                    if has_reset_stats:
+                        logger.debug("Calling reset_episode_stats() - this will increment episode_count and update epsilon")
+                        rl_agent.reset_episode_stats()
+                    else:
+                        logger.warning("Agent has get_exploration_stats but not reset_episode_stats")
+                    
+                    # Now get updated stats AFTER reset to show the new epsilon value
+                    post_reset_stats = rl_agent.get_exploration_stats() if has_exploration_stats else episode_epsilon_stats
+                    
+                    logger.info("Episode %d exploration: ε=%.3f->%.3f, random actions=%d/%d (%.1f%%), progress=%.1f%%, mode=%s",
+                               ep + 1,
+                               episode_epsilon_stats.get('epsilon', 0.0),
+                               post_reset_stats.get('epsilon', 0.0),
+                               episode_epsilon_stats.get('random_actions', 0),
+                               episode_epsilon_stats.get('total_actions', 0),
+                               episode_epsilon_stats.get('random_action_rate', 0.0) * 100,
+                               post_reset_stats.get('decay_progress', 0.0) * 100,
+                               post_reset_stats.get('decay_mode', 'unknown'))
+                    
+                    # Debug: Log episode count values
+                    pre_episode_count = episode_epsilon_stats.get('episode_count', 0)
+                    post_episode_count = post_reset_stats.get('episode_count', 0)
+                    logger.debug(f"Episode {ep + 1}: pre_count={pre_episode_count}, post_count={post_episode_count}")
+                    
+                    # Use post-reset episode count for TensorBoard (represents the completed episode number)
+                    # The epsilon-greedy wrapper increments episode_count in reset_episode_stats(), 
+                    # so post-reset count (1, 2, 3...) correctly represents completed episodes
+                    episode_epsilon_stats['episode_count'] = post_episode_count
+                    episode_epsilon_stats['decay_progress'] = post_reset_stats.get('decay_progress', 0.0)
+                    episode_epsilon_stats['next_epsilon'] = post_reset_stats.get('epsilon', episode_epsilon_stats.get('epsilon', 0.0))
+                except Exception as e:
+                    logger.error("Failed to log exploration stats: %s", e, exc_info=True)
+            else:
+                logger.warning(f"ε-greedy enabled but agent ({agent_type}) doesn't have get_exploration_stats method")
+        
         if writer:
             writer.add_scalar("reward", total_reward, ep + 1)
             writer.add_scalar("time/episode", duration, ep + 1)
@@ -973,6 +1080,27 @@ def main(
             writer.add_scalar("learning_rate", current_lr, ep + 1)
             for name, val in sub_totals.items():
                 writer.add_scalar(f"sub_reward/{name}", val, ep + 1)
+            
+            # Log ε-greedy exploration statistics to TensorBoard (E-2 task)
+            if epsilon_enabled and episode_epsilon_stats is not None:
+                try:
+                    writer.add_scalar("exploration/epsilon", episode_epsilon_stats.get('epsilon', 0.0), ep + 1)
+                    writer.add_scalar("exploration/random_actions", episode_epsilon_stats.get('random_actions', 0), ep + 1)
+                    writer.add_scalar("exploration/total_actions", episode_epsilon_stats.get('total_actions', 0), ep + 1)
+                    writer.add_scalar("exploration/exploration_rate", episode_epsilon_stats.get('exploration_rate', 0.0), ep + 1)
+                    writer.add_scalar("exploration/random_action_rate", episode_epsilon_stats.get('random_action_rate', 0.0), ep + 1)
+                    writer.add_scalar("exploration/decay_progress", episode_epsilon_stats.get('decay_progress', 0.0), ep + 1)
+                    
+                    # Decay configuration metrics
+                    writer.add_scalar("exploration/epsilon_start", episode_epsilon_stats.get('epsilon_start', 1.0), ep + 1)
+                    writer.add_scalar("exploration/epsilon_end", episode_epsilon_stats.get('epsilon_end', 0.1), ep + 1)
+                    
+                    # Additional detailed metrics
+                    if episode_epsilon_stats.get('decay_mode') == 'episode':
+                        writer.add_scalar("exploration/episode_count", episode_epsilon_stats.get('episode_count', 0), ep + 1)
+                    writer.add_scalar("exploration/step_count", episode_epsilon_stats.get('step_count', 0), ep + 1)
+                except Exception as e:
+                    logger.debug("Failed to log exploration stats: %s", e)
         
         # Step scheduler if present
         if scheduler is not None:
@@ -1149,6 +1277,41 @@ if __name__ == "__main__":
         default=50,
         help="number of recent battles to track for win rate calculation (default: 50)",
     )
+    
+    # Epsilon-greedy exploration arguments
+    parser.add_argument(
+        "--epsilon-enabled",
+        action="store_true",
+        help="enable ε-greedy exploration",
+    )
+    parser.add_argument(
+        "--epsilon-start",
+        type=float,
+        help="initial exploration rate (default: 1.0)",
+    )
+    parser.add_argument(
+        "--epsilon-end",
+        type=float,
+        help="final exploration rate (default: 0.05)",
+    )
+    parser.add_argument(
+        "--epsilon-decay-steps",
+        type=int,
+        help="number of steps/episodes for decay (default: 1000)",
+    )
+    parser.add_argument(
+        "--epsilon-decay-strategy",
+        type=str,
+        choices=["linear", "exponential"],
+        help="decay strategy: linear or exponential (default: exponential)",
+    )
+    parser.add_argument(
+        "--epsilon-decay-mode",
+        type=str,
+        choices=["step", "episode"],
+        help="decay mode: per-step or per-episode (default: episode)",
+    )
+    
     args = parser.parse_args()
 
     # Set log level based on debug flag or log-level argument
@@ -1188,4 +1351,11 @@ if __name__ == "__main__":
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
         device=args.device,
+        # Epsilon-greedy parameters
+        epsilon_enabled=args.epsilon_enabled if args.epsilon_enabled else None,
+        epsilon_start=args.epsilon_start,
+        epsilon_end=args.epsilon_end,
+        epsilon_decay_steps=args.epsilon_decay_steps,
+        epsilon_decay_strategy=args.epsilon_decay_strategy,
+        epsilon_decay_mode=args.epsilon_decay_mode,
     )
