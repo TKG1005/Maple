@@ -3,29 +3,28 @@
 以下は `docs/AI-design/M7/M7_backlog.md` に基づいた実装タスクの一覧です。
 進捗管理のためチェックボックス形式で列挙します。
 
-## 報酬シェイピング
+## 完了タスク
+
+### 報酬シェイピング
 - [x] R-1 HP差スコア報酬クラス追加
 - [x] R-2 撃破/被撃破 ±1 実装
 - [x] R-3 報酬合成マネージャ
-- [ ] R-4 状態異常付与時の報酬クラス追加
-- [ ] R-5 積み技成功時の微加点
-- [ ] R-6 交代直後にタイプ有利になった場合の加点
 - [x] R-7 毎ターン経過ペナルティ (TurnPenaltyReward として実装完了)
 - [x] R-8 最終味方数-相手数で差分報酬 (PokemonCountReward として実装完了)
-- [ ] R-9 報酬合成管理の強化
 - [x] R-10 無効行動時のボーナス・ペナルティ (FailAndImmuneReward として実装完了, 2025-07-16バグ修正完了)
 
-## 対戦相手の多様化
+### 対戦相手の多様化
 - [x] B-1 RandomBot 実装 (実装完了)
 - [x] B-2 MaxDamageBot 実装 (実装完了)
 - [x] B-3 学習相手スケジューラ (OpponentPool および --opponent-mix として実装完了)
+- [x] B-4 複数チームファイルのランダム使用 (--team random として実装完了)
 
-## ネットワーク拡張
+### ネットワーク拡張
 - [x] N-1 MLP 2 層化 (network_factory.py で実装完了)
 - [x] N-2 LSTM ヘッダ追加 (network_factory.py で実装完了)
 - [x] N-3 アテンション試験フック (network_factory.py で実装完了)
 
-## 探索戦略強化
+### 探索戦略強化
 - [x] E-1 PPO エントロピー係数 config 化 (config/train_config.yml で実装完了)
 - [x] E-2 ε-greedy wrapper 実装 (EpsilonGreedyWrapper として完全実装完了, 2025-07-21)
   - [x] オンポリシー型確率分布混合実装 (理論的正確性確保)
@@ -37,11 +36,68 @@
   - [x] **外部エピソードカウント対応**: 並列学習での継続性問題解決
   - [x] **TensorBoard統合完了**: 全探索メトリクスの可視化対応
 
-## 評価 & ロギング
-- [ ] V-1 TensorBoard スカラー整理
-- [ ] V-2 CSV エクスポートユーティリティ
+### 評価 & ロギング (2025-07-21)【完全実装完了】
+- [x] V-1 TensorBoard スカラー整理 (統一ロガーとして完全実装)
+  - [x] **TensorBoardLogger実装**: 統一命名規則による体系的メトリクス管理
+  - [x] **メトリクス体系化**: 学習/報酬/パフォーマンス/探索/多様性の統合
+  - [x] **下位互換性維持**: 既存writer.add_scalar呼び出しとの完全互換
+  - [x] **履歴管理機能**: CSVエクスポート用メトリクス履歴記録
+  - [x] **コンテキストマネージャー**: withステートメント対応
 
-## 緊急修正 (2025-07-09)
+- [x] V-2 CSV エクスポートユーティリティ (自動エクスポートとして完全実装)
+  - [x] **自動CSV出力**: 学習終了時`runs/YYYYMMDD/metrics.csv`生成
+  - [x] **TensorBoard統合**: ログファイルからの直接エクスポート機能
+  - [x] **実験サマリー**: 統計情報付き自動レポート作成
+  - [x] **バッチ処理**: 複数実験の一括エクスポート対応
+  - [x] **タイムスタンプ**: include_timestampオプション実装
+
+- [x] V-3 行動多様性メトリクス (KL距離・グラフ化として完全実装)
+  - [x] **技選択分布KL距離**: エピソード間の行動変化追跡
+  - [x] **多様性指標算出**: Shannon entropy、Gini係数、効果的行動数
+  - [x] **自動グラフ化**: 行動分布と多様性時系列プロット生成
+  - [x] **Jensen-Shannon距離**: 対称距離メトリクス対応
+  - [x] **依存性最適化**: SciPy/Seaborn非依存（代替実装自動選択）
+
+- [x] **train_selfplay.py統合**: V1-V3機能のリアルタイム動作統合
+- [x] **包括的テスト**: 23個のテストケースによる品質保証
+
+### CI/自動化
+- [x] C-2 Codex/LLM 用 TODO.md (CLAUDE.md として実装完了)
+
+## 未実装タスク
+
+### 報酬シェイピング
+- [ ] R-4 状態異常付与時の報酬クラス追加
+- [ ] R-5 積み技成功時の微加点
+- [ ] R-6 交代直後にタイプ有利になった場合の加点
+- [ ] R-9 報酬合成管理の強化（優先度・重み制御機能追加）
+
+### アルゴリズム追加
+- [ ] A-1 A2C 実装
+- [ ] A-2 ハイパラ検索スクリプト
+
+### CI / 自動化
+- [ ] C-1 GitHub Actions スモーク
+- [ ] C-3 Pre-commit Black + ruff
+
+## その他の主要実装
+
+### ポケモン種族名Embedding (2025-07-12)
+- [x] **EmbeddingInitializer実装**: 種族値による初期化機能
+- [x] **EmbeddingPolicyNetwork実装**: 基本的なEmbedding統合
+- [x] **EmbeddingValueNetwork実装**: Value network対応
+- [x] **Network Factory統合**: 既存システムとの統合
+- [x] **Configuration設定追加**: YAML設定でのEmbedding制御
+- [x] **Unit Test作成**: Embedding層の動作確認（17テストケース）
+- [x] **freeze_base_stats機能**: gradient masking実装
+- [x] **League Training実装**: 破滅的忘却対策
+
+### 並列処理最適化 (2025-07-12)
+- [x] **TensorBoard分析実行**: parallel=5,10,20,30の効率測定
+- [x] **最適設定特定**: parallel=5が最高効率（0.76 battles/sec）
+- [x] **設定ファイル最適化**: train_config.ymlをparallel=5に設定
+
+### 緊急修正 (2025-07-09)
 - [x] **自己対戦システムの修正**: 両エージェントが同じネットワークを共有していた問題を修正
 - [x] **単一モデル収束**: 主エージェントが学習し、対戦相手は凍結コピーを使用する設計に変更
 - [x] **学習率最適化**: 0.002 → 0.0005 に変更して学習安定性を向上
@@ -49,7 +105,7 @@
 - [x] **アルゴリズム対応**: PPO/REINFORCE でオプティマイザーなしのエージェントをサポート
 - [x] **設定ファイル更新**: train_config.yml と reward.yaml の最適化
 
-## 重要アップデート (2025-07-10)
+### 重要アップデート (2025-07-10)
 - [x] **LSTM隠れ状態管理修正**: シーケンシャル学習の実現
   - バッチ処理対応の隠れ状態管理を RLAgent に実装
   - エピソード境界での隠れ状態リセット機能を追加
@@ -66,12 +122,20 @@
   - 基本・LSTM・Attentionネットワークの統一インターフェース
   - 条件分岐による forward メソッド互換性確保
 
-## 評価 & ロギング
-- [ ] V-1 TensorBoard スカラー整理
-- [ ] V-2 CSV エクスポートユーティリティ
-- [ ] V-3 行動多様性メトリクス
+### 状態空間拡張 (2025-07-11〜2025-07-12)
+- [x] ステップ1: ダメージ計算モジュールの拡張とAI特化機能の追加
+  - DamageCalculator AI拡張機能: `calculate_damage_expectation_for_ai()`
+  - 期待値・分散計算、物理/特殊技分類、英日技名変換対応
+  - CSV解析修正、型変換、パフォーマンス最適化（2545回/秒）
+- [x] ステップ2: 状態特徴量CSV/YAMLの拡張
+- [x] ステップ3: StateObserverの拡張
+  - Pokemon Species ID管理システム
+  - DamageCalculator統合
+  - 288ダメージ期待値特徴量追加
+  - 1136次元状態空間の完全実装
+- [x] ステップ4: チームプレビュー・選出情報の状態空間統合
 
-## システムデバッグ & メンテナンス (2025-07-14)
+### システムデバッグ & メンテナンス (2025-07-14)
 - [x] **evaluate_rl.py 動作検証**: 評価システムの完全なデバッグと動作確認
 - [x] **モデル互換性確認**: AttentionNetwork自動検出の精度検証
 - [x] **Legacy Checkpoint削除**: 旧形式28ファイルの互換性問題解決
@@ -79,7 +143,7 @@
 - [x] **デバイス対応検証**: CPU/CUDA/MPS全デバイスでの動作確認
 - [x] **文書更新**: デバッグプロセスの完全な文書化
 
-## 訓練再開バグ修正 & オプティマイザリセット実装 (2025-07-14)
+### 訓練再開バグ修正 & オプティマイザリセット実装 (2025-07-14)
 - [x] **Critical Bug Resolution**: `args.reset_optimizer`未定義エラーの完全修正
 - [x] **Main関数引数追加**: `reset_optimizer: bool = False`パラメータ実装
 - [x] **引数渡し修正**: main関数呼び出し時の`reset_optimizer`引数渡し
@@ -88,26 +152,52 @@
 - [x] **包括的テスト**: 全パターンでの動作検証完了
 - [x] **使用例文書化**: リセット/保持の使い分けガイド作成
 
-## アルゴリズム追加
-- [ ] A-1 A2C 実装
-- [ ] A-2 ハイパラ検索スクリプト
+### FailAndImmuneReward バグ修正とCustomBattle実装 (2025-07-16)
+- [x] **Critical Issue Resolution**: `battle.last_fail_action`と`battle.last_immune_action`属性の欠落問題を修正
+- [x] **CustomBattle Class実装**: poke-envを変更せずにfail/immuneメッセージ処理を実装
+- [x] **EnvPlayer統合**: 全バトルインスタンスで自動的にfail/immuneトラッキング有効化
+- [x] **報酬統合**: -0.3×2.0=-0.6のペナルティが正常動作
+- [x] **包括的テスト**: 14テストケース全通過で品質保証
 
-## ポケモン種族名Embedding (2025-07-12)
-- [x] **EmbeddingInitializer実装**: 種族値による初期化機能
-- [x] **EmbeddingPolicyNetwork実装**: 基本的なEmbedding統合
-- [x] **EmbeddingValueNetwork実装**: Value network対応
-- [x] **Network Factory統合**: 既存システムとの統合
-- [x] **Configuration設定追加**: YAML設定でのEmbedding制御
-- [x] **Unit Test作成**: Embedding層の動作確認（17テストケース）
-- [x] **freeze_base_stats機能**: gradient masking実装
-- [x] **League Training実装**: 破滅的忘却対策
+### Move Embedding System 拡張 (2025-07-18〜2025-07-19)
+- [x] **256次元Move Embedding実装**: 学習可能/非学習可能パラメータ分離
+  - 固定パラメータ169次元（タイプ、カテゴリ、数値、フラグ、説明文埋め込み）
+  - 学習可能パラメータ87次元（抽象的技関係性）
+- [x] **MoveEmbeddingLayer実装**: PyTorch層での混合パラメータ管理
+- [x] **日本語NLP処理**: 技説明文の高度な前処理
+- [x] **セマンティック検索**: 自然言語による技類似性検索
+- [x] **パフォーマンス最適化**: torch.index_select使用で約10倍高速化
+- [x] **OrderedDict一貫性**: 特徴量順序の完全保証
+- [x] **訓練統合**: train_selfplay.pyでの完全統合（状態空間1136→2160次元）
 
-## 並列処理最適化 (2025-07-12)
-- [x] **TensorBoard分析実行**: parallel=5,10,20,30の効率測定
-- [x] **最適設定特定**: parallel=5が最高効率（0.76 battles/sec）
-- [x] **設定ファイル最適化**: train_config.ymlをparallel=5に設定
+### ε-greedy探索戦略実装 (E-2タスク完成) (2025-07-20〜2025-07-21)
+- [x] **EpsilonGreedyWrapper実装**: 完全なε-greedy探索戦略
+- [x] **オンポリシー型実装**: Policy Gradient法との理論的整合性確保
+- [x] **エピソードベース減衰**: 予測可能な減衰制御
+- [x] **CLI設定オプション**: 6つの新引数でフル制御
+- [x] **TensorBoard統合**: 探索メトリクスの完全可視化
+- [x] **外部エピソードカウント対応**: 並列学習での継続性確保
+- [x] **包括的テスト**: 21テストケース全通過
 
-## CI / 自動化
-- [ ] C-1 GitHub Actions スモーク
-- [x] C-2 Codex/LLM 用 TODO.md (CLAUDE.md として実装完了)
-- [ ] C-3 Pre-commit Black + ruff
+## M7 完了状況サマリー
+
+### 完了率
+- **報酬シェイピング**: 6/10 (60%)
+- **対戦相手の多様化**: 4/4 (100%) ✅
+- **ネットワーク拡張**: 3/3 (100%) ✅
+- **探索戦略強化**: 2/2 (100%) ✅
+- **評価&ロギング**: 3/3 (100%) ✅
+- **CI/自動化**: 1/3 (33%)
+- **アルゴリズム追加**: 0/2 (0%)
+
+### 主要な成果
+1. **完全な対戦相手多様化システム**: RandomBot、MaxDamageBot、OpponentPool実装
+2. **高度なネットワークアーキテクチャ**: LSTM、Attention、Embedding対応
+3. **理論的に正しい探索戦略**: オンポリシーε-greedy実装
+4. **包括的な評価システム**: TensorBoard統合、CSV出力、行動多様性分析
+5. **状態空間の大幅拡張**: ダメージ期待値、種族値埋め込み、技埋め込み統合
+
+### 残タスク
+- 報酬シェイピングの追加実装（4タスク）
+- A2Cアルゴリズム実装とハイパラ検索
+- CI/自動化の強化（GitHub Actions、Pre-commit）

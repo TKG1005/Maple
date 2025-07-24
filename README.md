@@ -407,20 +407,52 @@ sequence_learning:
 - **Reward Normalization**: Comprehensive reward normalization for stable training
 - **Configuration System**: YAML-based configuration management
 
+### 2025-07-21 - V1-V3 Evaluation & Logging System Complete Implementation
+
+#### 🎯 **V-1: TensorBoard Scalar Organization**
+- **Unified TensorBoard Logger** (`eval/tb_logger.py`): Systematic metrics management with consistent naming conventions
+- **Comprehensive Metrics Integration**: Training, reward, performance, exploration, and diversity metrics
+- **Backward Compatibility**: Full compatibility with existing `writer.add_scalar` calls
+- **Context Manager Support**: Automatic resource management with `with` statements
+
+#### 📊 **V-2: CSV Export Utility**
+- **Automatic CSV Export** (`eval/export_csv.py`): Training completion generates `runs/YYYYMMDD_HHMMSS/metrics.csv`
+- **TensorBoard Integration**: Direct export capabilities from TensorBoard log files
+- **Experiment Summaries**: Automated statistical analysis reports with mean/min/max/std
+- **Batch Processing**: Multi-experiment export capabilities for comparative analysis
+
+#### 📈 **V-3: Action Diversity Metrics**
+- **Move Selection Analysis** (`eval/diversity.py`): KL divergence calculation for episode-to-episode action patterns
+- **Comprehensive Diversity Indices**: Shannon entropy, Gini coefficient, effective action count calculations
+- **Automated Visualization**: Action distribution histograms and diversity timeline plots
+- **Statistical Analysis**: Jensen-Shannon distance and temporal diversity tracking capabilities
+
+#### ⚙️ **Integration & Technical Features**
+- **Seamless train_selfplay.py Integration**: Real-time metrics logging during training without performance impact
+- **Dependency-Optional Design**: SciPy/Seaborn dependencies made optional with mathematical fallback implementations
+- **Comprehensive Testing**: 23 test cases ensuring system reliability and numerical stability
+- **Error Handling**: Robust error recovery with graceful fallbacks for missing dependencies
+
 ### Previous Updates
 - **Value Network Hidden State Management**: Enhanced LSTM value network processing
-- **Win Rate-Based Opponent Updates**: Intelligent opponent update system
+- **Win Rate-Based Opponent Updates**: Intelligent opponent update system  
 - **Network Forward Method Compatibility**: Fixed compatibility between basic and enhanced networks
 
 ## Usage
 
-### Quick Start
+### Quick Start (V1-V3 Enhanced)
 ```bash
-# Basic training with sequence learning
-python train_selfplay.py --config config/train_config.yml
+# Training with V1-V3 evaluation features enabled
+python train_selfplay.py --episodes 50 --tensorboard
 
-# Long-term training with truncated BPTT
-python train_selfplay.py --config config/train_config_long.yml
+# Generates:
+# - Unified TensorBoard logs (V1)
+# - runs/YYYYMMDD_HHMMSS/metrics.csv (V2)
+# - runs/YYYYMMDD_HHMMSS/experiment_summary.txt (V2)
+# - runs/YYYYMMDD_HHMMSS/diversity_analysis/*.png (V3)
+
+# Configuration-based training
+python train_selfplay.py --config config/train_config.yml
 
 # CPU training (recommended for LSTM)
 python train_selfplay.py --config config/train_config.yml --device cpu

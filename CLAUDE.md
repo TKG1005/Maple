@@ -1347,6 +1347,102 @@ Performance: 6175+ ops/sec
 - `tests/test_move_embedding_performance.py`: 性能最適化テスト
 - 全テストケース合格、プロダクション準備完了
 
+## Recent Updates (2025-07-21)
+
+### V1-V3 Evaluation & Logging System Implementation (Latest)
+完全な評価&ロギングシステム（M7タスクV1-V3）を実装し、学習プロセスの可視化と分析を大幅に改善しました。
+
+#### V-1: TensorBoard統一スカラー整理 (`eval/tb_logger.py`)
+**目的**: 乱雑なTensorBoardログを体系的に整理し、統一命名規則による一貫性のあるメトリクス管理を実現
+
+**実装コンポーネント**:
+- **TensorBoardLogger**: 統一命名規則による体系的メトリクス記録クラス
+- **メトリクス分類**: 学習/報酬/パフォーマンス/探索/多様性の5カテゴリ体系化
+- **履歴管理**: CSVエクスポート用のメトリクス履歴自動記録
+- **下位互換性**: 既存`writer.add_scalar`呼び出しとの完全互換
+
+**使用例**:
+```python
+from eval.tb_logger import create_logger
+
+logger = create_logger("experiment_name")
+logger.log_training_metrics(episode=1, loss=0.5, entropy=1.2)
+logger.log_reward_metrics(episode=1, total_reward=10.0, sub_rewards={'knockout': 5.0})
+logger.log_exploration_metrics(episode=1, exploration_stats)
+```
+
+#### V-2: CSV自動エクスポートシステム (`eval/export_csv.py`)
+**目的**: 学習終了時の自動メトリクス出力により、実験結果の永続化と比較分析を支援
+
+**実装機能**:
+- **自動CSV出力**: `runs/YYYYMMDD_HHMMSS/metrics.csv`の学習終了時生成
+- **TensorBoard統合**: 既存ログファイルからの直接エクスポート機能
+- **実験サマリー**: 統計情報（平均/最小/最大/標準偏差）付きレポート自動作成
+- **バッチ処理**: 複数実験の一括エクスポートとサマリー生成
+
+**使用例**:
+```python
+from eval.export_csv import export_metrics_to_csv, create_experiment_summary
+
+# TensorBoardLoggerから直接エクスポート
+csv_path = export_metrics_to_csv(logger, "experiment_metrics.csv")
+
+# 実験サマリー作成
+summary_path = create_experiment_summary(csv_path)
+```
+
+#### V-3: 行動多様性分析システム (`eval/diversity.py`)
+**目的**: AIの行動パターン分析により、探索行動の多様性と学習進捗を定量的に評価
+
+**実装機能**:
+- **技選択分布KL距離**: エピソード間の行動変化パターン追跡
+- **多様性指標算出**: Shannon entropy、Gini係数、効果的行動数計算
+- **自動グラフ化**: 行動分布ヒストグラムと多様性時系列プロット生成
+- **統計分析**: Jensen-Shannon距離による対称的距離計算
+
+**使用例**:
+```python
+from eval.diversity import ActionDiversityAnalyzer
+
+analyzer = ActionDiversityAnalyzer(num_actions=11)
+analyzer.add_episode_actions([0, 1, 2, 0, 3])  # エピソード行動記録
+diversity = analyzer.calculate_diversity()     # 多様性計算
+kl_timeline = analyzer.calculate_kl_divergence_timeline()  # KL距離時系列
+```
+
+#### 技術的特長と統合
+**train_selfplay.py完全統合**:
+- リアルタイムメトリクス記録（パフォーマンス影響なし）
+- 学習終了時の自動CSV出力・サマリー作成・多様性分析実行
+- エラーハンドリングによる堅牢性確保
+
+**依存性最適化**:
+- **SciPy/Seaborn非依存**: 未インストール時は数学的代替実装を自動選択
+- **数値安定性**: 数値計算での安定性向上とゼロ除算回避
+
+**包括的テスト**:
+- **23テストケース**: `tests/test_eval_modules.py`による品質保証
+- **統合テスト**: 全パイプライン動作検証
+- **モック対応**: 外部依存性のテスト分離
+
+#### 出力例
+```bash
+python train_selfplay.py --episodes 50 --tensorboard
+
+# 自動生成される出力:
+# runs/20250721_143022/metrics.csv              # V2: 全メトリクスCSV
+# runs/20250721_143022/experiment_summary.txt   # V2: 統計サマリー
+# runs/20250721_143022/diversity_analysis/      # V3: 多様性分析
+#   ├── action_distribution.png               # 行動分布ヒストグラム
+#   └── diversity_timeline.png                # 多様性時系列グラフ
+```
+
+#### システム価値
+- **学習可視化**: 体系的なメトリクス管理による学習プロセスの透明化
+- **実験比較**: CSV出力による定量的な実験比較分析
+- **行動分析**: AIの探索戦略と学習パターンの詳細分析
+- **プロダクション対応**: エラー処理と依存性管理による本番環境対応
+
 ## Recent Updates (2025-07-20)
 
 ### ε-greedy Exploration Strategy Implementation (E-2 Task Completion)
