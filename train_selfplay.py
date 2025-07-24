@@ -172,8 +172,9 @@ def run_episode_with_opponent(
     done = False
     traj: List[dict] = []
     sub_totals: dict[str, float] = {}
-
     while not done:
+        
+        
         # RL agent action
         if hasattr(rl_agent, 'select_action'):
             # For RL agents, use select_action which returns probabilities
@@ -294,8 +295,9 @@ def run_episode(
     done = False
     traj: List[dict] = []
     sub_totals: dict[str, float] = {}
-
     while not done:
+        
+        
         probs0 = agent0.select_action(obs0, mask0)
         probs1 = agent1.select_action(obs1, mask1)
         rng = env.rng

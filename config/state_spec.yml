@@ -13,7 +13,7 @@ my_active:
   active_base_stats_HP:
     dtype: int
     battle_path: battle.active_pokemon.stats["hp"]
-    encoder: onehot
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -24,7 +24,7 @@ my_active:
   active_base_stats_atk:
     dtype: int
     battle_path: battle.active_pokemon.stats["atk"]
-    encoder: onehot
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -35,7 +35,7 @@ my_active:
   active_base_stats_def:
     dtype: int
     battle_path: battle.active_pokemon.stats["def"]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -46,7 +46,7 @@ my_active:
   active_base_stats_spa:
     dtype: int
     battle_path: battle.active_pokemon.stats["spa"]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -57,7 +57,7 @@ my_active:
   active_base_stats_spd:
     dtype: int
     battle_path: battle.active_pokemon.stats["spd"]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -68,7 +68,7 @@ my_active:
   active_base_stats_spe:
     dtype: int
     battle_path: battle.active_pokemon.stats["spe"]
-    encoder: identity
+    encoder: linear_scale
     default: '0'
     range:
     - 0
@@ -204,7 +204,9 @@ my_active:
   active_move1_acc:
     dtype: float
     battle_path: active_sorted_moves[0].accuracy
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   active_move1_class:
     dtype: movecategory
@@ -218,7 +220,9 @@ my_active:
   active_move1_max_pp:
     dtype: int
     battle_path: active_sorted_moves[0].max_pp
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   active_move1_pp_frac:
     dtype: float
@@ -273,7 +277,9 @@ my_active:
   active_move2_acc:
     dtype: float
     battle_path: active_sorted_moves[1].accuracy if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   active_move2_class:
     dtype: movecategory
@@ -287,7 +293,9 @@ my_active:
   active_move2_max_pp:
     dtype: int
     battle_path: active_sorted_moves[1].max_pp if len(active_sorted_moves) > 1 and active_sorted_moves[1] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   active_move2_pp_frac:
     dtype: float
@@ -342,7 +350,9 @@ my_active:
   active_move3_acc:
     dtype: float
     battle_path: active_sorted_moves[2].accuracy if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   active_move3_class:
     dtype: movecategory
@@ -356,7 +366,9 @@ my_active:
   active_move3_max_pp:
     dtype: int
     battle_path: active_sorted_moves[2].max_pp if len(active_sorted_moves) > 2 and active_sorted_moves[2] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   active_move3_pp_frac:
     dtype: float
@@ -411,7 +423,9 @@ my_active:
   active_move4_acc:
     dtype: float
     battle_path: active_sorted_moves[3].accuracy if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   active_move4_class:
     dtype: movecategory
@@ -425,7 +439,9 @@ my_active:
   active_move4_max_pp:
     dtype: int
     battle_path: active_sorted_moves[3].max_pp if len(active_sorted_moves) > 3 and active_sorted_moves[3] else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   active_move4_pp_frac:
     dtype: float
@@ -786,7 +802,9 @@ my_bench1:
   my_bench1_base_stats_def:
     dtype: int
     battle_path: bench1.stats["def"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -797,7 +815,9 @@ my_bench1:
   my_bench1_base_stats_spa:
     dtype: int
     battle_path: bench1.stats["spa"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -808,7 +828,9 @@ my_bench1:
   my_bench1_base_stats_spd:
     dtype: int
     battle_path: bench1.stats["spd"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -819,7 +841,9 @@ my_bench1:
   my_bench1_base_stats_spe:
     dtype: int
     battle_path: bench1.stats["spe"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -886,7 +910,9 @@ my_bench1:
     dtype: float
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].accuracy if
       bench1 and bench1.moves and len(bench1.moves) > 0 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move1_class:
     dtype: movecategory
@@ -902,7 +928,9 @@ my_bench1:
     dtype: int
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[0].max_pp if bench1
       and bench1.moves and len(bench1.moves) > 0 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move1_pp_frac:
     dtype: float
@@ -962,7 +990,9 @@ my_bench1:
     dtype: float
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].accuracy if
       bench1 and bench1.moves and len(bench1.moves) > 1 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move2_class:
     dtype: movecategory
@@ -978,7 +1008,9 @@ my_bench1:
     dtype: int
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[1].max_pp if bench1
       and bench1.moves and len(bench1.moves) > 1 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move2_pp_frac:
     dtype: float
@@ -1038,7 +1070,9 @@ my_bench1:
     dtype: float
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].accuracy if
       bench1 and bench1.moves and len(bench1.moves) > 2 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move3_class:
     dtype: movecategory
@@ -1054,7 +1088,9 @@ my_bench1:
     dtype: int
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[2].max_pp if bench1
       and bench1.moves and len(bench1.moves) > 2 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move3_pp_frac:
     dtype: float
@@ -1114,7 +1150,9 @@ my_bench1:
     dtype: float
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].accuracy if
       bench1 and bench1.moves and len(bench1.moves) > 3 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move4_class:
     dtype: movecategory
@@ -1130,7 +1168,9 @@ my_bench1:
     dtype: int
     battle_path: 'sorted(bench1.moves.values(), key=lambda m: m.id)[3].max_pp if bench1
       and bench1.moves and len(bench1.moves) > 3 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench1_move4_pp_frac:
     dtype: float
@@ -1284,7 +1324,9 @@ my_bench2:
   my_bench2_base_stats_def:
     dtype: int
     battle_path: bench2.stats["def"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -1295,7 +1337,9 @@ my_bench2:
   my_bench2_base_stats_spa:
     dtype: int
     battle_path: bench2.stats["spa"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -1306,7 +1350,9 @@ my_bench2:
   my_bench2_base_stats_spd:
     dtype: int
     battle_path: bench2.stats["spd"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -1317,7 +1363,9 @@ my_bench2:
   my_bench2_base_stats_spe:
     dtype: int
     battle_path: bench2.stats["spe"]
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 337]
+    scale_to: [0, 1]
     default: '0'
     range:
     - 0
@@ -1384,7 +1432,9 @@ my_bench2:
     dtype: float
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].accuracy if
       bench2 and bench2.moves and len(bench2.moves) > 0 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move1_class:
     dtype: movecategory
@@ -1400,7 +1450,9 @@ my_bench2:
     dtype: int
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[0].max_pp if bench2
       and bench2.moves and len(bench2.moves) > 0 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move1_pp_frac:
     dtype: float
@@ -1460,7 +1512,9 @@ my_bench2:
     dtype: float
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].accuracy if
       bench2 and bench2.moves and len(bench2.moves) > 1 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move2_class:
     dtype: movecategory
@@ -1476,7 +1530,9 @@ my_bench2:
     dtype: int
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[1].max_pp if bench2
       and bench2.moves and len(bench2.moves) > 1 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move2_pp_frac:
     dtype: float
@@ -1536,7 +1592,9 @@ my_bench2:
     dtype: float
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].accuracy if
       bench2 and bench2.moves and len(bench2.moves) > 2 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move3_class:
     dtype: movecategory
@@ -1552,7 +1610,9 @@ my_bench2:
     dtype: int
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[2].max_pp if bench2
       and bench2.moves and len(bench2.moves) > 2 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move3_pp_frac:
     dtype: float
@@ -1612,7 +1672,9 @@ my_bench2:
     dtype: float
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].accuracy if
       bench2 and bench2.moves and len(bench2.moves) > 3 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 1]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move4_class:
     dtype: movecategory
@@ -1628,7 +1690,9 @@ my_bench2:
     dtype: int
     battle_path: 'sorted(bench2.moves.values(), key=lambda m: m.id)[3].max_pp if bench2
       and bench2.moves and len(bench2.moves) > 3 else 0'
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 48]
+    scale_to: [0, 1]
     default: '0'
   my_bench2_move4_pp_frac:
     dtype: float
@@ -1985,96 +2049,116 @@ field:
   weather_turn:
     dtype: int
     battle_path: list(battle.weather.values())[0] if battle.weather else 0
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 8]
+    scale_to: [0, 1]
     default: '0'
 meta:
   turn_count:
     dtype: int
     battle_path: battle.turn
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 300]
+    scale_to: [0, 1]
     default: '0'
   my_remaining_pokemon:
     dtype: int
     battle_path: my_alive_count
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 6]
+    scale_to: [0, 1]
     default: '3'
   opp_remaining_pokemon:
     dtype: int
     battle_path: opp_alive_count
-    encoder: identity
+    encoder: linear_scale
+    range: [0, 6]
+    scale_to: [0, 1]
     default: '3'
 my_team1:
-  my_team1_pokedex_num:
-    dtype: int
-    battle_path: my_team[0].species_id
+  my_team1_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team1_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 my_team2:
-  my_team2_pokedex_num:
-    dtype: int
-    battle_path: my_team[1].species_id
+  my_team2_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team2_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 my_team3:
-  my_team3_pokedex_num:
-    dtype: int
-    battle_path: my_team[2].species_id
+  my_team3_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team3_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 my_team4:
-  my_team4_pokedex_num:
-    dtype: int
-    battle_path: my_team[3].species_id
+  my_team4_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team4_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 my_team5:
-  my_team5_pokedex_num:
-    dtype: int
-    battle_path: my_team[4].species_id
+  my_team5_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team5_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 my_team6:
-  my_team6_pokedex_num:
-    dtype: int
-    battle_path: my_team[5].species_id
+  my_team6_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(my_team6_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team1:
-  opp_team1_pokedex_num:
-    dtype: int
-    battle_path: opp_team[0].species_id
+  opp_team1_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team1_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team2:
-  opp_team2_pokedex_num:
-    dtype: int
-    battle_path: opp_team[1].species_id
+  opp_team2_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team2_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team3:
-  opp_team3_pokedex_num:
-    dtype: int
-    battle_path: opp_team[2].species_id
+  opp_team3_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team3_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team4:
-  opp_team4_pokedex_num:
-    dtype: int
-    battle_path: opp_team[3].species_id
+  opp_team4_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team4_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team5:
-  opp_team5_pokedex_num:
-    dtype: int
-    battle_path: opp_team[4].species_id
+  opp_team5_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team5_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 opp_team6:
-  opp_team6_pokedex_num:
-    dtype: int
-    battle_path: opp_team[5].species_id
+  opp_team6_species_embedding:
+    dtype: list
+    battle_path: species_embedding.get_species_embedding(opp_team6_pokedex_id)
     encoder: identity
-    default: '0'
+    dimensions: 32
+    default: '[]'
 damage_expectation:
   active_move1_to_opp1_expected:
     dtype: float

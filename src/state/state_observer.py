@@ -38,6 +38,11 @@ class StateObserver:
         self._move_embedding_layer = None
         self._move_embedding_initialized = False
         
+        # Initialize species embedding layer for normalized Pokemon species representations
+        # Use lazy initialization to avoid loading overhead if not needed
+        self._species_embedding_layer = None
+        self._species_embedding_initialized = False
+        
         # Cache for team compositions to avoid recalculation
         self._team_cache = {
             'my_team_ids': None,
@@ -147,6 +152,26 @@ class StateObserver:
                 self._move_embedding_layer = None
             self._move_embedding_initialized = True
         return self._move_embedding_layer
+    
+    def _get_species_embedding_layer(self):
+        """Get species embedding layer with lazy initialization for performance."""
+        if not self._species_embedding_initialized:
+            try:
+                import torch
+                from src.agents.species_embedding_layer import SpeciesEmbeddingLayer
+                device = torch.device('cpu')  # Use CPU for state observation
+                self._species_embedding_layer = SpeciesEmbeddingLayer(
+                    vocab_size=1026,
+                    embed_dim=32,
+                    stats_csv_path="config/pokemon_stats.csv",
+                    device=device
+                )
+                print("Species embedding layer initialized successfully")
+            except Exception as e:
+                print(f"Warning: Could not initialize species embedding layer: {e}")
+                self._species_embedding_layer = None
+            self._species_embedding_initialized = True
+        return self._species_embedding_layer
 
     def get_observation_dimension(self) -> int:
         """
@@ -462,6 +487,49 @@ class StateObserver:
                     return [0.0] * 256
             
             ctx["move_embedding"] = FallbackMoveEmbeddingProvider()
+        
+        # Add species embedding functionality to context
+        species_embedding_layer = self._get_species_embedding_layer()
+        if species_embedding_layer:
+            # Create a wrapper class to provide convenient species embedding access
+            class SpeciesEmbeddingProvider:
+                def __init__(self, embedding_layer):
+                    self.embedding_layer = embedding_layer
+                    self.embedding_cache = {}  # Cache embeddings within a single observation
+                
+                def get_species_embedding(self, species_id):
+                    """Get normalized embedding for a Pokemon species ID."""
+                    if species_id in self.embedding_cache:
+                        return self.embedding_cache[species_id]
+                    
+                    try:
+                        if species_id is None or species_id == 0:
+                            # Return zero vector for unknown species
+                            zero_embedding = [0.0] * 32
+                            self.embedding_cache[species_id] = zero_embedding
+                            return zero_embedding
+                        
+                        # Get embedding from layer
+                        embedding = self.embedding_layer.get_species_embedding(int(species_id))
+                        embedding_list = embedding.detach().cpu().numpy().tolist()
+                        
+                        self.embedding_cache[species_id] = embedding_list
+                        return embedding_list
+                    except Exception as e:
+                        print(f"Warning: Failed to get species embedding for ID {species_id}: {e}")
+                        # Return zero vector on error
+                        zero_embedding = [0.0] * 32
+                        self.embedding_cache[species_id] = zero_embedding
+                        return zero_embedding
+            
+            ctx["species_embedding"] = SpeciesEmbeddingProvider(species_embedding_layer)
+        else:
+            # Fallback provider that returns zero vectors
+            class FallbackSpeciesEmbeddingProvider:
+                def get_species_embedding(self, species_id):
+                    return [0.0] * 32
+            
+            ctx["species_embedding"] = FallbackSpeciesEmbeddingProvider()
 
         return ctx
 

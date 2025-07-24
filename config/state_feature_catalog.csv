@@ -1,11 +1,11 @@
 Category,Feature ID,説明,Battle　経路,Type,Encoder,keys,Range,classes,Unnamed: 9,Default,MVP,備考
 my_active,active_level,場のポケモンのレベル,battle.active_pokemon.level,int,onehot,,"range:[0,100] scale_to:[0,1]",,,50,TRUE,
-my_active,active_base_stats_HP,場のポケモンのHP実数値,"battle.active_pokemon.stats[""hp""]",int,onehot,,"range:[0,362] scale_to:[0,1]",,,0,TRUE,種族値255のmaxHPが362
-my_active,active_base_stats_atk,場のポケモンのこうげき実数値,"battle.active_pokemon.stats[""atk""]",int,onehot,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,種族値255のmaxが337
-my_active,active_base_stats_def,場のポケモンの防御実数値,"battle.active_pokemon.stats[""def""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_active,active_base_stats_spa,場のポケモンのとくこう実数値,"battle.active_pokemon.stats[""spa""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_active,active_base_stats_spd,場のポケモンのとくぼう実数値,"battle.active_pokemon.stats[""spd""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_active,active_base_stats_spe,場のポケモンのすばやさ実数値,"battle.active_pokemon.stats[""spe""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_active,active_base_stats_HP,場のポケモンのHP実数値,"battle.active_pokemon.stats[""hp""]",int,linear_scale,,"range:[0,362] scale_to:[0,1]",,,0,TRUE,種族値255のmaxHPが362
+my_active,active_base_stats_atk,場のポケモンのこうげき実数値,"battle.active_pokemon.stats[""atk""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,種族値255のmaxが337
+my_active,active_base_stats_def,場のポケモンの防御実数値,"battle.active_pokemon.stats[""def""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_active,active_base_stats_spa,場のポケモンのとくこう実数値,"battle.active_pokemon.stats[""spa""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_active,active_base_stats_spd,場のポケモンのとくぼう実数値,"battle.active_pokemon.stats[""spd""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_active,active_base_stats_spe,場のポケモンのすばやさ実数値,"battle.active_pokemon.stats[""spe""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
 my_active,active_boosts_akt,場のポケモンのこうげきランク,battle.active_pokemon.boosts['atk'],int,linear_scale,,"range:[-6,6] scale_to:[0,1]",,,0,TRUE,
 my_active,active_boosts_def,場のポケモンのぼうぎょランク,battle.active_pokemon.boosts['def'],int,linear_scale,,"range:[-6,6] scale_to:[0,1]",,,0,TRUE,
 my_active,active_boosts_spa,場のポケモンのとくこうランク,battle.active_pokemon.boosts['spa'],int,linear_scale,,"range:[-6,6] scale_to:[0,1]",,,0,TRUE,
@@ -76,10 +76,10 @@ opp_active,opp_active_secondary_type,相手の場のポケモンのタイプ２,
 my_bench1,my_bench1_level,自分の控え１のポケモンのレベル,bench1.level,int,onehot,,"range:[0,100] scale_to:[0,1]",,,50,TRUE,
 my_bench1,my_bench1_base_stats_HP,自分の控え１のHP実数値,"bench1.stats[""hp""]",int,onehot,,"range:[0,362] scale_to:[0,1]",,,0,TRUE,種族値255のmaxHPが362
 my_bench1,my_bench1_base_stats_atk,自分の控え１のこうげき実数値,"bench1.stats[""atk""]",int,onehot,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,種族値255のmaxが337
-my_bench1,my_bench1_base_stats_def,自分の控え１の防御実数値,"bench1.stats[""def""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench1,my_bench1_base_stats_spa,自分の控え１のとくこう実数値,"bench1.stats[""spa""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench1,my_bench1_base_stats_spd,自分の控え１のとくぼう実数値,"bench1.stats[""spd""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench1,my_bench1_base_stats_spe,自分の控え１のすばやさ実数値,"bench1.stats[""spe""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench1,my_bench1_base_stats_def,自分の控え１の防御実数値,"bench1.stats[""def""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench1,my_bench1_base_stats_spa,自分の控え１のとくこう実数値,"bench1.stats[""spa""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench1,my_bench1_base_stats_spd,自分の控え１のとくぼう実数値,"bench1.stats[""spd""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench1,my_bench1_base_stats_spe,自分の控え１のすばやさ実数値,"bench1.stats[""spe""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
 my_bench1,my_bench1_current_hp,自分の控え１のポケモンの現在HP,,int,,,,,,,FALSE,
 my_bench1,my_bench1_current_hp_frac,自分の控え１のポケモンの現在HP割合,bench1.current_hp_fraction,float,identity,,,,,1,TRUE,"bench_candidates = [p for p in battle.team.values() if not p.active]
 bench1 = bench_candidates[0]"
@@ -123,10 +123,10 @@ my_bench1,my_bench1_secondary_type,自分の控え１のポケモンのタイプ
 my_bench2,my_bench2_level,自分の控え２のポケモンのレベル,bench2.level,int,one-hot,,"range:[0,100] scale_to:[0,1]",,,50,TRUE,
 my_bench2,my_bench2_base_stats_HP,自分の控え２のHP実数値,"bench2.stats[""hp""]",int,onehot,,"range:[0,362] scale_to:[0,1]",,,0,TRUE,種族値255のmaxHPが362
 my_bench2,my_bench2_base_stats_atk,自分の控え２のこうげき実数値,"bench2.stats[""atk""]",int,onehot,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,種族値255のmaxが337
-my_bench2,my_bench2_base_stats_def,自分の控え２の防御実数値,"bench2.stats[""def""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench2,my_bench2_base_stats_spa,自分の控え２のとくこう実数値,"bench2.stats[""spa""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench2,my_bench2_base_stats_spd,自分の控え２のとくぼう実数値,"bench2.stats[""spd""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
-my_bench2,my_bench2_base_stats_spe,自分の控え２のすばやさ実数値,"bench2.stats[""spe""]",int,identity,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench2,my_bench2_base_stats_def,自分の控え２の防御実数値,"bench2.stats[""def""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench2,my_bench2_base_stats_spa,自分の控え２のとくこう実数値,"bench2.stats[""spa""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench2,my_bench2_base_stats_spd,自分の控え２のとくぼう実数値,"bench2.stats[""spd""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
+my_bench2,my_bench2_base_stats_spe,自分の控え２のすばやさ実数値,"bench2.stats[""spe""]",int,linear_scale,,"range:[0,337] scale_to:[0,1]",,,0,TRUE,
 my_bench2,my_bench2_current_hp,自分の控え２のポケモンの現在HP,,int,,,,,,,FALSE,
 my_bench2,my_bench2_current_hp_frac,自分の控え２のポケモンの現在HP割合,bench2.current_hp_fraction,float,,,,,,1,TRUE,
 my_bench2,my_bench2_is_fainted,自分の控え２のポケモンがきぜつしたかどうか,bench2.fainted,bool,,,,,,0,TRUE,
