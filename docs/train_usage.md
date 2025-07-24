@@ -1,9 +1,9 @@
-# train_selfplay.py の使い方
+# train.py の使い方
 
-`train_selfplay.py` は、自己対戦形式で強化学習を行うためのスクリプトです。基本的な起動は次の通りです。
+`train.py` は、自己対戦形式で強化学習を行うためのスクリプトです。基本的な起動は次の通りです。
 
 ```bash
-python train_selfplay.py [オプション]
+python train.py [オプション]
 ```
 
 主なオプション一覧を以下に示します。省略した場合は `config/train_config.yml` に定義された値が使用されます。
@@ -31,7 +31,7 @@ python train_selfplay.py [オプション]
 
 ```bash
 # 基本的な学習
-python train_selfplay.py \
+python train.py \
     --episodes 100 \
     --algo ppo \
     --ppo-epochs 4 \
@@ -41,20 +41,20 @@ python train_selfplay.py \
     --save model.pt
 
 # チェックポイントから学習を再開
-python train_selfplay.py \
+python train.py \
     --load-model checkpoints/checkpoint_ep5000.pt \
     --episodes 100 \
     --save model_continued.pt
 
 # ランダムチームで学習
-python train_selfplay.py \
+python train.py \
     --team random \
     --teams-dir config/teams \
     --episodes 50 \
     --save model_random_teams.pt
 
 # 複数の対戦相手を混合して学習
-python train_selfplay.py \
+python train.py \
     --opponent-mix "random:0.3,max:0.3,self:0.4" \
     --episodes 100 \
     --save model_mixed_opponents.pt
@@ -71,7 +71,7 @@ python train_selfplay.py \
 利用する場合は、`--reward knockout` を指定します。
 
 ```bash
-python train_selfplay.py --reward knockout
+python train.py --reward knockout
 ```
 
 複数の報酬を組み合わせたいときは、CompositeReward 用の YAML で各項目を有効にするだけで

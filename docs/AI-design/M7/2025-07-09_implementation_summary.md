@@ -12,7 +12,7 @@
 - `docs/開発日記/2025-07-09_自己対戦システム緊急修正.md` - 開発日記
 
 ### 修正ファイル
-- `train_selfplay.py` - 自己対戦ロジックの根本的修正
+- `train.py` - 自己対戦ロジックの根本的修正
 - `src/agents/RLAgent.py` - オプティマイザーなし対応
 - `src/algorithms/base.py` - アルゴリズム基底クラス修正
 - `src/algorithms/ppo.py` - PPOアルゴリズム修正

@@ -244,7 +244,7 @@ parallel: 20       # Increase parallel envs (if memory allows)
 Validate your configuration before long training runs:
 ```bash
 # Test configuration with minimal training
-python train_selfplay.py --config your_config.yml --episodes 1 --parallel 1
+python train.py --config your_config.yml --episodes 1 --parallel 1
 ```
 
 ## Migration from Standard Algorithms
@@ -286,14 +286,14 @@ network:
 
 ```bash
 # Basic sequence learning
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # Production training with CPU
-python train_selfplay.py --config config/train_config_long.yml --device cpu
+python train.py --config config/train_config_long.yml --device cpu
 
 # Override BPTT length
-python train_selfplay.py --config config/train_config.yml --episodes 100
+python train.py --config config/train_config.yml --episodes 100
 
 # Quick testing
-python train_selfplay.py --episodes 1 --parallel 1 --device cpu
+python train.py --episodes 1 --parallel 1 --device cpu
 ```

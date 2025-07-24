@@ -6,22 +6,22 @@
 
 ```bash
 # デフォルト設定でテスト実行（100エピソード、LSTM、混合対戦相手）
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # 長時間学習設定（1000エピソード、Attention、セルフプレイ）
-python train_selfplay.py --config config/train_config_long.yml
+python train.py --config config/train_config_long.yml
 ```
 
 ### デバイス選択
 
 ```bash
 # 自動デバイス検出（推奨）
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # 特定デバイス強制実行
-python train_selfplay.py --config config/train_config.yml --device cuda  # NVIDIA GPU
-python train_selfplay.py --config config/train_config.yml --device mps   # Apple Silicon
-python train_selfplay.py --config config/train_config.yml --device cpu   # CPU強制
+python train.py --config config/train_config.yml --device cuda  # NVIDIA GPU
+python train.py --config config/train_config.yml --device mps   # Apple Silicon
+python train.py --config config/train_config.yml --device cpu   # CPU強制
 ```
 
 ## GPU最適化トレーニング
@@ -30,14 +30,14 @@ python train_selfplay.py --config config/train_config.yml --device cpu   # CPU�
 
 ```bash
 # Apple Silicon での最適化実行
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --device mps \
   --parallel 8 \
   --episodes 200
 
 # バッチサイズ調整でメモリ効率向上
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --device mps \
   --lr 0.0003 \
@@ -48,14 +48,14 @@ python train_selfplay.py \
 
 ```bash
 # CUDA GPU での高速トレーニング
-python train_selfplay.py \
+python train.py \
   --config config/train_config_long.yml \
   --device cuda \
   --parallel 12 \
   --episodes 1000
 
 # 大容量GPU向け設定
-python train_selfplay.py \
+python train.py \
   --config config/train_config_long.yml \
   --device cuda \
   --parallel 16 \
@@ -68,13 +68,13 @@ python train_selfplay.py \
 
 ```bash
 # LSTM + 並列実行（隠れ状態競合問題解決済み）
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --parallel 10 \
   --episodes 300
 
 # 高並列度でのLSTM学習
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --parallel 20 \
   --episodes 500 \
@@ -85,13 +85,13 @@ python train_selfplay.py \
 
 ```bash
 # LSTM ネットワーク（シーケンシャル学習）
-python train_selfplay.py --config config/train_config.yml --episodes 200
+python train.py --config config/train_config.yml --episodes 200
 
 # Attention ネットワーク（高度な特徴抽出）
-python train_selfplay.py --config config/train_config_long.yml --episodes 500
+python train.py --config config/train_config_long.yml --episodes 500
 
 # 基本ネットワーク（軽量・高速）
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 100 \
   --lr 0.001
@@ -103,14 +103,14 @@ python train_selfplay.py \
 
 ```bash
 # 勝率ベース対戦相手更新
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 300 \
   --win-rate-threshold 0.65 \
   --win-rate-window 100
 
 # 積極的な対戦相手更新（低い閾値）
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 200 \
   --win-rate-threshold 0.55 \
@@ -121,19 +121,19 @@ python train_selfplay.py \
 
 ```bash
 # バランス型混合対戦相手
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent-mix "random:0.2,max:0.3,rule:0.2,self:0.3" \
   --episodes 400
 
 # セルフプレイ重視
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent-mix "max:0.2,self:0.8" \
   --episodes 300
 
 # 多様性重視
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent-mix "random:0.4,max:0.3,rule:0.3" \
   --episodes 250
@@ -143,19 +143,19 @@ python train_selfplay.py \
 
 ```bash
 # 最大ダメージ相手特化
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent max \
   --episodes 200
 
 # ルールベース相手特化
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent rule \
   --episodes 150
 
 # ランダム相手でのロバスト性向上
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent random \
   --episodes 300
@@ -167,14 +167,14 @@ python train_selfplay.py \
 
 ```bash
 # 多様なチーム構成での学習
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --team random \
   --teams-dir config/teams \
   --episodes 400
 
 # カスタムチームディレクトリ
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --team random \
   --teams-dir my_teams \
@@ -185,7 +185,7 @@ python train_selfplay.py \
 
 ```bash
 # デフォルトチームでの一貫学習
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --team default \
   --episodes 500
@@ -197,13 +197,13 @@ python train_selfplay.py \
 
 ```bash
 # 保存済みモデルから学習再開
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --load-model checkpoints/checkpoint_ep500.pt \
   --episodes 200
 
 # 学習率調整して再開
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --load-model checkpoints/checkpoint_ep1000.pt \
   --lr 0.0002 \
@@ -214,14 +214,14 @@ python train_selfplay.py \
 
 ```bash
 # 50エピソードごとの自動保存
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --checkpoint-interval 50 \
   --checkpoint-dir my_checkpoints \
   --episodes 500
 
 # 最終モデル保存
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 200 \
   --save final_model.pt
@@ -233,7 +233,7 @@ python train_selfplay.py \
 
 ```bash
 # 標準PPO設定
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --algo ppo \
   --ppo-epochs 4 \
@@ -241,7 +241,7 @@ python train_selfplay.py \
   --episodes 300
 
 # 保守的PPO（小さなclip範囲）
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --algo ppo \
   --ppo-epochs 6 \
@@ -249,7 +249,7 @@ python train_selfplay.py \
   --episodes 400
 
 # 積極的PPO（大きなclip範囲）
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --algo ppo \
   --ppo-epochs 3 \
@@ -261,14 +261,14 @@ python train_selfplay.py \
 
 ```bash
 # シンプルなREINFORCE
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --algo reinforce \
   --lr 0.001 \
   --episodes 200
 
 # エントロピー正則化強化
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --algo reinforce \
   --entropy-coef 0.02 \
@@ -281,13 +281,13 @@ python train_selfplay.py \
 
 ```bash
 # 1エピソードでの動作確認
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 1 \
   --parallel 1
 
 # 少数エピソードでのGPU動作確認
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 5 \
   --device mps \
@@ -298,13 +298,13 @@ python train_selfplay.py \
 
 ```bash
 # TensorBoard有効化
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --tensorboard \
   --episodes 200
 
 # 詳細ログレベル
-python train_selfplay.py \
+python train.py \
   --log-level DEBUG \
   --config config/train_config.yml \
   --episodes 50
@@ -316,13 +316,13 @@ python train_selfplay.py \
 
 ```bash
 # 小さなバッチサイズでメモリ節約
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 300 \
   --parallel 5
 
 # バッファ容量調整
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 400 \
   --parallel 8
@@ -332,14 +332,14 @@ python train_selfplay.py \
 
 ```bash
 # 大きな並列度で高速化
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --parallel 15 \
   --episodes 500 \
   --device cuda
 
 # GPU最適化バッチサイズ
-python train_selfplay.py \
+python train.py \
   --config config/train_config_long.yml \
   --device mps \
   --episodes 800
@@ -351,13 +351,13 @@ python train_selfplay.py \
 
 ```bash
 # 設定A: LSTM + セルフプレイ
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 300 \
   --save model_lstm_selfplay.pt
 
 # 設定B: Attention + 混合対戦相手  
-python train_selfplay.py \
+python train.py \
   --config config/train_config_long.yml \
   --opponent-mix "max:0.5,self:0.5" \
   --episodes 300 \
@@ -369,7 +369,7 @@ python train_selfplay.py \
 ```bash
 # 学習率探索
 for lr in 0.0001 0.0005 0.001 0.002; do
-  python train_selfplay.py \
+  python train.py \
     --config config/train_config.yml \
     --lr $lr \
     --episodes 200 \
@@ -378,7 +378,7 @@ done
 
 # バッチサイズ探索
 for batch in 1024 2048 4096; do
-  python train_selfplay.py \
+  python train.py \
     --config config/train_config.yml \
     --episodes 150 \
     --save model_batch_${batch}.pt
@@ -390,14 +390,14 @@ done
 ```bash
 # 段階的学習（カリキュラム学習）
 # ステップ1: 基礎学習
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --opponent max \
   --episodes 200 \
   --save curriculum_step1.pt
 
 # ステップ2: 混合学習  
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --load-model curriculum_step1.pt \
   --opponent-mix "max:0.5,rule:0.5" \
@@ -405,7 +405,7 @@ python train_selfplay.py \
   --save curriculum_step2.pt
 
 # ステップ3: セルフプレイ
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --load-model curriculum_step2.pt \
   --episodes 500 \
@@ -418,13 +418,13 @@ python train_selfplay.py \
 
 ```bash
 # 並列度を下げる
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --parallel 3 \
   --episodes 200
 
 # バッチサイズを下げる
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 200
 ```
@@ -433,7 +433,7 @@ python train_selfplay.py \
 
 ```bash
 # CPU強制実行
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --device cpu \
   --parallel 4 \
@@ -444,13 +444,13 @@ python train_selfplay.py \
 
 ```bash
 # 学習率を下げる
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --lr 0.0002 \
   --episodes 300
 
 # クリップ範囲を小さくする
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --clip 0.1 \
   --episodes 250

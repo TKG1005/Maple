@@ -47,7 +47,7 @@ def get_value(self, observation: np.ndarray) -> float:
 
 ### 2. 訓練ループの修正
 
-**修正前（train_selfplay.py）:**
+**修正前（train.py）:**
 ```python
 obs0_tensor = torch.as_tensor(obs0, dtype=torch.float32, device=device)
 if obs0_tensor.dim() == 1:
@@ -129,7 +129,7 @@ def reset_hidden_states(self) -> None:
 ### 動作確認
 
 ```bash
-python train_selfplay.py --config config/train_config.yml --episodes 1 --parallel 1
+python train.py --config config/train_config.yml --episodes 1 --parallel 1
 ```
 
 **結果:**
@@ -155,7 +155,7 @@ python train_selfplay.py --config config/train_config.yml --episodes 1 --paralle
 ## 関連ファイル
 
 - `src/agents/RLAgent.py`: 主要な実装
-- `train_selfplay.py`: 訓練ループの修正
+- `train.py`: 訓練ループの修正
 - `CLAUDE.md`: ドキュメント更新
 - `README.md`: 変更ログ追加
 

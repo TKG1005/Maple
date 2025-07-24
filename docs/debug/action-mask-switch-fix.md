@@ -29,7 +29,7 @@ copy_of_poke-env/poke_env/ps_client/ps_client.py:225
 **修正**: 全ファイルから`copy_of_poke-env`への参照を削除し、`.venv`内のpoke-envを使用
 
 **修正ファイル**:
-- `train_selfplay.py`
+- `train.py`
 - `evaluate_rl.py` 
 - `train_rl.py`
 - `test/run_battle.py`

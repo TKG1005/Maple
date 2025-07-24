@@ -114,10 +114,10 @@ reward:
 `CompositeReward` クラスは複数のサブ報酬をまとめて管理するマネージャです。
 `PokemonEnv` を `reward="composite"` で初期化し、
 `reward_config_path` に YAML ファイルを渡すことで利用できます。
-`train_selfplay.py` では次のように指定します。
+`train.py` では次のように指定します。
 
 ```bash
-python train_selfplay.py --reward composite --reward-config config/reward.yaml
+python train.py --reward composite --reward-config config/reward.yaml
 ```
 
 YAML ファイルの例を以下に示します。各サブ報酬は `enabled` で有効/無効を切り替え、
@@ -347,7 +347,7 @@ rewards:
 - [x] **Historical Opponent System**: 過去のネットワーク保持機能
   - 最大5個の過去ネットワークスナップショット管理
   - 固定対戦相手による破滅的忘却の防止
-  - train_selfplay.pyに統合実装
+  - train.pyに統合実装
 
 - [x] **選択アルゴリズム実装**: 3つの履歴選択方法
   - uniform: 全履歴から均等確率で選択
@@ -403,7 +403,7 @@ rewards:
   - SciPy/Seaborn非依存実装（代替手法自動選択）
 
 ##### 統合機能
-- **train_selfplay.py完全統合**: リアルタイムメトリクス記録
+- **train.py完全統合**: リアルタイムメトリクス記録
 - **23個の包括テスト**: `tests/test_eval_modules.py`で品質保証
 - **エラー処理強化**: 数値安定性と堅牢性の向上
 - **学習終了処理**: 自動CSV出力・サマリー作成・多様性分析実行
@@ -421,7 +421,7 @@ rewards:
   - エピソード間でのepsilon値継続性を確保
 
 - [x] **Training Loop統合**: 学習ループでのエピソード数渡し
-  - `train_selfplay.py`: `wrap_with_epsilon_greedy()`にエピソード番号を渡す
+  - `train.py`: `wrap_with_epsilon_greedy()`にエピソード番号を渡す
   - 各並列環境で適切なepsilon値を設定
   - TensorBoardログ記録の修正（episode_count正常表示）
 

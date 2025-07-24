@@ -118,7 +118,7 @@ def update(self, model, optimizer, batch):
 
 **トレーニングスクリプト統合**:
 ```python
-# train_selfplay.py での統合
+# train.py での統合
 def main(..., device="auto"):
     device = get_device(prefer_gpu=True, device_name=device)
     policy_net = transfer_to_device(policy_net, device)
@@ -157,7 +157,7 @@ LSTM hidden state test completed!
 
 **GPU対応テスト**:
 ```bash
-python train_selfplay.py --episodes 1 --device mps --config config/train_config.yml
+python train.py --episodes 1 --device mps --config config/train_config.yml
 # 出力ログ:
 # Using MPS (Apple Metal) device
 # Device info: {'device': 'mps', 'type': 'mps', 'name': 'Apple Metal GPU'}
@@ -167,7 +167,7 @@ python train_selfplay.py --episodes 1 --device mps --config config/train_config.
 
 ### 構文チェック
 ```bash
-python -m py_compile train_selfplay.py                 # ✅ 成功
+python -m py_compile train.py                 # ✅ 成功
 python -m py_compile src/agents/enhanced_networks.py   # ✅ 成功  
 python -m py_compile src/agents/RLAgent.py             # ✅ 成功
 python -m py_compile src/utils/device_utils.py         # ✅ 成功

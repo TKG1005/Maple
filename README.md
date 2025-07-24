@@ -142,7 +142,7 @@ class SpeciesEmbeddingLayer(nn.Module):
 
 #### 🔧 **Enhanced EpsilonGreedyWrapper Architecture**
 - **External Episode Count**: Added `initial_episode_count` parameter for cross-episode persistence
-- **Training Loop Integration**: Updated `train_selfplay.py` to pass episode numbers to wrappers
+- **Training Loop Integration**: Updated `train.py` to pass episode numbers to wrappers
 - **TensorBoard Logging**: Fixed episode count display to show proper progression (1→2→3...)
 - **Parallel Training Support**: Ensured epsilon values work correctly in multi-environment training
 
@@ -228,7 +228,7 @@ exploration:
 
 ```bash
 # Training with ε-greedy exploration enabled
-python train_selfplay.py --episodes 50 --tensorboard
+python train.py --episodes 50 --tensorboard
 
 # Exploration logs automatically included:
 # Episode 1 exploration: ε=0.991, random actions=45/67 (67.2%)
@@ -300,7 +300,7 @@ observation = observer.observe(battle)  # Includes real-time move embeddings
 - **Semantic Search**: Natural language move queries with cosine similarity
 - **Memory Optimization**: Efficient gradient computation for mixed parameter types
 - **Real-time Processing**: Move embeddings computed dynamically during battle observation
-- **Training Ready**: Full integration with train_selfplay.py for immediate use
+- **Training Ready**: Full integration with train.py for immediate use
 
 ### 2025-07-14 - Configuration System Unification & Value Network Bug Fix
 
@@ -319,13 +319,13 @@ observation = observer.observe(battle)  # Includes real-time move embeddings
 #### ⚙️ **Enhanced Training Commands**
 ```bash
 # Development defaults (recommended)
-python train_selfplay.py
+python train.py
 
 # Quick testing
-python train_selfplay.py --episodes 1 --parallel 5
+python train.py --episodes 1 --parallel 5
 
 # Production training  
-python train_selfplay.py --episodes 1000 --parallel 100
+python train.py --episodes 1000 --parallel 100
 ```
 
 ### 2025-07-14 - Training Resume Bug Fix & Optimizer Reset Implementation
@@ -556,7 +556,7 @@ sequence_learning:
 - **Statistical Analysis**: Jensen-Shannon distance and temporal diversity tracking capabilities
 
 #### ⚙️ **Integration & Technical Features**
-- **Seamless train_selfplay.py Integration**: Real-time metrics logging during training without performance impact
+- **Seamless train.py Integration**: Real-time metrics logging during training without performance impact
 - **Dependency-Optional Design**: SciPy/Seaborn dependencies made optional with mathematical fallback implementations
 - **Comprehensive Testing**: 23 test cases ensuring system reliability and numerical stability
 - **Error Handling**: Robust error recovery with graceful fallbacks for missing dependencies
@@ -571,7 +571,7 @@ sequence_learning:
 ### Quick Start (V1-V3 Enhanced)
 ```bash
 # Training with V1-V3 evaluation features enabled
-python train_selfplay.py --episodes 50 --tensorboard
+python train.py --episodes 50 --tensorboard
 
 # Generates:
 # - Unified TensorBoard logs (V1)
@@ -580,10 +580,10 @@ python train_selfplay.py --episodes 50 --tensorboard
 # - runs/YYYYMMDD_HHMMSS/diversity_analysis/*.png (V3)
 
 # Configuration-based training
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # CPU training (recommended for LSTM)
-python train_selfplay.py --config config/train_config.yml --device cpu
+python train.py --config config/train_config.yml --device cpu
 ```
 
 ### Evaluation

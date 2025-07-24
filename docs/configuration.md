@@ -150,7 +150,7 @@ win_rate_window: 50       # 勝率計算の直近バトル数
 設定ファイルでは `device` を指定せず、コマンドラインで指定：
 
 ```bash
-python train_selfplay.py --config config/train_config.yml --device auto
+python train.py --config config/train_config.yml --device auto
 ```
 
 ### GPU最適化設定
@@ -234,23 +234,23 @@ tensorboard: true           # TensorBoardログ有効化
 
 ```bash
 # デフォルト設定で実行
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # 長時間学習設定で実行
-python train_selfplay.py --config config/train_config_long.yml
+python train.py --config config/train_config_long.yml
 ```
 
 ### 設定の上書き
 
 ```bash
 # エピソード数を上書き
-python train_selfplay.py --config config/train_config.yml --episodes 200
+python train.py --config config/train_config.yml --episodes 200
 
 # 学習率とデバイスを上書き
-python train_selfplay.py --config config/train_config.yml --lr 0.001 --device cuda
+python train.py --config config/train_config.yml --lr 0.001 --device cuda
 
 # 複数パラメータの上書き
-python train_selfplay.py \
+python train.py \
   --config config/train_config.yml \
   --episodes 50 \
   --parallel 5 \
@@ -263,7 +263,7 @@ python train_selfplay.py \
 
 ```bash
 # カスタム設定ファイルを使用
-python train_selfplay.py --config my_custom_config.yml
+python train.py --config my_custom_config.yml
 ```
 
 ## 設定の優先順位
@@ -326,7 +326,7 @@ production:
 
 ```bash
 # 絶対パスで指定
-python train_selfplay.py --config /path/to/config.yml
+python train.py --config /path/to/config.yml
 
 # 相対パスの確認
 ls config/train_config.yml
@@ -339,7 +339,7 @@ ls config/train_config.yml
 python -c "from src.utils.device_utils import get_device; print(get_device())"
 
 # CPU強制実行
-python train_selfplay.py --config config/train_config.yml --device cpu
+python train.py --config config/train_config.yml --device cpu
 ```
 
 ### メモリ不足エラー

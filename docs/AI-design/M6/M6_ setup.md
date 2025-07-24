@@ -21,7 +21,7 @@ npx pokemon-showdown
 
 ## 2. PPO での学習
 
-`train_selfplay.py` を `--algo ppo` オプション付きで実行すると、PPO アルゴリズムを用いた自己対戦学習を開始できます。
+`train.py` を `--algo ppo` オプション付きで実行すると、PPO アルゴリズムを用いた自己対戦学習を開始できます。
 主なハイパーパラメータは以下の通りです。
 
 | オプション | 説明 |
@@ -34,7 +34,7 @@ npx pokemon-showdown
 例:
 
 ```bash
-python train_selfplay.py --episodes 100 --algo ppo --ppo-epochs 4 \
+python train.py --episodes 100 --algo ppo --ppo-epochs 4 \
     --clip 0.2 --gae-lambda 0.95 --parallel 2 --save ppo_model.pt
 ```
 
@@ -43,7 +43,7 @@ python train_selfplay.py --episodes 100 --algo ppo --ppo-epochs 4 \
 `--algo` 引数には `reinforce` と `ppo` が指定できます。省略時は `ppo` が利用されます。既存の REINFORCE 手法で学習したい場合は次のように指定します。
 
 ```bash
-python train_selfplay.py --algo reinforce --episodes 50 --save reinforce.pt
+python train.py --algo reinforce --episodes 50 --save reinforce.pt
 ```
 
 ## 4. 学習モデルの評価

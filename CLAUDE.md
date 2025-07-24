@@ -33,30 +33,30 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 ### Training
 ```bash
 # Configuration-based training (recommended approach)
-python train_selfplay.py  # Uses config/train_config.yml with development defaults
+python train.py  # Uses config/train_config.yml with development defaults
 
 # Quick testing (override config for minimal training)
-python train_selfplay.py --episodes 1 --parallel 5
+python train.py --episodes 1 --parallel 5
 
 # Development training (balanced settings)
-python train_selfplay.py --episodes 50 --parallel 20
+python train.py --episodes 50 --parallel 20
 
 # Production training (full-scale)
-python train_selfplay.py --episodes 1000 --parallel 100
+python train.py --episodes 1000 --parallel 100
 
 # Resume training from checkpoint
-python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100
+python train.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100
 
 # Training with specific network architectures
-python train_selfplay.py --network-type embedding --episodes 50  # Pokemon species embedding
-python train_selfplay.py --network-type attention --episodes 50  # Attention networks
+python train.py --network-type embedding --episodes 50  # Pokemon species embedding
+python train.py --network-type attention --episodes 50  # Attention networks
 
 # League training (anti-catastrophic forgetting)
 # Enabled by default in config - trains against historical opponents
-python train_selfplay.py --episodes 100  # Uses league_training.enabled: true
+python train.py --episodes 100  # Uses league_training.enabled: true
 
 # Legacy individual parameter training (still supported)
-python train_selfplay.py --algo ppo --episodes 100 --lr 0.0003 --team random
+python train.py --algo ppo --episodes 100 --lr 0.0003 --team random
 ```
 
 ### Testing
@@ -165,19 +165,19 @@ The `FailAndImmuneReward` class provides penalties for invalid actions:
 - Enabled via `config/reward.yaml` with `fail_immune.enabled: true`
 - **Fixed 2025-07-16**: CustomBattle implementation resolves missing flag issue
 
-### Training Resume Functionality (train_selfplay.py)
+### Training Resume Functionality (train.py)
 The `--load-model` option enables resuming training from checkpoints:
 - Supports both new format (`{"policy": ..., "value": ...}`) and legacy format (single state dict)
 - Automatically extracts episode number from filenames like `checkpoint_ep14000.pt`
 - Continues episode numbering from the extracted number
-- Example: `python train_selfplay.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100`
+- Example: `python train.py --load-model checkpoints/checkpoint_ep5000.pt --episodes 100`
 
 ### Random Team System
 The `--team random` option enables varied training and evaluation:
 - Each player independently selects a random team from `config/teams/` directory
 - Teams are selected per battle, ensuring variety across episodes
 - Custom team directory can be specified with `--teams-dir`
-- Supports both training (`train_selfplay.py`) and evaluation (`evaluate_rl.py`)
+- Supports both training (`train.py`) and evaluation (`evaluate_rl.py`)
 - Team files must be in Pokemon Showdown format
 
 ### Enhanced Player Naming (evaluate_rl.py)
@@ -282,13 +282,13 @@ Implemented comprehensive YAML-based configuration management to simplify traini
 **Usage Examples**:
 ```bash
 # Testing and short-term training
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # Long-term production training
-python train_selfplay.py --config config/train_config_long.yml
+python train.py --config config/train_config_long.yml
 
 # Config file with parameter override
-python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.001
+python train.py --config config/train_config.yml --episodes 20 --lr 0.001
 ```
 
 ### Win Rate-Based Opponent Update System (New 2025-07-10)
@@ -590,9 +590,9 @@ device = get_device(prefer_gpu=True, device_name="auto")
 # Priority: CUDA > MPS > CPU
 
 # Manual device specification
-python train_selfplay.py --device cuda    # Force CUDA
-python train_selfplay.py --device mps     # Force Apple MPS
-python train_selfplay.py --device cpu     # Force CPU
+python train.py --device cuda    # Force CUDA
+python train.py --device mps     # Force Apple MPS
+python train.py --device cpu     # Force CPU
 ```
 
 **Key Features**:
@@ -681,10 +681,10 @@ network:
 **Embedding Training**:
 ```bash
 # Set network.type to "embedding" in config/train_config.yml, then:
-python train_selfplay.py --episodes 100
+python train.py --episodes 100
 
 # カスタム学習率での学習  
-python train_selfplay.py --lr 0.0001 --episodes 50
+python train.py --lr 0.0001 --episodes 50
 ```
 
 **Benefits**:
@@ -927,7 +927,7 @@ active_tera_type:
 ## Recent Updates (2025-07-18)
 
 ### Move Embedding Training Integration (Latest 2025-07-18)
-完全な技ベクトルシステムをtrain_selfplay.pyでの学習に統合し、AIが戦術的技判断を学習できる環境を構築しました。
+完全な技ベクトルシステムをtrain.pyでの学習に統合し、AIが戦術的技判断を学習できる環境を構築しました。
 
 #### Training Pipeline Integration
 **StateObserver拡張統合**:
@@ -1041,13 +1041,13 @@ Simplified configuration management by consolidating all training configurations
 **Usage Patterns**:
 ```bash
 # Development defaults (recommended)
-python train_selfplay.py
+python train.py
 
 # Quick testing override
-python train_selfplay.py --episodes 1 --parallel 5
+python train.py --episodes 1 --parallel 5
 
 # Production training override  
-python train_selfplay.py --episodes 1000 --parallel 100
+python train.py --episodes 1000 --parallel 100
 ```
 
 **Configuration Presets**:
@@ -1121,7 +1121,7 @@ python train_selfplay.py --episodes 1000 --parallel 100
 訓練再開時の重大なバグを修正し、オプティマイザリセット機能を完全実装しました。
 
 #### Critical Bug Resolution
-**Problem**: `train_selfplay.py`でモデル読み込み時に`args.reset_optimizer`未定義エラーが発生し、学習再開が失敗していました。
+**Problem**: `train.py`でモデル読み込み時に`args.reset_optimizer`未定義エラーが発生し、学習再開が失敗していました。
 
 **Root Cause Analysis**:
 - `load_training_state`関数呼び出し時に`reset_optimizer`引数を要求
@@ -1155,10 +1155,10 @@ load_training_state(
 **Command Line Arguments**:
 ```bash
 # Reset optimizer state when loading (useful for device changes)
-python train_selfplay.py --load-model model.pt --reset-optimizer
+python train.py --load-model model.pt --reset-optimizer
 
 # Preserve optimizer state (default behavior)
-python train_selfplay.py --load-model model.pt
+python train.py --load-model model.pt
 ```
 
 **Configuration File Support**:
@@ -1338,7 +1338,7 @@ Performance: 6175+ ops/sec
 
 **Integration**:
 - **状態空間**: 1136 → 2160次元（技埋め込み1024次元追加）
-- **学習パイプライン**: train_selfplay.pyで完全統合
+- **学習パイプライン**: train.pyで完全統合
 - **評価システム**: evaluate_rl.pyで正常動作
 
 #### Testing and Validation
@@ -1517,7 +1517,7 @@ kl_timeline = analyzer.calculate_kl_divergence_timeline()  # KL距離時系列
 ```
 
 #### 技術的特長と統合
-**train_selfplay.py完全統合**:
+**train.py完全統合**:
 - リアルタイムメトリクス記録（パフォーマンス影響なし）
 - 学習終了時の自動CSV出力・サマリー作成・多様性分析実行
 - エラーハンドリングによる堅牢性確保
@@ -1533,7 +1533,7 @@ kl_timeline = analyzer.calculate_kl_divergence_timeline()  # KL距離時系列
 
 #### 出力例
 ```bash
-python train_selfplay.py --episodes 50 --tensorboard
+python train.py --episodes 50 --tensorboard
 
 # 自動生成される出力:
 # runs/20250721_143022/metrics.csv              # V2: 全メトリクスCSV
@@ -1576,7 +1576,7 @@ exploration:
 ```
 
 #### Training Pipeline Integration
-**train_selfplay.py統合**:
+**train.py統合**:
 - **自動Wrapper適用**: 設定有効時にRLAgentを自動的にwrap
 - **TensorBoard出力**: ε値、探索率、ランダム行動数の記録
 - **詳細ログ**: エピソード毎の探索統計を出力
@@ -1631,14 +1631,14 @@ epsilon = epsilon_end + (epsilon_start - epsilon_end) * exp(-α * progress)
 #### Integration Status
 **Production Ready**: ✅ **完全実装完了**
 - M7_backlogのE-2タスク要件を100%満足
-- train_selfplay.pyでの実動作確認済み
+- train.pyでの実動作確認済み
 - TensorBoard統合による可視化対応
 - 包括的テストによる品質保証
 
 **Usage**:
 ```bash
 # ε-greedy探索を有効にした学習
-python train_selfplay.py --episodes 50 --tensorboard
+python train.py --episodes 50 --tensorboard
 
 # 設定ファイルでexploration.epsilon_greedy.enabled: trueに設定済み
 ```
@@ -1730,10 +1730,10 @@ exploration:
 #### Usage Examples
 ```bash
 # 設定ファイル使用（推奨）
-python train_selfplay.py --episodes 100
+python train.py --episodes 100
 
 # エピソードベース線形減衰
-python train_selfplay.py --episodes 100 \
+python train.py --episodes 100 \
   --epsilon-enabled \
   --epsilon-start 1.0 \
   --epsilon-end 0.1 \

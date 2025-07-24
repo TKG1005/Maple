@@ -82,13 +82,13 @@ network:
 
 ```bash
 # Basic 2-layer MLP
-python train_selfplay.py --config config/m7.yaml
+python train.py --config config/m7.yaml
 
 # LSTM network
-python train_selfplay.py --config config/m7_lstm.yaml
+python train.py --config config/m7_lstm.yaml
 
 # Attention network
-python train_selfplay.py --config config/m7_attention.yaml
+python train.py --config config/m7_attention.yaml
 ```
 
 ### Configuration Examples

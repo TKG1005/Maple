@@ -18,7 +18,7 @@
 
 #### 実装詳細
 
-**主要コンポーネント (train_selfplay.py)**:
+**主要コンポーネント (train.py)**:
 ```python
 # 勝率ベース対戦相手更新システム
 recent_battle_results = []  # 最近の戦闘結果保存 (1=勝利, 0=引き分け, -1=敗北)
@@ -126,19 +126,19 @@ else:
 ### 基本的な使用法
 ```bash
 # デフォルト設定で訓練
-python train_selfplay.py --config config/train_config.yml
+python train.py --config config/train_config.yml
 
 # 高速テスト
-python train_selfplay.py --config config/train_config_quick.yml
+python train.py --config config/train_config_quick.yml
 
 # 本格訓練
-python train_selfplay.py --config config/train_config_long.yml
+python train.py --config config/train_config_long.yml
 ```
 
 ### コマンドライン上書き
 ```bash
 # 設定ファイル + 個別パラメータ上書き
-python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.001
+python train.py --config config/train_config.yml --episodes 20 --lr 0.001
 ```
 
 ## 技術的詳細
@@ -175,7 +175,7 @@ python train_selfplay.py --config config/train_config.yml --episodes 20 --lr 0.0
 ## ファイル更新一覧
 
 ### 主要ファイル
-- `train_selfplay.py`: 勝率システムと設定ファイル読み込み機能を追加
+- `train.py`: 勝率システムと設定ファイル読み込み機能を追加
 - `config/train_config.yml`: デフォルト設定ファイル
 - `config/train_config_quick.yml`: 高速テスト用設定
 - `config/train_config_long.yml`: 本格訓練用設定  

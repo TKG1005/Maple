@@ -108,7 +108,7 @@ batch = {
 Training script automatically selects sequence algorithms:
 
 ```python
-# In train_selfplay.py
+# In train.py
 sequence_config = cfg.get("sequence_learning", {})
 use_sequence_learning = sequence_config.get("enabled", False)
 
@@ -218,7 +218,7 @@ Assertion failed: (shape4.size() >= 3), function _getLSTMGradKernelDAGObject, fi
 - `config/train_config_long.yml`
 
 ### Training Script
-- `train_selfplay.py`
+- `train.py`
 
 ### Testing
 - `test_sequence_learning.py` (NEW)
