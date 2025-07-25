@@ -81,9 +81,11 @@ from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae, SequencePPOAlgorithm, SequenceReinforceAlgorithm  # noqa: E402
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
+from src.teams import TeamCacheManager  # noqa: E402
+from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -95,6 +97,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         team_mode=team_mode,
         teams_dir=teams_dir,
         normalize_rewards=normalize_rewards,
+        server_configuration=server_config,
     )
     return env
 
@@ -674,6 +677,26 @@ def main(
     # Historical opponents list (ordered by creation time)
     historical_opponents = []  # List of (snapshot_id, episode_num, policy_net, value_net)
     
+    # Initialize multi-server manager for distributed connections
+    pokemon_showdown_config = cfg.get("pokemon_showdown", {})
+    server_manager = MultiServerManager.from_config(pokemon_showdown_config)
+    
+    # Validate server capacity before starting training
+    is_valid, error_msg = server_manager.validate_parallel_count(parallel)
+    if not is_valid:
+        logger.error("Server capacity validation failed: %s", error_msg)
+        raise ValueError(error_msg)
+    
+    # Log server configuration
+    logger.info("Multi-server configuration:")
+    logger.info("  Total servers: %d", len(server_manager.servers))
+    logger.info("  Total capacity: %d connections", server_manager.get_total_capacity())
+    logger.info("  Requested parallel: %d environments", parallel)
+    server_manager.print_assignment_report()
+    
+    # Pre-assign server configurations for parallel environments
+    server_assignments = server_manager.assign_environments(parallel)
+    
     def wrap_with_epsilon_greedy(agent, env, episode_num=0):
         """Wrap agent with ε-greedy exploration if enabled."""
         if epsilon_enabled:
@@ -794,8 +817,19 @@ def main(
         episode_opponents = []
         
         for i in range(max(1, parallel)):
-            # Create new environment for this episode
-            env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
+            # Get server configuration for this environment
+            server_config, server_index = server_assignments.get(i, (None, -1))
+            
+            
+            # Create new environment for this episode with assigned server
+            env = init_env(
+                reward=reward, 
+                reward_config=reward_config, 
+                team_mode=team_mode, 
+                teams_dir=teams_dir, 
+                normalize_rewards=True,
+                server_config=server_config
+            )
             
             # Determine opponent type for this environment
             if opponent_pool:
@@ -951,8 +985,16 @@ def main(
                 else:  # fallback for test stubs
                     combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
-        # Use a temporary agent for updating
-        temp_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
+        # Use a temporary agent for updating (use first server for temp env)
+        temp_server_config, _ = server_assignments.get(0, (None, -1))
+        temp_env = init_env(
+            reward=reward, 
+            reward_config=reward_config, 
+            team_mode=team_mode, 
+            teams_dir=teams_dir, 
+            normalize_rewards=True,
+            server_config=temp_server_config
+        )
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         
         if algo_name == "ppo":
@@ -1280,6 +1322,10 @@ def main(
             logger.info("Model saved to %s", path)
         except OSError as exc:
             logger.error("Failed to save model: %s", exc)
+    
+    # Print team cache performance report
+    logger.info("=== Training Session Complete ===")
+    TeamCacheManager.print_performance_report()
 
 
 if __name__ == "__main__":

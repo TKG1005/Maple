@@ -4,7 +4,7 @@
 # - For production: episodes=1000, parallel=100, lr=0.0003
 
 # Training parameters
-episodes: 1 # Number of episodes to train (1=test, 50=dev, 1000=production)
+episodes: 100 # Number of episodes to train (1=test, 50=dev, 1000=production)
 lr: 0.003    # Learning rate (0.0001=conservative, 0.0003=standard, 0.001=aggressive)
 batch_size: 4096
 buffer_capacity: 800000
@@ -19,10 +19,31 @@ reward: composite
 reward_config: config/reward.yaml
 
 # Training configuration
-parallel: 1              # Parallel environments (5=test, 20=dev, 100=production)
+parallel: 50              # Parallel environments (5=test, 20=dev, 100=production)
 checkpoint_interval: 500  # Save checkpoint every N episodes
 checkpoint_dir: "checkpoints"
 tensorboard: true
+
+# Pokemon Showdown server configuration
+pokemon_showdown:
+  servers:
+    - host: "localhost"
+      port: 8000
+      max_connections: 25  # Maximum parallel connections to this server
+    - host: "localhost"
+      port: 8001
+      max_connections: 25
+    - host: "localhost"
+      port: 8002
+      max_connections: 25
+    - host: "localhost"
+      port: 8003
+      max_connections: 25
+    - host: "localhost"
+      port: 8004
+      max_connections: 25     
+  # Use single server for development: comment out servers 2-
+  # For production: adjust max_connections based on server performance
 
 # Model loading configuration
 reset_optimizer: false  # Reset optimizer state when loading a model (useful for device changes)

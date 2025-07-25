@@ -39,6 +39,7 @@ class PokemonEnv(gym.Env):
         team_mode: str = "default",
         teams_dir: str | None = None,
         normalize_rewards: bool = True,
+        server_configuration: Any = None,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -73,6 +74,7 @@ class PokemonEnv(gym.Env):
         self.team_mode = team_mode
         self.teams_dir = teams_dir
         self.normalize_rewards = normalize_rewards
+        self.server_configuration = server_configuration
         
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
@@ -292,6 +294,10 @@ class PokemonEnv(gym.Env):
             raise RuntimeError(
                 "poke_env package is required to run PokemonEnv"
             ) from exc
+        
+        # Use the provided server configuration, or default to LocalhostServerConfiguration
+        server_config = self.server_configuration if self.server_configuration is not None else LocalhostServerConfiguration
+        
 
         # 対戦用のプレイヤーの処理
         # ランダムチームモードの場合は毎回新しいチームを選択するため、プレイヤーを再作成
@@ -339,7 +345,7 @@ class PokemonEnv(gym.Env):
                     self,
                     "player_0",
                     battle_format="gen9bssregi",
-                    server_configuration=LocalhostServerConfiguration,
+                    server_configuration=server_config,
                     team=team_player_0,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,
@@ -358,7 +364,7 @@ class PokemonEnv(gym.Env):
                     self,
                     "player_1",
                     battle_format="gen9bssregi",
-                    server_configuration=LocalhostServerConfiguration,
+                    server_configuration=server_config,
                     team=team_player_1,
                     log_level=logging.DEBUG,
                     save_replays=self.save_replays,

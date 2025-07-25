@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import logging
 import random
+import time
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Dict
+
+from .team_cache import TeamCacheManager
 
 logger = logging.getLogger(__name__)
 
 
 class TeamLoader:
-    """Loads and manages Pokemon teams from files."""
+    """Loads and manages Pokemon teams from files with caching support."""
     
     def __init__(self, teams_dir: str | Path) -> None:
         """Initialize TeamLoader with teams directory.
@@ -22,38 +25,31 @@ class TeamLoader:
             Directory containing team files (.txt files with Pokemon Showdown format)
         """
         self.teams_dir = Path(teams_dir)
-        self.team_files: List[Path] = []
         self.teams: List[str] = []
+        self.performance_stats: Dict = {}
         self._load_teams()
     
     def _load_teams(self) -> None:
-        """Load all team files from the teams directory."""
-        if not self.teams_dir.exists():
-            logger.warning("Teams directory does not exist: %s", self.teams_dir)
-            return
+        """Load all team files using the cached team manager."""
+        load_start_time = time.time()
         
-        # Find all .txt files in teams directory
-        team_files = list(self.teams_dir.glob("*.txt"))
+        # Use cached team manager for optimized loading
+        self.teams, self.performance_stats = TeamCacheManager.get_teams(self.teams_dir)
         
-        if not team_files:
-            logger.warning("No team files found in: %s", self.teams_dir)
-            return
+        total_load_time = time.time() - load_start_time
         
-        logger.info("Loading teams from %s", self.teams_dir)
-        
-        for team_file in team_files:
-            try:
-                team_content = team_file.read_text(encoding="utf-8").strip()
-                if team_content:
-                    self.team_files.append(team_file)
-                    self.teams.append(team_content)
-                    logger.debug("Loaded team from %s", team_file.name)
-                else:
-                    logger.warning("Empty team file: %s", team_file.name)
-            except Exception as e:
-                logger.error("Failed to load team from %s: %s", team_file.name, e)
-        
-        logger.info("Successfully loaded %d teams", len(self.teams))
+        if self.teams:
+            logger.info("TeamLoader initialized: %d teams loaded in %.3fs", 
+                       len(self.teams), total_load_time)
+            
+            # Log performance details if this is the first load (not from cache)
+            if self.performance_stats.get('cache_hits', 0) == 0:
+                logger.info("Team loading performance: %.3fs I/O, %.3fs parsing, %d bytes total",
+                           self.performance_stats.get('io_time', 0),
+                           self.performance_stats.get('parse_time', 0), 
+                           self.performance_stats.get('total_size', 0))
+        else:
+            logger.warning("No teams loaded from %s", self.teams_dir)
     
     def get_random_team(self) -> Optional[str]:
         """Get a randomly selected team.
@@ -97,15 +93,37 @@ class TeamLoader:
         """
         return len(self.teams)
     
-    def get_team_files(self) -> List[str]:
-        """Get list of team file names.
+    def get_performance_stats(self) -> Dict:
+        """Get detailed performance statistics for team loading.
         
         Returns
         -------
-        List[str]
-            List of team file names
+        Dict
+            Performance statistics including load times and cache information
         """
-        return [f.name for f in self.team_files]
+        return self.performance_stats.copy()
+    
+    def print_performance_report(self) -> None:
+        """Print a performance report for this TeamLoader instance."""
+        if not self.performance_stats:
+            logger.info("No performance statistics available")
+            return
+        
+        stats = self.performance_stats
+        print(f"\nTeamLoader Performance Report for: {stats.get('teams_dir', 'Unknown')}")
+        print("-" * 60)
+        print(f"Teams loaded: {stats.get('team_count', 0)}")
+        print(f"Total load time: {stats.get('total_load_time', 0):.3f}s")
+        print(f"Average per team: {stats.get('avg_load_time_per_team', 0):.3f}s")
+        print(f"Cache hits: {stats.get('cache_hits', 0)}")
+        
+        if 'io_time' in stats:
+            print(f"I/O time: {stats['io_time']:.3f}s")
+            print(f"Parse time: {stats['parse_time']:.3f}s")
+            print(f"Total data size: {stats['total_size']:,} bytes")
+            print(f"Average file size: {stats['avg_file_size']:.0f} bytes")
+        
+        print("-" * 60)
 
 
 __all__ = ["TeamLoader"]
