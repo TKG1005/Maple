@@ -40,6 +40,7 @@ class PokemonEnv(gym.Env):
         teams_dir: str | None = None,
         normalize_rewards: bool = True,
         server_configuration: Any = None,
+        log_level: int = logging.DEBUG,
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -68,6 +69,7 @@ class PokemonEnv(gym.Env):
         self.rng = np.random.default_rng(seed)
         self.save_replays = save_replays
         self._logger = logging.getLogger(__name__)
+        self.log_level = log_level
         self.reward_type = reward
         self.reward_config_path = reward_config_path
         self.player_names = player_names
@@ -347,7 +349,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=server_config,
                     team=team_player_0,
-                    log_level=logging.DEBUG,
+                    log_level=self.log_level,
                     save_replays=self.save_replays,
                     account_configuration=account_config_0,
                 )
@@ -366,7 +368,7 @@ class PokemonEnv(gym.Env):
                     battle_format="gen9bssregi",
                     server_configuration=server_config,
                     team=team_player_1,
-                    log_level=logging.DEBUG,
+                    log_level=self.log_level,
                     save_replays=self.save_replays,
                     account_configuration=account_config_1,
                 )

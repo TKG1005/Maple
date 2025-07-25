@@ -85,7 +85,7 @@ from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, log_level: int = logging.DEBUG) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -98,6 +98,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         teams_dir=teams_dir,
         normalize_rewards=normalize_rewards,
         server_configuration=server_config,
+        log_level=log_level,
     )
     return env
 
@@ -382,6 +383,7 @@ def main(
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
     device: str = "auto",
+    log_level: int = logging.INFO,
     # Epsilon-greedy exploration parameters
     epsilon_enabled: bool | None = None,
     epsilon_start: float | None = None,
@@ -529,7 +531,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True)
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, log_level=log_level)
     
     # Get network configuration
     network_config = cfg.get("network", {})
@@ -828,7 +830,8 @@ def main(
                 team_mode=team_mode, 
                 teams_dir=teams_dir, 
                 normalize_rewards=True,
-                server_config=server_config
+                server_config=server_config,
+                log_level=log_level
             )
             
             # Determine opponent type for this environment
@@ -993,7 +996,8 @@ def main(
             team_mode=team_mode, 
             teams_dir=teams_dir, 
             normalize_rewards=True,
-            server_config=temp_server_config
+            server_config=temp_server_config,
+            log_level=log_level
         )
         temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
         
@@ -1519,6 +1523,7 @@ if __name__ == "__main__":
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
         device=args.device,
+        log_level=level,
         # Epsilon-greedy parameters
         epsilon_enabled=args.epsilon_enabled if args.epsilon_enabled else None,
         epsilon_start=args.epsilon_start,
