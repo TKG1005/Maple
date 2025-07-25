@@ -608,86 +608,108 @@ class PokemonEnv(gym.Env):
 
         return tuple(masks)  # type: ignore[return-value]
 
+    async def _process_actions_parallel(self, action_dict: dict[str, int | str]) -> None:
+        """Process actions for all agents concurrently (Phase 1 optimization)."""
+        
+        async def _process_single_action(agent_id: str, action: int | str):
+            """Process action for single agent asynchronously."""
+            if not self._need_action.get(agent_id, True):
+                return
+                
+            if isinstance(action, str):
+                await self._action_queues[agent_id].put(action)
+                return
+            
+            # Integer action processing
+            battle = self._current_battles.get(agent_id)
+            if battle is None:
+                raise ValueError(f"No current battle for {agent_id}")
+                
+            # CPU-intensive mapping computation
+            mapping = self.action_helper.get_action_mapping(battle)
+            self._action_mappings[agent_id] = mapping
+
+            # Debug information (preserved from original)
+            switch_info = [
+                f"({getattr(p, 'species', '?')},"
+                f"{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%,"
+                f"{getattr(p, 'fainted', False)},"
+                f"{getattr(p, 'active', False)})"
+                for p in getattr(battle, "available_switches", [])
+            ]
+            
+            active_pokemon = getattr(battle, "active_pokemon", None)
+            active_info = "None"
+            if active_pokemon:
+                active_info = (
+                    f"{getattr(active_pokemon, 'species', '?')} "
+                    f"(active={getattr(active_pokemon, 'active', '?')})"
+                )
+            
+            self._logger.debug(
+                "[DBG] %s mapping=%s sw=%d force=%s active=%s switches=%s",
+                agent_id,
+                mapping,
+                len(getattr(battle, "available_switches", [])),
+                getattr(battle, "force_switch", False),
+                active_info,
+                switch_info,
+            )
+
+            # Action conversion with error handling
+            DisabledErr = getattr(self.action_helper, "DisabledMoveError", ValueError)
+            try:
+                order = self.action_helper.action_index_to_order_from_mapping(
+                    self._env_players[agent_id],
+                    battle,
+                    int(action),
+                    mapping,
+                )
+            except DisabledErr:
+                err_msg = f"invalid action: {agent_id} selected {action} with mapping {mapping}"
+                self._logger.error(err_msg)
+                raise RuntimeError(err_msg)
+            
+            # Queue submission
+            await self._action_queues[agent_id].put(order)
+        
+        # Validate all required actions are present
+        for agent_id in self.agent_ids:
+            if agent_id not in action_dict:
+                raise ValueError(f"{agent_id} action required")
+        
+        # Process all actions concurrently
+        tasks = []
+        for agent_id in self.agent_ids:
+            if agent_id in action_dict:
+                task = _process_single_action(agent_id, action_dict[agent_id])
+                tasks.append(task)
+        
+        if tasks:
+            await asyncio.gather(*tasks)
+
     def step(self, action_dict: dict[str, int | str], *, return_masks: bool = True):
         """マルチエージェント形式で1ステップ進める。
 
         ``return_masks`` を ``True`` にすると、戻り値の末尾に各プレイヤーの
         行動マスクを含むタプルを追加で返す。
+        
+        Phase 1 Optimization: Action processing is now parallelized for improved performance.
         """
 
-        for agent_id in self.agent_ids:
-            if agent_id not in action_dict:
-                raise ValueError(f"{agent_id} action required")
-            if not self._need_action.get(agent_id, True):
-                continue
-            act = action_dict[agent_id]
+        # Phase 1: Parallel action processing
+        asyncio.run_coroutine_threadsafe(
+            self._process_actions_parallel(action_dict), POKE_LOOP
+        ).result()
 
-            if isinstance(act, str):
-                asyncio.run_coroutine_threadsafe(
-                    self._action_queues[agent_id].put(act), POKE_LOOP
-                ).result()
-                if act.startswith("/team"):
-                    import re
-
-                    # Team preview selection logic removed - using full team
-            else:
-                battle = self._current_battles.get(agent_id)
-                if battle is None:
-                    raise ValueError(f"No current battle for {agent_id}")
-                mapping = self.action_helper.get_action_mapping(battle)
-                self._action_mappings[agent_id] = mapping
-
-                switch_info = [
-                    f"({getattr(p, 'species', '?')},"
-                    f"{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%,"
-                    f"{getattr(p, 'fainted', False)},"
-                    f"{getattr(p, 'active', False)})"
-                    for p in getattr(battle, "available_switches", [])
-                ]
-                
-                # Debug active Pokemon before action
-                active_pokemon = getattr(battle, "active_pokemon", None)
-                active_info = "None"
-                if active_pokemon:
-                    active_info = (
-                        f"{getattr(active_pokemon, 'species', '?')} "
-                        f"(active={getattr(active_pokemon, 'active', '?')})"
-                    )
-                
-                self._logger.debug(
-                    "[DBG] %s mapping=%s sw=%d force=%s active=%s switches=%s",
-                    agent_id,
-                    mapping,
-                    len(getattr(battle, "available_switches", [])),
-                    getattr(battle, "force_switch", False),
-                    active_info,
-                    switch_info,
-                )
-
-                DisabledErr = getattr(
-                    self.action_helper, "DisabledMoveError", ValueError
-                )
-                try:
-                    order = self.action_helper.action_index_to_order_from_mapping(
-                        self._env_players[agent_id],
-                        battle,
-                        int(act),
-                        mapping,
-                    )
-                except DisabledErr:
-                    err_msg = f"invalid action: {agent_id} selected {act} with mapping {mapping}"
-                    self._logger.error(err_msg)
-                    raise RuntimeError(err_msg)
-                asyncio.run_coroutine_threadsafe(
-                    self._action_queues[agent_id].put(order), POKE_LOOP
-                ).result()
-
-        # 次の状態を待機する前に対戦タスクの状態を確認
+        # Check battle task status before waiting for new states
         if hasattr(self, "_battle_task") and self._battle_task.done():
             exc = self._battle_task.exception()
             if exc is not None:
                 raise exc
 
+        # Phase 2 (Future optimization): Battle state retrieval - currently sequential
+        # TODO: Implement _retrieve_battles_parallel() for further performance gains
         battles: dict[str, Any] = {}
         updated: dict[str, bool] = {}
         for pid in self.agent_ids:
