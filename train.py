@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import List, Any
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import numpy as np
 import yaml
@@ -51,6 +51,111 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
     logging.info("Run parameters: %s", params)
 
 
+def _run_episodes_multiprocess(
+    envs: list,
+    agents: list,
+    server_assignments: dict,
+    policy_net: torch.nn.Module,
+    value_net: torch.nn.Module,
+    network_config: dict,
+    gamma: float,
+    lam: float,
+    device: torch.device,
+    episode_num: int,
+    opponent_pool,
+    opponent: str | None,
+    reward: str,
+    reward_config: str | None,
+    team_mode: str,
+    teams_dir: str | None,
+    log_level: int
+) -> list:
+    """Run episodes using ProcessPoolExecutor."""
+    # Prepare configurations for each environment
+    process_configs = []
+    
+    # Get current model state
+    model_state_dict = {
+        "policy": policy_net.state_dict(),
+        "value": value_net.state_dict()
+    }
+    
+    for i in range(len(envs)):
+        server_config, server_index = server_assignments.get(i, (None, -1))
+        
+        # Environment configuration
+        env_config = {
+            "reward": reward,
+            "reward_config": reward_config,
+            "team_mode": team_mode,
+            "teams_dir": teams_dir,
+            "normalize_rewards": True,
+            "server_config": server_config,
+            "log_level": log_level
+        }
+        
+        # RL agent configuration
+        rl_agent_config = {
+            "type": "rl",
+            "network_config": network_config,
+            "algorithm_config": {
+                "name": "ppo",  # Default to PPO for now
+                "clip_range": 0.2,
+                "lr": 0.0003,
+            },
+            "learning": True
+        }
+        
+        # Opponent configuration
+        agent_data = agents[i]
+        opponent_type = agent_data[2] if len(agent_data) > 2 else "self"
+        
+        if opponent_type == "self":
+            # Self-play: use same config but no learning
+            opponent_config = rl_agent_config.copy()
+            opponent_config["learning"] = False
+            episode_type = "self_play"
+        else:
+            # Bot opponent
+            opponent_config = {
+                "type": opponent_type,
+            }
+            episode_type = "opponent"
+        
+        process_configs.append({
+            "env_config": env_config,
+            "rl_agent_config": rl_agent_config,
+            "opponent_agent_config": opponent_config,
+            "model_state_dict": model_state_dict,
+            "gamma": gamma,
+            "lam": lam,
+            "device_name": str(device),
+            "record_init": (episode_num == 0 and i == 0),
+            "episode_type": episode_type
+        })
+    
+    # Execute in parallel using ProcessPoolExecutor
+    with ProcessPoolExecutor(max_workers=len(envs)) as executor:
+        futures = [
+            executor.submit(
+                run_episode_process,
+                config["env_config"],
+                config["rl_agent_config"],
+                config["opponent_agent_config"],
+                config["model_state_dict"],
+                config["gamma"],
+                config["lam"],
+                config["device_name"],
+                config["record_init"],
+                config["episode_type"]
+            )
+            for config in process_configs
+        ]
+        results = [f.result() for f in futures]
+    
+    return results
+
+
 def load_config(path: str) -> dict:
     """Load training configuration from a YAML file."""
     try:
@@ -81,6 +186,7 @@ from src.agents.rule_based_player import RuleBasedPlayer  # noqa: E402
 from src.bots import RandomBot, MaxDamageBot  # noqa: E402
 from src.algorithms import PPOAlgorithm, ReinforceAlgorithm, compute_gae, SequencePPOAlgorithm, SequenceReinforceAlgorithm  # noqa: E402
 from src.train import OpponentPool, parse_opponent_mix  # noqa: E402
+from src.train.process_worker import run_episode_process  # noqa: E402
 from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
@@ -391,6 +497,8 @@ def main(
     epsilon_decay_steps: int | None = None,
     epsilon_decay_strategy: str | None = None,
     epsilon_decay_mode: str | None = None,
+    # Multiprocessing parameters
+    use_multiprocess: bool = False,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -919,54 +1027,67 @@ def main(
                 agents.append((rl_agent, opponent_agent, opp_type))
 
         # Run episodes
-        if opponent_pool or opponent:
-            # Mixed or single opponent mode
-            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
-                futures = [
-                    executor.submit(
-                        run_episode_with_opponent,
-                        envs[i],
-                        agents[i][0],  # RL agent
-                        agents[i][1],  # opponent agent
-                        value_net,
-                        gamma,
-                        lam,
-                        device,
-                        record_init=(ep == 0 and i == 0),
-                        opponent_type=agents[i][2],
-                    )
-                    for i in range(len(envs))
-                ]
-                results = [f.result() for f in futures]
-                
+        if use_multiprocess:
+            # Multiprocess execution
+            results = _run_episodes_multiprocess(
+                envs, agents, server_assignments, policy_net, value_net,
+                network_config, gamma, lam, device, ep, opponent_pool, opponent,
+                reward, reward_config, team_mode, teams_dir, log_level
+            )
             batches = [res[0] for res in results]
             reward_list = [res[1] for res in results]
             sub_logs_list = [res[3] for res in results]
             opponents_used = [res[4] for res in results]
-            
         else:
-            # Self-play mode
-            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
-                futures = [
-                    executor.submit(
-                        run_episode,
-                        envs[i],
-                        agents[i][0],  # RL agent
-                        agents[i][1],  # RL agent (self-play)
-                        value_net,
-                        gamma,
-                        lam,
-                        device,
-                        record_init=(ep == 0 and i == 0),
-                    )
-                    for i in range(len(envs))
-                ]
-                results = [f.result() for f in futures]
+            # Traditional ThreadPoolExecutor execution
+            if opponent_pool or opponent:
+                # Mixed or single opponent mode
+                with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                    futures = [
+                        executor.submit(
+                            run_episode_with_opponent,
+                            envs[i],
+                            agents[i][0],  # RL agent
+                            agents[i][1],  # opponent agent
+                            value_net,
+                            gamma,
+                            lam,
+                            device,
+                            record_init=(ep == 0 and i == 0),
+                            opponent_type=agents[i][2],
+                        )
+                        for i in range(len(envs))
+                    ]
+                    results = [f.result() for f in futures]
+                    
+                batches = [res[0] for res in results]
+                reward_list = [res[1] for res in results]
+                sub_logs_list = [res[3] for res in results]
+                opponents_used = [res[4] for res in results]
                 
-            batches = [res[0] for res in results]
-            reward_list = [res[1] for res in results]
-            sub_logs_list = [res[3] for res in results]
-            opponents_used = ["self"] * len(envs)
+            else:
+                # Self-play mode
+                with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                    futures = [
+                        executor.submit(
+                            run_episode,
+                            envs[i],
+                            agents[i][0],  # RL agent
+                            agents[i][1],  # RL agent (self-play)
+                            value_net,
+                            gamma,
+                            lam,
+                            device,
+                            record_init=(ep == 0 and i == 0),
+                        )
+                        for i in range(len(envs))
+                    ]
+                    results = [f.result() for f in futures]
+                    
+                batches = [res[0] for res in results]
+                reward_list = [res[1] for res in results]
+                sub_logs_list = [res[3] for res in results]
+                opponents_used = ["self"] * len(envs)
 
         # Close environments
         for env in envs:
@@ -1484,6 +1605,13 @@ if __name__ == "__main__":
         help="decay mode: per-step or per-episode (default: episode)",
     )
     
+    # Multiprocessing arguments
+    parser.add_argument(
+        "--use-multiprocess",
+        action="store_true",
+        help="use ProcessPoolExecutor instead of ThreadPoolExecutor for GIL-free parallel execution",
+    )
+    
     args = parser.parse_args()
 
     # Set log level based on debug flag or log-level argument
@@ -1531,4 +1659,6 @@ if __name__ == "__main__":
         epsilon_decay_steps=args.epsilon_decay_steps,
         epsilon_decay_strategy=args.epsilon_decay_strategy,
         epsilon_decay_mode=args.epsilon_decay_mode,
+        # Multiprocessing parameters
+        use_multiprocess=args.use_multiprocess,
     )
