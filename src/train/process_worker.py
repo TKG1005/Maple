@@ -444,6 +444,9 @@ def _convert_episode_to_batch(
             values = []
             for obs_tensor in obs_tensors:
                 value = agent.get_value(obs_tensor)
+                # Convert float to tensor if necessary
+                if isinstance(value, (int, float)):
+                    value = torch.tensor(value, dtype=torch.float32)
                 values.append(value)
             values = torch.stack(values).cpu().numpy()
         else:
