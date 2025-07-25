@@ -454,7 +454,8 @@ def _convert_episode_to_batch(
             values = agent.value_net(obs_tensors).cpu().numpy().flatten()
 
     # Compute advantages using GAE
-    advantages, returns = compute_gae(rewards, values, gamma, lam)
+    advantages = compute_gae(rewards, values, gamma, lam)
+    returns = advantages + values  # returns = advantages + values
 
     return {
         "observations": observations,
