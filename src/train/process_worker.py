@@ -286,9 +286,15 @@ def _run_opponent_episode(
 
         # Opponent action
         if hasattr(opponent_agent, 'select_action'):
-            opp_probs = opponent_agent.select_action(obs1, mask1)
-            rng = env.rng
-            opp_action = int(rng.choice(len(opp_probs), p=opp_probs))
+            opp_result = opponent_agent.select_action(obs1, mask1)
+            # Check if result is probabilities (numpy array) or direct action (int)
+            if isinstance(opp_result, np.ndarray):
+                # RL agent returns probabilities
+                rng = env.rng
+                opp_action = int(rng.choice(len(opp_result), p=opp_result))
+            else:
+                # Non-RL agent returns direct action index
+                opp_action = int(opp_result)
         else:
             opp_action = opponent_agent.act(env.current_battle)
 
@@ -367,9 +373,16 @@ def _run_self_play_episode(
         probs1 = opponent_agent.select_action(obs1, mask1)
         rng = env.rng
         action0 = int(rng.choice(len(probs0), p=probs0))
-        action1 = int(rng.choice(len(probs1), p=probs1))
+        
+        # Handle opponent agent result (could be probabilities or direct action)
+        if isinstance(probs1, np.ndarray):
+            action1 = int(rng.choice(len(probs1), p=probs1))
+            log_prob1 = float(np.log(probs1[action1] + 1e-8))
+        else:
+            action1 = int(probs1)
+            log_prob1 = 0.0  # Default for non-RL agents
+            
         log_prob0 = float(np.log(probs0[action0] + 1e-8))
-        log_prob1 = float(np.log(probs1[action1] + 1e-8))
         
         if record_init and init_tuple is None:
             init_tuple = (obs0.copy(), mask0.copy(), log_prob0)
