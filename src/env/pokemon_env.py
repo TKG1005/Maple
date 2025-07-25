@@ -688,115 +688,6 @@ class PokemonEnv(gym.Env):
         if tasks:
             await asyncio.gather(*tasks)
 
-    async def _retrieve_battles_parallel(self) -> tuple[dict[str, Any], dict[str, bool]]:
-        """Retrieve battle states for all agents concurrently (Phase 2 optimization)."""
-        
-        async def _get_battle_for_agent(pid: str) -> tuple[str, Any, bool]:
-            """Retrieve battle state for a single agent asynchronously."""
-            opp = "player_1" if pid == "player_0" else "player_0"
-            
-            # Use the existing _race async logic but directly in the event loop
-            battle = await self._race_async(
-                self._battle_queues[pid],
-                self._env_players[pid]._waiting,
-                self._env_players[opp]._trying_again,
-            )
-            
-            # Process battle result (preserved from sequential logic)
-            self._env_players[pid]._waiting.clear()
-            if battle is None:
-                self._env_players[opp]._trying_again.clear()
-                battle = self._current_battles[pid]
-                self._need_action[pid] = False
-            else:
-                self._current_battles[pid] = battle
-                self._need_action[pid] = True
-            
-            # Calculate updated flag
-            updated = battle is not None and (
-                battle.last_request is not self._last_requests.get(pid)
-            )
-            
-            return pid, battle, updated
-        
-        # Execute battle retrieval for all agents concurrently
-        tasks = [_get_battle_for_agent(pid) for pid in self.agent_ids]
-        results = await asyncio.gather(*tasks)
-        
-        # Organize results into dictionaries
-        battles = {}
-        updated = {}
-        for pid, battle, is_updated in results:
-            battles[pid] = battle
-            updated[pid] = is_updated
-        
-        return battles, updated
-
-    async def _race_async(
-        self,
-        queue: asyncio.Queue[Any],
-        *events: asyncio.Event,
-    ) -> Any | None:
-        """Async version of _race_get for use within event loop."""
-        get_task = asyncio.create_task(queue.get())
-        wait_tasks = [asyncio.create_task(e.wait()) for e in events]
-        
-        try:
-            done, pending = await asyncio.wait(
-                {get_task, *wait_tasks},
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=self.timeout
-            )
-            
-            # Cancel pending tasks
-            for p in pending:
-                p.cancel()
-                
-            if get_task in done:
-                result = get_task.result()
-                if result is not None:
-                    queue.task_done()
-                return result
-            
-            # Event completed first - check if queue has data
-            if not queue.empty():
-                result = await queue.get()
-                if result is not None:
-                    queue.task_done()
-                return result
-            
-            # Delay handling for race conditions (preserved from original logic)
-            for _ in range(10):
-                await asyncio.sleep(0.05)
-                if not queue.empty():
-                    result = await queue.get()
-                    if result is not None:
-                        queue.task_done()
-                    return result
-            
-            return None
-            
-        except asyncio.TimeoutError:
-            # Cancel all tasks on timeout
-            get_task.cancel()
-            for task in wait_tasks:
-                task.cancel()
-            
-            self._logger.error(
-                "[TIMEOUT] race_async queue=%d events=%s timeout=%s",
-                queue.qsize(),
-                [e.is_set() for e in events],
-                self.timeout,
-            )
-            raise
-        except Exception as exc:
-            self._logger.error(
-                "[ERROR] race_async queue=%d events=%s exc=%s",
-                queue.qsize(),
-                [e.is_set() for e in events],
-                exc,
-            )
-            raise
 
     def step(self, action_dict: dict[str, int | str], *, return_masks: bool = True):
         """マルチエージェント形式で1ステップ進める。
@@ -804,8 +695,7 @@ class PokemonEnv(gym.Env):
         ``return_masks`` を ``True`` にすると、戻り値の末尾に各プレイヤーの
         行動マスクを含むタプルを追加で返す。
         
-        Phase 1 & 2 Optimizations: Both action processing and battle state retrieval 
-        are now parallelized for maximum performance improvements.
+        Phase 1 Optimization: Action processing is now parallelized for improved performance.
         """
 
         # Phase 1: Parallel action processing
@@ -819,10 +709,30 @@ class PokemonEnv(gym.Env):
             if exc is not None:
                 raise exc
 
-        # Phase 2: Parallel battle state retrieval for improved I/O performance
-        battles, updated = asyncio.run_coroutine_threadsafe(
-            self._retrieve_battles_parallel(), POKE_LOOP
-        ).result()
+        # Phase 2 (Future optimization): Battle state retrieval - currently sequential
+        # TODO: Implement _retrieve_battles_parallel() for further performance gains
+        battles: dict[str, Any] = {}
+        updated: dict[str, bool] = {}
+        for pid in self.agent_ids:
+            opp = "player_1" if pid == "player_0" else "player_0"
+            battle = self._race_get(
+                self._battle_queues[pid],
+                self._env_players[pid]._waiting,
+                self._env_players[opp]._trying_again,
+            )
+            self._env_players[pid]._waiting.clear()
+            if battle is None:
+                self._env_players[opp]._trying_again.clear()
+                battle = self._current_battles[pid]
+                self._need_action[pid] = False
+            else:
+                self._current_battles[pid] = battle
+                self._need_action[pid] = True
+            battles[pid] = battle
+
+            updated[pid] = battle is not None and (
+                battle.last_request is not self._last_requests.get(pid)
+            )
 
         masks = self._compute_all_masks()
         for pid in self.agent_ids:
