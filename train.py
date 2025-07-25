@@ -74,10 +74,10 @@ def _run_episodes_multiprocess(
     # Prepare configurations for each environment
     process_configs = []
     
-    # Get current model state
+    # Get current model state (move to CPU for multiprocessing compatibility)
     model_state_dict = {
-        "policy": policy_net.state_dict(),
-        "value": value_net.state_dict()
+        "policy": {k: v.cpu() for k, v in policy_net.state_dict().items()},
+        "value": {k: v.cpu() for k, v in value_net.state_dict().items()}
     }
     
     for i in range(len(envs)):

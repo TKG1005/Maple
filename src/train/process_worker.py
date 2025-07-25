@@ -75,9 +75,12 @@ def create_agent_from_config(
         network_config = agent_config["network_config"]
         algorithm_config = agent_config["algorithm_config"]
         
-        # Create networks (need observation_space and action_space)
+        # Get the actual observation dimension from environment's state observer
+        state_dim = env.state_observer.get_observation_dimension()
+        
+        # Create networks with correct observation space
         from gymnasium import spaces
-        obs_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(network_config.get('input_size', 2532),))
+        obs_space = spaces.Box(low=-float('inf'), high=float('inf'), shape=(state_dim,))
         action_space = spaces.Discrete(11)  # Standard Pokemon action space
         
         policy_net = create_policy_network(obs_space, action_space, network_config)
@@ -133,9 +136,11 @@ def create_agent_from_config(
     elif agent_type == "rule":
         return RuleBasedPlayer(env)
     elif agent_type == "random_bot":
-        return RandomBot()
+        return RandomBot(env)
     elif agent_type == "max_bot":
-        return MaxDamageBot()
+        return MaxDamageBot(env)
+    elif agent_type == "max":  # Add support for "max" opponent type
+        return MaxDamageBot(env)
     else:
         raise ValueError(f"Unknown agent type: {agent_type}")
 
@@ -259,26 +264,39 @@ def _run_opponent_episode(
     obs = obs0
     mask = mask0
     total_reward = 0.0
+    done = False
 
     device = get_device(prefer_gpu=False, device_name=device_name)
 
-    while not env.done:
+    while not done:
         # RL agent action
-        action, log_prob = rl_agent.select_action(obs, mask)
+        if hasattr(rl_agent, 'select_action'):
+            # For RL agents, use select_action which returns probabilities
+            probs = rl_agent.select_action(obs, mask)
+            rng = env.rng
+            action = int(rng.choice(len(probs), p=probs))
+            log_prob = float(np.log(probs[action] + 1e-8))
+        else:
+            # Fallback for other agent types
+            action = rl_agent.act(obs, mask)
+            log_prob = 0.0  # Default log prob for non-RL agents
         
         if record_init and init_tuple is None:
-            init_tuple = (obs.copy(), mask.copy(), log_prob.copy())
+            init_tuple = (obs.copy(), mask.copy(), log_prob)
 
         # Opponent action
         if hasattr(opponent_agent, 'select_action'):
-            opp_action, _ = opponent_agent.select_action(obs1, mask1)
+            opp_probs = opponent_agent.select_action(obs1, mask1)
+            rng = env.rng
+            opp_action = int(rng.choice(len(opp_probs), p=opp_probs))
         else:
             opp_action = opponent_agent.act(env.current_battle)
 
         # Environment step
-        observations, rewards, done, info, masks = env.step(
+        observations, rewards, terms, truncs, info, masks = env.step(
             {env.agent_ids[0]: action, env.agent_ids[1]: opp_action}, return_masks=True
         )
+        done = any(terms.values()) or any(truncs.values())
 
         reward = rewards[env.agent_ids[0]]
         total_reward += reward
@@ -339,21 +357,28 @@ def _run_self_play_episode(
     obs = obs0
     mask = mask0
     total_reward = 0.0
+    done = False
 
     device = get_device(prefer_gpu=False, device_name=device_name)
 
-    while not env.done:
+    while not done:
         # Both agents act
-        action0, log_prob0 = rl_agent.select_action(obs0, mask0)
-        action1, log_prob1 = opponent_agent.select_action(obs1, mask1)
+        probs0 = rl_agent.select_action(obs0, mask0)
+        probs1 = opponent_agent.select_action(obs1, mask1)
+        rng = env.rng
+        action0 = int(rng.choice(len(probs0), p=probs0))
+        action1 = int(rng.choice(len(probs1), p=probs1))
+        log_prob0 = float(np.log(probs0[action0] + 1e-8))
+        log_prob1 = float(np.log(probs1[action1] + 1e-8))
         
         if record_init and init_tuple is None:
-            init_tuple = (obs0.copy(), mask0.copy(), log_prob0.copy())
+            init_tuple = (obs0.copy(), mask0.copy(), log_prob0)
 
         # Environment step
-        observations, rewards, done, info, masks = env.step(
+        observations, rewards, terms, truncs, info, masks = env.step(
             {env.agent_ids[0]: action0, env.agent_ids[1]: action1}, return_masks=True
         )
+        done = any(terms.values()) or any(truncs.values())
 
         reward = rewards[env.agent_ids[0]]
         total_reward += reward
