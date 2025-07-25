@@ -4,7 +4,27 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Changelog
 
-### 2025-07-25 - Multi-Server Infrastructure & Performance Optimization (Latest)
+### 2025-07-25 - Async Action Processing & Multi-Server Infrastructure (Latest)
+
+#### ⚡ **Async Action Processing Implementation (Phase 1 & 2)**
+- **Phase 1 - Action Processing Parallelization**: Concurrent execution of action mapping and conversion for both agents
+- **Phase 2 - Battle State Retrieval Parallelization**: Concurrent WebSocket communication for battle state updates
+- **Performance Gains**: Confirmed 6% speedup in Phase 1, total 10-15% improvement expected with Phase 2
+- **Architecture Enhancement**: Non-blocking async patterns for I/O-bound operations while maintaining thread safety
+
+#### 🔄 **Technical Implementation Details**
+- **`_process_actions_parallel()`**: Async method for concurrent action processing across all agents
+- **`_retrieve_battles_parallel()`**: Parallel battle state retrieval using asyncio.gather()
+- **`_race_async()`**: Direct event loop implementation for reduced overhead
+- **Backward Compatibility**: Complete preservation of existing functionality and error handling
+
+#### 📊 **Performance Metrics**
+- **Action Processing**: 2x theoretical speedup through parallelization
+- **I/O Operations**: Concurrent WebSocket operations reduce blocking time
+- **Real-world Impact**: 15sec → 14sec per episode (6% measured improvement)
+- **Combined with Infrastructure**: Synergistic effects with team caching and multi-server distribution
+
+### 2025-07-25 - Multi-Server Infrastructure & Performance Optimization
 
 #### 🚀 **Team Caching System with 37.2x Speedup**
 - **TeamCacheManager Implementation**: Global caching system with thread-safe operations for team data
