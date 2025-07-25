@@ -81,6 +81,9 @@ class PokemonEnv(gym.Env):
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
         
+        # Generate unique player names to prevent NameTaken errors
+        self._unique_player_names = self._generate_unique_player_names()
+        
         # Initialize team loader for random team mode
         self._team_loader = None
         if self.team_mode == "random" and self.teams_dir:
@@ -332,15 +335,12 @@ class PokemonEnv(gym.Env):
                 self._logger.warning("No team loaded for player_1, using None (may cause errors)")
                 team_player_1 = None
 
-            # プレイヤー名を設定（evaluate_rl.py用）
+            # プレイヤー名を設定（ユニークな名前を使用してNameTaken エラーを回避）
             from poke_env.ps_client.account_configuration import AccountConfiguration
             
-            if self.player_names:
-                # 18文字制限に合わせて名前を調整
-                player_0_name = self.player_names[0][:18]
-                account_config_0 = AccountConfiguration(player_0_name, None)
-            else:
-                account_config_0 = None
+            # Use the unique names generated during initialization
+            unique_player_0_name, unique_player_1_name = self._unique_player_names
+            account_config_0 = AccountConfiguration(unique_player_0_name, None)
 
             self._env_players = {
                 "player_0": EnvPlayer(
@@ -355,12 +355,7 @@ class PokemonEnv(gym.Env):
                 )
             }
             if self.opponent_player is None:
-                if self.player_names:
-                    # 18文字制限に合わせて名前を調整
-                    player_1_name = self.player_names[1][:18]
-                    account_config_1 = AccountConfiguration(player_1_name, None)
-                else:
-                    account_config_1 = None
+                account_config_1 = AccountConfiguration(unique_player_1_name, None)
                     
                 self._env_players["player_1"] = EnvPlayer(
                     self,
@@ -467,15 +462,12 @@ class PokemonEnv(gym.Env):
         return observation, info
 
     async def _run_battle(self) -> None:
-        """Start the battle coroutines concurrently."""
-
-        await asyncio.gather(
-            self._env_players["player_0"].battle_against(
-                self._env_players["player_1"], n_battles=1
-            ),
-            self._env_players["player_1"].battle_against(
-                self._env_players["player_0"], n_battles=1
-            ),
+        """Start the battle with player_0 challenging player_1."""
+        
+        # Only player_0 challenges player_1 to avoid mutual challenge race condition
+        # This fixes the "is not challenging you" popup issue in multiprocess mode
+        await self._env_players["player_0"].battle_against(
+            self._env_players["player_1"], n_battles=1
         )
 
     def _race_get(
@@ -885,14 +877,58 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "_env_players"):
             for p in self._env_players.values():
-                asyncio.run_coroutine_threadsafe(
-                    p.ps_client.stop_listening(), POKE_LOOP
-                ).result()
+                try:
+                    asyncio.run_coroutine_threadsafe(
+                        p.ps_client.stop_listening(), POKE_LOOP
+                    ).result(timeout=5.0)  # 5 second timeout
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to stop WebSocket for player {p}: {type(e).__name__}: {e}")
+                    raise  # Re-raise to identify the root cause
             self._env_players.clear()
 
         for q in self._action_queues.values():
-            asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
+            try:
+                asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result(timeout=2.0)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to join action queue: {type(e).__name__}: {e}")
+                raise  # Re-raise to identify the root cause
         for q in self._battle_queues.values():
-            asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
+            try:
+                asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result(timeout=2.0)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to join battle queue: {type(e).__name__}: {e}")
+                raise  # Re-raise to identify the root cause
         self._action_queues.clear()
         self._battle_queues.clear()
+        
+    def _generate_unique_player_names(self) -> tuple[str, str]:
+        """Generate unique player names to prevent NameTaken errors in multiprocess environments."""
+        import time
+        import random
+        import os
+        
+        # Use process ID + timestamp + random number for uniqueness
+        process_id = os.getpid()
+        timestamp = str(int(time.time() * 1000))[-6:]  # Last 6 digits of timestamp
+        random_num = random.randint(10, 99)  # 2-digit random number
+        
+        # Create unique suffix
+        unique_suffix = f"{process_id}_{timestamp}{random_num}"
+        
+        # Generate player names with character limits (Pokemon Showdown has 18 char limit)
+        if self.player_names:
+            # Use provided names with unique suffix
+            player1_name = f"{self.player_names[0][:8]}_{unique_suffix}"[:18]
+            player2_name = f"{self.player_names[1][:8]}_{unique_suffix}"[:18]
+        else:
+            # Use default names with unique suffix
+            player1_name = f"EnvPlayer1_{unique_suffix}"[:18]
+            player2_name = f"EnvPlayer2_{unique_suffix}"[:18]
+            
+        return (player1_name, player2_name)

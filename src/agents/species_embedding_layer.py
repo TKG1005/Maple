@@ -70,16 +70,16 @@ class SpeciesEmbeddingLayer(nn.Module):
                 
                 # Override first 6 dimensions with normalized base stats
                 for _, row in df.iterrows():
-                    pokedex_num = int(row["pokedex_number"])
+                    pokedex_num = int(row["No"])  # Use "No" column instead of "pokedex_number"
                     if pokedex_num < self.vocab_size:
                         # Normalize base stats to [0, 1] range
                         stats = torch.tensor([
-                            row["hp"] / 255.0,           # HP max: 255
-                            row["attack"] / 255.0,        # Attack max: 255
-                            row["defense"] / 255.0,       # Defense max: 255
-                            row["sp_attack"] / 255.0,     # Sp.Attack max: 255
-                            row["sp_defense"] / 255.0,    # Sp.Defense max: 255
-                            row["speed"] / 255.0,         # Speed max: 255
+                            row["HP"] / 255.0,           # HP max: 255
+                            row["atk"] / 255.0,          # Attack max: 255
+                            row["def"] / 255.0,          # Defense max: 255
+                            row["spa"] / 255.0,          # Sp.Attack max: 255
+                            row["spd"] / 255.0,          # Sp.Defense max: 255
+                            row["spe"] / 255.0,          # Speed max: 255
                         ], dtype=torch.float32, device=self.device)
                         
                         # Set first 6 dimensions to normalized stats

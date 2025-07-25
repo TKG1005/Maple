@@ -324,7 +324,17 @@ def _run_opponent_episode(
 
     # Convert to batch format
     batch = _convert_episode_to_batch(episode_data, rl_agent, device, gamma, lam)
-    sub_totals = env._sub_reward_logs.copy() if hasattr(env, '_sub_reward_logs') else {}
+    
+    # Extract sub-reward logs for player_0 (the RL agent)
+    sub_totals = {}
+    if hasattr(env, '_sub_reward_logs'):
+        logs = env._sub_reward_logs
+        if isinstance(logs, dict) and env.agent_ids[0] in logs:
+            # Extract logs for the RL agent (player_0)
+            sub_totals = logs[env.agent_ids[0]].copy()
+        elif isinstance(logs, dict):
+            # If logs is a flat dict, use it directly
+            sub_totals = logs.copy()
     
     return (batch, total_reward, init_tuple, sub_totals, opponent_type)
 
@@ -412,7 +422,17 @@ def _run_self_play_episode(
 
     # Convert to batch format
     batch = _convert_episode_to_batch(episode_data, rl_agent, device, gamma, lam)
-    sub_totals = env._sub_reward_logs.copy() if hasattr(env, '_sub_reward_logs') else {}
+    
+    # Extract sub-reward logs for player_0 (the RL agent)
+    sub_totals = {}
+    if hasattr(env, '_sub_reward_logs'):
+        logs = env._sub_reward_logs
+        if isinstance(logs, dict) and env.agent_ids[0] in logs:
+            # Extract logs for the RL agent (player_0)
+            sub_totals = logs[env.agent_ids[0]].copy()
+        elif isinstance(logs, dict):
+            # If logs is a flat dict, use it directly
+            sub_totals = logs.copy()
     
     return (batch, total_reward, init_tuple, sub_totals, "self")
 

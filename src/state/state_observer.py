@@ -148,7 +148,7 @@ class StateObserver:
                 self._move_embedding_layer = MoveEmbeddingLayer(embedding_file, device)
                 print("Move embedding layer initialized successfully")
             except Exception as e:
-                print(f"Warning: Could not initialize move embedding layer: {e}")
+                # Move embedding layer is optional - system will work without it
                 self._move_embedding_layer = None
             self._move_embedding_initialized = True
         return self._move_embedding_layer

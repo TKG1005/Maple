@@ -52,8 +52,7 @@ def setup_logging(log_dir: str, params: dict[str, object]) -> None:
 
 
 def _run_episodes_multiprocess(
-    envs: list,
-    agents: list,
+    parallel: int,
     server_assignments: dict,
     policy_net: torch.nn.Module,
     value_net: torch.nn.Module,
@@ -80,7 +79,7 @@ def _run_episodes_multiprocess(
         "value": {k: v.cpu() for k, v in value_net.state_dict().items()}
     }
     
-    for i in range(len(envs)):
+    for i in range(parallel):
         server_config, server_index = server_assignments.get(i, (None, -1))
         
         # Environment configuration
@@ -107,8 +106,22 @@ def _run_episodes_multiprocess(
         }
         
         # Opponent configuration
-        agent_data = agents[i]
-        opponent_type = agent_data[2] if len(agent_data) > 2 else "self"
+        # Determine opponent type dynamically
+        if opponent == "self":
+            opponent_type = "self"
+        elif opponent_pool:
+            # Use opponent pool selection
+            opponent_agent = opponent_pool.select_opponent(episode_num)
+            opponent_type = type(opponent_agent).__name__.lower().replace('agent', '').replace('bot', '')
+            if 'rule' in opponent_type:
+                opponent_type = 'rule'
+            elif 'random' in opponent_type:
+                opponent_type = 'random'
+            elif 'max' in opponent_type:
+                opponent_type = 'max'
+        else:
+            # Use single opponent type
+            opponent_type = opponent or "max"
         
         if opponent_type == "self":
             # Self-play: use same config but no learning
@@ -135,7 +148,7 @@ def _run_episodes_multiprocess(
         })
     
     # Execute in parallel using ProcessPoolExecutor
-    with ProcessPoolExecutor(max_workers=len(envs)) as executor:
+    with ProcessPoolExecutor(max_workers=parallel) as executor:
         futures = [
             executor.submit(
                 run_episode_process,
@@ -1030,7 +1043,7 @@ def main(
         if use_multiprocess:
             # Multiprocess execution
             results = _run_episodes_multiprocess(
-                envs, agents, server_assignments, policy_net, value_net,
+                parallel, server_assignments, policy_net, value_net,
                 network_config, gamma, lam, device, ep, opponent_pool, opponent,
                 reward, reward_config, team_mode, teams_dir, log_level
             )
@@ -1168,8 +1181,17 @@ def main(
         # Calculate sub-reward totals (average across parallel environments)
         sub_totals = {}
         for logs in sub_logs_list:
-            for name, val in logs.items():
-                sub_totals[name] = sub_totals.get(name, 0.0) + val
+            # logs can be either dict[str, float] or dict[str, dict[str, float]]
+            if logs:
+                if isinstance(next(iter(logs.values())), dict):
+                    # Handle nested dict structure: logs[player_id][reward_name] = value
+                    for player_id, player_logs in logs.items():
+                        for name, val in player_logs.items():
+                            sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
+                else:
+                    # Handle flat dict structure: logs[reward_name] = value
+                    for name, val in logs.items():
+                        sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
         
         # Average the sub-reward totals
         if sub_logs_list:
