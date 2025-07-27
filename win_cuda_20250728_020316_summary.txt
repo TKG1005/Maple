@@ -1,30 +1,29 @@
 PERFORMANCE PROFILING REPORT
 ==================================================
 
-Session: mac
-Timestamp: 20250728_020519
+Session: win_cuda
+Timestamp: 20250728_020316
 Episodes: 10
 
 SYSTEM INFORMATION
 ------------------------------
-Platform: Darwin Darwin Kernel Version 24.4.0: Fri Apr 11 18:33:47 PDT 2025; root:xnu-11417.101.15~117/RELEASE_ARM64_T6000
-Architecture: arm64
-Processor: Apple M1 Max
-CPU Cores: 10
-CPU Max Freq: 3228.0 MHz
-Memory: 64.0 GB total, 31.3 GB available
-Python: 3.11.2
-PyTorch: 2.7.1
+Platform: Windows 10.0.26100
+Architecture: AMD64
+Processor: Intel64 Family 6 Model 151 Stepping 2, GenuineIntel
+CPU Cores: 20
+CPU Max Freq: 3610.0 MHz
+Memory: 31.8 GB total, 15.6 GB available
+Python: 3.12.9
+PyTorch: 2.7.1+cpu
 Device: CPU (cpu)
-MPS Available: True
 
 PERFORMANCE SUMMARY (per episode)
 ----------------------------------------
-Total Episode Time: 12.588s
+Total Episode Time: 25.512s
 
 Environment Operations:
-  Reset: 0.054s (0.4%)
-  Step: 0.372s (3.0%)
+  Reset: 0.276s (1.1%)
+  Step: 0.703s (2.8%)
   Close: 0.000s (0.0%)
 
 Battle Operations:
@@ -33,16 +32,16 @@ Battle Operations:
   WebSocket: 0.000s (0.0%)
 
 Agent Operations:
-  Action Selection: 0.045s (0.4%)
-  Value Calculation: 0.043s (0.3%)
+  Action Selection: 0.045s (0.2%)
+  Value Calculation: 0.014s (0.1%)
 
 Learning Operations:
-  Gradient Calculation: 4.630s (36.8%)
-  Optimizer Step: 4.423s (35.1%)
+  Gradient Calculation: 9.112s (35.7%)
+  Optimizer Step: 8.920s (35.0%)
   Loss Calculation: 0.000s (0.0%)
 
 I/O Operations:
-  Model Save: 0.005s (0.0%)
+  Model Save: 0.000s (0.0%)
   Model Load: 0.000s (0.0%)
   Data Logging: 0.000s (0.0%)
 
@@ -57,8 +56,8 @@ Other Operations:
 
 SYSTEM RESOURCE USAGE
 ------------------------------
-Peak Memory Usage: 33.03 GB
-Average CPU Usage: 13.2%
+Peak Memory Usage: 16.63 GB
+Average CPU Usage: 6.8%
 Average GPU Usage: 0.0%
 
 METADATA
