@@ -29,6 +29,8 @@ if str(ROOT_DIR) not in sys.path:
 from src.utils.device_utils import get_device, transfer_to_device, get_device_info
 # Import optimizer utilities
 from src.utils.optimizer_utils import save_training_state, load_training_state, create_scheduler
+# Import profiling utilities
+from src.profiling import PerformanceProfiler, PerformanceLogger, set_global_profiler
 # Apply poke-env logging fix
 from src.utils.poke_env_logging_fix import patch_poke_env_logging
 
@@ -272,8 +274,19 @@ def run_episode(
     sub_totals : dict[str, float]
         Sum of sub reward values from :attr:`env._sub_reward_logs`.
     """
-
-    observations, info, masks = env.reset(return_masks=True)
+    from src.profiling import get_global_profiler
+    profiler = get_global_profiler()
+    
+    # Start episode profiling
+    if profiler:
+        profiler.start_episode()
+    
+    # Environment reset with profiling
+    if profiler:
+        with profiler.profile('env_reset'):
+            observations, info, masks = env.reset(return_masks=True)
+    else:
+        observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
     mask0, mask1 = masks
@@ -301,21 +314,38 @@ def run_episode(
     sub_totals: dict[str, float] = {}
     while not done:
         
-        
-        probs0 = agent0.select_action(obs0, mask0)
-        probs1 = agent1.select_action(obs1, mask1)
+        # Agent action selection with profiling
+        if profiler:
+            with profiler.profile('agent_action_selection'):
+                probs0 = agent0.select_action(obs0, mask0)
+                probs1 = agent1.select_action(obs1, mask1)
+        else:
+            probs0 = agent0.select_action(obs0, mask0)
+            probs1 = agent1.select_action(obs1, mask1)
         rng = env.rng
         act0 = int(rng.choice(len(probs0), p=probs0))
         act1 = int(rng.choice(len(probs1), p=probs1))
         logp0 = float(np.log(probs0[act0] + 1e-8))
         
         # Get value through RLAgent interface to handle hidden states properly
-        val0 = agent0.get_value(obs0)
+        if profiler:
+            with profiler.profile('agent_value_calculation'):
+                val0 = agent0.get_value(obs0)
+        else:
+            val0 = agent0.get_value(obs0)
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
-        observations, rewards, terms, truncs, _, next_masks = env.step(
-            actions, return_masks=True
-        )
+        
+        # Environment step with profiling
+        if profiler:
+            with profiler.profile('env_step'):
+                observations, rewards, terms, truncs, _, next_masks = env.step(
+                    actions, return_masks=True
+                )
+        else:
+            observations, rewards, terms, truncs, _, next_masks = env.step(
+                actions, return_masks=True
+            )
         if hasattr(env, "_sub_reward_logs"):
             logs = env._sub_reward_logs.get(env.agent_ids[0], {})
             for name, val in logs.items():
@@ -337,21 +367,45 @@ def run_episode(
         obs1 = observations[env.agent_ids[1]]
         mask0, mask1 = next_masks
 
+    # Post-episode processing with profiling
     rewards = [t["reward"] for t in traj]
     values = [t["value"] for t in traj]
-    adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
-    returns = [a + v for a, v in zip(adv, values)]
+    
+    if profiler:
+        with profiler.profile('gradient_calculation'):
+            adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
+            returns = [a + v for a, v in zip(adv, values)]
+    else:
+        adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
+        returns = [a + v for a, v in zip(adv, values)]
 
-    batch = {
-        "observations": np.stack([t["obs"] for t in traj]),
-        "actions": np.array([t["action"] for t in traj], dtype=np.int64),
-        "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
-        "advantages": np.array(adv, dtype=np.float32),
-        "returns": np.array(returns, dtype=np.float32),
-        "values": np.array(values, dtype=np.float32),
-        "rewards": np.array(rewards, dtype=np.float32),
-        "episode_lengths": np.array([len(traj)], dtype=np.int64),
-    }
+    if profiler:
+        with profiler.profile('tensor_operations'):
+            batch = {
+                "observations": np.stack([t["obs"] for t in traj]),
+                "actions": np.array([t["action"] for t in traj], dtype=np.int64),
+                "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
+                "advantages": np.array(adv, dtype=np.float32),
+                "returns": np.array(returns, dtype=np.float32),
+                "values": np.array(values, dtype=np.float32),
+                "rewards": np.array(rewards, dtype=np.float32),
+                "episode_lengths": np.array([len(traj)], dtype=np.int64),
+            }
+    else:
+        batch = {
+            "observations": np.stack([t["obs"] for t in traj]),
+            "actions": np.array([t["action"] for t in traj], dtype=np.int64),
+            "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
+            "advantages": np.array(adv, dtype=np.float32),
+            "returns": np.array(returns, dtype=np.float32),
+            "values": np.array(values, dtype=np.float32),
+            "rewards": np.array(rewards, dtype=np.float32),
+            "episode_lengths": np.array([len(traj)], dtype=np.int64),
+        }
+    
+    # End episode profiling
+    if profiler:
+        profiler.end_episode()
 
     return batch, sum(rewards), init_tuple, sub_totals
 
@@ -391,6 +445,9 @@ def main(
     epsilon_decay_steps: int | None = None,
     epsilon_decay_strategy: str | None = None,
     epsilon_decay_mode: str | None = None,
+    # Performance profiling parameters
+    profile_enabled: bool = False,
+    profile_name: str | None = None,
 ) -> None:
     """Entry point for self-play PPO training.
 
@@ -552,6 +609,21 @@ def main(
     device = get_device(prefer_gpu=True, device_name=device)
     device_info = get_device_info(device)
     logger.info("Device info: %s", device_info)
+    
+    # Initialize performance profiling
+    profiler = None
+    perf_logger = None
+    if profile_enabled:
+        profiler = PerformanceProfiler(enabled=True, device=device)
+        set_global_profiler(profiler)
+        
+        # Create logs/profiling directory
+        log_dir = Path("logs") / "profiling"
+        perf_logger = PerformanceLogger(log_dir, enabled=True)
+        
+        logger.info("Performance profiling enabled")
+        if profile_name:
+            logger.info("Profile session name: %s", profile_name)
     
     # Transfer networks to device
     policy_net = transfer_to_device(policy_net, device)
@@ -1327,6 +1399,48 @@ def main(
         except OSError as exc:
             logger.error("Failed to save model: %s", exc)
     
+    # Save profiling results
+    if profiler and perf_logger:
+        try:
+            metrics = profiler.get_metrics()
+            system_info = profiler.get_system_info()
+            
+            # Create metadata
+            metadata = {
+                "episodes": episodes,
+                "parallel": parallel,
+                "algorithm": algo,
+                "device": str(device),
+                "batch_size": batch_size,
+                "learning_rate": lr,
+                "network_type": network_config.get("type", "unknown"),
+                "team_mode": team_mode,
+                "opponent": opponent or opponent_mix or "unknown"
+            }
+            
+            # Save profiling session
+            log_file = perf_logger.log_session(
+                metrics, 
+                system_info, 
+                session_name=profile_name,
+                metadata=metadata
+            )
+            
+            logger.info("Performance profiling results saved to: %s", log_file)
+            
+            # Create comparison with recent sessions if available
+            recent_sessions = perf_logger.get_latest_sessions(5)
+            if len(recent_sessions) > 1:
+                comparison_name = profile_name or "latest"
+                comparison_file = perf_logger.create_comparison_report(
+                    recent_sessions, 
+                    comparison_name
+                )
+                logger.info("Performance comparison report: %s", comparison_file)
+                
+        except Exception as e:
+            logger.error("Failed to save profiling results: %s", e)
+    
     # Print team cache performance report
     logger.info("=== Training Session Complete ===")
     TeamCacheManager.print_performance_report()
@@ -1484,6 +1598,18 @@ if __name__ == "__main__":
         help="decay mode: per-step or per-episode (default: episode)",
     )
     
+    # Performance profiling arguments
+    parser.add_argument(
+        "--profile",
+        action="store_true",
+        help="enable performance profiling and logging",
+    )
+    parser.add_argument(
+        "--profile-name",
+        type=str,
+        help="custom name for the profiling session",
+    )
+    
     args = parser.parse_args()
 
     # Set log level based on debug flag or log-level argument
@@ -1531,4 +1657,7 @@ if __name__ == "__main__":
         epsilon_decay_steps=args.epsilon_decay_steps,
         epsilon_decay_strategy=args.epsilon_decay_strategy,
         epsilon_decay_mode=args.epsilon_decay_mode,
+        # Performance profiling parameters
+        profile_enabled=args.profile,
+        profile_name=args.profile_name,
     )
