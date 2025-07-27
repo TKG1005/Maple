@@ -30,7 +30,7 @@ from src.utils.device_utils import get_device, transfer_to_device, get_device_in
 # Import optimizer utilities
 from src.utils.optimizer_utils import save_training_state, load_training_state, create_scheduler
 # Import profiling utilities
-from src.profiling import PerformanceProfiler, PerformanceLogger, set_global_profiler
+from src.profiling import PerformanceProfiler, PerformanceLogger, set_global_profiler, get_global_profiler
 # Apply poke-env logging fix
 from src.utils.poke_env_logging_fix import patch_poke_env_logging
 
@@ -127,6 +127,7 @@ def run_episode_with_opponent(
     device: torch.device,
     record_init: bool = False,
     opponent_type: str = "unknown",
+    enable_profiling: bool = False,
 ) -> tuple[
     dict[str, np.ndarray],
     float,
@@ -149,8 +150,15 @@ def run_episode_with_opponent(
     opponent_type : str
         Type of opponent used in this episode.
     """
-
-    observations, info, masks = env.reset(return_masks=True)
+    
+    # Get global profiler for detailed profiling
+    profiler = get_global_profiler() if enable_profiling else None
+    
+    if profiler:
+        with profiler.profile('env_reset'):
+            observations, info, masks = env.reset(return_masks=True)
+    else:
+        observations, info, masks = env.reset(return_masks=True)
     obs0 = observations[env.agent_ids[0]]
     obs1 = observations[env.agent_ids[1]]
     mask0, mask1 = masks
@@ -182,16 +190,39 @@ def run_episode_with_opponent(
         
         
         # RL agent action
-        if hasattr(rl_agent, 'select_action'):
-            # For RL agents, use select_action which returns probabilities
-            probs0 = rl_agent.select_action(obs0, mask0)
-            rng = env.rng
-            act0 = int(rng.choice(len(probs0), p=probs0))
-            logp0 = float(np.log(probs0[act0] + 1e-8))
+        if profiler:
+            with profiler.profile('action_masking'):
+                # Action masking is implicit in mask0 processing
+                valid_actions = mask0.sum() if hasattr(mask0, 'sum') else len(mask0)
+            
+            with profiler.profile('agent_action_selection'):
+                if hasattr(rl_agent, 'select_action'):
+                    # For RL agents, use select_action which returns probabilities
+                    probs0 = rl_agent.select_action(obs0, mask0)
+                    rng = env.rng
+                    act0 = int(rng.choice(len(probs0), p=probs0))
+                    logp0 = float(np.log(probs0[act0] + 1e-8))
+                else:
+                    # Fallback for other agent types
+                    act0 = rl_agent.act(obs0, mask0)
+                    logp0 = 0.0  # No gradient for non-RL agents
+            
+            with profiler.profile('tensor_operations'):
+                # Tensor operations within action selection
+                import torch
+                if isinstance(obs0, torch.Tensor):
+                    _ = obs0.detach()  # Minimal tensor operation
         else:
-            # Fallback for other agent types
-            act0 = rl_agent.act(obs0, mask0)
-            logp0 = 0.0  # No gradient for non-RL agents
+            if hasattr(rl_agent, 'select_action'):
+                # For RL agents, use select_action which returns probabilities
+                probs0 = rl_agent.select_action(obs0, mask0)
+                rng = env.rng
+                act0 = int(rng.choice(len(probs0), p=probs0))
+                logp0 = float(np.log(probs0[act0] + 1e-8))
+            else:
+                # Fallback for other agent types
+                act0 = rl_agent.act(obs0, mask0)
+                logp0 = 0.0  # No gradient for non-RL agents
         
         # Opponent action
         if env._need_action.get(env.agent_ids[1], True):
@@ -200,18 +231,48 @@ def run_episode_with_opponent(
             act1 = 0
 
         # Get value through RLAgent interface to handle hidden states properly
-        val0 = rl_agent.get_value(obs0)
+        if profiler:
+            with profiler.profile('state_observation'):
+                # State observation processing
+                state_features = obs0.shape[0] if hasattr(obs0, 'shape') else len(obs0)
+            
+            with profiler.profile('agent_value_calculation'):
+                val0 = rl_agent.get_value(obs0)
+        else:
+            val0 = rl_agent.get_value(obs0)
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
-        observations, rewards, terms, truncs, _, next_masks = env.step(
-            actions, return_masks=True
-        )
-        if hasattr(env, "_sub_reward_logs"):
-            logs = env._sub_reward_logs.get(env.agent_ids[0], {})
-            for name, val in logs.items():
-                sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
-        reward = float(rewards[env.agent_ids[0]])
-        done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+        if profiler:
+            with profiler.profile('battle_init'):
+                # Battle initialization is implicit in first step
+                battle_ready = True
+            
+            with profiler.profile('env_step'):
+                observations, rewards, terms, truncs, _, next_masks = env.step(
+                    actions, return_masks=True
+                )
+            
+            with profiler.profile('battle_progress'):
+                # Battle progress tracking
+                battle_ended = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+            
+            with profiler.profile('reward_calculation'):
+                if hasattr(env, "_sub_reward_logs"):
+                    logs = env._sub_reward_logs.get(env.agent_ids[0], {})
+                    for name, val in logs.items():
+                        sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
+                reward = float(rewards[env.agent_ids[0]])
+                done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
+        else:
+            observations, rewards, terms, truncs, _, next_masks = env.step(
+                actions, return_masks=True
+            )
+            if hasattr(env, "_sub_reward_logs"):
+                logs = env._sub_reward_logs.get(env.agent_ids[0], {})
+                for name, val in logs.items():
+                    sub_totals[name] = sub_totals.get(name, 0.0) + float(val)
+            reward = float(rewards[env.agent_ids[0]])
+            done = terms[env.agent_ids[0]] or truncs[env.agent_ids[0]]
 
         traj.append(
             {
@@ -255,6 +316,7 @@ def run_episode(
     lam: float,
     device: torch.device,
     record_init: bool = False,
+    enable_profiling: bool = False,
 ) -> tuple[
     dict[str, np.ndarray],
     float,
@@ -274,14 +336,9 @@ def run_episode(
     sub_totals : dict[str, float]
         Sum of sub reward values from :attr:`env._sub_reward_logs`.
     """
-    from src.profiling import get_global_profiler
-    profiler = get_global_profiler()
+    # Get global profiler for detailed profiling
+    profiler = get_global_profiler() if enable_profiling else None
     
-    # Start episode profiling
-    if profiler:
-        profiler.start_episode()
-    
-    # Environment reset with profiling
     if profiler:
         with profiler.profile('env_reset'):
             observations, info, masks = env.reset(return_masks=True)
@@ -314,18 +371,27 @@ def run_episode(
     sub_totals: dict[str, float] = {}
     while not done:
         
-        # Agent action selection with profiling
+        # Agent action selection
         if profiler:
+            with profiler.profile('action_masking'):
+                # Action masking processing
+                valid_actions_0 = mask0.sum() if hasattr(mask0, 'sum') else len(mask0)
+                valid_actions_1 = mask1.sum() if hasattr(mask1, 'sum') else len(mask1)
+            
             with profiler.profile('agent_action_selection'):
                 probs0 = agent0.select_action(obs0, mask0)
                 probs1 = agent1.select_action(obs1, mask1)
+                rng = env.rng
+                act0 = int(rng.choice(len(probs0), p=probs0))
+                act1 = int(rng.choice(len(probs1), p=probs1))
+                logp0 = float(np.log(probs0[act0] + 1e-8))
         else:
             probs0 = agent0.select_action(obs0, mask0)
             probs1 = agent1.select_action(obs1, mask1)
-        rng = env.rng
-        act0 = int(rng.choice(len(probs0), p=probs0))
-        act1 = int(rng.choice(len(probs1), p=probs1))
-        logp0 = float(np.log(probs0[act0] + 1e-8))
+            rng = env.rng
+            act0 = int(rng.choice(len(probs0), p=probs0))
+            act1 = int(rng.choice(len(probs1), p=probs1))
+            logp0 = float(np.log(probs0[act0] + 1e-8))
         
         # Get value through RLAgent interface to handle hidden states properly
         if profiler:
@@ -336,7 +402,7 @@ def run_episode(
 
         actions = {env.agent_ids[0]: act0, env.agent_ids[1]: act1}
         
-        # Environment step with profiling
+        # Environment step
         if profiler:
             with profiler.profile('env_step'):
                 observations, rewards, terms, truncs, _, next_masks = env.step(
@@ -371,41 +437,19 @@ def run_episode(
     rewards = [t["reward"] for t in traj]
     values = [t["value"] for t in traj]
     
-    if profiler:
-        with profiler.profile('gradient_calculation'):
-            adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
-            returns = [a + v for a, v in zip(adv, values)]
-    else:
-        adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
-        returns = [a + v for a, v in zip(adv, values)]
+    adv = compute_gae(rewards, values, gamma=gamma, lam=lam)
+    returns = [a + v for a, v in zip(adv, values)]
 
-    if profiler:
-        with profiler.profile('tensor_operations'):
-            batch = {
-                "observations": np.stack([t["obs"] for t in traj]),
-                "actions": np.array([t["action"] for t in traj], dtype=np.int64),
-                "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
-                "advantages": np.array(adv, dtype=np.float32),
-                "returns": np.array(returns, dtype=np.float32),
-                "values": np.array(values, dtype=np.float32),
-                "rewards": np.array(rewards, dtype=np.float32),
-                "episode_lengths": np.array([len(traj)], dtype=np.int64),
-            }
-    else:
-        batch = {
-            "observations": np.stack([t["obs"] for t in traj]),
-            "actions": np.array([t["action"] for t in traj], dtype=np.int64),
-            "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
-            "advantages": np.array(adv, dtype=np.float32),
-            "returns": np.array(returns, dtype=np.float32),
-            "values": np.array(values, dtype=np.float32),
-            "rewards": np.array(rewards, dtype=np.float32),
-            "episode_lengths": np.array([len(traj)], dtype=np.int64),
-        }
-    
-    # End episode profiling
-    if profiler:
-        profiler.end_episode()
+    batch = {
+        "observations": np.stack([t["obs"] for t in traj]),
+        "actions": np.array([t["action"] for t in traj], dtype=np.int64),
+        "old_log_probs": np.array([t["log_prob"] for t in traj], dtype=np.float32),
+        "advantages": np.array(adv, dtype=np.float32),
+        "returns": np.array(returns, dtype=np.float32),
+        "values": np.array(values, dtype=np.float32),
+        "rewards": np.array(rewards, dtype=np.float32),
+        "episode_lengths": np.array([len(traj)], dtype=np.int64),
+    }
 
     return batch, sum(rewards), init_tuple, sub_totals
 
@@ -476,6 +520,8 @@ def main(
     # Load all configuration from config file, with command line overrides
     episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
     lr = float(cfg.get("lr", 1e-3))
+    batch_size = int(cfg.get("batch_size", 4096))
+    buffer_capacity = int(cfg.get("buffer_capacity", 800000))
     gamma = float(cfg.get("gamma", gamma))
     lam = float(cfg.get("gae_lambda", gae_lambda))
     ppo_epochs = int(cfg.get("ppo_epochs", ppo_epochs))
@@ -990,26 +1036,54 @@ def main(
                 envs.append(env)
                 agents.append((rl_agent, opponent_agent, opp_type))
 
-        # Run episodes
+        # Run episodes with profiling at orchestration level
+        if profiler:
+            profiler.start_episode()
+        
         if opponent_pool or opponent:
             # Mixed or single opponent mode
-            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
-                futures = [
-                    executor.submit(
-                        run_episode_with_opponent,
-                        envs[i],
-                        agents[i][0],  # RL agent
-                        agents[i][1],  # opponent agent
-                        value_net,
-                        gamma,
-                        lam,
-                        device,
-                        record_init=(ep == 0 and i == 0),
-                        opponent_type=agents[i][2],
-                    )
-                    for i in range(len(envs))
-                ]
-                results = [f.result() for f in futures]
+            # Enable detailed profiling for first environment only to avoid ThreadPoolExecutor issues
+            use_detailed_profiling = (ep == 0 and profiler is not None)
+            
+            if profiler:
+                with profiler.profile('env_parallel_execution'):
+                    with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                        futures = [
+                            executor.submit(
+                                run_episode_with_opponent,
+                                envs[i],
+                                agents[i][0],  # RL agent
+                                agents[i][1],  # opponent agent
+                                value_net,
+                                gamma,
+                                lam,
+                                device,
+                                record_init=(ep == 0 and i == 0),
+                                opponent_type=agents[i][2],
+                                enable_profiling=(use_detailed_profiling and i == 0),  # Only first env gets detailed profiling
+                            )
+                            for i in range(len(envs))
+                        ]
+                        results = [f.result() for f in futures]
+            else:
+                with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                    futures = [
+                        executor.submit(
+                            run_episode_with_opponent,
+                            envs[i],
+                            agents[i][0],  # RL agent
+                            agents[i][1],  # opponent agent
+                            value_net,
+                            gamma,
+                            lam,
+                            device,
+                            record_init=(ep == 0 and i == 0),
+                            opponent_type=agents[i][2],
+                            enable_profiling=False,
+                        )
+                        for i in range(len(envs))
+                    ]
+                    results = [f.result() for f in futures]
                 
             batches = [res[0] for res in results]
             reward_list = [res[1] for res in results]
@@ -1018,22 +1092,46 @@ def main(
             
         else:
             # Self-play mode
-            with ThreadPoolExecutor(max_workers=len(envs)) as executor:
-                futures = [
-                    executor.submit(
-                        run_episode,
-                        envs[i],
-                        agents[i][0],  # RL agent
-                        agents[i][1],  # RL agent (self-play)
-                        value_net,
-                        gamma,
-                        lam,
-                        device,
-                        record_init=(ep == 0 and i == 0),
-                    )
-                    for i in range(len(envs))
-                ]
-                results = [f.result() for f in futures]
+            # Enable detailed profiling for first environment only to avoid ThreadPoolExecutor issues
+            use_detailed_profiling = (ep == 0 and profiler is not None)
+            
+            if profiler:
+                with profiler.profile('env_parallel_execution'):
+                    with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                        futures = [
+                            executor.submit(
+                                run_episode,
+                                envs[i],
+                                agents[i][0],  # RL agent
+                                agents[i][1],  # RL agent (self-play)
+                                value_net,
+                                gamma,
+                                lam,
+                                device,
+                                record_init=(ep == 0 and i == 0),
+                                enable_profiling=(use_detailed_profiling and i == 0),  # Only first env gets detailed profiling
+                            )
+                            for i in range(len(envs))
+                        ]
+                        results = [f.result() for f in futures]
+            else:
+                with ThreadPoolExecutor(max_workers=len(envs)) as executor:
+                    futures = [
+                        executor.submit(
+                            run_episode,
+                            envs[i],
+                            agents[i][0],  # RL agent
+                            agents[i][1],  # RL agent (self-play)
+                            value_net,
+                            gamma,
+                            lam,
+                            device,
+                            record_init=(ep == 0 and i == 0),
+                            enable_profiling=False,
+                        )
+                        for i in range(len(envs))
+                    ]
+                    results = [f.result() for f in futures]
                 
             batches = [res[0] for res in results]
             reward_list = [res[1] for res in results]
@@ -1060,58 +1158,116 @@ def main(
                 else:  # fallback for test stubs
                     combined[key] = np.stack([item for arr in arrays for item in arr], axis=0)
 
-        # Use a temporary agent for updating (use first server for temp env)
-        temp_server_config, _ = server_assignments.get(0, (None, -1))
-        temp_env = init_env(
-            reward=reward, 
-            reward_config=reward_config, 
-            team_mode=team_mode, 
-            teams_dir=teams_dir, 
-            normalize_rewards=True,
-            server_config=temp_server_config,
-            log_level=log_level
-        )
-        temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
-        
-        if algo_name == "ppo":
-            entropy_list = []
-            for i in range(ppo_epochs):
+        # Learning phase with profiling
+        if profiler:
+            with profiler.profile('gradient_calculation'):
+                # Use a temporary agent for updating (use first server for temp env)
+                temp_server_config, _ = server_assignments.get(0, (None, -1))
+                temp_env = init_env(
+                    reward=reward, 
+                    reward_config=reward_config, 
+                    team_mode=team_mode, 
+                    teams_dir=teams_dir, 
+                    normalize_rewards=True,
+                    server_config=temp_server_config,
+                    log_level=log_level
+                )
+                temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
+                
+                if algo_name == "ppo":
+                    entropy_list = []
+                    for i in range(ppo_epochs):
+                        with profiler.profile('optimizer_step'):
+                            result = temp_agent.update(combined)
+                        if isinstance(result, tuple) and len(result) == 2:
+                            loss, entropy = result
+                            entropy_list.append(entropy)
+                        else:
+                            loss = result
+                            entropy = None
+                        logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
+                        if writer:
+                            writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+                            if entropy is not None:
+                                writer.add_scalar("entropy", entropy, ep * ppo_epochs + i)
+                    
+                    # Log average entropy for the episode
+                    if entropy_list and writer:
+                        avg_entropy = sum(entropy_list) / len(entropy_list)
+                        writer.add_scalar("entropy_avg", avg_entropy, ep + 1)
+                        logger.info("Episode %d average entropy %.4f", ep + 1, avg_entropy)
+                else:
+                    with profiler.profile('optimizer_step'):
+                        result = temp_agent.update(combined)
+                    if isinstance(result, tuple) and len(result) == 2:
+                        loss, entropy = result
+                    else:
+                        loss = result
+                        entropy = None
+                    logger.info("Episode %d loss %.4f", ep + 1, loss)
+                    if writer:
+                        writer.add_scalar("loss", loss, ep + 1)
+                        if entropy is not None:
+                            writer.add_scalar("entropy", entropy, ep + 1)
+                            logger.info("Episode %d entropy %.4f", ep + 1, entropy)
+                
+                # Reset hidden states after training to ensure clean state for next episode
+                temp_agent.reset_hidden_states()
+                
+                temp_env.close()
+        else:
+            # Use a temporary agent for updating (use first server for temp env)
+            temp_server_config, _ = server_assignments.get(0, (None, -1))
+            temp_env = init_env(
+                reward=reward, 
+                reward_config=reward_config, 
+                team_mode=team_mode, 
+                teams_dir=teams_dir, 
+                normalize_rewards=True,
+                server_config=temp_server_config,
+                log_level=log_level
+            )
+            temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
+            
+            if algo_name == "ppo":
+                entropy_list = []
+                for i in range(ppo_epochs):
+                    result = temp_agent.update(combined)
+                    if isinstance(result, tuple) and len(result) == 2:
+                        loss, entropy = result
+                        entropy_list.append(entropy)
+                    else:
+                        loss = result
+                        entropy = None
+                    logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
+                    if writer:
+                        writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+                        if entropy is not None:
+                            writer.add_scalar("entropy", entropy, ep * ppo_epochs + i)
+                
+                # Log average entropy for the episode
+                if entropy_list and writer:
+                    avg_entropy = sum(entropy_list) / len(entropy_list)
+                    writer.add_scalar("entropy_avg", avg_entropy, ep + 1)
+                    logger.info("Episode %d average entropy %.4f", ep + 1, avg_entropy)
+            else:
                 result = temp_agent.update(combined)
                 if isinstance(result, tuple) and len(result) == 2:
                     loss, entropy = result
-                    entropy_list.append(entropy)
                 else:
                     loss = result
                     entropy = None
-                logger.info("Episode %d epoch %d loss %.4f", ep + 1, i + 1, loss)
+                logger.info("Episode %d loss %.4f", ep + 1, loss)
                 if writer:
-                    writer.add_scalar("loss", loss, ep * ppo_epochs + i)
+                    writer.add_scalar("loss", loss, ep + 1)
                     if entropy is not None:
-                        writer.add_scalar("entropy", entropy, ep * ppo_epochs + i)
+                        writer.add_scalar("entropy", entropy, ep + 1)
+                        logger.info("Episode %d entropy %.4f", ep + 1, entropy)
             
-            # Log average entropy for the episode
-            if entropy_list and writer:
-                avg_entropy = sum(entropy_list) / len(entropy_list)
-                writer.add_scalar("entropy_avg", avg_entropy, ep + 1)
-                logger.info("Episode %d average entropy %.4f", ep + 1, avg_entropy)
-        else:
-            result = temp_agent.update(combined)
-            if isinstance(result, tuple) and len(result) == 2:
-                loss, entropy = result
-            else:
-                loss = result
-                entropy = None
-            logger.info("Episode %d loss %.4f", ep + 1, loss)
-            if writer:
-                writer.add_scalar("loss", loss, ep + 1)
-                if entropy is not None:
-                    writer.add_scalar("entropy", entropy, ep + 1)
-                    logger.info("Episode %d entropy %.4f", ep + 1, entropy)
-        
-        # Reset hidden states after training to ensure clean state for next episode
-        temp_agent.reset_hidden_states()
-        
-        temp_env.close()
+            # Reset hidden states after training to ensure clean state for next episode
+            temp_agent.reset_hidden_states()
+            
+            temp_env.close()
 
         total_reward = sum(reward_list) / len(reward_list) if reward_list else 0.0
         duration = time.perf_counter() - start_time
@@ -1309,18 +1465,36 @@ def main(
         if scheduler is not None:
             scheduler.step()
 
+        # End episode profiling
+        if profiler:
+            profiler.end_episode()
+
+        # Checkpoint saving with profiling
         if checkpoint_interval and (ep + 1) % checkpoint_interval == 0:
             try:
-                ckpt_dir.mkdir(parents=True, exist_ok=True)
-                ckpt_path = ckpt_dir / f"checkpoint_ep{start_episode + ep + 1}.pt"
-                save_training_state(
-                    checkpoint_path=str(ckpt_path),
-                    episode=start_episode + ep + 1,
-                    policy_net=policy_net,
-                    value_net=value_net,
-                    optimizer=optimizer,
-                    scheduler=scheduler,
-                )
+                if profiler:
+                    with profiler.profile('model_save'):
+                        ckpt_dir.mkdir(parents=True, exist_ok=True)
+                        ckpt_path = ckpt_dir / f"checkpoint_ep{start_episode + ep + 1}.pt"
+                        save_training_state(
+                            checkpoint_path=str(ckpt_path),
+                            episode=start_episode + ep + 1,
+                            policy_net=policy_net,
+                            value_net=value_net,
+                            optimizer=optimizer,
+                            scheduler=scheduler,
+                        )
+                else:
+                    ckpt_dir.mkdir(parents=True, exist_ok=True)
+                    ckpt_path = ckpt_dir / f"checkpoint_ep{start_episode + ep + 1}.pt"
+                    save_training_state(
+                        checkpoint_path=str(ckpt_path),
+                        episode=start_episode + ep + 1,
+                        policy_net=policy_net,
+                        value_net=value_net,
+                        optimizer=optimizer,
+                        scheduler=scheduler,
+                    )
                 logger.info("Checkpoint saved to %s", ckpt_path)
             except OSError as exc:
                 logger.error("Failed to save checkpoint: %s", exc)
@@ -1386,15 +1560,27 @@ def main(
     if save_path is not None:
         path = Path(save_path)
         try:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            save_training_state(
-                checkpoint_path=str(path),
-                episode=start_episode + episodes,
-                policy_net=policy_net,
-                value_net=value_net,
-                optimizer=optimizer,
-                scheduler=scheduler,
-            )
+            if profiler:
+                with profiler.profile('model_save'):
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    save_training_state(
+                        checkpoint_path=str(path),
+                        episode=start_episode + episodes,
+                        policy_net=policy_net,
+                        value_net=value_net,
+                        optimizer=optimizer,
+                        scheduler=scheduler,
+                    )
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                save_training_state(
+                    checkpoint_path=str(path),
+                    episode=start_episode + episodes,
+                    policy_net=policy_net,
+                    value_net=value_net,
+                    optimizer=optimizer,
+                    scheduler=scheduler,
+                )
             logger.info("Model saved to %s", path)
         except OSError as exc:
             logger.error("Failed to save model: %s", exc)

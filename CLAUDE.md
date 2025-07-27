@@ -415,6 +415,48 @@ This ensures compatibility across all network types while maintaining optimal pe
 
 ## Recent Updates
 
+### Performance Profiling System Implementation (2025-07-28)
+包括的な性能分析システムを実装し、ThreadPoolExecutor環境での正確なボトルネック特定を実現しました。
+
+#### Hybrid Profiling Architecture
+**Problem**: ThreadPoolExecutorによる並列実行で同じグローバルプロファイラーに重複計測が発生し、統計が不正確になっていました（env_step: 1108%等）。
+
+**Solution**: 
+- **メイン関数レベル**: 全体時間とThreadPoolExecutor処理の計測
+- **代表エピソード詳細計測**: 最初のエピソードの1環境のみで詳細プロファイリング
+- **スレッドセーフ設計**: `get_global_profiler()`による安全な並列アクセス
+
+#### Key Performance Metrics
+**Environment Operations**: 
+- `env_step`: 11.7% - Pokemon Showdown通信が最重要ボトルネック
+- `env_reset`: 2.2% - 環境初期化処理
+
+**Learning Operations**: 
+- `gradient_calculation`: 35.1% - GAE計算とバッチ処理
+- `optimizer_step`: 33.9% - ネットワーク更新処理
+
+**Agent Operations**:
+- `agent_action_selection`: 1.2% - 推論処理（軽量）
+- `agent_value_calculation`: 0.8%
+
+#### Configuration System Integration
+全31項目の設定読み込みを完全対応し、`batch_size`読み込み問題を修正：
+```python
+# train.py での統合設定読み込み
+batch_size = int(cfg.get("batch_size", 4096))
+buffer_capacity = int(cfg.get("buffer_capacity", 800000))
+```
+
+#### Usage and Documentation
+```bash
+# 基本的なプロファイリング実行
+python train.py --profile --profile-name session_name
+
+# 出力: logs/profiling/reports/session_name_timestamp_summary.txt
+```
+
+詳細なドキュメント: `docs/profiling-system.md`
+
 ### Latest Implementations (2025-07-25)
 
 #### 🚀 Async Action Processing (10-15% Performance Boost)
