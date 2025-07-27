@@ -1,0 +1,176 @@
+{
+  "timestamp": "20250728_015726",
+  "session_name": "win_cpu",
+  "metadata": {
+    "episodes": 10,
+    "parallel": 10,
+    "algorithm": "ppo",
+    "device": "cpu",
+    "batch_size": 4096,
+    "learning_rate": 0.003,
+    "network_type": "attention",
+    "team_mode": "random",
+    "opponent": "max"
+  },
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "architecture": "AMD64",
+    "processor": "Intel64 Family 6 Model 151 Stepping 2, GenuineIntel",
+    "cpu_count": 20,
+    "cpu_freq_max": 3610.0,
+    "memory_total": 31.783035278320312,
+    "memory_available": 15.249156951904297,
+    "python_version": "3.12.9",
+    "torch_version": "2.7.1+cpu",
+    "device_type": "cpu",
+    "device_name": "CPU",
+    "cuda_version": null,
+    "mps_available": false
+  },
+  "metrics": {
+    "episode_count": 10,
+    "totals": {
+      "episode_total": 343.4232951000031,
+      "env_reset": 2.7924659000000247,
+      "env_step": 5.515917400000035,
+      "env_close": 0.0,
+      "battle_init": 6.500002200482413e-06,
+      "battle_progress": 1.1100002666353248e-05,
+      "battle_websocket": 0.0,
+      "agent_action_selection": 0.5964520999987144,
+      "agent_value_calculation": 0.3718129000026238,
+      "gradient_calculation": 138.62680589999945,
+      "optimizer_step": 136.28261020000718,
+      "loss_calculation": 0.0,
+      "model_save": 0.0,
+      "model_load": 0.0,
+      "data_logging": 0.0,
+      "tensor_operations": 4.9600002967054024e-05,
+      "device_transfer": 0.0,
+      "reward_calculation": 4.530000114755239e-05,
+      "state_observation": 1.930000144056976e-05,
+      "action_masking": 0.00030249999690568075
+    },
+    "averages_per_episode": {
+      "episode_total": 34.34232951000031,
+      "env_reset": 0.27924659000000246,
+      "env_step": 0.5515917400000034,
+      "env_close": 0.0,
+      "battle_init": 6.500002200482414e-07,
+      "battle_progress": 1.1100002666353248e-06,
+      "battle_websocket": 0.0,
+      "agent_action_selection": 0.05964520999987144,
+      "agent_value_calculation": 0.03718129000026238,
+      "gradient_calculation": 13.862680589999945,
+      "optimizer_step": 13.628261020000718,
+      "loss_calculation": 0.0,
+      "model_save": 0.0,
+      "model_load": 0.0,
+      "data_logging": 0.0,
+      "tensor_operations": 4.9600002967054024e-06,
+      "device_transfer": 0.0,
+      "reward_calculation": 4.530000114755239e-06,
+      "state_observation": 1.930000144056976e-06,
+      "action_masking": 3.0249999690568073e-05
+    },
+    "system_metrics": {
+      "memory_usage_peak": 17.11240005493164,
+      "cpu_usage_avg": 6.299999999999999,
+      "gpu_usage_avg": 0.0
+    },
+    "detailed_timings": {
+      "env_reset": {
+        "count": 1,
+        "total": 2.7924659000000247,
+        "average": 2.7924659000000247,
+        "min": 2.7924659000000247,
+        "max": 2.7924659000000247
+      },
+      "action_masking": {
+        "count": 18,
+        "total": 0.00030249999690568075,
+        "average": 1.680555538364893e-05,
+        "min": 1.0100000508828089e-05,
+        "max": 2.930000118794851e-05
+      },
+      "agent_action_selection": {
+        "count": 18,
+        "total": 0.5964520999987144,
+        "average": 0.033136227777706355,
+        "min": 0.002050799999778974,
+        "max": 0.06031489999986661
+      },
+      "tensor_operations": {
+        "count": 18,
+        "total": 4.9600002967054024e-05,
+        "average": 2.75555572039189e-06,
+        "min": 2.0000006770715117e-06,
+        "max": 3.9000005926936865e-06
+      },
+      "state_observation": {
+        "count": 18,
+        "total": 1.930000144056976e-05,
+        "average": 1.0722223022538756e-06,
+        "min": 7.999988156370819e-07,
+        "max": 1.5999994502635673e-06
+      },
+      "agent_value_calculation": {
+        "count": 18,
+        "total": 0.3718129000026238,
+        "average": 0.02065627222236799,
+        "min": 0.0011995999993814621,
+        "max": 0.042335199999797624
+      },
+      "battle_init": {
+        "count": 18,
+        "total": 6.500002200482413e-06,
+        "average": 3.6111123336013407e-07,
+        "min": 2.999986463692039e-07,
+        "max": 4.000012268079445e-07
+      },
+      "env_step": {
+        "count": 18,
+        "total": 5.515917400000035,
+        "average": 0.30643985555555747,
+        "min": 0.15872269999999844,
+        "max": 0.6568415000001551
+      },
+      "battle_progress": {
+        "count": 18,
+        "total": 1.1100002666353248e-05,
+        "average": 6.166668147974027e-07,
+        "min": 4.999983502784744e-07,
+        "max": 1.2000000424450263e-06
+      },
+      "reward_calculation": {
+        "count": 18,
+        "total": 4.530000114755239e-05,
+        "average": 2.5166667304195776e-06,
+        "min": 1.8999999156221747e-06,
+        "max": 3.6999990697950125e-06
+      },
+      "env_parallel_execution": {
+        "count": 10,
+        "total": 204.39384809999865,
+        "average": 20.439384809999865,
+        "min": 12.984522799999468,
+        "max": 36.52239340000051
+      },
+      "optimizer_step": {
+        "count": 40,
+        "total": 136.28261020000718,
+        "average": 3.4070652550001794,
+        "min": 1.8037060000006022,
+        "max": 8.132654099999854
+      },
+      "gradient_calculation": {
+        "count": 10,
+        "total": 138.62680589999945,
+        "average": 13.862680589999945,
+        "min": 7.963818399999582,
+        "max": 20.77052790000016
+      }
+    }
+  }
+}
