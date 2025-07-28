@@ -81,7 +81,7 @@ goto :eof
 
 :start_servers
 set "NUM=%1"
-echo Starting %NUM% Pokemon Showdown servers...
+echo Starting %NUM% Pokemon Showdown server(s)...
 echo.
 
 :: Check if Node.js is installed
@@ -99,7 +99,9 @@ if not exist "%SHOWDOWN_DIR%\pokemon-showdown" (
 )
 
 set /a "STARTED=0"
-for /l %%i in (0,1,%NUM%-1) do (
+set /a "MAX_INDEX=%NUM%-1"
+echo Starting servers with indices 0 to %MAX_INDEX% (total: %NUM% servers)
+for /l %%i in (0,1,!MAX_INDEX!) do (
     set /a "PORT=%DEFAULT_PORT%+%%i"
     set "PID_FILE=%PID_DIR%\showdown_!PORT!.pid"
     
@@ -121,7 +123,7 @@ for /l %%i in (0,1,%NUM%-1) do (
 )
 
 echo.
-echo Started %STARTED% servers
+echo Started %STARTED% servers (ports %DEFAULT_PORT% to !PORT!)
 goto :eof
 
 :start_single_server
