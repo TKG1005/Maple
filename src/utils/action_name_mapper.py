@@ -48,31 +48,7 @@ class ActionNameMapper:
             if action_idx < len(move_names):
                 move = moves[move_names[action_idx]]
                 # Get the move's actual name from its ID
-                move_id = move.id
-                
-                # Special cases for move names
-                if move_id == "u-turn":
-                    move_display_name = "U-turn"
-                elif move_id == "willowisp":
-                    move_display_name = "Will-O-Wisp"
-                elif move_id == "poweruppunch":
-                    move_display_name = "Power-Up Punch"
-                elif move_id == "doubleedge":
-                    move_display_name = "Double-Edge"
-                elif move_id == "bravebird":
-                    move_display_name = "Brave Bird"
-                elif move_id == "bodypress":
-                    move_display_name = "Body Press"
-                elif move_id == "earthpower":
-                    move_display_name = "Earth Power"
-                elif move_id == "stealthrock":
-                    move_display_name = "Stealth Rock"
-                elif move_id == "voltswitch":
-                    move_display_name = "Volt Switch"
-                else:
-                    # Default: capitalize each word
-                    move_display_name = move_id.replace('-', ' ').title()
-                    
+                move_display_name = move.id.replace('-', ' ').title()
                 return f"Use {move_display_name}"
             else:
                 return f"Move {action_idx + 1} (unavailable)"
@@ -85,22 +61,7 @@ class ActionNameMapper:
             if switch_idx < len(available_switches):
                 target_pokemon = available_switches[switch_idx]
                 # Get the Pokemon's species name and level
-                species_name = target_pokemon.species
-                
-                # Handle special Pokemon name formatting
-                if species_name == "landorus-therian":
-                    species_name = "Landorus-Therian"
-                elif species_name == "thundurus-therian":
-                    species_name = "Thundurus-Therian"
-                elif species_name == "tornadus-therian":
-                    species_name = "Tornadus-Therian"
-                elif "-" in species_name:
-                    # For other forms, capitalize each part
-                    parts = species_name.split("-")
-                    species_name = "-".join(part.title() for part in parts)
-                else:
-                    species_name = species_name.title()
-                    
+                species_name = target_pokemon.species.title()
                 level_str = f" L{target_pokemon.level}" if target_pokemon.level != 100 else ""
                 return f"Switch to {species_name}{level_str}"
             else:
