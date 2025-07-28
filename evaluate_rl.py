@@ -169,11 +169,7 @@ def run_episode_multi(
             if probs_data:
                 probs, mask = probs_data
                 # Get current battle object
-                env_player = env._env_players[env.agent_ids[0]]
-                if hasattr(env_player, "_env_player") and hasattr(env_player._env_player, "current_battle"):
-                    battle = env_player._env_player.current_battle
-                else:
-                    battle = None
+                battle = env.get_current_battle(env.agent_ids[0])
                 action_logger.log_turn(env.agent_ids[0], turn, probs, mask, action0, battle)
                 
         observations, rewards, terms, truncs, _, masks = env.step(
