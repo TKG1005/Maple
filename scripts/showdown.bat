@@ -28,6 +28,7 @@ if "%COMMAND%"=="" (
     echo   restart [n]  Restart with n servers
     echo   status       Show server status
     echo   quick        Auto-start based on train_config.yml
+    echo   clean        Force stop all servers on ports 8000-8009
     exit /b 1
 )
 
@@ -55,6 +56,8 @@ if /i "%COMMAND%"=="start" (
     call :show_status
 ) else if /i "%COMMAND%"=="quick" (
     call :quick_start
+) else if /i "%COMMAND%"=="clean" (
+    call :force_clean
 ) else (
     echo Invalid command: %COMMAND%
     exit /b 1
@@ -158,6 +161,7 @@ echo Stopping all Pokemon Showdown servers...
 echo.
 
 set /a "STOPPED=0"
+:: First, try to stop managed servers (with PID files)
 for /f %%f in ('dir /b "%PID_DIR%\showdown_*.pid" 2^>nul') do (
     set "PID_FILE=%PID_DIR%\%%f"
     set /p PID=<"!PID_FILE!"
@@ -179,6 +183,32 @@ for /f %%f in ('dir /b "%PID_DIR%\showdown_*.pid" 2^>nul') do (
         echo Port !PORT!: Not running ^(stale PID: !PID!^)
     )
     del "!PID_FILE!"
+)
+
+:: Kill any node processes listening on our ports (8000-8009)
+echo.
+echo Checking for unmanaged servers on ports 8000-8009...
+for /l %%i in (0,1,9) do (
+    set /a "PORT=8000+%%i"
+    
+    :: Find process using the port
+    for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":!PORT!" ^| findstr "LISTENING"') do (
+        set "PID=%%p"
+        if "!PID!" NEQ "0" (
+            :: Verify it's a node.exe process
+            tasklist /fi "PID eq !PID!" 2>nul | find "node.exe" >nul
+            if !errorlevel!==0 (
+                echo Port !PORT!: Found unmanaged server ^(PID: !PID!^), stopping...
+                taskkill /PID !PID! /F >nul 2>&1
+                if !errorlevel!==0 (
+                    echo Port !PORT!: Stopped unmanaged server
+                    set /a "STOPPED+=1"
+                ) else (
+                    echo Port !PORT!: Failed to stop unmanaged server
+                )
+            )
+        )
+    )
 )
 
 :: Also kill any orphaned node processes running pokemon-showdown
@@ -261,4 +291,36 @@ del "%TEMP_SCRIPT%"
 
 echo Detected parallel=%NUM_SERVERS% environments, starting %NUM_SERVERS% servers...
 call :start_servers %NUM_SERVERS%
+goto :eof
+
+:force_clean
+echo Force cleaning all servers on ports 8000-8009...
+echo.
+
+set /a "KILLED=0"
+:: Kill all node processes on our ports
+for /l %%i in (0,1,9) do (
+    set /a "PORT=8000+%%i"
+    
+    :: Find all processes using the port
+    for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":!PORT!" ^| findstr "LISTENING"') do (
+        set "PID=%%p"
+        if "!PID!" NEQ "0" (
+            echo Port !PORT!: Killing process ^(PID: !PID!^)
+            taskkill /PID !PID! /F >nul 2>&1
+            if !errorlevel!==0 (
+                set /a "KILLED+=1"
+            )
+        )
+    )
+)
+
+:: Clean up any PID files
+if exist "%PID_DIR%\showdown_*.pid" (
+    del /q "%PID_DIR%\showdown_*.pid" >nul 2>&1
+    echo Cleaned up PID files
+)
+
+echo.
+echo Force killed %KILLED% processes
 goto :eof
