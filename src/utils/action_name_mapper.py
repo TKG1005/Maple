@@ -29,8 +29,12 @@ class ActionNameMapper:
             # Fallback when no battle context
             if action_idx < 4:
                 return f"Move {action_idx + 1}"
+            elif action_idx < 8:
+                return f"Tera Move {action_idx - 3}"
             elif action_idx < 10:
-                return f"Switch to Pokemon {action_idx - 3}"
+                return f"Switch to Pokemon {action_idx - 7}"
+            elif action_idx == 10:
+                return "Struggle"
             else:
                 return f"Action {action_idx}"
                 
@@ -53,9 +57,22 @@ class ActionNameMapper:
             else:
                 return f"Move {action_idx + 1} (unavailable)"
                 
-        # Switch actions (4-9 for 6 Pokemon team)
+        # Terastal move actions (4-7)
+        elif action_idx < 8:
+            tera_idx = action_idx - 4
+            moves = active_pokemon.moves
+            move_names = list(moves.keys())
+            if tera_idx < len(move_names):
+                move = moves[move_names[tera_idx]]
+                # Get the move's actual name from its ID
+                move_display_name = move.id.replace('-', ' ').title()
+                return f"Tera {move_display_name}"
+            else:
+                return f"Tera Move {tera_idx + 1} (unavailable)"
+                
+        # Switch actions (8-9)
         elif action_idx < 10:
-            switch_idx = action_idx - 4
+            switch_idx = action_idx - 8
             available_switches = [p for p in team.values() if not p.fainted and p != active_pokemon]
             
             if switch_idx < len(available_switches):
@@ -66,6 +83,10 @@ class ActionNameMapper:
                 return f"Switch to {species_name}{level_str}"
             else:
                 return f"Switch {switch_idx + 1} (unavailable)"
+                
+        # Struggle action (10)
+        elif action_idx == 10:
+            return "Struggle"
                 
         # Other actions (should not occur in standard battles)
         else:
