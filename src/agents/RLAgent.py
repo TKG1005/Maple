@@ -82,7 +82,6 @@ class RLAgent(MapleAgent):
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
         action = int(rng.choice(len(probs), p=probs))
-        self._logger.debug("%s: chosen action = %s", self.__class__.__name__, action)
         return action
 
     def get_value(self, observation: np.ndarray) -> float:
