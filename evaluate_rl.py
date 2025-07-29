@@ -236,7 +236,7 @@ def evaluate_single(
     # Initialize action probability logger if requested
     action_logger = None
     if log_action_probs:
-        action_logger = ActionProbabilityLogger("logs/evaluate", model_name)
+        action_logger = ActionProbabilityLogger("replays/action-probs", model_name)
         logger.info("Action probability logging enabled")
     
     wins = 0

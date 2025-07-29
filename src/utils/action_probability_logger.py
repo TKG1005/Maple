@@ -17,7 +17,7 @@ from .action_name_mapper import ActionNameMapper
 class ActionProbabilityLogger:
     """Logs action probabilities during battles for analysis."""
     
-    def __init__(self, log_dir: str = "logs/evaluate", model_name: str = "model"):
+    def __init__(self, log_dir: str = "replays/action-probs", model_name: str = "model"):
         """Initialize the logger.
         
         Args:
