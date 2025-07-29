@@ -56,6 +56,7 @@ from src.agents.network_factory import create_policy_network, create_value_netwo
 from src.utils.device_utils import get_device, transfer_to_device, get_device_info  # noqa: E402
 from src.algorithms import PPOAlgorithm  # noqa: E402
 from src.teams.team_loader import TeamLoader  # noqa: E402
+from src.utils.action_probability_logger import ActionProbabilityLogger  # noqa: E402
 import torch  # noqa: E402
 from torch import optim  # noqa: E402
 
@@ -92,6 +93,8 @@ def init_env(*, save_replays: bool | str = False, single: bool = True, player_na
         action_helper=action_helper,
         save_replays=save_replays,
         player_names=unique_names,
+        team_mode=team_mode,
+        teams_dir=teams_dir,
         team_loader=team_loader,
     )
     if single:
@@ -126,7 +129,7 @@ def run_episode(agent: RLAgent) -> tuple[bool, float]:
 
 
 def run_episode_multi(
-    agent0: RLAgent, agent1: RLAgent
+    agent0: RLAgent, agent1: RLAgent, action_logger=None
 ) -> tuple[bool, bool, float, float]:
     """Run one battle between two agents and return win flags and rewards."""
 
@@ -156,9 +159,21 @@ def run_episode_multi(
     done = False
     reward0 = 0.0
     reward1 = 0.0
+    turn = 0
     while not done:
+        turn += 1
         action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
         action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
+        
+        # Log action probabilities if logger is provided
+        if action_logger and isinstance(agent0, RLAgent):
+            probs_data = agent0.get_last_action_probs()
+            if probs_data:
+                probs, mask = probs_data
+                # Get current battle object
+                battle = env.get_current_battle(env.agent_ids[0])
+                action_logger.log_turn(env.agent_ids[0], turn, probs, mask, action0, battle)
+                
         observations, rewards, terms, truncs, _, masks = env.step(
             {"player_0": action0, "player_1": action1}, return_masks=True
         )
@@ -187,7 +202,7 @@ def create_opponent_agent(opponent_type: str, env: PokemonEnv):
 
 
 def evaluate_single(
-    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random", team: str = "default", teams_dir: str | None = None, device: str = "auto"
+    model_path: str, n: int = 1, replay_dir: str | bool = "replays", opponent: str = "random", team: str = "default", teams_dir: str | None = None, device: str = "auto", log_action_probs: bool = False
 ) -> None:
     # Multi-agent環境でRL学習済みエージェント vs 指定した対戦相手
     model_name = Path(model_path).stem
@@ -218,6 +233,12 @@ def evaluate_single(
     # モデルの準備
     state_dict = torch.load(model_path, map_location="cpu")
 
+    # Initialize action probability logger if requested
+    action_logger = None
+    if log_action_probs:
+        action_logger = ActionProbabilityLogger("replays/action-probs", model_name)
+        logger.info("Action probability logging enabled")
+    
     wins = 0
     total_reward = 0.0
     for i in range(n):
@@ -365,7 +386,17 @@ def evaluate_single(
         opponent_agent = create_opponent_agent(opponent, env)
         env.register_agent(opponent_agent, env.agent_ids[1])
         
-        win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent)
+        # Start battle logging if enabled
+        if action_logger:
+            action_logger.start_battle(i + 1, (model_name, opponent_name))
+        
+        win0, win1, reward0, reward1 = run_episode_multi(rl_agent, opponent_agent, action_logger)
+        
+        # End battle logging if enabled
+        if action_logger:
+            winner = model_name if win0 else opponent_name
+            action_logger.end_battle(winner, {"player_0": reward0, "player_1": reward1})
+        
         wins += int(win0)
         total_reward += reward0
         logger.info(
@@ -380,6 +411,10 @@ def evaluate_single(
     win_rate = wins / n if n else 0.0
     avg_reward = total_reward / n if n else 0.0
     logger.info("RL Agent vs %s - win_rate: %.2f avg_reward: %.2f", opponent, win_rate, avg_reward)
+    
+    # Save action probability logs if enabled
+    if action_logger:
+        action_logger.save()
 
 
 def compare_models(
@@ -595,6 +630,11 @@ if __name__ == "__main__":
         default=None,
         help="device to use for evaluation (auto, cpu, cuda, mps)",
     )
+    parser.add_argument(
+        "--log-action-probs",
+        action="store_true",
+        help="log action probabilities for each turn to logs/evaluate directory",
+    )
     args = parser.parse_args()
 
     # Load configuration file
@@ -619,12 +659,13 @@ if __name__ == "__main__":
         "team": team,
         "teams_dir": teams_dir,
         "device": device,
+        "log_action_probs": args.log_action_probs,
     }
     setup_logging("logs", final_params)
 
     if args.models:
         compare_models(args.models[0], args.models[1], n, replay_dir, team, teams_dir, device)
     elif args.model:
-        evaluate_single(args.model, n, replay_dir, opponent, team, teams_dir, device)
+        evaluate_single(args.model, n, replay_dir, opponent, team, teams_dir, device, args.log_action_probs)
     else:
         parser.error("--model or --models is required")

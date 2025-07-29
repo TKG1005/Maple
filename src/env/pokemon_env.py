@@ -38,6 +38,7 @@ class PokemonEnv(gym.Env):
         player_names: tuple[str, str] | None = None,
         team_mode: str = "default",
         teams_dir: str | None = None,
+        team_loader: Any = None,
         normalize_rewards: bool = True,
         server_configuration: Any = None,
         log_level: int = logging.DEBUG,
@@ -82,8 +83,8 @@ class PokemonEnv(gym.Env):
         self.agent_ids = ("player_0", "player_1")
         
         # Initialize team loader for random team mode
-        self._team_loader = None
-        if self.team_mode == "random" and self.teams_dir:
+        self._team_loader = team_loader
+        if self._team_loader is None and self.team_mode == "random" and self.teams_dir:
             from src.teams import TeamLoader
             self._team_loader = TeamLoader(self.teams_dir)
             if self._team_loader.get_team_count() == 0:

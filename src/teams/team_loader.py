@@ -64,6 +64,9 @@ class TeamLoader:
             return None
         
         selected_team = random.choice(self.teams)
+        # Log team selection for debugging
+        first_pokemon = selected_team.split('\n')[0] if selected_team else "Unknown"
+        logger.info("Selected random team starting with: %s", first_pokemon)
         return selected_team
     
     def get_team_by_index(self, index: int) -> Optional[str]:
