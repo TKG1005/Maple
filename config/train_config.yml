@@ -20,7 +20,7 @@ reward_config: config/reward.yaml
 
 # Training configuration
 parallel: 25              # Parallel environments (5=test, 20=dev, 100=production)
-checkpoint_interval: 500  # Save checkpoint every N episodes
+checkpoint_interval: 100  # Save checkpoint every N episodes
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
@@ -71,8 +71,8 @@ league_training:
   # - Fine-tuning: weighted (gradual transition from old to new)
 
 # Model management
-load_model: null  # Path to model file to resume training from
-save_model: null  # Path to save final model
+load_model: model.pt  # Path to model file to resume training from
+save_model: model.pt  # Path to save final model
 
 # Network architecture configuration  
 network:
