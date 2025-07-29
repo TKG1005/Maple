@@ -1,0 +1,66 @@
+Miraidon @ Leftovers  
+Ability: Hadron Engine  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 4 Def / 116 SpA / 44 SpD / 92 Spe  
+Modest Nature  
+- Electro Drift  
+- Tera Blast  
+- Calm Mind  
+- Taunt  
+
+Calyrex-Ice @ Weakness Policy  
+Ability: As One (Glastrier)  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 36 Atk / 68 Def / 68 SpD / 52 Spe  
+Adamant Nature  
+- Glacial Lance  
+- High Horsepower  
+- Baton Pass  
+- Agility  
+
+Grimmsnarl @ Light Clay  
+Ability: Prankster  
+Level: 50  
+Tera Type: Fire  
+EVs: 244 HP / 180 Def / 84 SpD  
+Careful Nature  
+- Spirit Break  
+- Reflect  
+- Light Screen  
+- Taunt  
+
+Sneasler @ Electric Seed  
+Ability: Unburden  
+Level: 50  
+Tera Type: Dark  
+EVs: 156 HP / 212 Atk / 28 Def / 4 SpD / 108 Spe  
+Adamant Nature  
+- Close Combat  
+- Dire Claw  
+- Throat Chop  
+- Swords Dance  
+
+Landorus-Therian @ Sitrus Berry  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 252 SpD  
+Adamant Nature  
+- U-turn  
+- Earthquake  
+- Stealth Rock  
+- Taunt  
+
+Urshifu-Rapid-Strike @ Choice Band  
+Ability: Unseen Fist  
+Level: 50  
+Tera Type: Fighting  
+EVs: 252 HP / 252 Atk / 4 SpD  
+Adamant Nature  
+- Surging Strikes  
+- Close Combat  
+- Aqua Jet  
+- U-turn  
+

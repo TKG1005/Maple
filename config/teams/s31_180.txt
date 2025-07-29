@@ -1,0 +1,67 @@
+Zacian @ Rusted Sword  
+Ability: Intrepid Sword  
+Level: 50  
+Tera Type: Normal  
+EVs: 188 HP / 252 Atk / 4 Def / 12 SpD / 52 Spe  
+Adamant Nature  
+- Iron Head  
+- Play Rough  
+- Close Combat  
+- Trailblaze  
+
+Calyrex-Shadow @ Focus Sash  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Grass  
+EVs: 4 HP / 252 SpA / 252 Spe  
+Serious Nature  
+IVs: 0 Atk  
+- Astral Barrage  
+- Giga Drain  
+- Nasty Plot  
+- Substitute  
+
+Ting-Lu @ Assault Vest  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 4 HP / 252 Atk / 252 SpD  
+Adamant Nature  
+- Earthquake  
+- Lash Out  
+- Heavy Slam  
+- Stone Edge  
+
+Chien-Pao @ Life Orb  
+Ability: Sword of Ruin  
+Level: 50  
+Tera Type: Electric  
+EVs: 188 HP / 252 Atk / 4 Def / 4 SpD / 60 Spe  
+Adamant Nature  
+- Icicle Crash  
+- Crunch  
+- Tera Blast  
+- Sucker Punch  
+
+Dondozo @ Leftovers  
+Ability: Unaware  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 252 Def / 4 SpD  
+Impish Nature  
+- Wave Crash  
+- Protect  
+- Yawn  
+- Fissure  
+
+Gliscor @ Toxic Orb  
+Ability: Poison Heal  
+Level: 50  
+Tera Type: Steel  
+EVs: 226 HP / 28 Def / 252 SpD  
+Serious Nature  
+- Earthquake  
+- Toxic  
+- Protect  
+- Substitute  
+
