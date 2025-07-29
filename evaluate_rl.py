@@ -93,6 +93,8 @@ def init_env(*, save_replays: bool | str = False, single: bool = True, player_na
         action_helper=action_helper,
         save_replays=save_replays,
         player_names=unique_names,
+        team_mode=team_mode,
+        teams_dir=teams_dir,
         team_loader=team_loader,
     )
     if single:
