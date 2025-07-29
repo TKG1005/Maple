@@ -13,6 +13,7 @@ from .turn_penalty import TurnPenaltyReward
 from .fail_and_immune import FailAndImmuneReward
 from .switch_penalty import SwitchPenaltyReward
 from .pokemon_count import PokemonCountReward
+from .win_loss import WinLossReward
 
 
 class CompositeReward(RewardBase):
@@ -24,6 +25,7 @@ class CompositeReward(RewardBase):
         "fail_immune": FailAndImmuneReward,
         "switch_penalty": SwitchPenaltyReward,
         "pokemon_count": PokemonCountReward,
+        "win_loss": WinLossReward,
     }
 
     def __init__(self, config_path: str, reward_map: Mapping[str, Callable[[], RewardBase]] | None = None) -> None:
@@ -63,8 +65,12 @@ class CompositeReward(RewardBase):
                 threshold = int(params.get("threshold", 7))
                 self.rewards[name] = factory(penalty=penalty, threshold=threshold)
             elif name == "fail_immune":
-                penalty = float(params.get("penalty", -0.1))
+                penalty = float(params.get("penalty", -1.0))  # Use original default from FailAndImmuneReward class
                 self.rewards[name] = factory(penalty=penalty)
+            elif name == "win_loss":
+                win_reward = float(params.get("win_reward", 30.0))
+                loss_penalty = float(params.get("loss_penalty", -30.0))
+                self.rewards[name] = factory(win_reward=win_reward, loss_penalty=loss_penalty)
             else:
                 self.rewards[name] = factory()
             

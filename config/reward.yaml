@@ -1,19 +1,35 @@
 rewards:
+  # 勝敗報酬 - 絶対的優先度（最重要）
+  win_loss:
+    weight: 3.0  # 他の報酬より3倍重要
+    enabled: true
+    win_reward: 30.0   # 勝利時の大きな正の報酬
+    loss_penalty: -30.0  # 敗北時の大きな負のペナルティ
+  
+  # ノックアウト報酬 - 勝利への直接的貢献（重要）
   knockout:
     weight: 1.0
     enabled: true
-  turn_penalty:
+  
+  # ポケモン数差報酬 - 勝敗に直結（重要）
+  pokemon_count:
     weight: 1.0
     enabled: true
+  
+  # 無効行動ペナルティ - 学習効率向上（補助的だが重要）
   fail_immune:
-    weight: 1.0
+    weight: 0.8
     enabled: true
-    penalty: -1
+    penalty: -0.5
+  
+  # スイッチペナルティ - 戦術安定性（補助的）
   switch_penalty:
-    weight: 1.0
+    weight: 0.3
     enabled: true
     penalty: -1.0
     threshold: 7
-  pokemon_count:
-    weight: 1.0
+  
+  # ターンペナルティ - 効率性向上（最小限の補助）
+  turn_penalty:
+    weight: 0.1
     enabled: true

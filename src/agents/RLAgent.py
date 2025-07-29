@@ -35,6 +35,9 @@ class RLAgent(MapleAgent):
             self.has_hidden_states = self.has_hidden_states and (hasattr(value_net, 'use_lstm') and (value_net.use_lstm or (hasattr(value_net, 'use_attention') and value_net.use_attention)))
         self.policy_hidden = None
         self.value_hidden = None
+        # For action probability logging
+        self._last_action_probs = None
+        self._last_action_mask = None
 
     def select_action(
         self, observation: np.ndarray, action_mask: np.ndarray
@@ -64,7 +67,12 @@ class RLAgent(MapleAgent):
             probs = torch.softmax(masked_logits, dim=-1)
         else:
             probs = torch.full_like(logits, fill_value=1.0 / logits.numel())
-        return probs.detach().cpu().numpy()
+        
+        # Store last probabilities for logging
+        self._last_action_probs = probs.detach().cpu().numpy()
+        self._last_action_mask = action_mask.copy()
+        
+        return self._last_action_probs
 
     def act(self, observation: np.ndarray, action_mask: np.ndarray) -> int:
         """Sample an action index according to the policy."""
@@ -74,7 +82,6 @@ class RLAgent(MapleAgent):
         probs = self.select_action(observation, action_mask)
         rng = getattr(self.env, "rng", np.random.default_rng())
         action = int(rng.choice(len(probs), p=probs))
-        self._logger.debug("%s: chosen action = %s", self.__class__.__name__, action)
         return action
 
     def get_value(self, observation: np.ndarray) -> float:
@@ -113,6 +120,12 @@ class RLAgent(MapleAgent):
         # Pass both networks to all algorithms for proper value network learning
         # Algorithms that don't need value network (like REINFORCE) will ignore it
         return self.algorithm.update((self.policy_net, self.value_net), self.optimizer, batch)
+
+    def get_last_action_probs(self) -> tuple[np.ndarray, np.ndarray] | None:
+        """Get the last action probabilities and mask for logging."""
+        if self._last_action_probs is not None and self._last_action_mask is not None:
+            return self._last_action_probs, self._last_action_mask
+        return None
 
 
 __all__ = ["RLAgent"]

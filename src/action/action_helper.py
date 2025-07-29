@@ -79,20 +79,11 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
     available_move_ids = {m.id for m in battle.available_moves}
     switches: List[Pokemon] = battle.available_switches
     
-    # Filter out fainted Pokemon from switches
-    switches = [p for p in switches if not getattr(p, 'fainted', False)]
-    
-    # Double-check that switches don't include the active Pokemon
-    # This is a workaround for a poke-env bug where active status might be stale
-    if active is not None:
-        # Use Pokemon's unique identifier (_ident) instead of species name for filtering
-        # This properly handles Ditto transform cases where species changes but identity remains
-        active_ident = getattr(active, '_ident', None)
-        active_species = getattr(active, 'species', 'unknown')
-        
-        
-        if active_ident:
-            switches = [p for p in switches if getattr(p, '_ident', '') != active_ident]
+    # Note: battle.available_switches is already filtered by poke-env to exclude:
+    # - Active Pokemon
+    # - Fainted Pokemon  
+    # - Pokemon that cannot switch due to game rules
+    # We trust poke-env's filtering and use it for validation only
 
     mapping: OrderedDict[int, Tuple[str, Union[str, int], bool]] = OrderedDict()
 
@@ -128,52 +119,77 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
             disabled = True
         mapping[4 + i] = ("terastal", move_id, disabled)
 
-    # Switch slots 8-9 (map to team positions, not filtered switches)
-    # Find valid switch positions based on original team order
-    team_list = list(battle.team.values())
-    active_pokemon = getattr(battle, 'active_pokemon', None)
+    # Switch slots 8-9 (map to selected team positions for correct switch commands)
+    # Focus on selected team only, not the full roster
     
+    def get_switchable_positions_in_selected_team():
+        """Get positions of Pokemon that can be switched to within the selected team."""
+        try:
+            # Get selected team from battle request
+            request = getattr(battle, '_last_request', None)
+            if not request or 'side' not in request or 'pokemon' not in request['side']:
+                logger.warning("No request data available for selected team")
+                return []
+            
+            selected_team = request['side']['pokemon']
+            player_role = getattr(battle, '_player_role', None)
+            if not player_role:
+                logger.warning("No player role available")
+                return []
+            
+            # Get active Pokemon identifier
+            active_pokemon = getattr(battle, 'active_pokemon', None)
+            active_ident = f"{player_role}: {active_pokemon.name}" if active_pokemon else None
+            
+            switchable_positions = []
+            
+            # Check each position in selected team
+            for i, selected_mon in enumerate(selected_team):
+                pokemon_ident = selected_mon['ident']
+                
+                # Skip if this is the active Pokemon
+                if pokemon_ident == active_ident:
+                    continue
+                
+                # Check if this Pokemon is available for switching
+                # Pokemon is switchable if:
+                # 1. Not active (already checked above)
+                # 2. Not fainted (check condition in selected_mon data)
+                # 3. Present in poke-env's available_switches for validation
+                
+                pokemon_name = pokemon_ident.split(': ')[1] if ': ' in pokemon_ident else ''
+                
+                # Verify this Pokemon is in available_switches (authoritative for game state)
+                is_available_for_switch = any(
+                    getattr(sw, 'name', '') == pokemon_name 
+                    for sw in switches
+                )
+                
+                # Also check if Pokemon is not fainted based on selected team data
+                is_not_fainted = selected_mon.get('condition', '').split()[0] != '0'
+                
+                if is_available_for_switch and is_not_fainted:
+                    switchable_positions.append(i)
+            
+            return sorted(switchable_positions)
+            
+        except Exception as e:
+            logger.warning("Error getting switchable positions in selected team: %s", e)
+            return []
     
-    available_team_positions = []
-    for team_idx, team_pokemon in enumerate(team_list):
-        # Use multiple methods to determine if Pokemon is active
-        is_active_by_ident = (active_pokemon and 
-                             getattr(active_pokemon, '_ident', '') == getattr(team_pokemon, '_ident', '') and
-                             getattr(active_pokemon, '_ident', '') != '?')
-        is_active_by_species = (active_pokemon and 
-                               getattr(active_pokemon, 'species', '') == getattr(team_pokemon, 'species', '') and
-                               getattr(active_pokemon, 'species', '') != '')
-        is_active_by_object = (active_pokemon is team_pokemon)
-        
-        # Use available_switches to determine which Pokemon can be switched to
-        is_in_available_switches = any(
-            getattr(sw, 'species', '') == getattr(team_pokemon, 'species', '') and
-            getattr(sw, '_ident', '') == getattr(team_pokemon, '_ident', '')
-            for sw in switches
-        )
-        
-        is_fainted = getattr(team_pokemon, 'fainted', False)
-        
-        # A Pokemon can be switched to if:
-        # 1. It's in available_switches (poke-env's authoritative list)
-        # 2. It's not fainted
-        can_switch = is_in_available_switches and not is_fainted
-        
-        
-        if can_switch:
-            available_team_positions.append(team_idx)
+    # Get valid switch positions within selected team only
+    available_selected_positions = get_switchable_positions_in_selected_team()
     
-    
-    # Map switch slots to available team positions
+    # Map switch slots to available selected team positions
     for i in range(2):  # Only support 2 switch slots (8, 9)
-        if i < len(available_team_positions):
-            team_position = available_team_positions[i]
+        if i < len(available_selected_positions):
+            selected_position = available_selected_positions[i]
             disabled = False
         else:
-            team_position = None
+            selected_position = None
             disabled = True
         
-        mapping[8 + i] = ("switch", team_position, disabled)
+        mapping[8 + i] = ("switch", selected_position, disabled)
 
     # Struggle slot 10 (enabled only when no other moves are usable)
     only_struggle = (
@@ -237,13 +253,54 @@ def get_available_actions_with_details(
                 }
                 continue
 
-        elif action_type == "switch" and isinstance(sub_id, int) and sub_id < len(switches_sorted):
-            pkmn = switches_sorted[sub_id]
-            detailed[action_idx] = {
-                "type": "switch",
-                "name": f"Switch to: {pkmn.species} (HP: {pkmn.current_hp_fraction * 100:.1f}%)",
-                "id": pkmn.species,
-            }
+        elif action_type == "switch" and isinstance(sub_id, int):
+            # sub_id is now a selected team position, get Pokemon from available_switches
+            try:
+                # Get selected team from battle request
+                request = getattr(battle, '_last_request', None)
+                if request and 'side' in request and 'pokemon' in request['side']:
+                    selected_team = request['side']['pokemon']
+                    player_role = getattr(battle, '_player_role', None)
+                    
+                    if player_role and sub_id < len(selected_team):
+                        # Get Pokemon ident from selected team
+                        selected_pokemon_ident = selected_team[sub_id]['ident']
+                        
+                        # Find corresponding Pokemon in available_switches
+                        target_name = selected_pokemon_ident.split(': ')[1] if ': ' in selected_pokemon_ident else ''
+                        pkmn = next((sw for sw in switches_sorted if sw.name == target_name), None)
+                        
+                        if pkmn:
+                            detailed[action_idx] = {
+                                "type": "switch",
+                                "name": f"Switch to: {pkmn.species} (HP: {pkmn.current_hp_fraction * 100:.1f}%)",
+                                "id": pkmn.species,
+                            }
+                        else:
+                            detailed[action_idx] = {
+                                "type": "switch",
+                                "name": f"Switch to position {sub_id + 1}",
+                                "id": f"switch_{sub_id}",
+                            }
+                    else:
+                        detailed[action_idx] = {
+                            "type": "switch",
+                            "name": f"Switch to position {sub_id + 1}",
+                            "id": f"switch_{sub_id}",
+                        }
+                else:
+                    detailed[action_idx] = {
+                        "type": "switch",
+                        "name": f"Switch to position {sub_id + 1}",
+                        "id": f"switch_{sub_id}",
+                    }
+            except Exception:
+                detailed[action_idx] = {
+                    "type": "switch",
+                    "name": f"Switch to position {sub_id + 1}",
+                    "id": f"switch_{sub_id}",
+                }
+            
 
         else:
             detailed[action_idx] = {
@@ -301,18 +358,11 @@ def action_index_to_order_from_mapping(
         return player.create_order(mv, terastallize=True)
 
     if action_type == "switch":
-        # sub_id is now the team position (0-based index in battle.team)
+        # sub_id is now the selected team position (0-based index in selected team)
         if not isinstance(sub_id, int):
-            raise ValueError(f"Switch team position must be int, got: {sub_id}")
+            raise ValueError(f"Switch selected team position must be int, got: {sub_id}")
         
-        team_list = list(battle.team.values())
-        if sub_id >= len(team_list):
-            raise ValueError(f"Switch team position {sub_id} out of range (team size: {len(team_list)}).")
-        
-        # Get Pokemon at the specified team position
-        pokemon = team_list[sub_id]
-        
-        # Get selected team order from request message
+        # Get selected team from request message
         request = getattr(battle, '_last_request', None)
         if not request:
             raise ValueError(f"No request data available for battle {battle.battle_tag}")
@@ -325,44 +375,22 @@ def action_index_to_order_from_mapping(
         
         selected_team = request['side']['pokemon']
         
-        # Get the player role to construct full identifier
-        player_role = getattr(battle, '_player_role', None)
-        if not player_role:
-            raise ValueError(f"No player role available for battle {battle.battle_tag}")
+        if sub_id >= len(selected_team):
+            raise ValueError(f"Switch selected team position {sub_id} out of range (selected team size: {len(selected_team)}).")
         
-        pokemon_full_ident = f"{player_role}: {pokemon.name}"
+        # Convert to 1-based position for Pokemon Showdown protocol
+        team_position = sub_id + 1
         
-        
-        # Find position in selected team (1-based for Pokemon Showdown)
-        for i, selected_mon in enumerate(selected_team):
-            if selected_mon['ident'] == pokemon_full_ident:
-                team_position = i + 1
-                break
-        else:
-            # Strict error - no fallback
-            raise ValueError(
-                f"Pokemon {pokemon_full_ident} (species: {pokemon.species}) not found in selected team. "
-                f"Selected team: {[mon['ident'] for mon in selected_team]}, "
-                f"Battle team: {[f'{player_role}: {p.name}' for p in team_list]}"
-            )
-        
-        if team_position is not None:
-            # Create custom BattleOrder with position-based switch command
-            class PositionalSwitchOrder(BattleOrder):
-                def __init__(self, position: int):
-                    self.position = position
-                
-                @property
-                def message(self) -> str:
-                    return f"/choose switch {self.position}"
+        # Create custom BattleOrder with position-based switch command
+        class PositionalSwitchOrder(BattleOrder):
+            def __init__(self, position: int):
+                self.position = position
             
-            return PositionalSwitchOrder(team_position)
-        else:
-            # Strict error - no fallback to avoid species name conflicts
-            raise ValueError(
-                f"Could not find team position for Pokemon {getattr(pokemon, '_ident', 'unknown')}. "
-                f"Team: {[getattr(p, '_ident', '?') for p in battle.team.values()]}"
-            )
+            @property
+            def message(self) -> str:
+                return f"/choose switch {self.position}"
+        
+        return PositionalSwitchOrder(team_position)
 
     raise ValueError(f"Unknown action_type: {action_type}")
 def action_index_to_order(
@@ -404,18 +432,11 @@ def action_index_to_order(
         return player.create_order(mv, terastallize=True)
 
     if action_type == "switch":
-        # sub_id is now the team position (0-based index in battle.team)
+        # sub_id is now the selected team position (0-based index in selected team)
         if not isinstance(sub_id, int):
-            raise ValueError(f"Switch team position must be int, got: {sub_id}")
+            raise ValueError(f"Switch selected team position must be int, got: {sub_id}")
         
-        team_list = list(battle.team.values())
-        if sub_id >= len(team_list):
-            raise ValueError(f"Switch team position {sub_id} out of range (team size: {len(team_list)}).")
-        
-        # Get Pokemon at the specified team position
-        pokemon = team_list[sub_id]
-        
-        # Get selected team order from request message
+        # Get selected team from request message
         request = getattr(battle, '_last_request', None)
         if not request:
             raise ValueError(f"No request data available for battle {battle.battle_tag}")
@@ -428,44 +449,22 @@ def action_index_to_order(
         
         selected_team = request['side']['pokemon']
         
-        # Get the player role to construct full identifier
-        player_role = getattr(battle, '_player_role', None)
-        if not player_role:
-            raise ValueError(f"No player role available for battle {battle.battle_tag}")
+        if sub_id >= len(selected_team):
+            raise ValueError(f"Switch selected team position {sub_id} out of range (selected team size: {len(selected_team)}).")
         
-        pokemon_full_ident = f"{player_role}: {pokemon.name}"
+        # Convert to 1-based position for Pokemon Showdown protocol
+        team_position = sub_id + 1
         
-        
-        # Find position in selected team (1-based for Pokemon Showdown)
-        for i, selected_mon in enumerate(selected_team):
-            if selected_mon['ident'] == pokemon_full_ident:
-                team_position = i + 1
-                break
-        else:
-            # Strict error - no fallback
-            raise ValueError(
-                f"Pokemon {pokemon_full_ident} (species: {pokemon.species}) not found in selected team. "
-                f"Selected team: {[mon['ident'] for mon in selected_team]}, "
-                f"Battle team: {[f'{player_role}: {p.name}' for p in team_list]}"
-            )
-        
-        if team_position is not None:
-            # Create custom BattleOrder with position-based switch command
-            class PositionalSwitchOrder(BattleOrder):
-                def __init__(self, position: int):
-                    self.position = position
-                
-                @property
-                def message(self) -> str:
-                    return f"/choose switch {self.position}"
+        # Create custom BattleOrder with position-based switch command
+        class PositionalSwitchOrder(BattleOrder):
+            def __init__(self, position: int):
+                self.position = position
             
-            return PositionalSwitchOrder(team_position)
-        else:
-            # Strict error - no fallback to avoid species name conflicts
-            raise ValueError(
-                f"Could not find team position for Pokemon {getattr(pokemon, '_ident', 'unknown')}. "
-                f"Team: {[getattr(p, '_ident', '?') for p in battle.team.values()]}"
-            )
+            @property
+            def message(self) -> str:
+                return f"/choose switch {self.position}"
+        
+        return PositionalSwitchOrder(team_position)
 
     raise ValueError(f"Unknown action_type: {action_type}")
 
