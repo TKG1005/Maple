@@ -12,3 +12,4 @@ logs/
 runs/
 .gitignore
 pokemon-showdown/
+checkpoints/
