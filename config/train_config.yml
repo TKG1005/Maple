@@ -24,14 +24,23 @@ checkpoint_interval: 100  # Save checkpoint every N episodes
 checkpoint_dir: "checkpoints"
 tensorboard: true
 
-# Pokemon Showdown server configuration
+# Battle Mode Configuration
+battle_mode: "local"  # "local" (IPC) or "online" (WebSocket)
+
+# Local mode configuration (for battle_mode: "local")
+local_mode:
+  max_processes: 10      # Maximum number of Node.js processes for IPC
+  process_timeout: 300   # Process timeout in seconds
+  reuse_processes: true  # Whether to reuse Node.js processes across battles
+  ipc_script_path: "sim/ipc-battle-server.js"  # Path to IPC server script
+
+# Pokemon Showdown server configuration (for battle_mode: "online") 
 pokemon_showdown:
   servers:
     - host: "localhost"
       port: 8000
       max_connections: 50  # Maximum parallel connections to this server
 
- 
   # Use single server for development: comment out servers 2-
   # For production: adjust max_connections based on server performance
 
@@ -71,8 +80,8 @@ league_training:
   # - Fine-tuning: weighted (gradual transition from old to new)
 
 # Model management
-load_model: model.pt  # Path to model file to resume training from
-save_model: model.pt  # Path to save final model
+load_model: null  # Path to model file to resume training from
+save_model: null  # Path to save final model
 
 # Network architecture configuration  
 network:

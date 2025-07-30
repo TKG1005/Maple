@@ -17,6 +17,7 @@ import yaml
 from poke_env.concurrency import POKE_LOOP
 
 from .env_player import EnvPlayer
+from .dual_mode_player import DualModeEnvPlayer, validate_mode_configuration
 from src.rewards import HPDeltaReward, CompositeReward, RewardNormalizer
 
 
@@ -41,6 +42,7 @@ class PokemonEnv(gym.Env):
         team_loader: Any = None,
         normalize_rewards: bool = True,
         server_configuration: Any = None,
+        battle_mode: str = "local",  # "local" or "online"
         log_level: int = logging.DEBUG,
         **kwargs: Any,
     ) -> None:
@@ -78,6 +80,14 @@ class PokemonEnv(gym.Env):
         self.teams_dir = teams_dir
         self.normalize_rewards = normalize_rewards
         self.server_configuration = server_configuration
+        self.battle_mode = battle_mode
+        
+        # Validate battle mode configuration
+        if hasattr(kwargs, 'get') and callable(kwargs.get):
+            config = kwargs
+        else:
+            config = {}
+        self._validate_battle_mode_config(config)
         
         # マルチエージェント用のエージェントID
         self.agent_ids = ("player_0", "player_1")
@@ -343,16 +353,13 @@ class PokemonEnv(gym.Env):
             else:
                 account_config_0 = None
 
+            # Create players based on battle mode
             self._env_players = {
-                "player_0": EnvPlayer(
-                    self,
+                "player_0": self._create_battle_player(
                     "player_0",
-                    battle_format="gen9bssregi",
-                    server_configuration=server_config,
-                    team=team_player_0,
-                    log_level=self.log_level,
-                    save_replays=self.save_replays,
-                    account_configuration=account_config_0,
+                    server_config,
+                    team_player_0,
+                    account_config_0
                 )
             }
             if self.opponent_player is None:
@@ -363,15 +370,11 @@ class PokemonEnv(gym.Env):
                 else:
                     account_config_1 = None
                     
-                self._env_players["player_1"] = EnvPlayer(
-                    self,
+                self._env_players["player_1"] = self._create_battle_player(
                     "player_1",
-                    battle_format="gen9bssregi",
-                    server_configuration=server_config,
-                    team=team_player_1,
-                    log_level=self.log_level,
-                    save_replays=self.save_replays,
-                    account_configuration=account_config_1,
+                    server_config,
+                    team_player_1,
+                    account_config_1
                 )
             else:
                 self._env_players["player_1"] = self.opponent_player
@@ -897,3 +900,91 @@ class PokemonEnv(gym.Env):
             asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
         self._action_queues.clear()
         self._battle_queues.clear()
+
+    def _validate_battle_mode_config(self, config: dict) -> None:
+        """Validate battle mode configuration."""
+        try:
+            validate_mode_configuration(self.battle_mode, config)
+            self._logger.info(f"Battle mode '{self.battle_mode}' configuration validated")
+        except ValueError as e:
+            self._logger.error(f"Invalid battle mode configuration: {e}")
+            raise
+
+    def _create_battle_player(self, player_id: str, server_config: Any, team: Any, account_config: Any) -> Any:
+        """Create a battle player based on the current battle mode.
+        
+        Args:
+            player_id: Player identifier ("player_0" or "player_1")
+            server_config: Server configuration object
+            team: Team configuration for the player
+            account_config: Account configuration for the player
+            
+        Returns:
+            Player instance (DualModeEnvPlayer or EnvPlayer based on mode)
+        """
+        if self.battle_mode == "local":
+            self._logger.info(f"Creating local IPC player: {player_id}")
+            return DualModeEnvPlayer(
+                env=self,
+                player_id=player_id,
+                mode="local",
+                battle_format="gen9bssregi",
+                team=team,
+                log_level=self.log_level,
+                save_replays=self.save_replays,
+                account_configuration=account_config,
+            )
+        else:
+            self._logger.info(f"Creating online WebSocket player: {player_id}")
+            return DualModeEnvPlayer(
+                env=self,
+                player_id=player_id,
+                mode="online",
+                server_configuration=server_config,
+                battle_format="gen9bssregi",
+                team=team,
+                log_level=self.log_level,
+                save_replays=self.save_replays,
+                account_configuration=account_config,
+            )
+    
+    def get_battle_mode(self) -> str:
+        """Get current battle mode.
+        
+        Returns:
+            Current battle mode ("local" or "online")
+        """
+        return self.battle_mode
+    
+    def set_battle_mode(self, mode: str) -> None:
+        """Set battle mode (affects new battles only).
+        
+        Args:
+            mode: Battle mode ("local" or "online")
+            
+        Raises:
+            ValueError: If mode is not supported
+        """
+        if mode not in ["local", "online"]:
+            raise ValueError(f"Unsupported battle mode: {mode}. Use 'local' or 'online'")
+        
+        old_mode = self.battle_mode
+        self.battle_mode = mode
+        self._logger.info(f"Battle mode changed from '{old_mode}' to '{mode}'")
+        
+    def get_battle_mode_info(self) -> dict:
+        """Get information about the current battle mode.
+        
+        Returns:
+            Dictionary containing battle mode information
+        """
+        return {
+            "current_mode": self.battle_mode,
+            "supported_modes": ["local", "online"],
+            "mode_descriptions": {
+                "local": "High-speed IPC communication with embedded Node.js process",
+                "online": "Traditional WebSocket communication with Pokemon Showdown servers"
+            },
+            "current_server_config": getattr(self, "server_configuration", None),
+            "players_created": hasattr(self, "_env_players") and bool(self._env_players)
+        }

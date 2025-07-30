@@ -87,7 +87,7 @@ from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, log_level: int = logging.DEBUG) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", log_level: int = logging.DEBUG) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -100,6 +100,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         teams_dir=teams_dir,
         normalize_rewards=normalize_rewards,
         server_configuration=server_config,
+        battle_mode=battle_mode,
         log_level=log_level,
     )
     return env
@@ -480,6 +481,7 @@ def main(
     reset_optimizer: bool = False,
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
+    battle_mode: str = "local",  # Battle communication mode
     device: str = "auto",
     log_level: int = logging.INFO,
     # Epsilon-greedy exploration parameters
@@ -553,6 +555,9 @@ def main(
     opponent_mix = cfg.get("opponent_mix", opponent_mix)
     if opponent_mix is not None:
         opponent_mix = str(opponent_mix)
+    
+    # Battle mode configuration from config file
+    battle_mode = str(cfg.get("battle_mode", battle_mode))
     
     # Win rate configuration from config file
     win_rate_threshold = float(cfg.get("win_rate_threshold", win_rate_threshold))
@@ -634,7 +639,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, log_level=log_level)
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, battle_mode=battle_mode, log_level=log_level)
     
     # Get network configuration
     network_config = cfg.get("network", {})
@@ -949,6 +954,7 @@ def main(
                 teams_dir=teams_dir, 
                 normalize_rewards=True,
                 server_config=server_config,
+                battle_mode=battle_mode,
                 log_level=log_level
             )
             
@@ -1170,6 +1176,7 @@ def main(
                     teams_dir=teams_dir, 
                     normalize_rewards=True,
                     server_config=temp_server_config,
+                    battle_mode=battle_mode,
                     log_level=log_level
                 )
                 temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
@@ -1225,6 +1232,7 @@ def main(
                 teams_dir=teams_dir, 
                 normalize_rewards=True,
                 server_config=temp_server_config,
+                battle_mode=battle_mode,
                 log_level=log_level
             )
             temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
@@ -1749,6 +1757,13 @@ if __name__ == "__main__":
         default=50,
         help="number of recent battles to track for win rate calculation (default: 50)",
     )
+    parser.add_argument(
+        "--battle-mode",
+        type=str,
+        choices=["local", "online"],
+        default="local",
+        help="battle communication mode: 'local' (IPC) for high-speed training, 'online' (WebSocket) for server battles",
+    )
     
     # Epsilon-greedy exploration arguments
     parser.add_argument(
@@ -1834,6 +1849,7 @@ if __name__ == "__main__":
         reset_optimizer=args.reset_optimizer,
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
+        battle_mode=args.battle_mode,
         device=args.device,
         log_level=level,
         # Epsilon-greedy parameters
