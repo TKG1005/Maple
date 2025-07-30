@@ -45,6 +45,7 @@ class PokemonEnv(gym.Env):
         server_configuration: Any = None,
         battle_mode: str = "local",  # "local" or "online"
         log_level: int = logging.DEBUG,
+        full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -82,6 +83,7 @@ class PokemonEnv(gym.Env):
         self.normalize_rewards = normalize_rewards
         self.server_configuration = server_configuration
         self.battle_mode = battle_mode
+        self.full_ipc = full_ipc  # Phase 4: Store full IPC setting
         
         # Skip validation for now as it requires complete configuration
         # TODO: Implement proper configuration validation in Phase 3
@@ -394,25 +396,34 @@ class PokemonEnv(gym.Env):
         ):
             self.opponent_player.reset_battles()
 
-        # 対戦開始処理を poke-env のイベントループで同期実行
-        self._battle_task = asyncio.run_coroutine_threadsafe(
-            self._run_battle(),
-            POKE_LOOP,
-        )
-
-        # チーム選択リクエストを待機
-        battle0 = asyncio.run_coroutine_threadsafe(
-            asyncio.wait_for(self._battle_queues["player_0"].get(), self.timeout),
-            POKE_LOOP,
-        ).result()
-        POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
-        battle1 = battle0
-        if "player_1" in self._env_players:
-            battle1 = asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(self._battle_queues["player_1"].get(), self.timeout),
+        # Battle creation based on mode
+        if self.full_ipc:
+            # Phase 4: Full IPC mode - create battles directly via IPC factory  
+            self._logger.info("🚀 Phase 4: Creating battles via IPC factory")
+            battle0, battle1 = asyncio.run_coroutine_threadsafe(
+                self._create_ipc_battles(team_player_0, team_player_1),
                 POKE_LOOP,
             ).result()
-            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
+        else:
+            # Traditional WebSocket mode or IPC with WebSocket fallback
+            self._battle_task = asyncio.run_coroutine_threadsafe(
+                self._run_battle(),
+                POKE_LOOP,
+            )
+
+            # チーム選択リクエストを待機
+            battle0 = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(self._battle_queues["player_0"].get(), self.timeout),
+                POKE_LOOP,
+            ).result()
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
+            battle1 = battle0
+            if "player_1" in self._env_players:
+                battle1 = asyncio.run_coroutine_threadsafe(
+                    asyncio.wait_for(self._battle_queues["player_1"].get(), self.timeout),
+                    POKE_LOOP,
+                ).result()
+                POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
 
         # 各プレイヤーの手持ちポケモン種別を保存しておく
         self._team_rosters["player_0"] = [p.species for p in battle0.team.values()]
@@ -928,7 +939,10 @@ class PokemonEnv(gym.Env):
             Player instance (DualModeEnvPlayer or EnvPlayer based on mode)
         """
         if self.battle_mode == "local":
-            self._logger.info(f"Creating local IPC player: {player_id}")
+            if self.full_ipc:
+                self._logger.info(f"Creating full IPC player (Phase 4): {player_id}")
+            else:
+                self._logger.info(f"Creating local IPC player: {player_id}")
             return DualModeEnvPlayer(
                 env=self,
                 player_id=player_id,
@@ -939,6 +953,7 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
+                full_ipc=self.full_ipc,  # Phase 4: Pass full IPC setting
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
@@ -952,6 +967,7 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
+                full_ipc=False,  # Phase 4: Online mode never uses full IPC
             )
     
     def get_battle_mode(self) -> str:
@@ -1218,3 +1234,63 @@ class PokemonEnv(gym.Env):
         except Exception as e:
             self._logger.error(f"Failed to restore battle state via communicator: {e}")
             raise RuntimeError(f"Communicator state restore failed: {e}") from e
+    
+    async def _create_ipc_battles(self, team_player_0: str | None, team_player_1: str | None) -> tuple[Any, Any]:
+        """Create battles directly via IPC factory (Phase 4).
+        
+        Args:
+            team_player_0: Team configuration for player 0
+            team_player_1: Team configuration for player 1
+            
+        Returns:
+            Tuple of (battle0, battle1) - IPCBattle instances
+            
+        Raises:
+            RuntimeError: If IPC battle creation fails
+        """
+        try:
+            # Import required classes
+            from src.sim.ipc_battle_factory import IPCBattleFactory
+            from src.sim.battle_communicator import IPCCommunicator
+            
+            # Get communicator from player_0 (both players should use the same IPC process)
+            player_0 = self._env_players["player_0"]
+            if not hasattr(player_0, '_communicator') or player_0._communicator is None:
+                raise RuntimeError("Player 0 does not have IPC communicator initialized")
+            
+            communicator = player_0._communicator
+            
+            # Create IPC battle factory
+            factory = IPCBattleFactory(communicator, self._logger)
+            
+            # Prepare player names
+            player_names = ["Player1", "Player2"]
+            if hasattr(player_0, "username") and player_0.username:
+                player_names[0] = player_0.username
+            
+            if "player_1" in self._env_players:
+                player_1 = self._env_players["player_1"]
+                if hasattr(player_1, "username") and player_1.username:
+                    player_names[1] = player_1.username
+            
+            # Prepare teams
+            teams = [team_player_0, team_player_1]
+            
+            self._logger.info(f"Creating IPC battle with players: {player_names}")
+            
+            # Create battle via IPC factory
+            battle = await factory.create_battle(
+                format_id="gen9bssregi",
+                player_names=player_names,
+                teams=teams
+            )
+            
+            # In this simplified implementation, both players share the same battle object
+            # In a full implementation, you might create separate battle views for each player
+            self._logger.info(f"Successfully created IPC battle: {battle.battle_id}")
+            
+            return battle, battle
+            
+        except Exception as e:
+            self._logger.error(f"Failed to create IPC battles: {e}")
+            raise RuntimeError(f"IPC battle creation failed: {e}") from e

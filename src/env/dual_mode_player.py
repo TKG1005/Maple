@@ -35,6 +35,7 @@ class DualModeEnvPlayer(EnvPlayer):
         mode: str = "local",  # "local" or "online"
         server_configuration: Optional[ServerConfiguration] = None,
         ipc_script_path: str = "pokemon-showdown/sim/ipc-battle-server.js",
+        full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
         **kwargs: Any
     ) -> None:
         """Initialize dual-mode player.
@@ -45,9 +46,11 @@ class DualModeEnvPlayer(EnvPlayer):
             mode: Communication mode ("local" for IPC, "online" for WebSocket)
             server_configuration: WebSocket server config (required for online mode)
             ipc_script_path: Path to Node.js IPC server script (for local mode)
+            full_ipc: Phase 4 flag - if True, disables WebSocket fallback completely
             **kwargs: Additional arguments passed to parent EnvPlayer
         """
         self.mode = mode
+        self.full_ipc = full_ipc
         self.ipc_script_path = ipc_script_path
         self._communicator: Optional[BattleCommunicator] = None
         self._original_ps_client = None
@@ -55,7 +58,7 @@ class DualModeEnvPlayer(EnvPlayer):
         
         self._logger = logging.getLogger(__name__)
         
-        # Initialize parent class with WebSocket disabled for local mode
+        # Initialize parent class based on mode and full_ipc setting
         if mode == "online":
             if server_configuration is None:
                 raise ValueError("server_configuration required for online mode")
@@ -65,55 +68,82 @@ class DualModeEnvPlayer(EnvPlayer):
                 server_configuration=server_configuration,
                 **kwargs
             )
+            self._logger.info(f"🌐 Online mode player initialized for {player_id}")
         else:
-            # For local mode, we need to think differently about this
-            # The current poke-env system is tightly coupled to WebSocket communication
-            # For Phase 3 completion, let's use a fallback mode that works with the existing system
-            # but clearly indicates that IPC would be used in production
-            
+            # Local mode initialization - Phase 4 adds full_ipc support
             if server_configuration is None:
                 # Create a valid server configuration for compatibility
                 server_configuration = ServerConfiguration("localhost", 8000)
             
-            # For now, use normal initialization but mark as IPC mode
-            # This allows the existing battle system to work while we track IPC readiness
-            super().__init__(
-                env=env,
-                player_id=player_id,
-                server_configuration=server_configuration,
-                **kwargs
-            )
-            self._logger.info(f"✅ Local mode player initialized for {player_id} with IPC capability (WebSocket fallback for Phase 3)")
+            if full_ipc:
+                # Phase 4: Full IPC mode - completely disable WebSocket
+                self._logger.info(f"🚀 Phase 4: Initializing full IPC mode for {player_id}")
+                kwargs['start_listening'] = False  # Disable WebSocket completely
+                
+                try:
+                    super().__init__(
+                        env=env,
+                        player_id=player_id,
+                        server_configuration=server_configuration,
+                        **kwargs
+                    )
+                    self._logger.info(f"✅ Full IPC mode player initialized for {player_id} (WebSocket disabled)")
+                except Exception as e:
+                    self._logger.error(f"❌ Full IPC initialization failed for {player_id}: {e}")
+                    raise RuntimeError(f"Full IPC mode requires working IPC infrastructure: {e}") from e
+            else:
+                # Phase 3: Local mode with WebSocket fallback
+                super().__init__(
+                    env=env,
+                    player_id=player_id,
+                    server_configuration=server_configuration,
+                    **kwargs
+                )
+                self._logger.info(f"✅ Local mode player initialized for {player_id} with IPC capability (WebSocket fallback for Phase 3)")
         
         # Initialize communicator after parent class initialization
         self._initialize_communicator()
         
-        # For local mode, IPC capability is ready but skip demonstration to avoid blocking
+        # For local mode, handle IPC capability demonstration
         if mode == "local":
-            self._logger.info(f"🚀 IPC capability initialized for {self.player_id} (demonstration skipped to prevent blocking)")
-            # self._demonstrate_ipc_capability()  # Commented out to prevent blocking during initialization
+            if full_ipc:
+                # Phase 4: Full IPC mode - must establish working connection
+                self._logger.info(f"🔌 Phase 4: Establishing mandatory IPC connection for {self.player_id}")
+                self._establish_full_ipc_connection()
+            else:
+                # Phase 3: IPC capability demonstration (optional)
+                self._logger.info(f"🚀 IPC capability initialized for {self.player_id} (demonstration skipped to prevent blocking)")
+                # self._demonstrate_ipc_capability()  # Commented out to prevent blocking during initialization
     
     def _initialize_communicator(self) -> None:
         """Initialize the appropriate communicator based on mode."""
         if self.mode == "local":
             self._logger.info(f"Local IPC mode configured for player {self.player_id}")
             try:
-                # For Phase 3 demonstration, we prepare the IPC communicator but don't connect immediately
-                # This avoids blocking the initialization process while demonstrating capability
+                # Create IPC communicator for both Phase 3 and Phase 4
                 self._communicator = CommunicatorFactory.create_communicator(
                     mode="ipc", 
                     node_script_path=self.ipc_script_path,
                     logger=self._logger
                 )
-                self._logger.info(f"✅ IPC communicator ready for {self.player_id} (Phase 3 demonstration mode)")
                 
-                # Note: Override is available but not activated to prevent interference with existing WebSocket flow
-                # self._override_websocket_methods()  # Deferred for Phase 4 full implementation
+                if self.full_ipc:
+                    # Phase 4: Full IPC mode requires immediate connection and WebSocket override
+                    self._logger.info(f"🔌 Phase 4: IPC communicator created for {self.player_id} (mandatory connection)")
+                    # Override will be activated in _establish_full_ipc_connection()
+                else:
+                    # Phase 3: IPC ready but not mandatory
+                    self._logger.info(f"✅ IPC communicator ready for {self.player_id} (Phase 3 demonstration mode)")
                 
             except Exception as e:
-                self._logger.warning(f"⚠️ IPC communicator setup failed for {self.player_id}: {e}")
-                self._logger.info(f"🔄 Falling back to WebSocket mode for {self.player_id}")
-                # Continue with WebSocket fallback
+                if self.full_ipc:
+                    # Phase 4: Full IPC mode cannot fallback to WebSocket
+                    self._logger.error(f"❌ Full IPC mode requires working IPC communicator for {self.player_id}: {e}")
+                    raise RuntimeError(f"Full IPC initialization failed: {e}") from e
+                else:
+                    # Phase 3: Fallback to WebSocket is allowed
+                    self._logger.warning(f"⚠️ IPC communicator setup failed for {self.player_id}: {e}")
+                    self._logger.info(f"🔄 Falling back to WebSocket mode for {self.player_id}")
         else:
             self._logger.info(f"Using online WebSocket mode for player {self.player_id}")
             # For online mode, don't initialize custom communicator - let poke-env handle it
@@ -168,6 +198,66 @@ class DualModeEnvPlayer(EnvPlayer):
         except Exception as e:
             self._logger.warning(f"⚠️ Could not start IPC capability test for {self.player_id}: {e}")
     
+    def _establish_full_ipc_connection(self) -> None:
+        """Phase 4: Establish mandatory IPC connection for full IPC mode."""
+        if not self.full_ipc or self.mode != "local":
+            return
+        
+        try:
+            # Synchronously establish IPC connection for Phase 4
+            from poke_env.concurrency import POKE_LOOP
+            import asyncio
+            
+            async def establish_connection():
+                try:
+                    # Connect to IPC server
+                    await self._ensure_communicator_connected()
+                    self._logger.info(f"🔗 Phase 4: IPC connection established for {self.player_id}")
+                    
+                    # Test connection with ping-pong
+                    ping_msg = {"type": "ping", "timestamp": asyncio.get_event_loop().time()}
+                    self._logger.info(f"📤 Phase 4: Sending ping message for {self.player_id}: {ping_msg}")
+                    await self._communicator.send_message(ping_msg)
+                    self._logger.info(f"✅ Phase 4: Ping sent, waiting for pong from {self.player_id}")
+                    
+                    try:
+                        response = await asyncio.wait_for(
+                            self._communicator.receive_message(), 
+                            timeout=5.0  # Reduced timeout for faster debugging
+                        )
+                        self._logger.info(f"📥 Phase 4: Received response for {self.player_id}: {response}")
+                        
+                        if response.get("type") == "pong" and response.get("success"):
+                            self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
+                            
+                            # Now override WebSocket methods since IPC is working
+                            self._override_websocket_methods()
+                            self._logger.info(f"✅ Phase 4: WebSocket overridden with IPC for {self.player_id}")
+                            
+                            return True
+                        else:
+                            raise RuntimeError(f"Invalid pong response: {response}")
+                    except asyncio.TimeoutError:
+                        self._logger.error(f"⏱️ Phase 4: Ping-pong timeout for {self.player_id} - no response received within 5 seconds")
+                        raise RuntimeError("IPC ping-pong timeout")
+                        
+                except Exception as e:
+                    self._logger.error(f"❌ Phase 4: IPC connection failed for {self.player_id}: {e}")
+                    raise
+            
+            # Execute connection establishment synchronously
+            future = asyncio.run_coroutine_threadsafe(establish_connection(), POKE_LOOP)
+            result = future.result(timeout=30.0)  # Wait up to 30 seconds for connection
+            
+            if result:
+                self._logger.info(f"🚀 Phase 4: Full IPC mode successfully activated for {self.player_id}")
+            else:
+                raise RuntimeError("IPC connection establishment failed")
+                
+        except Exception as e:
+            self._logger.error(f"❌ Phase 4: Could not establish full IPC connection for {self.player_id}: {e}")
+            raise RuntimeError(f"Full IPC mode initialization failed: {e}") from e
+    
     def _override_websocket_methods(self) -> None:
         """Override WebSocket-related methods for local IPC mode.
         
@@ -183,7 +273,63 @@ class DualModeEnvPlayer(EnvPlayer):
         # Replace ps_client with IPC wrapper
         self.ps_client = IPCClientWrapper(self._communicator, self._logger)
         
-        self._logger.debug(f"Overridden ps_client with IPC wrapper for player {self.player_id}")
+        # Override poke-env internal methods to prevent WebSocket operations
+        self._override_poke_env_internals()
+        
+        self._logger.debug(f"Overridden ps_client and poke-env internals with IPC for player {self.player_id}")
+        
+    def _override_poke_env_internals(self) -> None:
+        """Override poke-env internal methods to prevent WebSocket operations."""
+        
+        # Override the listening coroutine to prevent WebSocket listening
+        async def mock_listening_coroutine():
+            """Mock listening coroutine that does nothing."""
+            self._logger.info(f"🎧 Mock listening coroutine started for IPC player {self.player_id}")
+            # Just keep running without doing anything
+            while True:
+                await asyncio.sleep(10)
+                if hasattr(self, '_should_stop_listening') and self._should_stop_listening:
+                    break
+                
+        # Replace the listening coroutine
+        self._listening_coroutine = mock_listening_coroutine
+        
+        # Override start_listening to prevent WebSocket initialization  
+        def mock_start_listening():
+            """Mock start_listening that does nothing."""
+            self._logger.info(f"🚀 Mock start_listening called for IPC player {self.player_id}")
+            return True
+            
+        self.start_listening = mock_start_listening
+        
+        # Override stop_listening
+        def mock_stop_listening():
+            """Mock stop_listening that sets flag."""
+            self._logger.info(f"🛑 Mock stop_listening called for IPC player {self.player_id}")
+            self._should_stop_listening = True
+            
+        self.stop_listening = mock_stop_listening
+        
+        # Override accept_challenges to prevent WebSocket operations
+        async def mock_accept_challenges(opponent, n_challenges=1, packed_team=None):
+            """Mock accept_challenges for IPC mode."""
+            self._logger.info(f"🏟️ Mock accept_challenges called for IPC player {self.player_id}")
+            # In IPC mode, battles are managed differently
+            raise NotImplementedError("accept_challenges not supported in full IPC mode")
+            
+        self.accept_challenges = mock_accept_challenges
+        
+        # Override send_message to use IPC
+        async def ipc_send_message(message, room=""):
+            """Send message via IPC instead of WebSocket."""
+            self._logger.debug(f"📤 IPC send_message: {message} to room {room}")
+            if self.ps_client:
+                await self.ps_client.send(message)
+            else:
+                self._logger.warning(f"⚠️ No ps_client available for IPC send_message")
+                
+        # Replace the send_message method
+        self.send_message = ipc_send_message
     
     async def _ipc_listen(self) -> None:
         """IPC-based listen method that replaces WebSocket listening."""
@@ -247,6 +393,72 @@ class IPCClientWrapper:
         self.communicator = communicator
         self.logger = logger
         self._battle_counter = 0
+        # Mock WebSocket-like attributes that poke-env might check
+        self.closed = False
+        self.state = "connected"
+        
+    async def send(self, message: str) -> None:
+        """Send raw message via IPC (WebSocket interface compatibility)."""
+        try:
+            # Parse Pokemon Showdown protocol message
+            if message.startswith('>'):
+                # Battle command format: >p1 move 1
+                parts = message[1:].split(' ', 2)
+                if len(parts) >= 2:
+                    player = parts[0]
+                    command = ' '.join(parts[1:])
+                    
+                    ipc_message = {
+                        "type": "battle_command",
+                        "battle_id": "default",  # Will be updated with proper battle ID
+                        "player": player,
+                        "command": command
+                    }
+                    
+                    await self.communicator.send_message(ipc_message)
+                    self.logger.debug(f"Sent IPC raw command: {message}")
+            else:
+                # Non-battle message, send as-is
+                ipc_message = {
+                    "type": "raw_message",
+                    "message": message
+                }
+                await self.communicator.send_message(ipc_message)
+                self.logger.debug(f"Sent IPC raw message: {message}")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to send IPC raw message: {e}")
+            raise
+            
+    async def recv(self) -> str:
+        """Receive message via IPC (WebSocket interface compatibility)."""
+        try:
+            response = await self.communicator.receive_message()
+            # Convert IPC response back to Pokemon Showdown protocol format
+            if response.get("type") == "battle_update":
+                return str(response.get("updates", ""))
+            elif response.get("type") == "pong":
+                return ""  # Ignore pong messages
+            else:
+                return str(response)
+        except Exception as e:
+            self.logger.error(f"Failed to receive IPC message: {e}")
+            raise
+            
+    async def close(self) -> None:
+        """Close IPC connection (WebSocket interface compatibility)."""
+        self.closed = True
+        await self.communicator.disconnect()
+        
+    async def ping(self) -> None:
+        """Send ping via IPC (WebSocket interface compatibility)."""
+        ping_message = {"type": "ping"}
+        await self.communicator.send_message(ping_message)
+        
+    # Properties that poke-env might check
+    @property
+    def state_name(self) -> str:
+        return "OPEN" if not self.closed else "CLOSED"
     
     async def send_message(self, message: str, battle_tag: str) -> None:
         """Send a battle command via IPC.

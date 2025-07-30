@@ -8,6 +8,8 @@ Maple is a Pokemon reinforcement learning framework built on top of `poke-env` a
 
 ## Priority rule
 - 例外やエラーに対してはフォールバックを作らず、エラーの原因が特定できるログ出力をするように実装して。（プログラムがエラーなく動くことよりも、エラーの原因が特定できることを優先して、エラーが特定できたら修正していいか確認を求めて。）
+- Mac OS上でのtrain.pyはPyTorchとMPSの組み合わせでバグがあるので--device cpuを指定して
+
 
 
 ## Core Architecture

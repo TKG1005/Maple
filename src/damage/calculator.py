@@ -351,6 +351,10 @@ class DamageCalculator:
         target_name = target_pokemon.species if hasattr(target_pokemon, 'species') else str(target_pokemon)
         move_name = move_object.id if hasattr(move_object, 'id') else str(move_object)
         
+        # Normalize target name for consistent lookup (capitalize first letter)
+        if target_name:
+            target_name = target_name.capitalize()
+        
         # Get target base stats from Pokemon object
         if hasattr(target_pokemon, 'base_stats') and target_pokemon.base_stats:
             pokemon_base_stats = target_pokemon.base_stats
@@ -377,6 +381,11 @@ class DamageCalculator:
             move_power = move_object.base_power
             move_category_enum = move_object.category
             
+            # Handle moves with no base power (status moves, variable power moves)
+            if move_power is None or move_power == 0:
+                # Return minimal damage for status moves or unknown power moves
+                return (0.0, 0.0)
+            
             # Convert MoveCategory enum to Japanese string
             if hasattr(move_category_enum, 'name'):
                 if move_category_enum.name.lower() == 'physical':
@@ -398,8 +407,8 @@ class DamageCalculator:
             move_power = move_data.iloc[0]['base_power']
             move_category = move_data.iloc[0]['category']
         
-        # Skip non-damaging moves (変化技)
-        if move_category == '変化' or pd.isna(move_power) or move_power <= 0:
+        # Skip non-damaging moves (変化技) or moves with undefined power
+        if move_category == '変化' or pd.isna(move_power) or move_power is None or move_power <= 0:
             return (0.0, 0.0)
         
         # Determine attack and defense stats based on move category
@@ -426,6 +435,12 @@ class DamageCalculator:
         
         # Basic damage calculation
         level = attacker_stats.get('level', 50)
+        
+        # Additional safety check before calculation
+        if move_power is None or attack_stat is None or defense_stat is None:
+            print(f"WARNING: None values in damage calculation: move_power={move_power}, attack_stat={attack_stat}, defense_stat={defense_stat}")
+            return (0.0, 0.0)
+            
         base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
         
         # Type effectiveness using poke-env's damage_multiplier method

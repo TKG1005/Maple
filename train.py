@@ -87,7 +87,7 @@ from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", log_level: int = logging.DEBUG) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", full_ipc: bool = False, log_level: int = logging.DEBUG) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -101,6 +101,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         normalize_rewards=normalize_rewards,
         server_configuration=server_config,
         battle_mode=battle_mode,
+        full_ipc=full_ipc,  # Phase 4: Pass full IPC setting
         log_level=log_level,
     )
     return env
@@ -482,6 +483,7 @@ def main(
     win_rate_threshold: float = 0.6,
     win_rate_window: int = 50,
     battle_mode: str = "local",  # Battle communication mode
+    full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
     device: str = "auto",
     log_level: int = logging.INFO,
     # Epsilon-greedy exploration parameters
@@ -558,6 +560,17 @@ def main(
     
     # Battle mode configuration from config file (unless explicitly provided)
     # Note: battle_mode comes from CLI parameter and should not be overridden
+    
+    # Phase 4: Validate full_ipc parameter
+    if full_ipc and battle_mode != "local":
+        raise ValueError("--full-ipc can only be used with --battle-mode local")
+    
+    if full_ipc:
+        logger.info("🚀 Phase 4: Full IPC mode enabled (WebSocket fallback disabled)")
+    elif battle_mode == "local":
+        logger.info("📋 Phase 3: Local mode with WebSocket fallback enabled")
+    else:
+        logger.info("🌐 Online mode: WebSocket communication enabled")
     
     # Win rate configuration from config file
     win_rate_threshold = float(cfg.get("win_rate_threshold", win_rate_threshold))
@@ -639,7 +652,7 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, battle_mode=battle_mode, log_level=log_level)
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, battle_mode=battle_mode, full_ipc=full_ipc, log_level=log_level)
     
     # Get network configuration
     network_config = cfg.get("network", {})
@@ -955,6 +968,7 @@ def main(
                 normalize_rewards=True,
                 server_config=server_config,
                 battle_mode=battle_mode,
+                full_ipc=full_ipc,  # Phase 4: Pass full IPC setting
                 log_level=log_level
             )
             
@@ -1177,7 +1191,8 @@ def main(
                     normalize_rewards=True,
                     server_config=temp_server_config,
                     battle_mode=battle_mode,
-                    log_level=log_level
+                    log_level=log_level,
+                    full_ipc=full_ipc
                 )
                 temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
                 
@@ -1233,7 +1248,8 @@ def main(
                 normalize_rewards=True,
                 server_config=temp_server_config,
                 battle_mode=battle_mode,
-                log_level=log_level
+                log_level=log_level,
+                full_ipc=full_ipc
             )
             temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
             
@@ -1764,6 +1780,11 @@ if __name__ == "__main__":
         default="local",
         help="battle communication mode: 'local' (IPC) for high-speed training, 'online' (WebSocket) for server battles",
     )
+    parser.add_argument(
+        "--full-ipc",
+        action="store_true",
+        help="Phase 4: Enable full IPC mode without WebSocket fallback (requires --battle-mode local)",
+    )
     
     # Epsilon-greedy exploration arguments
     parser.add_argument(
@@ -1850,6 +1871,7 @@ if __name__ == "__main__":
         win_rate_threshold=args.win_rate_threshold,
         win_rate_window=args.win_rate_window,
         battle_mode=args.battle_mode,
+        full_ipc=args.full_ipc,  # Phase 4: Pass full IPC setting
         device=args.device,
         log_level=level,
         # Epsilon-greedy parameters

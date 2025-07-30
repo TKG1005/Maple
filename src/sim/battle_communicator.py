@@ -227,22 +227,78 @@ class IPCCommunicator(BattleCommunicator):
                 if not os.path.exists('pokemon-showdown'):
                     raise FileNotFoundError("Pokemon Showdown directory not found: pokemon-showdown")
                 
-                # Start Node.js subprocess with IPC (run from pokemon-showdown directory)
+                # Determine script path relative to working directory
+                if self.node_script_path.startswith('pokemon-showdown/'):
+                    # If path starts with pokemon-showdown/, run from root directory
+                    script_path = self.node_script_path
+                    working_dir = None  # Use current directory
+                else:
+                    # Assume it's a relative path within pokemon-showdown directory
+                    script_path = self.node_script_path
+                    working_dir = 'pokemon-showdown'
+                
+                self.logger.info(f"📂 Working directory: {working_dir or 'current'}")
+                self.logger.info(f"📄 Script path: {script_path}")
+                
+                # Start Node.js subprocess with IPC
                 self.process = await asyncio.create_subprocess_exec(
-                    'node', self.node_script_path,
+                    'node', script_path,
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
-                    cwd='pokemon-showdown'  # Run from pokemon-showdown directory where dist/ is located
+                    cwd=working_dir
                 )
                 
                 self.logger.info(f"✅ Node.js process started with PID: {self.process.pid}")
                 
-                # Start background task to read responses
-                self._reader_task = asyncio.create_task(self._read_responses())
+                # Wait for process to initialize and produce initial stderr
+                try:
+                    stderr_line = await asyncio.wait_for(
+                        self.process.stderr.readline(), 
+                        timeout=5.0
+                    )
+                    if stderr_line:
+                        init_msg = stderr_line.decode().strip()
+                        self.logger.info(f"🟡 Node.js initialization: {init_msg}")
+                except asyncio.TimeoutError:
+                    self.logger.warning("⚠️ No initialization message from Node.js process")
                 
                 self.connected = True
                 self.logger.info(f"🔗 IPC connection established: {self.node_script_path}")
+                
+                # Start background task to read responses AFTER connection is established
+                self.logger.info("🚀 Starting IPC response reader task")
+                self._reader_task = asyncio.create_task(self._read_responses())
+                
+                # Also create a task to read stderr for debugging
+                self.logger.info("🚀 Starting IPC stderr reader task")  
+                self._stderr_task = asyncio.create_task(self._read_stderr())
+                
+                # Give tasks a brief moment to start
+                await asyncio.sleep(0.05)
+                
+                # Verify tasks are running (they should be waiting for input now)
+                if self._reader_task.done():
+                    exception = self._reader_task.exception()
+                    if exception:
+                        self.logger.error(f"❌ Reader task failed immediately: {exception}")
+                        raise exception
+                    else:
+                        self.logger.error("❌ Reader task completed immediately (unexpected)")
+                        raise RuntimeError("Reader task completed unexpectedly")
+                else:
+                    self.logger.info("✅ Reader task is running and waiting for data")
+                    
+                if self._stderr_task.done():
+                    exception = self._stderr_task.exception()
+                    if exception:
+                        self.logger.error(f"❌ Stderr task failed immediately: {exception}")
+                        raise exception
+                    else:
+                        self.logger.error("❌ Stderr task completed immediately (unexpected)")
+                        raise RuntimeError("Stderr task completed unexpectedly")
+                else:
+                    self.logger.info("✅ Stderr task is running and waiting for data")
                 
             except Exception as e:
                 self.logger.error(f"❌ Failed to start Node.js IPC process: {type(e).__name__}: {e}")
@@ -261,11 +317,18 @@ class IPCCommunicator(BattleCommunicator):
     
     async def _cleanup_process(self) -> None:
         """Clean up subprocess and associated resources."""
-        # Cancel reader task
+        # Cancel reader tasks
         if self._reader_task and not self._reader_task.done():
             self._reader_task.cancel()
             try:
                 await self._reader_task
+            except asyncio.CancelledError:
+                pass
+        
+        if hasattr(self, '_stderr_task') and self._stderr_task and not self._stderr_task.done():
+            self._stderr_task.cancel()
+            try:
+                await self._stderr_task
             except asyncio.CancelledError:
                 pass
         
@@ -284,30 +347,77 @@ class IPCCommunicator(BattleCommunicator):
     async def _read_responses(self) -> None:
         """Background task to read responses from Node.js process."""
         if not self.process or not self.process.stdout:
+            self.logger.error("❌ No process or stdout available for reading responses")
             return
+        
+        self.logger.info("📖 Starting IPC response reader task")
         
         try:
             while self.connected and self.process.returncode is None:
-                line = await self.process.stdout.readline()
-                if not line:
-                    break
-                
                 try:
+                    # Read line from stdout (blocking until data available)
+                    line = await self.process.stdout.readline()
+                    
+                    if not line:
+                        # End of stream - process may have closed stdout
+                        self.logger.warning("⚠️ End of stdout stream - Node.js process may have terminated")
+                        break
+                    
                     # Parse JSON response
                     response_data = line.decode().strip()
                     if response_data:
-                        message = json.loads(response_data)
-                        await self._message_queue.put(message)
-                        self.logger.debug(f"Received IPC message: {response_data}")
-                except json.JSONDecodeError as e:
-                    self.logger.error(f"Failed to parse IPC response: {e}")
+                        self.logger.info(f"📨 Raw IPC response: {response_data}")
+                        try:
+                            message = json.loads(response_data)
+                            await self._message_queue.put(message)
+                            self.logger.info(f"✅ Queued IPC message: {message.get('type', 'unknown')}")
+                        except json.JSONDecodeError as e:
+                            self.logger.error(f"❌ Failed to parse IPC response as JSON: {e}")
+                            self.logger.error(f"🔍 Raw data: {repr(response_data)}")
+                    else:
+                        self.logger.debug("🔍 Received empty response line, skipping")
+                        
                 except Exception as e:
-                    self.logger.error(f"Error processing IPC response: {e}")
+                    self.logger.error(f"❌ Error reading/processing IPC response: {e}")
+                    # Don't break on individual errors - keep trying to read
+                    await asyncio.sleep(0.1)
                     
         except Exception as e:
-            self.logger.error(f"Error in IPC reader task: {e}")
+            self.logger.error(f"❌ Critical error in IPC reader task: {e}")
         finally:
-            self.logger.debug("IPC reader task finished")
+            self.logger.info("🏁 IPC reader task finished")
+    
+    async def _read_stderr(self) -> None:
+        """Background task to read stderr from Node.js process for debugging."""
+        if not self.process or not self.process.stderr:
+            self.logger.error("❌ No process or stderr available for reading")
+            return
+        
+        self.logger.info("📖 Starting IPC stderr reader task")
+        
+        try:
+            while self.connected and self.process.returncode is None:
+                try:
+                    # Read line from stderr (blocking until data available)
+                    line = await self.process.stderr.readline()
+                    
+                    if not line:
+                        # End of stream - process may have closed stderr
+                        self.logger.warning("⚠️ End of stderr stream - Node.js process may have terminated")
+                        break
+                    
+                    stderr_data = line.decode().strip()
+                    if stderr_data:
+                        self.logger.info(f"🟡 Node.js stderr: {stderr_data}")
+                    
+                except Exception as e:
+                    self.logger.error(f"❌ Error reading Node.js stderr: {e}")
+                    await asyncio.sleep(0.1)
+                    
+        except Exception as e:
+            self.logger.error(f"❌ Critical error in IPC stderr reader task: {e}")
+        finally:
+            self.logger.info("🏁 IPC stderr reader task finished")
     
     async def send_message(self, message: Dict[str, Any]) -> None:
         """Send JSON message via IPC."""
@@ -319,7 +429,7 @@ class IPCCommunicator(BattleCommunicator):
             json_data = json.dumps(message) + '\n'
             self.process.stdin.write(json_data.encode())
             await self.process.stdin.drain()
-            self.logger.debug(f"Sent IPC message: {json_data.strip()}")
+            self.logger.info(f"📤 Sent IPC message: {json_data.strip()}")
         except Exception as e:
             self.logger.error(f"Failed to send IPC message: {e}")
             raise
