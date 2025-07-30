@@ -103,10 +103,29 @@ class IPCBattle(CustomBattle):
                         pokemon_species = "ditto"  # Use lowercase for poke-env species lookup
                         pokemon = Pokemon(gen=self._gen, species=pokemon_species)
                         
-                        # Set level and HP - poke-env should handle the rest automatically
+                        # Set level and HP
                         pokemon._level = 50
                         pokemon._max_hp = 100
                         pokemon._current_hp = 100
+                        
+                        # Calculate and set actual stats based on base stats
+                        # Use simplified stat calculation for level 50 with neutral nature
+                        if hasattr(pokemon, 'base_stats') and pokemon.base_stats:
+                            # Calculate actual stats using Pokemon's base stats
+                            # Simplified formula: ((base_stat * 2 + 31 + 252/4) * level / 100) + 5
+                            # For HP: ((base_stat * 2 + 31 + 252/4) * level / 100) + level + 10
+                            level = 50
+                            pokemon._stats = {
+                                'hp': int(((pokemon.base_stats['hp'] * 2 + 31 + 252/4) * level / 100) + level + 10),
+                                'atk': int(((pokemon.base_stats['atk'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                'def': int(((pokemon.base_stats['def'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                'spa': int(((pokemon.base_stats['spa'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                'spd': int(((pokemon.base_stats['spd'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                'spe': int(((pokemon.base_stats['spe'] * 2 + 31 + 252/4) * level / 100) + 5)
+                            }
+                            # Update max_hp to match calculated HP stat
+                            pokemon._max_hp = pokemon._stats['hp']
+                            pokemon._current_hp = pokemon._stats['hp']
                         
                         # Set as active Pokemon only for the first Pokemon in each team
                         pokemon._active = (i == 0)  # Only first Pokemon is active
@@ -133,7 +152,18 @@ class IPCBattle(CustomBattle):
                             first_pokemon = pokemon
                             
                     except Exception as e:
-                        self.logger.warning(f"Failed to create minimal Pokemon {pokemon_key} for {team_key}: {e}")
+                        error_context = {
+                            'pokemon_key': pokemon_key,
+                            'team_key': team_key,
+                            'pokemon_species': pokemon_species,
+                            'gen': self._gen,
+                            'team_index': i,
+                            'exception_type': type(e).__name__,
+                            'exception_details': str(e)
+                        }
+                        raise RuntimeError(f"POKEMON_CREATION_ERROR: Failed to create Pokemon {pokemon_key} for {team_key}. "
+                                         f"Context: {error_context}. "
+                                         f"Root cause: poke-env Pokemon initialization failure - check species name, generation compatibility, or data loading issues.") from e
                 
                 # Set active Pokemon references
                 if first_pokemon and team_key == "_team":

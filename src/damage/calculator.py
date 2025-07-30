@@ -383,8 +383,17 @@ class DamageCalculator:
             
             # Handle moves with no base power (status moves, variable power moves)
             if move_power is None or move_power == 0:
-                # Return minimal damage for status moves or unknown power moves
-                return (0.0, 0.0)
+                # Status moves should not reach damage calculation - this indicates an architectural issue
+                move_info = {
+                    'move_name': move_name,
+                    'move_power': move_power,
+                    'move_category': getattr(move_category_enum, 'name', str(move_category_enum)),
+                    'move_object_attrs': {attr: getattr(move_object, attr, 'NOT_AVAILABLE') for attr in ['id', 'base_power', 'category', 'type']}
+                }
+                raise ValueError(f"MOVE_POWER_ERROR: Status move or zero-power move reached damage calculation. "
+                               f"Details: {move_info}. "
+                               f"Root cause: StateObserver should filter out non-damaging moves before calling damage calculator. "
+                               f"This error should not occur after the STATUS move filtering fix in calc_damage_expectation_for_ai.")
             
             # Convert MoveCategory enum to Japanese string
             if hasattr(move_category_enum, 'name'):
@@ -436,10 +445,24 @@ class DamageCalculator:
         # Basic damage calculation
         level = attacker_stats.get('level', 50)
         
-        # Additional safety check before calculation
+        # Error diagnosis - no fallback according to project rules
         if move_power is None or attack_stat is None or defense_stat is None:
-            print(f"WARNING: None values in damage calculation: move_power={move_power}, attack_stat={attack_stat}, defense_stat={defense_stat}")
-            return (0.0, 0.0)
+            error_details = {
+                'move_power': move_power,
+                'attack_stat': attack_stat, 
+                'defense_stat': defense_stat,
+                'move_object': str(move_object),
+                'target_pokemon': str(target_pokemon),
+                'move_name': move_name,
+                'target_name': target_name,
+                'target_base_stats': getattr(target_pokemon, 'base_stats', 'NOT_AVAILABLE'),
+                'move_base_power': getattr(move_object, 'base_power', 'NOT_AVAILABLE'),
+                'move_category': getattr(move_object, 'category', 'NOT_AVAILABLE')
+            }
+            
+            raise ValueError(f"DAMAGE_CALC_ERROR: None values in damage calculation. "
+                           f"Details: {error_details}. "
+                           f"Root cause: Pokemon or Move objects in IPCBattle are not properly initialized with required stats/attributes.")
             
         base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
         

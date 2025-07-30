@@ -429,10 +429,19 @@ class StateObserver:
                 # Get move type
                 move_type = move.type.name if hasattr(move, 'type') and move.type else 'Normal'
                 
-                # Call DamageCalculator - let it raise exceptions on errors
-                result = damage_calc.calculate_damage_expectation_for_ai(
-                    attacker_stats, target, move, move_type
-                )
+                # Check if move is STATUS type before damage calculation
+                from poke_env.environment.move_category import MoveCategory
+                if hasattr(move, 'category') and move.category == MoveCategory.STATUS:
+                    # STATUS moves (like protect, rest) don't deal damage
+                    result = (0.0, 0.0)
+                elif hasattr(move, 'base_power') and (move.base_power is None or move.base_power == 0):
+                    # Moves with no base power don't deal damage
+                    result = (0.0, 0.0)
+                else:
+                    # Call DamageCalculator for actual damage-dealing moves
+                    result = damage_calc.calculate_damage_expectation_for_ai(
+                        attacker_stats, target, move, move_type
+                    )
                 
                 # Cache result for future use within this observation
                 damage_cache[cache_key] = result
