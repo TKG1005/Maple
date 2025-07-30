@@ -1,0 +1,99 @@
+# Node.js IPC Development Documentation
+
+## 📂 ドキュメント構成
+
+このフォルダには、Pokemon Showdown IPCサーバー開発に関連する全ドキュメントが含まれています。
+
+### 🎯 **最重要ファイル（必読順）**
+
+#### 1. **現在の作業状況** 
+- **`WORK_CONTEXT.md`** - 現在の作業段階・問題・次のタスク
+- **`PROGRESS.md`** - Phase A-D の段階別進捗追跡  
+- **`ISSUES_LOG.md`** - 技術的問題管理・解決策記録
+
+#### 2. **開発計画・仕様** 
+- **`node-ipc-server-development-plan.md`** - 12-18日の詳細開発計画
+- **`SHOWDOWN_SPEC_COMPLIANCE.md`** - 🚨 **最重要** Pokemon Showdown仕様準拠チェックリスト
+
+#### 3. **アーキテクチャ文書**
+- **`showdown-integration-plan.md`** - Phase 1-4の統合実装計画全体  
+- **`ipc-battle-architecture.md`** - IPCBattleクラス技術仕様
+
+## 🚀 **コンテキスト復元手順**
+
+コンテキストが喪失した場合、以下の順序で読み込み：
+
+### **Step 1: 現状把握**
+```bash
+# 現在の作業状況を確認
+cat WORK_CONTEXT.md | head -50
+cat PROGRESS.md | grep -A 10 "現在の作業"
+```
+
+### **Step 2: 重要課題確認**  
+```bash
+# 現在の技術的問題を確認
+cat ISSUES_LOG.md | grep -A 20 "現在進行中の課題"
+```
+
+### **Step 3: 仕様要件確認**
+```bash
+# Pokemon Showdown準拠要件を確認
+cat SHOWDOWN_SPEC_COMPLIANCE.md | head -100
+```
+
+## 🎯 **プロジェクト成功の核心**
+
+**最重要**: Pokemon Showdownサーバーの**100%完璧な再現**
+
+- BattleStream API完全準拠
+- SIM-PROTOCOL.md全メッセージ対応  
+- Teams API正確統合
+- Choice Request System完全実装
+
+## 📋 **開発段階と対応ドキュメント**
+
+### **Phase A: Pokemon Showdown仕様理解・統合** (4-6日)
+- 主要参照: `SHOWDOWN_SPEC_COMPLIANCE.md`
+- 実装ガイド: `node-ipc-server-development-plan.md` (Phase A章)
+
+### **Phase B: 完全Battle Protocol実装** (5-7日)  
+- 主要参照: `showdown-integration-plan.md`
+- アーキテクチャ: `ipc-battle-architecture.md`
+
+### **Phase C: Python-NodeJS統合システム** (4-5日)
+- 統合計画: `node-ipc-server-development-plan.md` (Phase C章)
+- 進捗追跡: `PROGRESS.md`
+
+## ⚠️ **緊急時の最小参照**
+
+完全にコンテキストが失われた場合、最低限以下を読み込み：
+
+1. **`WORK_CONTEXT.md`** - 現在地点の確認
+2. **`SHOWDOWN_SPEC_COMPLIANCE.md`** - 成功基準の確認  
+3. **`ISSUES_LOG.md`** - 現在の問題確認
+
+## 🔗 **関連外部ファイル**
+
+### **実装ファイル**
+```
+/pokemon-showdown/sim/ipc-battle-server.js
+/src/sim/ipc_battle.py
+/src/sim/ipc_battle_factory.py
+/src/sim/battle_communicator.py
+```
+
+### **Pokemon Showdown仕様**
+```
+/pokemon-showdown/PROTOCOL.md
+/pokemon-showdown/sim/SIM-PROTOCOL.md  
+/pokemon-showdown/sim/SIMULATOR.md
+/pokemon-showdown/sim/TEAMS.md
+```
+
+---
+
+**更新日**: 2025-07-30  
+**作業ブランチ**: `feature/node-ipc-server-development`  
+**総推定工数**: 13-18日  
+**現在の段階**: Phase A準備完了
