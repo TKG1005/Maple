@@ -556,8 +556,8 @@ def main(
     if opponent_mix is not None:
         opponent_mix = str(opponent_mix)
     
-    # Battle mode configuration from config file
-    battle_mode = str(cfg.get("battle_mode", battle_mode))
+    # Battle mode configuration from config file (unless explicitly provided)
+    # Note: battle_mode comes from CLI parameter and should not be overridden
     
     # Win rate configuration from config file
     win_rate_threshold = float(cfg.get("win_rate_threshold", win_rate_threshold))

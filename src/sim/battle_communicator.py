@@ -284,10 +284,10 @@ class CommunicatorFactory:
             ValueError: If mode is not supported
         """
         if mode == "websocket":
-            url = kwargs.get("url", "ws://localhost:8000/showdown/websocket")
+            url = kwargs.pop("url", "ws://localhost:8000/showdown/websocket")
             return WebSocketCommunicator(url=url, **kwargs)
         elif mode == "ipc":
-            script_path = kwargs.get("node_script_path", "sim/ipc-battle-server.js")
+            script_path = kwargs.pop("node_script_path", "sim/ipc-battle-server.js")
             return IPCCommunicator(node_script_path=script_path, **kwargs)
         else:
             raise ValueError(f"Unsupported communication mode: {mode}")
