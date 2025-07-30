@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import asyncio
 import logging
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
@@ -56,6 +57,71 @@ class BattleCommunicator(ABC):
     async def is_alive(self) -> bool:
         """Check if the connection is alive and responsive."""
         pass
+    
+    async def save_battle_state(self, battle_id: str) -> Dict[str, Any]:
+        """Save current battle state for later restoration.
+        
+        Args:
+            battle_id: Identifier of the battle to save
+            
+        Returns:
+            Dictionary containing the saved state information
+        """
+        # Default implementation - subclasses can override for optimized behavior
+        message = {
+            "type": "save_battle_state",
+            "battle_id": battle_id
+        }
+        await self.send_message(message)
+        response = await self.receive_message()
+        
+        if response.get("type") != "battle_state_saved" or not response.get("success"):
+            raise RuntimeError(f"Failed to save battle state: {response}")
+        
+        return response
+    
+    async def restore_battle_state(self, battle_id: str, state_data: Dict[str, Any]) -> bool:
+        """Restore battle state from saved data.
+        
+        Args:
+            battle_id: Identifier of the battle to restore
+            state_data: Previously saved state data
+            
+        Returns:
+            True if restoration was successful
+        """
+        # Default implementation - subclasses can override for optimized behavior
+        message = {
+            "type": "restore_battle_state",
+            "battle_id": battle_id,
+            "state_data": state_data
+        }
+        await self.send_message(message)
+        response = await self.receive_message()
+        
+        return response.get("type") == "battle_state_restored" and response.get("success", False)
+    
+    async def get_battle_state(self, battle_id: str) -> Dict[str, Any]:
+        """Get current battle state without saving.
+        
+        Args:
+            battle_id: Identifier of the battle
+            
+        Returns:
+            Dictionary containing current battle state
+        """
+        # Default implementation - subclasses can override for optimized behavior
+        message = {
+            "type": "get_battle_state",
+            "battle_id": battle_id
+        }
+        await self.send_message(message)
+        response = await self.receive_message()
+        
+        if response.get("type") != "battle_state" or not response.get("success"):
+            raise RuntimeError(f"Failed to get battle state: {response}")
+        
+        return response.get("state", {})
 
 
 class WebSocketCommunicator(BattleCommunicator):
@@ -148,23 +214,38 @@ class IPCCommunicator(BattleCommunicator):
                 return
             
             try:
-                # Start Node.js subprocess with IPC
+                self.logger.info(f"🚀 Starting Node.js IPC process...")
+                self.logger.info(f"📄 Node.js script: {self.node_script_path}")
+                self.logger.info(f"📁 Working directory: pokemon-showdown")
+                self.logger.info(f"📍 Current directory: {os.getcwd()}")
+                
+                # Check if script file exists
+                if not os.path.exists(self.node_script_path):
+                    raise FileNotFoundError(f"Node.js script not found: {self.node_script_path}")
+                
+                # Check if Pokemon Showdown directory exists
+                if not os.path.exists('pokemon-showdown'):
+                    raise FileNotFoundError("Pokemon Showdown directory not found: pokemon-showdown")
+                
+                # Start Node.js subprocess with IPC (run from pokemon-showdown directory)
                 self.process = await asyncio.create_subprocess_exec(
                     'node', self.node_script_path,
                     stdin=asyncio.subprocess.PIPE,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
-                    cwd='pokemon-showdown'  # Run from Pokemon Showdown directory
+                    cwd='pokemon-showdown'  # Run from pokemon-showdown directory where dist/ is located
                 )
+                
+                self.logger.info(f"✅ Node.js process started with PID: {self.process.pid}")
                 
                 # Start background task to read responses
                 self._reader_task = asyncio.create_task(self._read_responses())
                 
                 self.connected = True
-                self.logger.info(f"Started Node.js IPC process: {self.node_script_path}")
+                self.logger.info(f"🔗 IPC connection established: {self.node_script_path}")
                 
             except Exception as e:
-                self.logger.error(f"Failed to start Node.js IPC process: {e}")
+                self.logger.error(f"❌ Failed to start Node.js IPC process: {type(e).__name__}: {e}")
                 await self._cleanup_process()
                 raise
     

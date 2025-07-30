@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Any, Optional
 
 from poke_env.ps_client.server_configuration import ServerConfiguration
@@ -50,6 +51,14 @@ class DualModeEnvPlayer(EnvPlayer):
         self.ipc_script_path = ipc_script_path
         self._communicator: Optional[BattleCommunicator] = None
         self._original_ps_client = None
+        self.player_id = player_id  # Set player_id early for logging
+        
+        self._logger = logging.getLogger(__name__)
+        
+        # Initialize communicator BEFORE parent class to prevent WebSocket connection in local mode
+        if mode == "local":
+            self._logger.info(f"Pre-initializing IPC communicator for player {self.player_id}")
+            self._initialize_communicator()
         
         # Initialize parent class
         if mode == "online":
@@ -62,30 +71,64 @@ class DualModeEnvPlayer(EnvPlayer):
                 **kwargs
             )
         else:
-            # For local mode, we'll override WebSocket functionality
-            # Use a minimal server configuration to satisfy parent constructor
-            minimal_config = ServerConfiguration("localhost", 8000)
+            # For local mode, we need to prevent WebSocket connection
+            # Use a working server configuration but don't actually connect
+            if server_configuration is None:
+                # Create a valid server configuration for compatibility
+                server_configuration = ServerConfiguration("localhost", 8000)
+            
+            # Skip parent initialization for local mode - handle manually
+            self._setup_local_mode_player(env, player_id, server_configuration, **kwargs)
+        
+        # Initialize communicator for online mode only (local mode already done)
+        if mode == "online":
+            self._initialize_communicator()
+    
+    def _setup_local_mode_player(self, env: Any, player_id: str, server_configuration: ServerConfiguration, **kwargs: Any) -> None:
+        """Set up player for local mode without WebSocket connection."""
+        # For local mode, we still need to initialize the parent class properly
+        # but we'll override the WebSocket communication methods
+        
+        try:
+            # Initialize parent class normally - the override should prevent actual WebSocket usage
             super().__init__(
                 env=env,
                 player_id=player_id,
-                server_configuration=minimal_config,
+                server_configuration=server_configuration,
                 **kwargs
             )
+            self._logger.info(f"✅ Local mode player initialized for {player_id} (WebSocket methods overridden)")
             
-        self._logger = logging.getLogger(__name__)
-        self._initialize_communicator()
+        except Exception as e:
+            self._logger.error(f"❌ Failed to initialize parent class for local mode: {e}")
+            raise RuntimeError(f"Local mode player initialization failed: {e}") from e
     
     def _initialize_communicator(self) -> None:
         """Initialize the appropriate communicator based on mode."""
-        # For now, log the intended mode but don't initialize communicator
-        # This allows the existing poke-env functionality to work as before
         if self.mode == "local":
-            self._logger.warning(f"Local IPC mode requested for player {self.player_id} but not fully implemented")
-            self._logger.warning("Using standard poke-env WebSocket functionality")
+            self._logger.info(f"Initializing local IPC communicator for player {self.player_id}")
+            try:
+                # Initialize IPC communicator
+                self._communicator = CommunicatorFactory.create_communicator(
+                    mode="ipc",
+                    node_script_path=self.ipc_script_path,
+                    logger=self._logger
+                )
+                self._logger.info(f"Successfully initialized IPC communicator for {self.player_id}")
+                
+                # Override WebSocket methods to use IPC
+                self._override_websocket_methods()
+                
+            except Exception as e:
+                self._logger.error(f"❌ CRITICAL: Failed to initialize IPC communicator for {self.player_id}")
+                self._logger.error(f"❌ Error details: {type(e).__name__}: {e}")
+                self._logger.error(f"❌ Node.js script path: {self.ipc_script_path}")
+                self._logger.error(f"❌ Working directory: {os.getcwd()}")
+                self._logger.error("❌ Local mode requires working IPC communicator - WebSocket fallback is disabled")
+                raise RuntimeError(f"Local mode IPC initialization failed for {self.player_id}: {e}") from e
         else:
-            self._logger.info(f"Online WebSocket mode for player {self.player_id}")
-        
-        # Don't initialize custom communicator - let poke-env handle it
+            self._logger.info(f"Using online WebSocket mode for player {self.player_id}")
+            # For online mode, don't initialize custom communicator - let poke-env handle it
     
     def _override_websocket_methods(self) -> None:
         """Override WebSocket-related methods for local IPC mode.
@@ -102,7 +145,23 @@ class DualModeEnvPlayer(EnvPlayer):
         # Replace ps_client with IPC wrapper
         self.ps_client = IPCClientWrapper(self._communicator, self._logger)
         
+        # Override key methods that would use WebSocket
+        self._original_listen = getattr(self, 'listen', None)
+        self.listen = self._ipc_listen
+        
         self._logger.debug(f"Overridden WebSocket methods for local IPC mode (player {self.player_id})")
+    
+    async def _ipc_listen(self) -> None:
+        """IPC-based listen method that replaces WebSocket listening."""
+        self._logger.info(f"🎧 Starting IPC listen mode for player {self.player_id}")
+        
+        # For now, just log that we're in IPC mode and don't actually listen
+        # The real battle communication will happen through the environment's queue system
+        self._logger.info(f"✅ IPC listen mode active for player {self.player_id} (no WebSocket connection)")
+        
+        # Keep the method running to satisfy poke-env expectations
+        while True:
+            await asyncio.sleep(1)  # Prevent busy waiting
     
     async def _ensure_communicator_connected(self) -> None:
         """Ensure the communicator is connected before use."""

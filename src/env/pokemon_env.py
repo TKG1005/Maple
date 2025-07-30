@@ -19,6 +19,7 @@ from poke_env.concurrency import POKE_LOOP
 from .env_player import EnvPlayer
 from .dual_mode_player import DualModeEnvPlayer, validate_mode_configuration
 from src.rewards import HPDeltaReward, CompositeReward, RewardNormalizer
+from src.sim.battle_state_serializer import BattleStateManager, PokeEnvBattleSerializer
 
 
 class PokemonEnv(gym.Env):
@@ -165,6 +166,13 @@ class PokemonEnv(gym.Env):
 
         # HPDeltaReward をプレイヤーごとに保持
         self._hp_delta_rewards: dict[str, HPDeltaReward] = {}
+        
+        # Initialize battle state manager for Phase 3 serialization
+        self._battle_serializer = PokeEnvBattleSerializer()
+        self._state_manager = BattleStateManager(
+            serializer=self._battle_serializer,
+            storage_dir="battle_states"
+        )
         
     def _get_team_for_battle(self) -> str | None:
         """Get team content for the current battle.
@@ -925,6 +933,7 @@ class PokemonEnv(gym.Env):
                 env=self,
                 player_id=player_id,
                 mode="local",
+                server_configuration=server_config,  # Pass server config for fallback
                 battle_format="gen9bssregi",
                 team=team,
                 log_level=self.log_level,
@@ -985,3 +994,227 @@ class PokemonEnv(gym.Env):
             "current_server_config": getattr(self, "server_configuration", None),
             "players_created": hasattr(self, "_env_players") and bool(self._env_players)
         }
+    
+    # ------------------------------------------------------------------
+    # Battle State Management (Phase 3)
+    # ------------------------------------------------------------------
+    
+    def save_battle_state(self, agent_id: str = "player_0", filename: str | None = None) -> str:
+        """Save current battle state to file.
+        
+        Args:
+            agent_id: Agent whose battle to save
+            filename: Optional filename (auto-generated if None)
+            
+        Returns:
+            Path to saved state file
+            
+        Raises:
+            ValueError: If no current battle for agent_id
+            RuntimeError: If serialization fails
+        """
+        try:
+            battle = self.get_current_battle(agent_id)
+            if battle is None:
+                raise ValueError(f"No current battle for agent {agent_id}")
+            
+            filepath = self._state_manager.save_state(battle, filename)
+            self._logger.info(f"Saved battle state for {agent_id} to {filepath}")
+            return filepath
+            
+        except Exception as e:
+            self._logger.error(f"Failed to save battle state: {e}")
+            raise RuntimeError(f"Battle state save failed: {e}") from e
+    
+    def load_battle_state(self, filepath: str) -> dict:
+        """Load battle state from file.
+        
+        Args:
+            filepath: Path to saved state file
+            
+        Returns:
+            Dictionary containing the loaded battle state
+            
+        Raises:
+            FileNotFoundError: If state file not found
+            RuntimeError: If deserialization fails
+        """
+        try:
+            state = self._state_manager.load_state(filepath)
+            self._logger.info(f"Loaded battle state from {filepath}")
+            return state.to_dict()
+            
+        except FileNotFoundError:
+            self._logger.error(f"Battle state file not found: {filepath}")
+            raise
+        except Exception as e:
+            self._logger.error(f"Failed to load battle state: {e}")
+            raise RuntimeError(f"Battle state load failed: {e}") from e
+    
+    def list_saved_battle_states(self, battle_id: str | None = None) -> list[str]:
+        """List available saved battle states.
+        
+        Args:
+            battle_id: Optional filter by battle ID
+            
+        Returns:
+            List of available state files
+        """
+        try:
+            states = self._state_manager.list_saved_states(battle_id)
+            self._logger.debug(f"Found {len(states)} saved battle states")
+            return states
+            
+        except Exception as e:
+            self._logger.error(f"Failed to list saved states: {e}")
+            return []
+    
+    def delete_battle_state(self, filename: str) -> bool:
+        """Delete a saved battle state file.
+        
+        Args:
+            filename: Name of file to delete
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            success = self._state_manager.delete_state(filename)
+            if success:
+                self._logger.info(f"Deleted battle state: {filename}")
+            else:
+                self._logger.warning(f"Battle state not found: {filename}")
+            return success
+            
+        except Exception as e:
+            self._logger.error(f"Failed to delete battle state: {e}")
+            return False
+    
+    def get_battle_state_info(self) -> dict:
+        """Get information about battle state management.
+        
+        Returns:
+            Dictionary containing state management information
+        """
+        try:
+            saved_states = self.list_saved_battle_states()
+            current_battles = []
+            
+            # Check current battles
+            for agent_id in self.agent_ids:
+                battle = self.get_current_battle(agent_id)
+                if battle:
+                    current_battles.append({
+                        "agent_id": agent_id,
+                        "battle_id": getattr(battle, 'battle_tag', 'unknown'),
+                        "turn": getattr(battle, 'turn', 0),
+                        "finished": getattr(battle, 'finished', False)
+                    })
+            
+            return {
+                "serializer_type": type(self._battle_serializer).__name__,
+                "storage_directory": str(self._state_manager.storage_dir),
+                "saved_states_count": len(saved_states),
+                "saved_states": saved_states[:10],  # Show first 10
+                "current_battles": current_battles,
+                "battle_mode": self.battle_mode
+            }
+            
+        except Exception as e:
+            self._logger.error(f"Failed to get state info: {e}")
+            return {
+                "error": str(e),
+                "serializer_type": type(self._battle_serializer).__name__,
+                "storage_directory": str(self._state_manager.storage_dir)
+            }
+    
+    async def save_battle_state_via_communicator(self, agent_id: str = "player_0") -> dict:
+        """Save battle state via communicator (for dual-mode support).
+        
+        This method uses the communicator's save_battle_state method for
+        mode-specific optimizations (e.g., direct IPC state saving).
+        
+        Args:
+            agent_id: Agent whose battle to save
+            
+        Returns:
+            Dictionary containing save operation result
+            
+        Raises:
+            ValueError: If agent has no communicator or no current battle
+            RuntimeError: If save operation fails
+        """
+        try:
+            # Get player and battle for agent
+            player = getattr(self, '_env_players', {}).get(agent_id)
+            if player is None:
+                raise ValueError(f"No player found for agent {agent_id}")
+            
+            battle = self.get_current_battle(agent_id)
+            if battle is None:
+                raise ValueError(f"No current battle for agent {agent_id}")
+            
+            # Check if player has communicator (dual-mode player)
+            if hasattr(player, '_communicator') and player._communicator:
+                battle_id = getattr(battle, 'battle_tag', f'battle_{agent_id}')
+                result = await player._communicator.save_battle_state(battle_id)
+                self._logger.info(f"Saved battle state via communicator for {agent_id}")
+                return result
+            else:
+                # Fallback to local serialization
+                self._logger.info(f"Using local serialization for {agent_id} (no communicator)")
+                filepath = self.save_battle_state(agent_id)
+                return {
+                    "type": "battle_state_saved",
+                    "battle_id": getattr(battle, 'battle_tag', f'battle_{agent_id}'),
+                    "method": "local_file",
+                    "filepath": filepath,
+                    "success": True
+                }
+                
+        except Exception as e:
+            self._logger.error(f"Failed to save battle state via communicator: {e}")
+            raise RuntimeError(f"Communicator state save failed: {e}") from e
+    
+    async def restore_battle_state_via_communicator(
+        self, 
+        agent_id: str, 
+        state_data: dict
+    ) -> bool:
+        """Restore battle state via communicator (for dual-mode support).
+        
+        Args:
+            agent_id: Agent whose battle to restore
+            state_data: Previously saved state data
+            
+        Returns:
+            True if restoration was successful
+            
+        Raises:
+            ValueError: If agent has no communicator
+            RuntimeError: If restore operation fails
+        """
+        try:
+            # Get player for agent
+            player = getattr(self, '_env_players', {}).get(agent_id)
+            if player is None:
+                raise ValueError(f"No player found for agent {agent_id}")
+            
+            # Check if player has communicator (dual-mode player)
+            if hasattr(player, '_communicator') and player._communicator:
+                battle_id = state_data.get('battle_id', f'battle_{agent_id}')
+                success = await player._communicator.restore_battle_state(battle_id, state_data)
+                
+                if success:
+                    self._logger.info(f"Restored battle state via communicator for {agent_id}")
+                else:
+                    self._logger.error(f"Failed to restore battle state via communicator for {agent_id}")
+                
+                return success
+            else:
+                self._logger.warning(f"No communicator available for {agent_id} - cannot restore via communicator")
+                return False
+                
+        except Exception as e:
+            self._logger.error(f"Failed to restore battle state via communicator: {e}")
+            raise RuntimeError(f"Communicator state restore failed: {e}") from e
