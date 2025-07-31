@@ -191,6 +191,15 @@ class IPCBattle(CustomBattle):
             "command": command
         }
         
+        # Ensure IPC process is connected
+        try:
+            # is_alive() is async: check and connect if needed
+            alive = await self._communicator.is_alive()
+            if not alive:
+                await self._communicator.connect()
+        except Exception as e:
+            self.logger.error(f"Error ensuring IPC connection before sending command: {e}")
+        # Send command message
         try:
             await self._communicator.send_message(message)
             self.logger.debug(f"Sent IPC command: {command}")
@@ -211,11 +220,22 @@ class IPCBattle(CustomBattle):
             "battle_id": self._battle_id
         }
         
+        # Request and retrieve latest battle state
         try:
-            await self._communicator.send_message(message)
-            # TODO: Implement response handling
-            response = await self._communicator.receive_message()
-            return response.get("battle_state", {})
+            # Ensure IPC connection
+            alive = await self._communicator.is_alive()
+            if not alive:
+                await self._communicator.connect()
+            # Delegate to communicator get_battle_state if available
+            if hasattr(self._communicator, 'get_battle_state'):
+                state = await self._communicator.get_battle_state(self._battle_id)
+            else:
+                # Fallback: manual send/receive
+                await self._communicator.send_message(message)
+                resp = await self._communicator.receive_message()
+                state = resp.get('battle_state') or resp.get('state') or {}
+            self.logger.debug(f"Received IPC battle state: {state}")
+            return state
         except Exception as e:
             self.logger.error(f"Failed to get battle state: {e}")
             return {}

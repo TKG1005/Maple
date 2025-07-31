@@ -4,6 +4,11 @@
 
 WebSocket通信を完全に排除し、IPCによる高速バトル処理を実現するNode.js IPCサーバーの完全実装計画。Phase 4の最終段階として、既存のIPCBattleクラスと統合し、75%のパフォーマンス向上を達成する。
 
+### 前提要件
+
+- Node.jsプロセスは、オリジナルのPokemon Showdownサーバーの動作をトレースし、メッセージフォーマット・シーケンスを完全に再現して送受信すること  
+- IPCサーバーは、既存のWebSocket通信機能を最小限に置き換えることを目的とし、可能な限りShowdown準拠のNode.jsプロセスおよびpoke-env（EnvPlayer相当）の仕様をそのまま活用すること  
+
 ## 現状分析 (2025年7月30日時点)
 
 ### ✅ 完成済みコンポーネント
@@ -29,114 +34,61 @@ WebSocket通信を完全に排除し、IPCによる高速バトル処理を実�
 
 ### Phase A: Pokemon Showdown正確な仕様理解・統合 (4-6日)
 
-#### A.1: BattleStream API完全準拠実装 (2-3日)
-**目標**: Pokemon ShowdownのBattleStream仕様に100%準拠した実装
-
-**重要な発見事項**:
-- dist/sim/battle-stream.jsが存在し、正しいAPIが利用可能
-- BattleStreamは`ObjectReadWriteStream<string>`を継承
-- 正確な初期化とメッセージフォーマットが必要
+#### A.1: BattleStream 統合と IPC メッセージ処理 (2-3日)
+**目標**: BattleStream モジュールをコードベースに合わせて正しく起動し、IPC サーバーが受け取る JSON メッセージを内部で BattleStream に渡すしくみを実装
 
 **作業内容**:
-1. **正確なBattleStream初期化**
+1. **BattleStream の初期化**
    ```javascript
-   const { BattleStream } = require('./dist/sim/battle-stream');
-   const stream = new BattleStream({
-     debug: false,
-     noCatch: false, 
-     keepAlive: true,
-     replay: false
-   });
+   // ipc-battle-server.js 内での初期化例
+   const { BattleStream } = require('../dist/sim/battle-stream');
+   const battleStream = new BattleStream();
+   // デフォルト: debug=false, noCatch=false, keepAlive=false, replay=false
    ```
 
-2. **Pokemon Showdown Protocol完全準拠**
+2. **create_battle リクエスト → BattleStream 連携**
    ```javascript
-   // 正しいバトル開始シーケンス
-   stream.write(`>start {"formatid":"gen9randombattle"}`);
-   stream.write(`>player p1 {"name":"${player1Name}","team":null}`); // random battle
-   stream.write(`>player p2 {"name":"${player2Name}","team":null}`);
+   // JSON 形式のバトルオプションを受信後、BattleStream に渡す
+   const battleOptions = {
+     formatid: format,                 // e.g., 'gen9randombattle'
+     seed: seed || undefined,
+     p1: { name: players[0].name, team: players[0].team },
+     p2: { name: players[1].name, team: players[1].team }
+   };
+   battleStream.write(JSON.stringify(battleOptions));
    ```
+
+3. **BattleStream が内部で処理する Showdown プロトコル**
+   - BattleStream._writeLines() が `>` プレフィックスを検出し、内部 Battle クラスに対して start/player/p1/p2 コマンドを発行
+   - BattleStream 内部でのメッセージハンドリング（update/end など）をログに記録・前処理
 
 3. **メッセージハンドリングの正確な実装**
    - `update\nMESSAGES`形式の正確な解析
    - `sideupdate\nPLAYERID\nMESSAGES`の個別プレイヤー通信
    - `end\nLOGDATA`のバトル終了処理
 
-#### A.2: Teams API統合とフォーマット対応 (1-2日)
-**目標**: 正確なチーム生成・管理システムの実装
+#### A.2: チームデータ受け渡しロジック (1-2日)
+**目標**: Python クライアントから渡された team 文字列を BattleStream に正しく引き渡し、内部で teampreview を含むプロトコルシーケンスを生成できるよう整備
 
 **作業内容**:
-1. **Teams APIの正確な使用**
-   ```javascript
-   const { Teams } = require('./dist/sim/teams');
-   
-   // ランダムバトル用チーム生成
-   const team = Teams.generate('gen9randombattle');
-   const packedTeam = Teams.pack(team);
-   
-   // カスタムチーム処理
-   const customTeam = Teams.importTeam(teamString);
-   const validatedTeam = Teams.validate(customTeam);
-   ```
-
-2. **種族名・ID正規化システム**
-   - Pokemon ShowdownのDex APIとの統合
-   - species ID → display name変換
-   - 大文字・小文字・ハイフン等の正規化
-
-3. **チーム検証・互換性確保**
-   - Team Validator APIの利用
-   - 不正チーム検出・修正
-   - フォーマット別制約の適用
+1. create_battle リクエストで受信した players[].team を battleOptions.p1.team / .p2.team に含める
+2. battleStream.write(JSON.stringify(battleOptions)) の JSON 内で team フィールドが活用されることを確認
+3. BattleStream 内部で teampreview シーケンス（|clearpoke|, |poke|, |teampreview|）が正しく出力されるか検証・調整
 
 **成果物**:
-- 修正されたipc-battle-server.js
-- 基本動作確認スクリプト
-- 問題点記録ドキュメント
+- 改善された ipc-battle-server.js のチーム連携部分
+- テストスクリプト（team プレビューシーケンス検証）
 
 **検証方法**:
 ```bash
-# 単体テスト
-cd pokemon-showdown && node sim/ipc-battle-server.js
-echo '{"type":"ping"}' | node sim/ipc-battle-server.js
+# create_battle リクエスト送信例
+cd pokemon-showdown
+echo '{"type":"create_battle","battle_id":"test","format":"gen9randombattle","players":[{"name":"p1","team":"<team>"},{"name":"p2","team":"<team>"}]}' \
+  | node sim/ipc-battle-server.js
 
-# 統合テスト
-python train.py --full-ipc --episodes 1 --parallel 1
+# 戻り値に battle_created が含まれることを確認
 ```
 
-#### A.2: Pokemon種族・チーム管理の改善 (1-2日)
-**目標**: ダメージ計算器エラーを完全解決し、多様なPokemon対応
-
-**作業内容**:
-1. **種族名フォーマットの統一**
-   - "ditto" vs "Ditto" vs "ditto-1" 問題の解決
-   - species_mapper.pyとの統合
-   - 英語名・ID・形態の正規化
-
-2. **チーム生成の多様化**
-   - 固定dittoチームから実用的なランダムチーム
-   - config/teams/との統合
-   - レベル50統計計算の正確性確保
-
-3. **統計・能力値計算の最適化**
-   - base_stats → stats変換の正確性
-   - 努力値・個体値・性格補正の実装
-   - タイプ効果計算の完全対応
-
-**成果物**:
-- 改善されたIPCBattle初期化
-- Pokemon種族データベース統合
-- チーム多様性テストスイート
-
-**検証方法**:
-```python
-# 種族名テスト
-battle = IPCBattle('test', 'player', logger, communicator)
-print([p.species for p in battle._team.values()])
-
-# ダメージ計算テスト
-python -c "from src.damage.calculator import DamageCalculator; calc = DamageCalculator(); print(calc.calculate_damage('tackle', 'ditto', 'ditto'))"
-```
 
 #### A.3: エラーハンドリング・ログ改善 (1日)
 **目標**: プロダクション環境での堅牢性確保
