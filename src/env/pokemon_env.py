@@ -11,6 +11,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Dict
 import asyncio
+import random
 import logging
 from pathlib import Path
 import yaml
@@ -337,11 +338,29 @@ class PokemonEnv(gym.Env):
                         except Exception:
                             pass  # Ignore cleanup errors
             
-            # 各プレイヤー用にランダムなチームを選択
-            self._logger.info("Selecting team for player_0...")
-            team_player_0 = self._get_team_for_battle()
-            self._logger.info("Selecting team for player_1...")
-            team_player_1 = self._get_team_for_battle()
+            # 各プレイヤー用にチームを選択（ファイル指定 or random/default）
+            override_team: str | None = None
+            # 指定された team_mode が 'default'/'random' 以外の場合は、teams_dir からファイルを読み込む
+            if self.team_mode not in ("default", "random") and self.teams_dir:
+                try:
+                    team_path = Path(self.teams_dir) / self.team_mode
+                    content = team_path.read_text(encoding="utf-8").strip()
+                    override_team = content if content else None
+                    self._logger.info(f"Loaded team from file: {team_path.name}")
+                except Exception as e:
+                    self._logger.error(f"Failed to load team file '{self.team_mode}': {e}")
+                    override_team = None
+            # override_team があれば常にそれを使用、なければ既存のロジックで取得
+            if override_team is not None:
+                # 指定ファイルのチームを両方に適用
+                team_player_0 = override_team
+                team_player_1 = override_team
+            else:
+                # 各プレイヤーに独立してチームを割り当て（random または default）
+                self._logger.info("Selecting team for player_0...")
+                team_player_0 = self._get_team_for_battle()
+                self._logger.info("Selecting team for player_1...")
+                team_player_1 = self._get_team_for_battle()
             
             if team_player_0 is None:
                 self._logger.warning("No team loaded for player_0, using None (may cause errors)")
@@ -954,6 +973,8 @@ class PokemonEnv(gym.Env):
                 save_replays=self.save_replays,
                 account_configuration=account_config,
                 full_ipc=self.full_ipc,  # Phase 4: Pass full IPC setting
+                use_random_teams=(self.team_mode == "random"),
+                teams_dir=self.teams_dir if hasattr(self, 'teams_dir') else "config/teams",
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
@@ -968,6 +989,8 @@ class PokemonEnv(gym.Env):
                 save_replays=self.save_replays,
                 account_configuration=account_config,
                 full_ipc=False,  # Phase 4: Online mode never uses full IPC
+                use_random_teams=(self.team_mode == "random"),
+                teams_dir=self.teams_dir if hasattr(self, 'teams_dir') else "config/teams",
             )
     
     def get_battle_mode(self) -> str:

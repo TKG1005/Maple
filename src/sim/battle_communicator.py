@@ -206,6 +206,7 @@ class IPCCommunicator(BattleCommunicator):
         self._connection_lock = asyncio.Lock()
         self._message_queue = asyncio.Queue()
         self._reader_task = None
+        self._team_loader_initialized = False
     
     async def connect(self) -> None:
         """Start Node.js subprocess for IPC communication."""
@@ -219,23 +220,26 @@ class IPCCommunicator(BattleCommunicator):
                 self.logger.info(f"📁 Working directory: pokemon-showdown")
                 self.logger.info(f"📍 Current directory: {os.getcwd()}")
                 
-                # Check if script file exists
-                if not os.path.exists(self.node_script_path):
-                    raise FileNotFoundError(f"Node.js script not found: {self.node_script_path}")
-                
                 # Check if Pokemon Showdown directory exists
                 if not os.path.exists('pokemon-showdown'):
                     raise FileNotFoundError("Pokemon Showdown directory not found: pokemon-showdown")
                 
-                # Determine script path relative to working directory
+                # Determine script path and working directory, then validate
                 if self.node_script_path.startswith('pokemon-showdown/'):
                     # If path starts with pokemon-showdown/, run from root directory
                     script_path = self.node_script_path
                     working_dir = None  # Use current directory
+                    script_exists = os.path.exists(self.node_script_path)
                 else:
                     # Assume it's a relative path within pokemon-showdown directory
                     script_path = self.node_script_path
                     working_dir = 'pokemon-showdown'
+                    script_exists = os.path.exists(os.path.join('pokemon-showdown', self.node_script_path))
+                
+                # Check if script file exists (considering working directory context)
+                if not script_exists:
+                    expected_path = self.node_script_path if working_dir is None else f"pokemon-showdown/{self.node_script_path}"
+                    raise FileNotFoundError(f"Node.js script not found: {self.node_script_path} (expected at: {expected_path})")
                 
                 self.logger.info(f"📂 Working directory: {working_dir or 'current'}")
                 self.logger.info(f"📄 Script path: {script_path}")
@@ -442,6 +446,41 @@ class IPCCommunicator(BattleCommunicator):
         return (self.connected and 
                 self.process is not None and 
                 self.process.returncode is None)
+    
+    async def initialize_team_loader(self, teams_dir: str) -> bool:
+        """Initialize team loader in the Node.js process.
+        
+        Args:
+            teams_dir: Path to directory containing team files
+            
+        Returns:
+            True if initialization was successful
+        """
+        if not self.connected:
+            raise RuntimeError("IPC process not connected")
+        
+        if self._team_loader_initialized:
+            return True
+        
+        try:
+            message = {
+                "type": "initialize_team_loader",
+                "teams_dir": teams_dir
+            }
+            await self.send_message(message)
+            response = await self.receive_message()
+            
+            if response.get("type") == "team_loader_initialized" and response.get("success"):
+                self._team_loader_initialized = True
+                self.logger.info(f"Team loader initialized: {response.get('team_count')} teams loaded from {teams_dir}")
+                return True
+            else:
+                self.logger.error(f"Failed to initialize team loader: {response}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error initializing team loader: {e}")
+            return False
 
 
 class CommunicatorFactory:
