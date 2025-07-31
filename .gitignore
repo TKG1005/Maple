@@ -11,5 +11,5 @@ replays/
 logs/
 runs/
 .gitignore
-pokemon-showdown/
+!pokemon-showdown/sim/ipc-battle-server.js
 checkpoints/
