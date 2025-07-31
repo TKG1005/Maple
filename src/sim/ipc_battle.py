@@ -49,7 +49,7 @@ class IPCBattle(CustomBattle):
         self._battle_id = battle_id
         self._ipc_ready = False
         
-        # Initialize battle state
+        # Initialize battle state (team will be populated by Showdown protocol |poke| messages)
         self._initialize_battle_state()
     
     def _initialize_battle_state(self) -> None:
