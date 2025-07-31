@@ -3,8 +3,9 @@ import os
 
 class DataLoader:
 
-    def __init__(self, data_dir='config'):
-        self.data_dir = data_dir
+    def __init__(self, data_dir: str = 'config', config_path: str | None = None):
+        # Allow alias config_path for backward compatibility with tests
+        self.data_dir = config_path or data_dir
         self.pokemon_stats = self.load_pokemon_stats(os.path.join(self.data_dir, 'pokemon_stats.csv'))
         self.moves = self.load_moves(os.path.join(self.data_dir, 'pokemon_all_moves.csv'))
         self.type_chart = self.load_type_chart(os.path.join(self.data_dir, 'type_chart.csv'))

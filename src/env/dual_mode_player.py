@@ -34,7 +34,7 @@ class DualModeEnvPlayer(EnvPlayer):
         player_id: str,
         mode: str = "local",  # "local" or "online"
         server_configuration: Optional[ServerConfiguration] = None,
-        ipc_script_path: str = "pokemon-showdown/sim/ipc-battle-server.js",
+        ipc_script_path: str = "sim/ipc-battle-server.js",
         full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
         **kwargs: Any
     ) -> None:
