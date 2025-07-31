@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from poke_env.environment import Pokemon, Move
 from src.env.custom_battle import CustomBattle
+import asyncio
 from src.sim.battle_communicator import BattleCommunicator
 
 
@@ -70,12 +71,14 @@ class IPCBattle(CustomBattle):
         self._available_moves: List[Move] = []
         self._available_switches: List[Pokemon] = []
         
-        # Create minimal Pokemon teams for initial compatibility
-        self._create_minimal_teams()
         
         # Mark as ready for IPC communication
         self._ipc_ready = True
         self.logger.info(f"IPCBattle initialized: {self.battle_tag}")
+        # Start background listener for raw protocol and control messages (only for real IPCCommunicator)
+        if hasattr(self._communicator, 'process'):
+            from poke_env.concurrency import POKE_LOOP
+            asyncio.run_coroutine_threadsafe(self._ipc_listen(), POKE_LOOP)
     
     def _create_minimal_teams(self) -> None:
         """Create minimal Pokemon teams for initial state observer compatibility."""
@@ -205,6 +208,41 @@ class IPCBattle(CustomBattle):
             self.logger.debug(f"Sent IPC command: {command}")
         except Exception as e:
             self.logger.error(f"Failed to send IPC command {command}: {e}")
+    
+    async def _ipc_listen(self) -> None:
+        """Listen for raw protocol lines and JSON events, dispatch to parser or handlers."""
+        while True:
+            try:
+                msg = await self._communicator.receive_message()
+            except Exception as e:
+                self.logger.error(f"IPC listen receive failed: {e}")
+                await asyncio.sleep(0.1)
+                continue
+            # JSON control messages
+            if isinstance(msg, dict):
+                mtype = msg.get("type")
+                if mtype == "battle_created":
+                    self.logger.info(f"Battle created (IPC): {self._battle_id}")
+                elif mtype == "choice_request":
+                    # Handle choice request JSON directly
+                    try:
+                        self.parse_request(msg)
+                    except Exception as e:
+                        self.logger.error(f"Error in parse_request: {e}")
+                elif mtype == "error":
+                    self.logger.error(f"IPC error: {msg.get('error_message')}")
+                # ignore other control messages
+                continue
+            # Raw Showdown protocol line
+            if isinstance(msg, str):
+                line = msg.strip()
+                if not line.startswith("|"):
+                    continue
+                split_message = line.split("|")
+                try:
+                    super().parse_message(split_message)
+                except Exception as e:
+                    self.logger.error(f"Error parsing IPC line '{line}': {e}")
     
     async def get_battle_state(self) -> Dict[str, Any]:
         """Get current battle state via IPC.
