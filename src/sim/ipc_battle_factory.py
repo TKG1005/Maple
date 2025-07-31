@@ -72,7 +72,8 @@ class IPCBattleFactory:
                     battle_id=battle_id,
                     username=player_names[0],  # Use first player as main player
                     logger=self._logger,
-                    communicator=self._communicator
+                    communicator=self._communicator,
+                    format_id=format_id
                 )
                 
                 # Store battle reference
