@@ -345,47 +345,34 @@ class IPCCommunicator(BattleCommunicator):
             self.process = None
     
     async def _read_responses(self) -> None:
-        """Background task to read responses from Node.js process."""
+        """Background task to read responses (JSON or raw protocol) from Node.js process."""
         if not self.process or not self.process.stdout:
-            self.logger.error("❌ No process or stdout available for reading responses")
+            self.logger.error("No process or stdout available for reading responses")
             return
-        
-        self.logger.info("📖 Starting IPC response reader task")
-        
+
+        self.logger.info("Starting IPC response reader task")
         try:
             while self.connected and self.process.returncode is None:
+                line = await self.process.stdout.readline()
+                if not line:
+                    self.logger.warning("End of stdout stream - subprocess closed")
+                    break
+                text = line.decode().strip()
+                if not text:
+                    continue
+                # Try JSON parse for control messages
                 try:
-                    # Read line from stdout (blocking until data available)
-                    line = await self.process.stdout.readline()
-                    
-                    if not line:
-                        # End of stream - process may have closed stdout
-                        self.logger.warning("⚠️ End of stdout stream - Node.js process may have terminated")
-                        break
-                    
-                    # Parse JSON response
-                    response_data = line.decode().strip()
-                    if response_data:
-                        self.logger.info(f"📨 Raw IPC response: {response_data}")
-                        try:
-                            message = json.loads(response_data)
-                            await self._message_queue.put(message)
-                            self.logger.info(f"✅ Queued IPC message: {message.get('type', 'unknown')}")
-                        except json.JSONDecodeError as e:
-                            self.logger.error(f"❌ Failed to parse IPC response as JSON: {e}")
-                            self.logger.error(f"🔍 Raw data: {repr(response_data)}")
-                    else:
-                        self.logger.debug("🔍 Received empty response line, skipping")
-                        
-                except Exception as e:
-                    self.logger.error(f"❌ Error reading/processing IPC response: {e}")
-                    # Don't break on individual errors - keep trying to read
-                    await asyncio.sleep(0.1)
-                    
+                    msg = json.loads(text)
+                    await self._message_queue.put(msg)
+                    self.logger.debug(f"Queued IPC JSON message: {msg.get('type', '')}")
+                except json.JSONDecodeError:
+                    # Raw Showdown protocol line
+                    await self._message_queue.put(text)
+                    self.logger.debug(f"Queued IPC raw line: {text}")
         except Exception as e:
-            self.logger.error(f"❌ Critical error in IPC reader task: {e}")
+            self.logger.error(f"Error in IPC response reader: {e}")
         finally:
-            self.logger.info("🏁 IPC reader task finished")
+            self.logger.info("IPC response reader task finished")
     
     async def _read_stderr(self) -> None:
         """Background task to read stderr from Node.js process for debugging."""
