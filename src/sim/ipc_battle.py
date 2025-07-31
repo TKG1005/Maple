@@ -15,13 +15,16 @@ from src.sim.battle_communicator import BattleCommunicator
 class IPCBattle(CustomBattle):
     """IPC-based battle that communicates directly with Node.js Pokemon Showdown process."""
     
-    def __init__(self, 
-                 battle_id: str,
-                 username: str, 
-                 logger: logging.Logger,
-                 communicator: BattleCommunicator,
-                 gen: int = 9,
-                 save_replays: Union[str, bool] = False) -> None:
+    def __init__(
+        self,
+        battle_id: str,
+        username: str,
+        logger: logging.Logger,
+        communicator: BattleCommunicator,
+        format_id: str = 'gen9randombattle',
+        gen: int = 9,
+        save_replays: Union[str, bool] = False,
+    ) -> None:
         """Initialize IPC battle with minimal required state.
         
         Args:
@@ -32,8 +35,8 @@ class IPCBattle(CustomBattle):
             gen: Pokemon generation (default 9)
             save_replays: Whether to save replays
         """
-        # Initialize with minimal battle tag format
-        battle_tag = f"battle-gen{gen}randombattle-{battle_id}"
+        # Initialize battle tag with format name
+        battle_tag = f"battle-{format_id}-{battle_id}"
         
         # Call parent constructor with required parameters
         super().__init__(

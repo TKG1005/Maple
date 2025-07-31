@@ -1284,7 +1284,7 @@ class PokemonEnv(gym.Env):
             communicator = player_0._communicator
             
             # Create IPC battle factory
-            factory = IPCBattleFactory(communicator, self._logger)
+            factory = IPCBattleFactory(communicator, self._logger, teams_dir=self.teams_dir)
             
             # Prepare player names
             player_names = ["Player1", "Player2"]

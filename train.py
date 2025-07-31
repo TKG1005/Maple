@@ -1736,9 +1736,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--team",
         type=str,
-        choices=["default", "random"],
         default="default",
-        help="team selection mode (default or random)",
+        help="team selection: 'default', 'random', or a filename in --teams-dir",
     )
     parser.add_argument(
         "--teams-dir",
