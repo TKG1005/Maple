@@ -423,6 +423,18 @@ class PokemonEnv(gym.Env):
                 self._create_ipc_battles(team_player_0, team_player_1),
                 POKE_LOOP,
             ).result()
+            
+            # In full IPC mode, battles are created directly without EnvPlayer
+            # So we need to manually put them in the battle queues for env.step()
+            self._logger.debug("Manually queuing IPC battles for env.step() processing")
+            asyncio.run_coroutine_threadsafe(
+                self._battle_queues["player_0"].put(battle0),
+                POKE_LOOP,
+            ).result()
+            asyncio.run_coroutine_threadsafe(
+                self._battle_queues["player_1"].put(battle1),
+                POKE_LOOP,
+            ).result()
         else:
             # Traditional WebSocket mode or IPC with WebSocket fallback
             self._battle_task = asyncio.run_coroutine_threadsafe(

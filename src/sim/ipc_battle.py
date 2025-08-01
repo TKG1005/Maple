@@ -361,17 +361,7 @@ class IPCBattle(CustomBattle):
             except Exception as e:
                 self.logger.error(f"Error in EnvPlayer teampreview handling: {e}")
         else:
-            # Even without EnvPlayer, we need to put battle in queue for env.step()
-            self.logger.info("Putting IPCBattle in environment queue for step() processing")
-            if hasattr(self, '_env_player') and self._env_player:
-                try:
-                    # Put this battle object in the environment's battle queue
-                    env = self._env_player._env
-                    player_id = self._env_player.player_id
-                    await env._battle_queues[player_id].put(self)
-                    self.logger.debug(f"Successfully queued IPCBattle for {player_id}")
-                except Exception as e:
-                    self.logger.error(f"Failed to queue IPCBattle: {e}")
+            self.logger.debug("No EnvPlayer reference or not teampreview request")
     
     async def get_battle_state(self) -> Dict[str, Any]:
         """Get current battle state via IPC.
