@@ -973,8 +973,6 @@ class PokemonEnv(gym.Env):
                 save_replays=self.save_replays,
                 account_configuration=account_config,
                 full_ipc=self.full_ipc,  # Phase 4: Pass full IPC setting
-                use_random_teams=(self.team_mode == "random"),
-                teams_dir=self.teams_dir if hasattr(self, 'teams_dir') else "config/teams",
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
@@ -989,8 +987,6 @@ class PokemonEnv(gym.Env):
                 save_replays=self.save_replays,
                 account_configuration=account_config,
                 full_ipc=False,  # Phase 4: Online mode never uses full IPC
-                use_random_teams=(self.team_mode == "random"),
-                teams_dir=self.teams_dir if hasattr(self, 'teams_dir') else "config/teams",
             )
     
     def get_battle_mode(self) -> str:
@@ -1284,7 +1280,7 @@ class PokemonEnv(gym.Env):
             communicator = player_0._communicator
             
             # Create IPC battle factory
-            factory = IPCBattleFactory(communicator, self._logger, teams_dir=self.teams_dir)
+            factory = IPCBattleFactory(communicator, self._logger)
             
             # Prepare player names
             player_names = ["Player1", "Player2"]

@@ -36,8 +36,6 @@ class DualModeEnvPlayer(EnvPlayer):
         server_configuration: Optional[ServerConfiguration] = None,
         ipc_script_path: str = "sim/ipc-battle-server.js",
         full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
-        use_random_teams: bool = False,  # Use random teams from config/teams
-        teams_dir: str = "config/teams",  # Directory containing team files
         **kwargs: Any
     ) -> None:
         """Initialize dual-mode player.
@@ -49,15 +47,11 @@ class DualModeEnvPlayer(EnvPlayer):
             server_configuration: WebSocket server config (required for online mode)
             ipc_script_path: Path to Node.js IPC server script (for local mode)
             full_ipc: Phase 4 flag - if True, disables WebSocket fallback completely
-            use_random_teams: Use random teams from teams directory
-            teams_dir: Directory containing team files for random selection
             **kwargs: Additional arguments passed to parent EnvPlayer
         """
         self.mode = mode
         self.full_ipc = full_ipc
         self.ipc_script_path = ipc_script_path
-        self.use_random_teams = use_random_teams
-        self.teams_dir = teams_dir
         self._communicator: Optional[BattleCommunicator] = None
         self._original_ps_client = None
         self.player_id = player_id  # Set player_id early for logging
@@ -505,17 +499,12 @@ class IPCClientWrapper:
             if not await self.communicator.is_alive():
                 await self.communicator.connect()
             
-            # Initialize team loader if using random teams
-            if self.use_random_teams and hasattr(self.communicator, 'initialize_team_loader'):
-                await self.communicator.initialize_team_loader(self.teams_dir)
-            
             ipc_message = {
                 "type": "create_battle",
                 "battle_id": battle_tag,
                 "format": format_id,
                 "players": players,
-                "seed": None,  # Can be added for reproducible battles
-                "use_random_teams": self.use_random_teams
+                "seed": None  # Can be added for reproducible battles
             }
             
             await self.communicator.send_message(ipc_message)
