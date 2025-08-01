@@ -24,6 +24,7 @@ class IPCBattle(CustomBattle):
         format_id: str = 'gen9randombattle',
         gen: int = 9,
         save_replays: Union[str, bool] = False,
+        env_player: Any = None,
     ) -> None:
         """Initialize IPC battle with minimal required state.
         
@@ -34,6 +35,7 @@ class IPCBattle(CustomBattle):
             communicator: IPC communicator for Node.js process
             gen: Pokemon generation (default 9)
             save_replays: Whether to save replays
+            env_player: EnvPlayer reference for teampreview integration
         """
         # Initialize battle tag with format name
         battle_tag = f"battle-{format_id}-{battle_id}"
@@ -51,6 +53,7 @@ class IPCBattle(CustomBattle):
         self._communicator = communicator
         self._battle_id = battle_id
         self._ipc_ready = False
+        self._env_player = env_player  # Store EnvPlayer reference for teampreview handling
         
         # Initialize battle state (team will be populated by Showdown protocol |poke| messages)
         self._initialize_battle_state()
@@ -213,7 +216,10 @@ class IPCBattle(CustomBattle):
             self.logger.error(f"Failed to send IPC command {command}: {e}")
     
     async def _ipc_listen(self) -> None:
-        """Listen for raw protocol lines and JSON events, dispatch to parser or handlers."""
+        """Listen for messages from IPC communicator and batch them for standard poke-env processing."""
+        current_batch = []
+        battle_tag = None
+        
         while True:
             try:
                 msg = await self._communicator.receive_message()
@@ -221,6 +227,7 @@ class IPCBattle(CustomBattle):
                 self.logger.error(f"IPC listen receive failed: {e}")
                 await asyncio.sleep(0.1)
                 continue
+                
             # JSON control messages
             if isinstance(msg, dict):
                 mtype = msg.get("type")
@@ -236,16 +243,135 @@ class IPCBattle(CustomBattle):
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
                 # ignore other control messages
                 continue
-            # Raw Showdown protocol line
+                
+            # Raw Showdown protocol line - batch for standard processing
             if isinstance(msg, str):
                 line = msg.strip()
-                if not line.startswith("|"):
+                if not line.startswith("|") and not line.startswith(">battle-"):
                     continue
-                split_message = line.split("|")
-                try:
+                
+                # Detect battle tag line (start of new batch)
+                if line.startswith(">battle-"):
+                    # Process previous batch if exists
+                    if current_batch:
+                        await self._process_battle_batch(current_batch, battle_tag)
+                    
+                    # Start new batch
+                    battle_tag = line
+                    current_batch = []
+                    self.logger.debug(f"Started new battle batch: {battle_tag}")
+                    
+                elif line.startswith("|"):
+                    # Add to current batch
+                    current_batch.append(line)
+                    
+                    # Process batch on completion triggers
+                    split_line = line.split("|")
+                    if len(split_line) >= 2 and split_line[1] in ["win", "tie", "turn", "request", "teampreview"]:
+                        self.logger.debug(f"Processing batch trigger: {split_line[1]}, batch size: {len(current_batch)}")
+                        await self._process_battle_batch(current_batch, battle_tag)
+                        current_batch = []
+                        battle_tag = None
+    
+    async def _process_battle_batch(self, lines: list[str], battle_tag: str | None) -> None:
+        """Process batched lines using standard poke-env message handling."""
+        if not lines:
+            return
+            
+        self.logger.debug(f"Processing battle batch with {len(lines)} lines")
+        
+        # Reconstruct multi-line message like WebSocket format
+        if battle_tag:
+            message = battle_tag + "\n" + "\n".join(lines)
+        else:
+            message = "\n".join(lines)
+        
+        # Use standard poke-env pipeline
+        await self._handle_message_like_websocket(message)
+    
+    async def _handle_message_like_websocket(self, message: str) -> None:
+        """Handle message using WebSocket-style processing."""
+        split_messages = [m.split("|") for m in message.split("\n")]
+        
+        if split_messages[0][0].startswith(">battle"):
+            # Use the same logic as Player._handle_battle_message
+            await self._handle_battle_message_ipc(split_messages)
+    
+    async def _handle_battle_message_ipc(self, split_messages: list[list[str]]) -> None:
+        """Handle battle messages like poke-env Player class."""
+        self.logger.debug(f"Handling {len(split_messages)} battle messages")
+        
+        for split_message in split_messages[1:]:  # Skip battle tag line
+            if len(split_message) <= 1:
+                continue
+                
+            message_type = split_message[1] if len(split_message) > 1 else ""
+            self.logger.debug(f"Processing message type: {message_type}")
+            
+            if message_type == "teampreview":
+                # Now teampreview handling works the same as WebSocket!
+                self.logger.info("Processing teampreview message via standard pipeline")
+                super().parse_message(split_message)
+                await self._handle_battle_request_ipc(from_teampreview_request=True)
+                
+            elif message_type == "request":
+                if len(split_message) >= 3:
+                    try:
+                        request_data = json.loads(split_message[2])
+                        self._last_request = request_data
+                        
+                        # Teampreview request detection - same as online mode
+                        if request_data.get("teamPreview", False):
+                            self.logger.info("Teampreview request detected in IPC via request message")
+                            
+                            # Set online mode compatible attributes
+                            self._teampreview = True
+                            number_of_mons = len(request_data.get("side", {}).get("pokemon", []))
+                            self._max_team_size = request_data.get("maxTeamSize", number_of_mons)
+                            
+                            # Update teampreview opponent team data
+                            self._update_teampreview_opponent_team(request_data)
+                            
+                            # Trigger teampreview request handling - same as online mode
+                            await self._handle_battle_request_ipc(from_teampreview_request=True)
+                        else:
+                            self._teampreview = False
+                            
+                    except json.JSONDecodeError as e:
+                        self.logger.error(f"Failed to parse request JSON: {e}")
+                else:
+                    # Parse message normally
                     super().parse_message(split_message)
+                    
+            else:
+                # Parse all other message types normally
+                super().parse_message(split_message)
+    
+    async def _handle_battle_request_ipc(self, from_teampreview_request: bool = False) -> None:
+        """Handle battle requests like EnvPlayer._handle_battle_request."""
+        self.logger.debug(f"Handling battle request, teampreview: {from_teampreview_request}")
+        
+        if from_teampreview_request and hasattr(self, '_env_player') and self._env_player:
+            # Trigger EnvPlayer teampreview handling - same as WebSocket mode
+            self.logger.info("Triggering teampreview request via EnvPlayer")
+            try:
+                await self._env_player._handle_battle_request(
+                    self, from_teampreview_request=True
+                )
+            except Exception as e:
+                self.logger.error(f"Error in EnvPlayer teampreview handling: {e}")
+        else:
+            # Even without EnvPlayer, we need to put battle in queue for env.step()
+            self.logger.info("Putting IPCBattle in environment queue for step() processing")
+            if hasattr(self, '_env_player') and self._env_player:
+                try:
+                    # Put this battle object in the environment's battle queue
+                    env = self._env_player._env
+                    player_id = self._env_player.player_id
+                    await env._battle_queues[player_id].put(self)
+                    self.logger.debug(f"Successfully queued IPCBattle for {player_id}")
                 except Exception as e:
-                    self.logger.error(f"Error parsing IPC line '{line}': {e}")
+                    self.logger.error(f"Failed to queue IPCBattle: {e}")
     
     async def get_battle_state(self) -> Dict[str, Any]:
         """Get current battle state via IPC.
@@ -346,6 +472,55 @@ class IPCBattle(CustomBattle):
         except Exception as e:
             self.logger.error(f"Error parsing IPC request: {e}")
     
+    def _update_teampreview_opponent_team(self, request_data: Dict[str, Any]) -> None:
+        """Update teampreview_opponent_team from request data - same as online mode.
+        
+        Args:
+            request_data: The teampreview request data containing opponent Pokemon info
+        """
+        try:
+            # Initialize teampreview_opponent_team if not exists
+            if not hasattr(self, '_teampreview_opponent_team'):
+                self._teampreview_opponent_team = set()
+            else:
+                self._teampreview_opponent_team.clear()
+            
+            # Extract opponent Pokemon from request (this contains visible team info)
+            side_data = request_data.get("side", {})
+            opponent_pokemon_data = side_data.get("pokemon", [])
+            
+            for poke_data in opponent_pokemon_data:
+                try:
+                    # Create Pokemon object from teampreview data
+                    details = poke_data.get("details", "")
+                    if details:
+                        # Parse details: "Species, L50, M" or "Species, L50, F"
+                        pokemon = Pokemon(gen=self._gen)
+                        pokemon._species = details.split(",")[0].strip()
+                        
+                        # Set level if available
+                        level_part = [part.strip() for part in details.split(",") if part.strip().startswith("L")]
+                        if level_part:
+                            try:
+                                pokemon._level = int(level_part[0][1:])  # Remove 'L' prefix
+                            except ValueError:
+                                pokemon._level = 50  # Default level
+                        
+                        # Set gender if available
+                        gender_part = [part.strip() for part in details.split(",") if part.strip() in ["M", "F"]]
+                        if gender_part:
+                            pokemon._gender = gender_part[0]
+                        
+                        self._teampreview_opponent_team.add(pokemon)
+                        
+                except Exception as e:
+                    self.logger.error(f"Failed to create teampreview Pokemon from {poke_data}: {e}")
+            
+            self.logger.debug(f"Updated teampreview_opponent_team with {len(self._teampreview_opponent_team)} Pokemon")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to update teampreview_opponent_team: {e}")
+    
     # Properties for environment compatibility
     @property
     def battle_id(self) -> str:
@@ -356,6 +531,21 @@ class IPCBattle(CustomBattle):
     def ipc_ready(self) -> bool:
         """Check if IPC communication is ready."""
         return self._ipc_ready
+    
+    @property
+    def teampreview(self) -> bool:
+        """Check if battle is in teampreview phase - same as online mode."""
+        return getattr(self, '_teampreview', False)
+    
+    @property
+    def teampreview_opponent_team(self):
+        """Get opponent team visible during teampreview - same as online mode."""
+        return getattr(self, '_teampreview_opponent_team', set())
+    
+    @property
+    def max_team_size(self) -> int:
+        """Get maximum allowed team size - same as online mode."""
+        return getattr(self, '_max_team_size', 6)
     
     def clear_all_boosts(self) -> None:
         """Clear all stat boosts on active Pokemon (required by poke-env)."""

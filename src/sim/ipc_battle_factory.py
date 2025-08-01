@@ -29,13 +29,15 @@ class IPCBattleFactory:
     async def create_battle(self, 
                           format_id: str = "gen9randombattle",
                           player_names: List[str] = None,
-                          teams: Optional[List[str]] = None) -> IPCBattle:
+                          teams: Optional[List[str]] = None,
+                          env_player: Any = None) -> IPCBattle:
         """Create a new IPC battle.
         
         Args:
             format_id: Battle format (e.g., "gen9randombattle")
             player_names: List of player names [player1, player2]
             teams: Optional team data for players
+            env_player: EnvPlayer reference for teampreview integration
             
         Returns:
             IPCBattle instance
@@ -74,13 +76,14 @@ class IPCBattleFactory:
             response = await self._wait_for_battle_creation(battle_id)
             
             if response.get("success"):
-                # Create IPCBattle instance
+                # Create IPCBattle instance with EnvPlayer reference
                 battle = IPCBattle(
                     battle_id=battle_id,
                     username=player_names[0],  # Use first player as main player
                     logger=self._logger,
                     communicator=self._communicator,
-                    format_id=format_id
+                    format_id=format_id,
+                    env_player=env_player  # Pass EnvPlayer reference
                 )
                 
                 # Store battle reference

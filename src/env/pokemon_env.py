@@ -481,10 +481,18 @@ class PokemonEnv(gym.Env):
             self._composite_rewards = {}
             self._sub_reward_logs = {}
 
-        observation = {
-            "player_0": self.state_observer.observe(battle0),
-            "player_1": self.state_observer.observe(battle1),
-        }
+        # Check if we're in teampreview phase
+        if self._is_teampreview(battle0):
+            self._logger.debug("In teampreview phase - using dummy observations")
+            observation = {
+                "player_0": self._get_teampreview_observation(),
+                "player_1": self._get_teampreview_observation(),
+            }
+        else:
+            observation = {
+                "player_0": self.state_observer.observe(battle0),
+                "player_1": self.state_observer.observe(battle1),
+            }
 
         info: dict = {
             "battle_tag": battle0.battle_tag,
@@ -504,6 +512,25 @@ class PokemonEnv(gym.Env):
         if return_masks:
             return observation, info, masks
         return observation, info
+
+    def _is_teampreview(self, battle: Any) -> bool:
+        """Check if battle is in teampreview phase."""
+        # Check if active_pokemon is None (main indicator of teampreview)
+        if battle.active_pokemon is None:
+            return True
+        
+        # Additional check: teampreview flag if available
+        if hasattr(battle, 'teampreview') and battle.teampreview:
+            return True
+            
+        return False
+
+    def _get_teampreview_observation(self) -> np.ndarray:
+        """Generate dummy observation for teampreview phase."""
+        # Always get current dimension from state_observer to ensure correctness
+        obs_size = self.state_observer.get_observation_dimension()
+        self._logger.debug(f"Generating teampreview dummy observation with {obs_size} dimensions")
+        return np.zeros(obs_size, dtype=np.float32)
 
     async def _run_battle(self) -> None:
         """Start the battle coroutines concurrently."""
@@ -1297,11 +1324,12 @@ class PokemonEnv(gym.Env):
             
             self._logger.info(f"Creating IPC battle with players: {player_names}")
             
-            # Create battle via IPC factory
+            # Create battle via IPC factory with EnvPlayer reference
             battle = await factory.create_battle(
                 format_id="gen9bssregi",
                 player_names=player_names,
-                teams=teams
+                teams=teams,
+                env_player=player_0  # Pass EnvPlayer for teampreview integration
             )
             
             # In this simplified implementation, both players share the same battle object
