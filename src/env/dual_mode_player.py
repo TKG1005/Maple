@@ -176,10 +176,27 @@ class DualModeEnvPlayer(EnvPlayer):
                                 self._communicator.receive_message(), 
                                 timeout=5.0
                             )
-                            if response.get("type") == "pong" and response.get("success"):
+                            # Safely handle response that might be string or dict
+                            response_type = None
+                            response_success = False
+                            
+                            if isinstance(response, dict):
+                                response_type = response.get("type")
+                                response_success = response.get("success", False)
+                            elif isinstance(response, str):
+                                try:
+                                    import json
+                                    parsed_response = json.loads(response)
+                                    response_type = parsed_response.get("type")
+                                    response_success = parsed_response.get("success", False)
+                                except json.JSONDecodeError:
+                                    self._logger.warning(f"⚠️ IPC response is not valid JSON for {self.player_id}: {response}")
+                                    response_type = "unknown"
+                            
+                            if response_type == "pong" and response_success:
                                 self._logger.info(f"🏓 IPC pong received successfully for {self.player_id}")
                             else:
-                                self._logger.warning(f"⚠️ Unexpected IPC response for {self.player_id}: {response}")
+                                self._logger.warning(f"⚠️ Unexpected IPC response for {self.player_id}: type={response_type}, success={response_success}, response={response}")
                         except asyncio.TimeoutError:
                             self._logger.warning(f"⚠️ IPC pong timeout for {self.player_id}")
                         except Exception as e:
@@ -227,7 +244,28 @@ class DualModeEnvPlayer(EnvPlayer):
                         )
                         self._logger.info(f"📥 Phase 4: Received response for {self.player_id}: {response}")
                         
-                        if response.get("type") == "pong" and response.get("success"):
+                        # Safely handle response that might be string or dict
+                        response_type = None
+                        response_success = False
+                        
+                        if isinstance(response, dict):
+                            response_type = response.get("type")
+                            response_success = response.get("success", False)
+                        elif isinstance(response, str):
+                            try:
+                                import json
+                                parsed_response = json.loads(response)
+                                response_type = parsed_response.get("type")
+                                response_success = parsed_response.get("success", False)
+                                self._logger.info(f"📝 Phase 4: Parsed JSON response: type={response_type}, success={response_success}")
+                            except json.JSONDecodeError:
+                                self._logger.warning(f"⚠️ Phase 4: Response is not valid JSON: {response}")
+                                raise RuntimeError(f"Invalid response format: {response}")
+                        else:
+                            self._logger.warning(f"⚠️ Phase 4: Unexpected response type: {type(response)}")
+                            raise RuntimeError(f"Unexpected response type: {type(response)}")
+                        
+                        if response_type == "pong" and response_success:
                             self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
                             
                             # Now override WebSocket methods since IPC is working
@@ -236,7 +274,7 @@ class DualModeEnvPlayer(EnvPlayer):
                             
                             return True
                         else:
-                            raise RuntimeError(f"Invalid pong response: {response}")
+                            raise RuntimeError(f"Invalid pong response: type={response_type}, success={response_success}, response={response}")
                     except asyncio.TimeoutError:
                         self._logger.error(f"⏱️ Phase 4: Ping-pong timeout for {self.player_id} - no response received within 5 seconds")
                         raise RuntimeError("IPC ping-pong timeout")

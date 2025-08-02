@@ -287,6 +287,55 @@ class IPCBattle(CustomBattle):
         except Exception as e:
             self.logger.error(f"Failed to send IPC command {command}: {e}")
     
+    def _is_json_message(self, message: str) -> bool:
+        """Check if a message is a JSON control message.
+        
+        Args:
+            message: Raw message string
+            
+        Returns:
+            True if message is valid JSON, False otherwise
+        """
+        if not isinstance(message, str):
+            return False
+        
+        try:
+            json.loads(message)
+            return True
+        except json.JSONDecodeError:
+            return False
+    
+    def _parse_message_safely(self, message: Any) -> tuple[bool, Dict[str, Any] | str]:
+        """Safely parse a message and determine its type.
+        
+        Args:
+            message: Message from BattleCommunicator (could be string or dict)
+            
+        Returns:
+            Tuple of (is_json_control, parsed_message)
+            - is_json_control: True if JSON control message, False if raw protocol
+            - parsed_message: Parsed dict for JSON, original string for raw protocol
+        """
+        # If already a dict, it's a JSON control message
+        if isinstance(message, dict):
+            return True, message
+        
+        # If string, check if it's JSON or raw protocol
+        if isinstance(message, str):
+            if self._is_json_message(message):
+                try:
+                    parsed = json.loads(message)
+                    return True, parsed
+                except json.JSONDecodeError:
+                    # Fallback to raw protocol if parsing fails
+                    return False, message
+            else:
+                # Raw protocol string
+                return False, message
+        
+        # Unknown type - convert to string and treat as raw protocol
+        return False, str(message)
+
     async def _ipc_listen(self) -> None:
         """Listen for messages from IPC communicator and batch them for standard poke-env processing."""
         self.logger.info("[IPC_DEBUG_PY] Enter IPCBattle._ipc_listen // start listening for IPC messages")
@@ -297,26 +346,29 @@ class IPCBattle(CustomBattle):
             self.logger.info("[IPC_DEBUG_PY] IPCBattle._ipc_listen waiting for message")
             try:
                 self.logger.info("[IPC_DEBUG_PY] Calling BattleCommunicator.receive_message")
-                msg = await self._communicator.receive_message()
-                self.logger.info(f"[IPC_DEBUG_PY] IPCBattle._ipc_listen received msg: {msg} (type={type(msg)})")
-                # Distinguish JSON control vs raw protocol
-                if isinstance(msg, dict):
-                    keys = list(msg.keys())
-                    self.logger.info(f"[IPC_DEBUG_PY] JSON control message detected: type={msg.get('type')} player_id={msg.get('player_id')} keys={keys}")
+                raw_msg = await self._communicator.receive_message()
+                self.logger.info(f"[IPC_DEBUG_PY] IPCBattle._ipc_listen received raw_msg: {raw_msg} (type={type(raw_msg)})")
+                
+                # Safely parse message and determine type
+                is_json_control, parsed_msg = self._parse_message_safely(raw_msg)
+                
+                if is_json_control:
+                    self.logger.info(f"[IPC_DEBUG_PY] JSON control message detected: type={parsed_msg.get('type')} player_id={parsed_msg.get('player_id')}")
                 else:
-                    # Raw string message
-                    line = msg.strip() if isinstance(msg, str) else str(msg)
-                    self.logger.info(f"[IPC_DEBUG_PY] Raw string message detected: {line}")
-                self.logger.error(f"[IPC_DEBUG_PY] Received IPC raw/msg: {msg}")
+                    line = parsed_msg.strip() if isinstance(parsed_msg, str) else str(parsed_msg)
+                    self.logger.info(f"[IPC_DEBUG_PY] Raw protocol message detected: {line}")
+                
+                self.logger.error(f"[IPC_DEBUG_PY] Received IPC message - is_json_control={is_json_control}, parsed_msg={parsed_msg}")
             except Exception as e:
                 self.logger.error(f"IPC listen receive failed: {e}")
                 await asyncio.sleep(0.1)
                 continue
                 
-            # JSON control messages
-            if isinstance(msg, dict):
-                mtype = msg.get("type")
-                msg_player_id = msg.get("player_id")
+            # Handle JSON control messages
+            if is_json_control and isinstance(parsed_msg, dict):
+                # Safe access to dict attributes
+                mtype = parsed_msg.get("type")
+                msg_player_id = parsed_msg.get("player_id")
                 
                 # Filter messages by player_id if specified
                 if msg_player_id and msg_player_id != self._player_id:
@@ -326,10 +378,15 @@ class IPCBattle(CustomBattle):
                     self.logger.info(f"Battle created (IPC): {self._battle_id}")
                 elif mtype == "player_registered":
                     self.logger.info(f"Player {self._player_id} registered successfully")
+                elif mtype == "pong":
+                    # Handle pong response safely
+                    original_msg = parsed_msg.get("original_message", {})
+                    success = parsed_msg.get("success", False)
+                    self.logger.info(f"Received pong response: success={success}, original={original_msg}")
                 elif mtype == "battle_update":
                     # Batch raw Showdown protocol lines and forward as multiline payloads
                     if msg_player_id == self._player_id and self._env_player:
-                        log_lines = msg.get("log", [])
+                        log_lines = parsed_msg.get("log", [])
                         self.logger.debug(f"[IPC_DEBUG] battle_update for battle_id={self._battle_id}, player={self._player_id}, lines={len(log_lines)}")
                         for line in log_lines:
                             self.logger.debug(f"[IPC_DEBUG] processing battle_update line: {line}")
@@ -357,15 +414,16 @@ class IPCBattle(CustomBattle):
                                 asyncio.create_task(self._env_player.ps_client._handle_message(payload))
                                 current_batch = []
                 elif mtype == "error":
-                    self.logger.error(f"IPC error: {msg.get('error_message')}")
+                    error_message = parsed_msg.get('error_message', 'Unknown error')
+                    self.logger.error(f"IPC error: {error_message}")
                 else:
-                    self.logger.debug(f"[IPC_DEBUG] Ignoring control message type: {mtype}, msg={msg}")
+                    self.logger.debug(f"[IPC_DEBUG] Ignoring control message type: {mtype}, msg={parsed_msg}")
                 # ignore other control messages
                 continue
                 
-            # Raw Showdown protocol line - batch for standard processing
-            if isinstance(msg, str):
-                line = msg.strip()
+            # Handle raw Showdown protocol lines
+            if not is_json_control and isinstance(parsed_msg, str):
+                line = parsed_msg.strip()
                 self.logger.debug(f"[IPC_DEBUG] battle_id={self._battle_id}, player={self._player_id}, raw protocol line: {line}")
                 self.logger.error(f"[IPC_DEBUG_PY] Raw protocol line: {line}")
                 if not line.startswith("|") and not line.startswith(">battle-"):
