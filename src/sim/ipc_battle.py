@@ -313,13 +313,29 @@ class IPCBattle(CustomBattle):
                 elif mtype == "player_registered":
                     self.logger.info(f"Player {self._player_id} registered successfully")
                 elif mtype == "battle_update":
-                    # Forward all raw Showdown protocol lines to the client's PSClient handler
+                    # Batch raw Showdown protocol lines and forward as multiline payloads
                     if msg_player_id == self._player_id and self._env_player:
                         log_lines = msg.get("log", [])
                         for line in log_lines:
-                            if isinstance(line, str):
-                                # Schedule processing of the raw line (including >battle and |request|…) without modification
-                                asyncio.create_task(self._env_player.ps_client._handle_message(line))
+                            if not isinstance(line, str):
+                                continue
+                            # Start of new batch with battle tag
+                            if line.startswith(">battle-"):
+                                # Flush previous batch
+                                if battle_tag is not None and current_batch:
+                                    payload = battle_tag + "\n" + "\n".join(current_batch)
+                                    asyncio.create_task(self._env_player.ps_client._handle_message(payload))
+                                battle_tag = line
+                                current_batch = []
+                                continue
+                            # Accumulate protocol lines
+                            current_batch.append(line)
+                            # On trigger messages, flush batch
+                            parts = line.split("|")
+                            if len(parts) >= 2 and parts[1] in ["request", "turn", "win", "tie", "teampreview"]:
+                                payload = battle_tag + "\n" + "\n".join(current_batch)
+                                asyncio.create_task(self._env_player.ps_client._handle_message(payload))
+                                current_batch = []
                 elif mtype == "error":
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
                 # ignore other control messages
