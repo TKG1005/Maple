@@ -318,8 +318,8 @@ class IPCBattle(CustomBattle):
                         log_lines = msg.get("log", [])
                         for line in log_lines:
                             if isinstance(line, str):
-                                # Pass the raw line (including >battle and |request|…) unchanged
-                                await self._env_player.ps_client._handle_message(line)
+                                # Schedule processing of the raw line (including >battle and |request|…) without modification
+                                asyncio.create_task(self._env_player.ps_client._handle_message(line))
                 elif mtype == "error":
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
                 # ignore other control messages
