@@ -93,6 +93,7 @@ class IPCBattle(CustomBattle):
         self.logger.info(f"IPCBattle initialized: {self.battle_tag} (player: {self._player_id})")
         # Register this player with MapleShowdownCore for filtered messages
         if hasattr(self._communicator, 'process'):
+            self.logger.debug(f"[IPC_DEBUG] scheduling player registration and IPC listen tasks for battle_id={self._battle_id}")
             from poke_env.concurrency import POKE_LOOP
             asyncio.run_coroutine_threadsafe(self._register_player(), POKE_LOOP)
             asyncio.run_coroutine_threadsafe(self._ipc_listen(), POKE_LOOP)
@@ -288,12 +289,25 @@ class IPCBattle(CustomBattle):
     
     async def _ipc_listen(self) -> None:
         """Listen for messages from IPC communicator and batch them for standard poke-env processing."""
+        self.logger.info("[IPC_DEBUG_PY] Enter IPCBattle._ipc_listen // start listening for IPC messages")
         current_batch = []
         battle_tag = None
         
         while True:
+            self.logger.info("[IPC_DEBUG_PY] IPCBattle._ipc_listen waiting for message")
             try:
+                self.logger.info("[IPC_DEBUG_PY] Calling BattleCommunicator.receive_message")
                 msg = await self._communicator.receive_message()
+                self.logger.info(f"[IPC_DEBUG_PY] IPCBattle._ipc_listen received msg: {msg} (type={type(msg)})")
+                # Distinguish JSON control vs raw protocol
+                if isinstance(msg, dict):
+                    keys = list(msg.keys())
+                    self.logger.info(f"[IPC_DEBUG_PY] JSON control message detected: type={msg.get('type')} player_id={msg.get('player_id')} keys={keys}")
+                else:
+                    # Raw string message
+                    line = msg.strip() if isinstance(msg, str) else str(msg)
+                    self.logger.info(f"[IPC_DEBUG_PY] Raw string message detected: {line}")
+                self.logger.error(f"[IPC_DEBUG_PY] Received IPC raw/msg: {msg}")
             except Exception as e:
                 self.logger.error(f"IPC listen receive failed: {e}")
                 await asyncio.sleep(0.1)
@@ -316,14 +330,18 @@ class IPCBattle(CustomBattle):
                     # Batch raw Showdown protocol lines and forward as multiline payloads
                     if msg_player_id == self._player_id and self._env_player:
                         log_lines = msg.get("log", [])
+                        self.logger.debug(f"[IPC_DEBUG] battle_update for battle_id={self._battle_id}, player={self._player_id}, lines={len(log_lines)}")
                         for line in log_lines:
+                            self.logger.debug(f"[IPC_DEBUG] processing battle_update line: {line}")
                             if not isinstance(line, str):
                                 continue
                             # Start of new batch with battle tag
                             if line.startswith(">battle-"):
                                 # Flush previous batch
                                 if battle_tag is not None and current_batch:
+                                    self.logger.debug(f"[IPC_DEBUG] flushing batch tag={battle_tag}, size={len(current_batch)}")
                                     payload = battle_tag + "\n" + "\n".join(current_batch)
+                                    self.logger.debug(f"[IPC_DEBUG] forwarding payload[0:200]: {payload[:200].replace(chr(10), ' ')}...")
                                     asyncio.create_task(self._env_player.ps_client._handle_message(payload))
                                 battle_tag = line
                                 current_batch = []
@@ -333,17 +351,23 @@ class IPCBattle(CustomBattle):
                             # On trigger messages, flush batch
                             parts = line.split("|")
                             if len(parts) >= 2 and parts[1] in ["request", "turn", "win", "tie", "teampreview"]:
+                                self.logger.debug(f"[IPC_DEBUG] trigger '{parts[1]}' detected, flushing batch size={len(current_batch)}")
                                 payload = battle_tag + "\n" + "\n".join(current_batch)
+                                self.logger.debug(f"[IPC_DEBUG] forwarding triggered payload[0:200]: {payload[:200].replace(chr(10), ' ')}...")
                                 asyncio.create_task(self._env_player.ps_client._handle_message(payload))
                                 current_batch = []
                 elif mtype == "error":
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
+                else:
+                    self.logger.debug(f"[IPC_DEBUG] Ignoring control message type: {mtype}, msg={msg}")
                 # ignore other control messages
                 continue
                 
             # Raw Showdown protocol line - batch for standard processing
             if isinstance(msg, str):
                 line = msg.strip()
+                self.logger.debug(f"[IPC_DEBUG] battle_id={self._battle_id}, player={self._player_id}, raw protocol line: {line}")
+                self.logger.error(f"[IPC_DEBUG_PY] Raw protocol line: {line}")
                 if not line.startswith("|") and not line.startswith(">battle-"):
                     continue
                 
@@ -375,7 +399,7 @@ class IPCBattle(CustomBattle):
         if not lines:
             return
             
-        self.logger.debug(f"Processing battle batch with {len(lines)} lines")
+        self.logger.info(f"[IPC_DEBUG_PY] _process_battle_batch called for battle_tag={battle_tag}, lines_count={len(lines)}")
         
         # Reconstruct multi-line message like WebSocket format
         if battle_tag:
@@ -388,7 +412,9 @@ class IPCBattle(CustomBattle):
     
     async def _handle_message_like_websocket(self, message: str) -> None:
         """Handle message using WebSocket-style processing."""
+        self.logger.info(f"[IPC_DEBUG_PY] _handle_message_like_websocket entry; message preview: {message[:200].replace(chr(10), ' ')}...")
         split_messages = [m.split("|") for m in message.split("\n")]
+        self.logger.info(f"[IPC_DEBUG_PY] _handle_message_like_websocket split into {len(split_messages)} messages")
         
         if split_messages[0][0].startswith(">battle"):
             # Use the same logic as Player._handle_battle_message
@@ -396,7 +422,9 @@ class IPCBattle(CustomBattle):
     
     async def _handle_battle_message_ipc(self, split_messages: list[list[str]]) -> None:
         """Handle battle messages like poke-env Player class."""
-        self.logger.debug(f"Handling {len(split_messages)} battle messages")
+        self.logger.info(f"[IPC_DEBUG_PY] _handle_battle_message_ipc entry; total_messages={len(split_messages)}")
+        if split_messages and split_messages[0]:
+            self.logger.info(f"[IPC_DEBUG_PY] battle_tag in _handle_battle_message_ipc: {split_messages[0][0]}")
         
         for split_message in split_messages[1:]:  # Skip battle tag line
             if len(split_message) <= 1:
@@ -446,6 +474,7 @@ class IPCBattle(CustomBattle):
     
     async def _handle_battle_request_ipc(self, from_teampreview_request: bool = False) -> None:
         """Handle battle requests like EnvPlayer._handle_battle_request."""
+        self.logger.info(f"[IPC_DEBUG] _handle_battle_request_ipc called; from_teampreview_request={from_teampreview_request}")
         self.logger.debug(f"Handling battle request, teampreview: {from_teampreview_request}")
         
         if from_teampreview_request and hasattr(self, '_env_player') and self._env_player:
@@ -490,6 +519,7 @@ class IPCBattle(CustomBattle):
                 resp = await self._communicator.receive_message()
                 state = resp.get('battle_state') or resp.get('state') or {}
             self.logger.debug(f"Received IPC battle state: {state}")
+            self.logger.info(f"[IPC_DEBUG] get_battle_state for battle_id={self._battle_id} returned state keys: {list(state.keys())}")
             return state
         except Exception as e:
             self.logger.error(f"Failed to get battle state: {e}")
@@ -505,6 +535,7 @@ class IPCBattle(CustomBattle):
             request_data: The teampreview request data containing opponent Pokemon info
         """
         try:
+            self.logger.info(f"[IPC_DEBUG] _update_teampreview_opponent_team called for battle_id={self._battle_id}")
             # Initialize teampreview_opponent_team if not exists
             if not hasattr(self, '_teampreview_opponent_team'):
                 self._teampreview_opponent_team = set()

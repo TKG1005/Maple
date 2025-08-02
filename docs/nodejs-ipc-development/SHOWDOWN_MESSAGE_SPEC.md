@@ -49,13 +49,17 @@ interface Player {
 | type               | フィールド        | 型               | 必須 | 説明                             |
 |--------------------|-------------------|------------------|------|----------------------------------|
 | `battle_created`   | `battle_id`       | string           | ◯   | バトル作成完了                   |
+|                    |                   |                  |      | **出力チャネル**: stdout         |
 | `battle_update`    | `battle_id`       | string           | ◯   | バトル ID                        |
+|                    |                   |                  |      | **出力チャネル**: stdout         |
 |                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
 |                    | `log`             | string[]         | ◯   | プレイヤー固有のイベント配列     |
 | `battle_end`       | `battle_id`       | string           | ◯   | バトル ID                        |
+|                    |                   |                  |      | **出力チャネル**: stdout         |
 |                    | `result`          | 'win' \| 'tie' | ◯   | 結果                             |
 |                    | `winner?`         | string           | ×   | 勝者 (result='win' の場合)       |
 | `error`            | `battle_id?`      | string?          | ×   | 対象バトル ID                    |
+|                    |                   |                  |      | **出力チャネル**: stdout         |
 |                    | `player_id?`      | string?          | ×   | 対象プレイヤー                   |
 |                    | `message`         | string           | ◯   | エラーメッセージ                 |
 
@@ -90,7 +94,8 @@ interface SideInfo {
 ```
 
 ### 4.2 プレイヤー固有メッセージ配信
-MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行（`>battle-…` や `|request|…` を含む各行）を変更なく `log` 配列に入れて送信します。
+MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行（`>battle-…` や `|request|…` を含む各行）を**加工せずそのまま** `log` 配列に入れて送信します。
+**出力チャネル**: これらの生テキスト行と JSON 形式のイベント通知は stdout にのみ書き出されます。
 各EnvPlayer側では `player_id` タグで自分宛のメッセージを受け取り、`log` 内のすべての文字列をそのまま分割せずに `parse_message`（CustomBattle → Battle）に渡すことで、poke-env の標準処理を完全に再現します。
 
 例: MapleShowdownCore → Python EnvPlayer A 向け JSON

@@ -13,6 +13,9 @@ AbstractBattle (poke-env)
     └── CustomBattle (Maple拡張)
         └── IPCBattle (IPC通信)
 ```
+※ **出力チャネル**:
+  - Node.jsプロセスはShowdownの生テキストプロトコル行（`>battle-…`, `|request|…`, `|move|…` など）を**stdout**にそのまま出力します。
+  - 制御用JSONメッセージ（`battle_created`, `battle_update`, `player_registered` など）は**stdout**へ出力し、BattleCommunicatorはstdoutのみを読み取り、生メッセージをそのままIPCBattle._ipc_listenへ渡します。デバッグログはstderrに残します。
 
 ### 通信フロー
 
