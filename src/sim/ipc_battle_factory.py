@@ -84,8 +84,30 @@ class IPCBattleFactory:
                 # Wait for battle creation confirmation
                 response = await self._wait_for_battle_creation(battle_id)
                 
-                if not response.get("success"):
+                # Safely handle response that might be string or dict
+                success = False
+                error_msg = "Unknown error"
+                
+                if isinstance(response, dict):
+                    success = response.get("success", False)
                     error_msg = response.get("error", "Unknown error")
+                elif isinstance(response, str):
+                    try:
+                        import json
+                        parsed_response = json.loads(response)
+                        success = parsed_response.get("success", False)
+                        error_msg = parsed_response.get("error", "Unknown error")
+                        self._logger.debug(f"Parsed JSON response: success={success}, error={error_msg}")
+                    except json.JSONDecodeError:
+                        self._logger.warning(f"Response is not valid JSON: {response}")
+                        success = False
+                        error_msg = f"Invalid response format: {response}"
+                else:
+                    self._logger.warning(f"Unexpected response type: {type(response)}")
+                    success = False
+                    error_msg = f"Unexpected response type: {type(response)}"
+                
+                if not success:
                     raise RuntimeError(f"Failed to create battle: {error_msg}")
             
             # Create player-specific IPCBattle instance
@@ -133,10 +155,34 @@ class IPCBattleFactory:
                         timeout=1.0
                     )
                     
-                    # Check if this is our battle creation response
-                    if (response.get("type") == "battle_created" and 
-                        response.get("battle_id") == battle_id):
-                        return response
+                    # Safely check if this is our battle creation response
+                    response_type = None
+                    response_battle_id = None
+                    
+                    if isinstance(response, dict):
+                        response_type = response.get("type")
+                        response_battle_id = response.get("battle_id")
+                    elif isinstance(response, str):
+                        try:
+                            import json
+                            parsed_response = json.loads(response)
+                            response_type = parsed_response.get("type")
+                            response_battle_id = parsed_response.get("battle_id")
+                            self._logger.debug(f"Parsed JSON response: type={response_type}, battle_id={response_battle_id}")
+                        except json.JSONDecodeError:
+                            self._logger.debug(f"Response is not valid JSON, skipping: {response}")
+                            continue
+                    else:
+                        self._logger.debug(f"Unexpected response type: {type(response)}, skipping")
+                        continue
+                    
+                    if (response_type == "battle_created" and response_battle_id == battle_id):
+                        # Return properly formatted response as dict
+                        if isinstance(response, dict):
+                            return response
+                        else:
+                            # Convert parsed JSON response to dict
+                            return parsed_response
                         
                     # Log other messages for debugging
                     self._logger.debug(f"Received other message while waiting: {response}")
