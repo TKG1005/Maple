@@ -44,22 +44,25 @@ interface Player {
 }
 ```
 
-### 3.2 イベント通知 (Node.js → Python MapleShowdownCore)
+### 3.2 イベント通知 (Node.js MapleShowdownCore → Python) - 修正版
 
 | type               | フィールド        | 型               | 必須 | 説明                             |
 |--------------------|-------------------|------------------|------|----------------------------------|
 | `battle_created`   | `battle_id`       | string           | ◯   | バトル作成完了                   |
 | `choice_request`   | `battle_id`       | string           | ◯   | リクエスト対象バトル ID          |
+|                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
 |                    | `rqid`            | number           | ◯   | リクエスト ID                    |
 |                    | `active`          | ActiveInfo       | ◯   | アクティブポケモン情報           |
 |                    | `side`            | SideInfo         | ◯   | チーム全体情報                   |
 |                    | `forceSwitch`     | boolean          | ×   | 強制交代フラグ                   |
 | `battle_update`    | `battle_id`       | string           | ◯   | バトル ID                        |
-|                    | `log`             | string[]         | ◯   | Showdown テキストイベント配列    |
+|                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
+|                    | `log`             | string[]         | ◯   | プレイヤー固有のイベント配列     |
 | `battle_end`       | `battle_id`       | string           | ◯   | バトル ID                        |
 |                    | `result`          | 'win' \| 'tie' | ◯   | 結果                             |
 |                    | `winner?`         | string           | ×   | 勝者 (result='win' の場合)       |
 | `error`            | `battle_id?`      | string?          | ×   | 対象バトル ID                    |
+|                    | `player_id?`      | string?          | ×   | 対象プレイヤー                   |
 |                    | `message`         | string           | ◯   | エラーメッセージ                 |
 
 #### ActiveInfo / SideInfo 型 (抜粋)
@@ -80,32 +83,71 @@ interface SideInfo {
 }
 ```
 
-## 4. 通信フロー例
+## 4. 通信フロー例 - 修正版（不完全情報ゲーム対応）
 
-1. Python → Node.js:
+### 4.1 バトル作成フロー
+1. Python EnvPlayer A → MapleShowdownCore:
 ```json
 { "type":"create_battle", "battle_id":"b1", "format":"gen9randombattle", "players":[...] }
 ```
-2. Node.js → Python:
+2. MapleShowdownCore → Python EnvPlayer A & B:
 ```json
 { "type":"battle_created", "battle_id":"b1" }
 ```
-3. Node.js → Python (リクエスト):
+
+### 4.2 プレイヤー固有メッセージ配信
+3. MapleShowdownCore → Python EnvPlayer A (プレイヤーA専用):
 ```json
-{ "type":"choice_request", "battle_id":"b1", "rqid":1, "active":{...}, "side":{...} }
+{ "type":"choice_request", "battle_id":"b1", "player_id":"p1", "rqid":1, "active":{...}, "side":{...} }
 ```
-4. Python → Node.js:
+3. MapleShowdownCore → Python EnvPlayer B (プレイヤーB専用):
+```json
+{ "type":"choice_request", "battle_id":"b1", "player_id":"p2", "rqid":1, "active":{...}, "side":{...} }
+```
+
+### 4.3 コマンド送信とメッセージフィルタリング
+4. Python EnvPlayer A → MapleShowdownCore:
 ```json
 { "type":"battle_command", "battle_id":"b1", "command":"move 1" }
 ```
-5. Node.js → Python (更新):
+5. MapleShowdownCore → Python EnvPlayer A (A視点ログ):
 ```json
-{ "type":"battle_update", "battle_id":"b1", "log":["|move|p1a|Tackle|p2a","|turn|2",…] }
+{ "type":"battle_update", "battle_id":"b1", "player_id":"p1", "log":["|move|p1a|Tackle|p2a","|turn|2",…] }
 ```
-6. Node.js → Python (終了):
+5. MapleShowdownCore → Python EnvPlayer B (B視点ログ):
+```json
+{ "type":"battle_update", "battle_id":"b1", "player_id":"p2", "log":["|move|p1a|Tackle|p2a","|turn|2",…] }
+```
+
+### 4.4 バトル終了
+6. MapleShowdownCore → Python EnvPlayer A & B:
 ```json
 { "type":"battle_end", "battle_id":"b1", "result":"win", "winner":"p1" }
 ```
+
+**重要**: 各EnvPlayerは自分宛て(`player_id`が一致)のメッセージのみ受信し、独立したBattleオブジェクトを更新します。
+
+### 4.5 rqid保持要件
+**MapleShowdownCore側の責務**:
+- 生のShowdownログに含まれる`rqid`を必ず保持・転送
+- `"log"`配列内のメッセージ（通常は最後）に`"rqid"`が含まれることを保証
+
+**実装例**:
+```json
+// MapleShowdownCore → EnvPlayer
+{
+  "type": "battle_update",
+  "battle_id": "b1", 
+  "player_id": "p1",
+  "log": [
+    "|move|p1a|Tackle|p2a",
+    "|turn|2",
+    "|request|{\"requestType\":\"move\",\"rqid\":2,\"active\":[...]}"
+  ]
+}
+```
+
+これによりEnvPlayerは`battle.last_request`から正しく`rqid`を取得できます。
 
 ---
 詳細は `SIM-PROTOCOL.md` の各メッセージ定義と照合してください。

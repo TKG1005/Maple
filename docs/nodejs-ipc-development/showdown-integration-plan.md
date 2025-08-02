@@ -904,7 +904,11 @@ async def _create_ipc_battles(self, team_player_0: str | None, team_player_1: st
     factory = IPCBattleFactory(communicator, self._logger)
     battle = await factory.create_battle(format_id="gen9bssregi", player_names=player_names, teams=teams)
     
-    return battle, battle  # 両プレイヤーで同じバトルオブジェクト共有
+    # 🚨 修正必要: 各プレイヤーが独立したBattleオブジェクトを持つべき
+    battle_p1 = await factory.create_battle_for_player(format_id="gen9bssregi", player_names=player_names, teams=teams, player_id="p1")
+    battle_p2 = await factory.create_battle_for_player(format_id="gen9bssregi", player_names=player_names, teams=teams, player_id="p2")
+    
+    return battle_p1, battle_p2  # 各プレイヤー固有のBattleオブジェクト
 ```
 
 #### 🔧 **技術的解決した課題詳細**

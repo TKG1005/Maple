@@ -7,7 +7,8 @@ WebSocket通信を完全に排除し、IPCによる高速バトル処理を実�
 ### 前提要件
 
 - Node.jsプロセスは、オリジナルのPokemon Showdownサーバーの動作をトレースし、メッセージフォーマット・シーケンスを完全に再現して送受信すること  
-- IPCサーバーは、既存のWebSocket通信機能を最小限に置き換えることを目的とし、可能な限りShowdown準拠のNode.jsプロセスおよびpoke-env（EnvPlayer相当）の仕様をそのまま活用すること  
+- IPCサーバーは、既存のWebSocket通信機能を最小限に置き換えることを目的とし、可能な限りShowdown準拠のNode.jsプロセスおよびpoke-env（EnvPlayer相当）の仕様をそのまま活用すること
+- 🚨 **不完全情報ゲーム要件**: 各プレイヤーが独立したBattleオブジェクトを持ち、MapleShowdownCoreがプレイヤー固有のメッセージを適切に振り分けること  
 
 ## 現状分析 (2025年7月30日時点)
 

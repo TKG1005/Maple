@@ -48,8 +48,11 @@ python train.py --full-ipc --battle-mode local --episodes 1 --parallel 1
 
 ### 📋 次の具体的作業 (Phase A.1 - 重要性大幅UP)
 
-#### 🚨 **最重要**: Pokemon Showdown完全仕様準拠
-**プロジェクト成功の絶対条件**: ShowdownサーバーのAPIを100%正確に再現
+#### 🚨 **最重要**: Pokemon Showdown完全仕様準拠 + 不完全情報ゲーム対応
+**プロジェクト成功の絶対条件**: 
+1. ShowdownサーバーのAPIを100%正確に再現
+2. **各EnvPlayerが独立したBattleオブジェクトを持つ**
+3. **MapleShowdownCoreがプレイヤー固有メッセージを適切に振り分ける**
 
 #### 1. BattleStream API正確実装 (最優先)
 - [ ] `const { BattleStream } = require('./dist/sim/battle-stream')`の確認
@@ -60,6 +63,7 @@ python train.py --full-ipc --battle-mode local --episodes 1 --parallel 1
 - [ ] `>start {"formatid":"gen9randombattle"}`の正確な送信
 - [ ] `>player p1 {"name":"Player1","team":null}`フォーマット確認
 - [ ] `update\nMESSAGES` vs `sideupdate\nPLAYERID\nMESSAGES`の区別
+- [ ] 🚨 **不完全情報ゲーム要件**: プレイヤー固有メッセージフィルタリング実装
 
 #### 3. SIM-PROTOCOL.md完全理解
 - [ ] 全Major/Minor actionsのメッセージ形式確認

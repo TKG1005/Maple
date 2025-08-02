@@ -33,16 +33,18 @@ Pythonプロセス                    Node.jsプロセス
 
 #### 従来のWebSocket方式
 ```
-Python → WebSocket Player → ネットワーク → Pokemon Showdown Server
-  ↑                                           ↓
-  └─────────── ネットワーク遅延 ←──────────────┘
+EnvPlayer A → WebSocket → Pokemon Showdown Server ← WebSocket ← EnvPlayer B
+     ↓                           ↓                           ↓
+  Battle A                  Central Battle               Battle B
+(プレイヤーA視点)           (完全な状態)              (プレイヤーB視点)
 ```
 
-#### IPC方式 (Phase 4)
+#### IPC方式 (Phase 4) - 修正版
 ```
-Python → IPCBattle → BattleCommunicator → Node.jsプロセス
-  ↑                                           ↓
-  └─────────── ローカルIPCチャネル ←───────────┘
+EnvPlayer A → Battle A → IPCCommunicator → Node.js Battle Engine ← IPCCommunicator ← Battle B ← EnvPlayer B
+     ↓           ↓                               ↓                                  ↓        ↓
+独立Battle    プレイヤーA固有              メッセージルーター                   プレイヤーB固有   独立Battle
+オブジェクト   メッセージ                  (Player ID filtering)               メッセージ      オブジェクト
 ```
 
 ## IPCBattleクラス詳細
@@ -53,22 +55,27 @@ Python → IPCBattle → BattleCommunicator → Node.jsプロセス
 
 ### 主要機能
 
-#### 1. 初期化
+#### 1. 初期化 (修正版 - 不完全情報ゲーム対応)
 ```python
 def __init__(self, battle_id: str, username: str, logger: logging.Logger, 
-             communicator: BattleCommunicator, gen: int = 9):
+             communicator: BattleCommunicator, player_id: str, gen: int = 9):
     # バトルタグを作成: "battle-gen9randombattle-{battle_id}"
-    # IPC通信チャネルを初期化
-    # 即座に使用可能な最小限のPokemonチームを設定
+    # プレイヤー固有のIPC通信チャネルを初期化
+    # プレイヤーIDを保存（メッセージフィルタリング用）
+    self.player_id = player_id  # "p1" or "p2"
+    # プレイヤー視点のみのPokemonチームを設定
 ```
 
-#### 2. Pokemonチーム作成
+#### 2. プレイヤー固有チーム作成 (修正版)
 ```python
-def _create_minimal_teams(self):
-    # チームごとに6匹のPokemonを作成 (p1a-p1f, p2a-p2f)
-    # 種族: "ditto" (テスト用に統一)
-    # レベル: 50、実数値計算済み
-    # 技: tackle, rest, protect, struggle
+def _create_player_specific_teams(self, player_id: str):
+    # 自分のチーム: 完全な情報を持つ6匹のPokemon
+    # 相手のチーム: 観測可能な情報のみを持つPokemon
+    # プレイヤー視点に基づく情報制限を実装
+    if player_id == "p1":
+        # Player 1視点: 自分=p1チーム、相手=p2チーム
+    else:
+        # Player 2視点: 自分=p2チーム、相手=p1チーム
 ```
 
 **生成されるPokemon実数値の例 (メタモン)**:
@@ -83,75 +90,98 @@ pokemon._stats = {
 }
 ```
 
-#### 3. IPC通信メソッド
+#### 3. IPC通信メソッド (修正版 - プレイヤー固有通信)
 ```python
 async def send_battle_command(command: str):
-    # バトルコマンドを送信 ("move 1", "switch 2"等)
+    # プレイヤー固有のバトルコマンドを送信 ("move 1", "switch 2"等)
+    # player_idを含めてMapleShowdownCoreに送信
     
-async def get_battle_state() -> Dict[str, Any]:
-    # Node.jsプロセスから現在のバトル状態を取得
+async def receive_player_message() -> Dict[str, Any]:
+    # 自分宛て(player_id一致)のメッセージのみ受信
+    # MapleShowdownCoreのメッセージフィルタリングを利用
     
 def parse_message(split_message: List[str]):
-    # Pokemon Showdown形式のメッセージを解析
+    # プレイヤー視点のPokemon Showdown形式メッセージを解析
+    # 相手の隠し情報は含まれない
 ```
 
-#### 4. 環境互換性
+#### 4. 環境互換性 (修正版)
 ```python
 @property
 def battle_id(self) -> str:
     # 一意のバトル識別子を返す
 
+@property
+def player_id(self) -> str:
+    # プレイヤー識別子を返す ("p1" or "p2")
+
 @property  
 def ipc_ready(self) -> bool:
-    # IPC通信の準備完了状態をチェック
+    # プレイヤー固有IPC通信の準備完了状態をチェック
 ```
 
 ## データ構造
 
-### チーム構成
+### チーム構成 (修正版 - プレイヤー視点)
 ```python
-# プレイヤー1のチーム
-_team = {
-    'p1a': Pokemon(species='ditto', active=True),   # アクティブなPokemon
-    'p1b': Pokemon(species='ditto', active=False),  # ベンチ
-    'p1c': Pokemon(species='ditto', active=False),
-    'p1d': Pokemon(species='ditto', active=False),
-    'p1e': Pokemon(species='ditto', active=False),
-    'p1f': Pokemon(species='ditto', active=False)
+# プレイヤー1視点のIPCBattle (player_id="p1")
+_team = {  # 自分のチーム（完全情報）
+    'p1a': Pokemon(species='ditto', active=True, level=50, stats={...}),
+    'p1b': Pokemon(species='ditto', active=False, level=50, stats={...}),
+    # ... 完全な実数値、技、持ち物情報
 }
 
-# プレイヤー2のチーム（相手）
-_opponent_team = {
-    'p2a': Pokemon(species='ditto', active=True),
-    'p2b': Pokemon(species='ditto', active=False),
-    # ... p2c から p2f まで
+_opponent_team = {  # 相手チーム（観測可能情報のみ）
+    'p2a': Pokemon(species='ditto', active=True, level=50),
+    'p2b': Pokemon(species=None, active=False),  # 未観測は不明
+    # ... 観測されていない情報はNone
+}
+
+# プレイヤー2視点のIPCBattle (player_id="p2")では逆転
+_team = {  # 自分のチーム（p2視点では p2チーム）
+    'p2a': Pokemon(species='ditto', active=True, level=50, stats={...}),
+    # ...
+}
+_opponent_team = {  # 相手チーム（p2視点では p1チーム、観測情報のみ）
+    'p1a': Pokemon(species='ditto', active=True, level=50),
+    # ...
 }
 ```
 
-### IPCメッセージ形式
+### IPCメッセージ形式 (修正版)
 ```python
-# バトルコマンドメッセージ
+# バトルコマンドメッセージ（プレイヤー固有）
 {
     "type": "battle_command",
     "battle_id": "test-001",
+    "player_id": "p1",  # 送信者識別
     "command": "move 1"
 }
 
-# バトル状態要求
+# プレイヤー固有状態要求
 {
     "type": "get_battle_state",
-    "battle_id": "test-001"
+    "battle_id": "test-001",
+    "player_id": "p1"  # 要求者識別
 }
 
-# バトル作成メッセージ
+# バトル作成メッセージ（全プレイヤー共通）
 {
     "type": "create_battle",
     "battle_id": "test-001",
     "format": "gen9randombattle",
     "players": [
-        {"name": "player1", "team": "..."},
-        {"name": "player2", "team": "..."}
+        {"name": "player1", "team": "...", "player_id": "p1"},
+        {"name": "player2", "team": "...", "player_id": "p2"}
     ]
+}
+
+# プレイヤー固有レスポンス
+{
+    "type": "battle_update",
+    "battle_id": "test-001",
+    "player_id": "p1",  # 宛先プレイヤー
+    "log": ["|move|p1a|Tackle|p2a", ...]  # p1視点のログ
 }
 ```
 
