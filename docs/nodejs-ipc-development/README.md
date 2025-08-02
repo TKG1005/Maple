@@ -49,7 +49,7 @@ cat SHOWDOWN_SPEC_COMPLIANCE.md | head -100
 - BattleStream API完全準拠
 - SIM-PROTOCOL.md全メッセージ対応  
 - チームデータ JSON 受け渡し（Node.js IPC サーバーでは Python から渡されたチーム情報をそのまま使用）
-- 生のShowdownプロトコルメッセージをそのまま送信し、Python側のpoke-env標準処理に委任
+- 生のShowdownプロトコル行（`>battle-…` や `|request|…` を含む各行）を一切変更せずそのまま送信し、Python側のpoke-env標準処理に完全委任
   
 - Node.jsプロセスはオリジナルのPokemon Showdownサーバー動作をトレースし、同一のメッセージフォーマットとシーケンスを完全に再現して送受信する
 - IPCサーバーは既存のWebSocket通信機能を最小限に置き換えることを目的とし、可能な限りShowdown準拠のNode.jsプロセスおよびpoke-env（EnvPlayer相当）の仕様をそのまま活用する

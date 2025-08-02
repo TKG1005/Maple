@@ -313,12 +313,12 @@ class IPCBattle(CustomBattle):
                 elif mtype == "player_registered":
                     self.logger.info(f"Player {self._player_id} registered successfully")
                 elif mtype == "battle_update":
-                    # Handle player-specific battle updates
+                    # Handle player-specific battle updates: forward all raw lines intact
                     if msg_player_id == self._player_id:
                         log_lines = msg.get("log", [])
                         for line in log_lines:
-                            if isinstance(line, str) and line.startswith("|"):
-                                # Process filtered Showdown protocol line
+                            if isinstance(line, str):
+                                # Forward raw Showdown protocol line (including >battle tags) without modification
                                 split_line = line.split("|")
                                 self.parse_message(split_line)
                 elif mtype == "error":

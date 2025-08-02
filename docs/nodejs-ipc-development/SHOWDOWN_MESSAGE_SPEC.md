@@ -90,17 +90,22 @@ interface SideInfo {
 ```
 
 ### 4.2 プレイヤー固有メッセージ配信
-MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行をバトル更新メッセージとして同時に送信します。
-各EnvPlayerは自分宛て(`player_id`)のログのみ受信し、内部で標準の解析処理を行います。
+MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行（`>battle-…` や `|request|…` を含む各行）を変更なく `log` 配列に入れて送信します。
+各EnvPlayer側では `player_id` タグで自分宛のメッセージを受け取り、`log` 内のすべての文字列をそのまま分割せずに `parse_message`（CustomBattle → Battle）に渡すことで、poke-env の標準処理を完全に再現します。
 
-3. MapleShowdownCore → Python EnvPlayer A (プレイヤーA専用):
+例: MapleShowdownCore → Python EnvPlayer A 向け JSON
 ```json
-{ "type":"battle_update", "battle_id":"b1", "player_id":"p1", "log":["|request|{...}", "...|move|p1a|Tackle|p2a", "…"] }
-```
-
-4. MapleShowdownCore → Python EnvPlayer B (プレイヤーB専用):
-```json
-{ "type":"battle_update", "battle_id":"b1", "player_id":"p2", "log":["|request|{...}", "...|move|p1a|Tackle|p2a", "…"] }
+{
+  "type": "battle_update",
+  "battle_id": "b1",
+  "player_id": "p1",
+  "log": [
+    ">battle-gen9bssregi-203804",
+    "|request|{\"active\":[…],\"side\":{…},\"rqid\":36}",
+    "|move|p1a|Glacial Lance|…",
+    "…"
+  ]
+}
 ```
 
 ### 4.3 コマンド送信とメッセージフィルタリング
