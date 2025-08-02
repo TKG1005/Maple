@@ -313,14 +313,13 @@ class IPCBattle(CustomBattle):
                 elif mtype == "player_registered":
                     self.logger.info(f"Player {self._player_id} registered successfully")
                 elif mtype == "battle_update":
-                    # Handle player-specific battle updates: forward all raw lines intact
-                    if msg_player_id == self._player_id:
+                    # Forward all raw Showdown protocol lines to the client's PSClient handler
+                    if msg_player_id == self._player_id and self._env_player:
                         log_lines = msg.get("log", [])
                         for line in log_lines:
                             if isinstance(line, str):
-                                # Forward raw Showdown protocol line (including >battle tags) without modification
-                                split_line = line.split("|")
-                                self.parse_message(split_line)
+                                # Pass the raw line (including >battle and |request|…) unchanged
+                                await self._env_player.ps_client._handle_message(line)
                 elif mtype == "error":
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
                 # ignore other control messages
