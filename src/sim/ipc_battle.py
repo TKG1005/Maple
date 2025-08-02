@@ -21,6 +21,7 @@ class IPCBattle(CustomBattle):
         username: str,
         logger: logging.Logger,
         communicator: BattleCommunicator,
+        player_id: str,
         format_id: str = 'gen9randombattle',
         gen: int = 9,
         save_replays: Union[str, bool] = False,
@@ -33,6 +34,7 @@ class IPCBattle(CustomBattle):
             username: Player username
             logger: Logger instance
             communicator: IPC communicator for Node.js process
+            player_id: Player identifier ('p1' or 'p2') for message filtering
             gen: Pokemon generation (default 9)
             save_replays: Whether to save replays
             env_player: EnvPlayer reference for teampreview integration
@@ -52,11 +54,19 @@ class IPCBattle(CustomBattle):
         # IPC-specific attributes
         self._communicator = communicator
         self._battle_id = battle_id
+        self._player_id = player_id  # 'p1' or 'p2' for message filtering
         self._ipc_ready = False
         self._env_player = env_player  # Store EnvPlayer reference for teampreview handling
         
+        # Validate player_id
+        if player_id not in ['p1', 'p2']:
+            raise ValueError(f"Invalid player_id: {player_id}. Must be 'p1' or 'p2'")
+        
         # Initialize battle state (team will be populated by Showdown protocol |poke| messages)
         self._initialize_battle_state()
+        
+        # Create minimal teams for environment compatibility
+        self._create_minimal_teams()
     
     def _initialize_battle_state(self) -> None:
         """Initialize basic battle state for environment compatibility."""
@@ -80,10 +90,11 @@ class IPCBattle(CustomBattle):
         
         # Mark as ready for IPC communication
         self._ipc_ready = True
-        self.logger.info(f"IPCBattle initialized: {self.battle_tag}")
-        # Start background listener for raw protocol and control messages (only for real IPCCommunicator)
+        self.logger.info(f"IPCBattle initialized: {self.battle_tag} (player: {self._player_id})")
+        # Register this player with MapleShowdownCore for filtered messages
         if hasattr(self._communicator, 'process'):
             from poke_env.concurrency import POKE_LOOP
+            asyncio.run_coroutine_threadsafe(self._register_player(), POKE_LOOP)
             asyncio.run_coroutine_threadsafe(self._ipc_listen(), POKE_LOOP)
     
     def _create_minimal_teams(self) -> None:
@@ -95,11 +106,19 @@ class IPCBattle(CustomBattle):
             # This is a temporary solution - in a full implementation, teams would
             # be populated from actual battle data
             
-            # Create teams with multiple Pokemon (6 per team for full team)
-            team_configs = [
-                ("_team", ["p1a", "p1b", "p1c", "p1d", "p1e", "p1f"]),
-                ("_opponent_team", ["p2a", "p2b", "p2c", "p2d", "p2e", "p2f"])
-            ]
+            # Create teams based on player perspective (プレイヤー視点に基づくチーム作成)
+            if self._player_id == "p1":
+                # Player 1視点: 自分=p1チーム、相手=p2チーム  
+                team_configs = [
+                    ("_team", ["p1a", "p1b", "p1c", "p1d", "p1e", "p1f"]),           # 自分のチーム（完全情報）
+                    ("_opponent_team", ["p2a", "p2b", "p2c", "p2d", "p2e", "p2f"])  # 相手チーム（観測情報のみ）
+                ]
+            else:  # self._player_id == "p2"
+                # Player 2視点: 自分=p2チーム、相手=p1チーム
+                team_configs = [
+                    ("_team", ["p2a", "p2b", "p2c", "p2d", "p2e", "p2f"]),           # 自分のチーム（完全情報）
+                    ("_opponent_team", ["p1a", "p1b", "p1c", "p1d", "p1e", "p1f"])  # 相手チーム（観測情報のみ）
+                ]
             
             for team_key, pokemon_keys in team_configs:
                 team_dict = getattr(self, team_key)
@@ -112,29 +131,57 @@ class IPCBattle(CustomBattle):
                         pokemon_species = "ditto"  # Use lowercase for poke-env species lookup
                         pokemon = Pokemon(gen=self._gen, species=pokemon_species)
                         
+                        # プレイヤー視点に基づく情報制限
+                        is_own_team = (team_key == "_team")
+                        is_opponent_team = (team_key == "_opponent_team")
+                        
                         # Set level and HP
                         pokemon._level = 50
                         pokemon._max_hp = 100
                         pokemon._current_hp = 100
                         
-                        # Calculate and set actual stats based on base stats
-                        # Use simplified stat calculation for level 50 with neutral nature
-                        if hasattr(pokemon, 'base_stats') and pokemon.base_stats:
-                            # Calculate actual stats using Pokemon's base stats
-                            # Simplified formula: ((base_stat * 2 + 31 + 252/4) * level / 100) + 5
-                            # For HP: ((base_stat * 2 + 31 + 252/4) * level / 100) + level + 10
-                            level = 50
-                            pokemon._stats = {
-                                'hp': int(((pokemon.base_stats['hp'] * 2 + 31 + 252/4) * level / 100) + level + 10),
-                                'atk': int(((pokemon.base_stats['atk'] * 2 + 31 + 252/4) * level / 100) + 5),
-                                'def': int(((pokemon.base_stats['def'] * 2 + 31 + 252/4) * level / 100) + 5),
-                                'spa': int(((pokemon.base_stats['spa'] * 2 + 31 + 252/4) * level / 100) + 5),
-                                'spd': int(((pokemon.base_stats['spd'] * 2 + 31 + 252/4) * level / 100) + 5),
-                                'spe': int(((pokemon.base_stats['spe'] * 2 + 31 + 252/4) * level / 100) + 5)
-                            }
-                            # Update max_hp to match calculated HP stat
-                            pokemon._max_hp = pokemon._stats['hp']
-                            pokemon._current_hp = pokemon._stats['hp']
+                        # プレイヤー視点に基づく情報設定
+                        if is_own_team:
+                            # 自分のチーム: 完全な情報を設定
+                            # Calculate and set actual stats based on base stats
+                            if hasattr(pokemon, 'base_stats') and pokemon.base_stats:
+                                # Calculate actual stats using Pokemon's base stats
+                                # Simplified formula: ((base_stat * 2 + 31 + 252/4) * level / 100) + 5
+                                # For HP: ((base_stat * 2 + 31 + 252/4) * level / 100) + level + 10
+                                level = 50
+                                pokemon._stats = {
+                                    'hp': int(((pokemon.base_stats['hp'] * 2 + 31 + 252/4) * level / 100) + level + 10),
+                                    'atk': int(((pokemon.base_stats['atk'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                    'def': int(((pokemon.base_stats['def'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                    'spa': int(((pokemon.base_stats['spa'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                    'spd': int(((pokemon.base_stats['spd'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                    'spe': int(((pokemon.base_stats['spe'] * 2 + 31 + 252/4) * level / 100) + 5)
+                                }
+                                # Update max_hp to match calculated HP stat
+                                pokemon._max_hp = pokemon._stats['hp']
+                                pokemon._current_hp = pokemon._stats['hp']
+                        elif is_opponent_team:
+                            # 相手のチーム: 観測可能な情報のみ設定
+                            if i == 0:
+                                # アクティブポケモンは観測可能
+                                pokemon._level = 50
+                                if hasattr(pokemon, 'base_stats') and pokemon.base_stats:
+                                    level = 50
+                                    pokemon._stats = {
+                                        'hp': int(((pokemon.base_stats['hp'] * 2 + 31 + 252/4) * level / 100) + level + 10),
+                                        'atk': int(((pokemon.base_stats['atk'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                        'def': int(((pokemon.base_stats['def'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                        'spa': int(((pokemon.base_stats['spa'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                        'spd': int(((pokemon.base_stats['spd'] * 2 + 31 + 252/4) * level / 100) + 5),
+                                        'spe': int(((pokemon.base_stats['spe'] * 2 + 31 + 252/4) * level / 100) + 5)
+                                    }
+                                    pokemon._max_hp = pokemon._stats['hp']
+                                    pokemon._current_hp = pokemon._stats['hp']
+                            else:
+                                # 非アクティブポケモンは種族のみ観測可能（詳細情報は制限）
+                                pokemon._level = 50  # レベルは推測可能
+                                pokemon._max_hp = 100  # 基本値
+                                pokemon._current_hp = 100
                         
                         # Set as active Pokemon only for the first Pokemon in each team
                         pokemon._active = (i == 0)  # Only first Pokemon is active
@@ -184,6 +231,29 @@ class IPCBattle(CustomBattle):
             self.logger.error(f"Failed to create minimal teams: {e}")
             # Continue without minimal teams - might cause errors but won't crash initialization
     
+    async def _register_player(self) -> None:
+        """Register this player with MapleShowdownCore for message filtering."""
+        if not self._ipc_ready:
+            self.logger.error("IPCBattle not ready for player registration")
+            return
+            
+        message = {
+            "type": "register_player",
+            "battle_id": self._battle_id,
+            "player_id": self._player_id
+        }
+        
+        try:
+            # Ensure IPC process is connected
+            alive = await self._communicator.is_alive()
+            if not alive:
+                await self._communicator.connect()
+            
+            await self._communicator.send_message(message)
+            self.logger.info(f"Registered player {self._player_id} for battle {self._battle_id}")
+        except Exception as e:
+            self.logger.error(f"Failed to register player {self._player_id}: {e}")
+    
     async def send_battle_command(self, command: str) -> None:
         """Send a battle command via IPC.
         
@@ -197,6 +267,7 @@ class IPCBattle(CustomBattle):
         message = {
             "type": "battle_command",
             "battle_id": self._battle_id,
+            "player_id": self._player_id,
             "command": command
         }
         
@@ -231,14 +302,25 @@ class IPCBattle(CustomBattle):
             # JSON control messages
             if isinstance(msg, dict):
                 mtype = msg.get("type")
+                msg_player_id = msg.get("player_id")
+                
+                # Filter messages by player_id if specified
+                if msg_player_id and msg_player_id != self._player_id:
+                    continue  # Skip messages not for this player
+                
                 if mtype == "battle_created":
                     self.logger.info(f"Battle created (IPC): {self._battle_id}")
-                elif mtype == "choice_request":
-                    # Handle choice request JSON directly
-                    try:
-                        self.parse_request(msg)
-                    except Exception as e:
-                        self.logger.error(f"Error in parse_request: {e}")
+                elif mtype == "player_registered":
+                    self.logger.info(f"Player {self._player_id} registered successfully")
+                elif mtype == "battle_update":
+                    # Handle player-specific battle updates
+                    if msg_player_id == self._player_id:
+                        log_lines = msg.get("log", [])
+                        for line in log_lines:
+                            if isinstance(line, str) and line.startswith("|"):
+                                # Process filtered Showdown protocol line
+                                split_line = line.split("|")
+                                self.parse_message(split_line)
                 elif mtype == "error":
                     self.logger.error(f"IPC error: {msg.get('error_message')}")
                 # ignore other control messages
@@ -374,7 +456,8 @@ class IPCBattle(CustomBattle):
             
         message = {
             "type": "get_battle_state",
-            "battle_id": self._battle_id
+            "battle_id": self._battle_id,
+            "player_id": self._player_id
         }
         
         # Request and retrieve latest battle state
@@ -397,70 +480,8 @@ class IPCBattle(CustomBattle):
             self.logger.error(f"Failed to get battle state: {e}")
             return {}
     
-    def parse_message(self, split_message: List[str]) -> None:
-        """Parse battle message from IPC stream.
-        
-        Args:
-            split_message: Split battle message from Pokemon Showdown
-        """
-        try:
-            # Let parent handle standard message parsing
-            super().parse_message(split_message)
-            
-            # IPC-specific message handling
-            if len(split_message) >= 2:
-                message_type = split_message[1]
-                
-                # Update turn counter
-                if message_type == "turn":
-                    try:
-                        self._turn = int(split_message[2])
-                        self.logger.debug(f"Battle turn: {self._turn}")
-                    except (IndexError, ValueError):
-                        pass
-                
-                # Check for battle end
-                elif message_type in ["win", "tie"]:
-                    self._finished = True
-                    self.logger.info(f"Battle finished: {message_type}")
-                
-                # Handle request messages (critical for environment sync)
-                elif message_type == "request":
-                    if len(split_message) >= 3:
-                        try:
-                            request_data = json.loads(split_message[2])
-                            self._last_request = request_data
-                            self.logger.debug("Updated last_request from IPC")
-                        except json.JSONDecodeError as e:
-                            self.logger.error(f"Failed to parse request JSON: {e}")
-            
-        except Exception as e:
-            self.logger.error(f"Error parsing IPC message: {e}")
-            self.logger.error(f"Message: {split_message}")
-    
-    def parse_request(self, request: Dict[str, Any]) -> None:
-        """Parse request data from Pokemon Showdown.
-        
-        Args:
-            request: Request dictionary from server
-        """
-        try:
-            self._last_request = request
-            
-            # Extract available actions
-            if "moves" in request:
-                # TODO: Convert to Move objects
-                pass
-            
-            if "active" in request:
-                # Update active Pokemon state
-                # TODO: Update trapped status, available moves
-                pass
-                
-            self.logger.debug("Parsed IPC request")
-            
-        except Exception as e:
-            self.logger.error(f"Error parsing IPC request: {e}")
+    # parse_message and parse_request overrides removed
+    # All message and request parsing is delegated to the original poke-env processing in CustomBattle.
     
     def _update_teampreview_opponent_team(self, request_data: Dict[str, Any]) -> None:
         """Update teampreview_opponent_team from request data - same as online mode.
@@ -516,6 +537,11 @@ class IPCBattle(CustomBattle):
     def battle_id(self) -> str:
         """Get battle ID."""
         return self._battle_id
+    
+    @property
+    def player_id(self) -> str:
+        """Get player ID ('p1' or 'p2')."""
+        return self._player_id
     
     @property
     def ipc_ready(self) -> bool:

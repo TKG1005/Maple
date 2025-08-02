@@ -816,9 +816,18 @@ class PokemonEnv(gym.Env):
         for pid in self.agent_ids:
             self._last_requests[pid] = self._current_battles[pid].last_request
 
-        observations = {
-            pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
-        }
+        # Check if we're in teampreview phase for step() as well
+        battle0 = battles["player_0"]
+        if self._is_teampreview(battle0):
+            self._logger.debug("In teampreview phase during step() - using dummy observations")
+            observations = {
+                "player_0": self._get_teampreview_observation(),
+                "player_1": self._get_teampreview_observation(),
+            }
+        else:
+            observations = {
+                pid: self.state_observer.observe(battles[pid]) for pid in self.agent_ids
+            }
                 
         rewards = {pid: self._calc_reward(battles[pid], pid) for pid in self.agent_ids}
         
@@ -1336,19 +1345,27 @@ class PokemonEnv(gym.Env):
             
             self._logger.info(f"Creating IPC battle with players: {player_names}")
             
-            # Create battle via IPC factory with EnvPlayer reference
-            battle = await factory.create_battle(
-                format_id="gen9bssregi",
+            # Create separate battle instances for each player with proper filtering
+            battle_p1 = await factory.create_battle_for_player(
+                player_id="p1",
+                format_id="gen9bssregi", 
                 player_names=player_names,
                 teams=teams,
                 env_player=player_0  # Pass EnvPlayer for teampreview integration
             )
             
-            # In this simplified implementation, both players share the same battle object
-            # In a full implementation, you might create separate battle views for each player
-            self._logger.info(f"Successfully created IPC battle: {battle.battle_id}")
+            player_1 = self._env_players.get("player_1")
+            battle_p2 = await factory.create_battle_for_player(
+                player_id="p2",
+                format_id="gen9bssregi",
+                player_names=player_names, 
+                teams=teams,
+                env_player=player_1  # Pass EnvPlayer for teampreview integration
+            )
             
-            return battle, battle
+            self._logger.info(f"Successfully created independent IPC battles: {battle_p1.battle_id} (p1: {battle_p1.player_id}, p2: {battle_p2.player_id})")
+            
+            return battle_p1, battle_p2
             
         except Exception as e:
             self._logger.error(f"Failed to create IPC battles: {e}")

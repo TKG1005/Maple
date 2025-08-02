@@ -49,12 +49,6 @@ interface Player {
 | type               | フィールド        | 型               | 必須 | 説明                             |
 |--------------------|-------------------|------------------|------|----------------------------------|
 | `battle_created`   | `battle_id`       | string           | ◯   | バトル作成完了                   |
-| `choice_request`   | `battle_id`       | string           | ◯   | リクエスト対象バトル ID          |
-|                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
-|                    | `rqid`            | number           | ◯   | リクエスト ID                    |
-|                    | `active`          | ActiveInfo       | ◯   | アクティブポケモン情報           |
-|                    | `side`            | SideInfo         | ◯   | チーム全体情報                   |
-|                    | `forceSwitch`     | boolean          | ×   | 強制交代フラグ                   |
 | `battle_update`    | `battle_id`       | string           | ◯   | バトル ID                        |
 |                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
 |                    | `log`             | string[]         | ◯   | プレイヤー固有のイベント配列     |
@@ -96,13 +90,17 @@ interface SideInfo {
 ```
 
 ### 4.2 プレイヤー固有メッセージ配信
+MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行をバトル更新メッセージとして同時に送信します。
+各EnvPlayerは自分宛て(`player_id`)のログのみ受信し、内部で標準の解析処理を行います。
+
 3. MapleShowdownCore → Python EnvPlayer A (プレイヤーA専用):
 ```json
-{ "type":"choice_request", "battle_id":"b1", "player_id":"p1", "rqid":1, "active":{...}, "side":{...} }
+{ "type":"battle_update", "battle_id":"b1", "player_id":"p1", "log":["|request|{...}", "...|move|p1a|Tackle|p2a", "…"] }
 ```
-3. MapleShowdownCore → Python EnvPlayer B (プレイヤーB専用):
+
+4. MapleShowdownCore → Python EnvPlayer B (プレイヤーB専用):
 ```json
-{ "type":"choice_request", "battle_id":"b1", "player_id":"p2", "rqid":1, "active":{...}, "side":{...} }
+{ "type":"battle_update", "battle_id":"b1", "player_id":"p2", "log":["|request|{...}", "...|move|p1a|Tackle|p2a", "…"] }
 ```
 
 ### 4.3 コマンド送信とメッセージフィルタリング
