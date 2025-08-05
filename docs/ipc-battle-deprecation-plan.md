@@ -331,7 +331,119 @@ class TestIPCClientWrapper:
 
 ---
 
+## 実装進捗状況
+
+### ✅ Phase 1: IPCClientWrapper拡張 (完了)
+**実装日**: 2025-01-05  
+**コミット**: `3320a426c` - "Phase 1: Enhance IPCClientWrapper with PSClient compatibility"
+
+#### 完了した実装内容
+- ✅ **AccountConfiguration互換性追加**: PSClient互換のコンストラクタ実装
+  - AccountConfiguration/ServerConfiguration受け取り対応
+  - 後方互換性維持（legacy initialization支援）
+  - バリデーション機能追加
+
+- ✅ **listen()メソッド実装**: PSClient.listen()完全模倣
+  - IPC接続確立とメッセージループ
+  - 非同期タスク管理（_listen_task）
+  - エラーハンドリングと再接続機能
+
+- ✅ **認証機能追加**: IPC環境用認証システム
+  - `log_in()`: IPC環境での認証バイパス実装
+  - `wait_for_login()`: PSClient互換の認証待機
+  - `logged_in` Eventによる同期管理
+
+- ✅ **メッセージ解析機能実装**: showdown vs IPC完全判別
+  - `_parse_message_type()`: メッセージタイプ自動判定
+  - showdownプロトコル（`type: "protocol"`）とIPC制御メッセージの分離
+  - 未知メッセージタイプの安全な処理
+
+- ✅ **poke-env統合**: 直接_handle_message()呼び出し
+  - `_handle_showdown_message()`: showdownプロトコルをpoke-envに転送
+  - `_handle_ipc_control_message()`: IPC制御メッセージの内部処理
+  - 親プレイヤー参照による統合
+
+#### 実装結果
+- IPCClientWrapperがPSClientと同等のインターフェースを提供
+- 242行の新機能追加、5行の既存コード修正
+- 完全後方互換性維持
+
+### ✅ Phase 2: DualModePlayer統合 (完了)
+**実装日**: 2025-01-05  
+**コミット**: `bd1548ec5` - "Phase 2: Integrate IPCClientWrapper with DualModeEnvPlayer" 
+
+#### 完了した実装内容
+- ✅ **初期化方法変更**: `_initialize_communicator()`統合
+  - IPCClientWrapperをAccountConfiguration/ServerConfigurationで初期化
+  - Player基底クラスからの設定自動取得
+  - エラーハンドリングとフォールバック機能維持
+
+- ✅ **WebSocketオーバーライド変更**: `_override_websocket_methods()`改善
+  - 事前作成済みIPCClientWrapperの活用
+  - 親プレイヤー参照設定（`set_parent_player()`）
+  - ps_client置換の簡素化
+
+- ✅ **接続確立フロー修正**: `_establish_full_ipc_connection()`最適化
+  - IPCClientWrapper.listen()によるPSClient互換接続
+  - 認証完了待機（`wait_for_login()`）
+  - ping-pongテストの統合
+
+- ✅ **poke-env内部統合**: `_override_poke_env_internals()`拡張
+  - IPCClientWrapper.listen()を使用するlistening coroutine
+  - WebSocket操作の完全置換
+  - フォールバック機能付きエラーハンドリング
+
+#### 実装結果
+- DualModeEnvPlayerとIPCClientWrapperの完全統合
+- 66行の機能拡張、67行の既存コード最適化
+- showdown ↔ IPC ↔ IPCClientWrapper ↔ poke-env アーキテクチャ完成
+
+### 📋 Phase 3: IPCBattle削除 (未実施)
+**予定**: 次回実装
+**目標**: IPCBattle関連ファイルの完全削除
+
+#### 実施予定内容
+- [ ] IPCBattle関連ファイル削除（ipc_battle.py, ipc_battle_factory.py）
+- [ ] pokemon_env.pyからIPCBattleFactory呼び出し削除
+- [ ] 関連インポート文・テストコードの整理
+
+### 📋 Phase 4: テスト・ドキュメント更新 (未実施)
+**予定**: Phase 3完了後
+**目標**: 品質保証と文書化
+
+#### 実施予定内容
+- [ ] IPCClientWrapper拡張機能のテストコード作成
+- [ ] 統合テスト実行・検証
+- [ ] CLAUDE.md等ドキュメント更新
+
+## 技術的成果
+
+### アーキテクチャ改善
+```
+【Before】
+showdown ↔ IPC ↔ IPCBattle ↔ poke-env (複雑)
+                ↕
+         IPCClientWrapper (重複)
+
+【After】  
+showdown ↔ IPC ↔ IPCClientWrapper ↔ poke-env (統合)
+                    ↓
+            PSClient互換インターフェース
+```
+
+### 機能統合効果
+- **コード削減**: 重複機能の統合により保守性向上
+- **インターフェース統一**: PSClient互換によりpoke-env統合簡素化
+- **責任分離明確化**: IPCClientWrapperが唯一のIPC通信責任点
+
+### 互換性維持
+- **既存API**: DualModeEnvPlayerの外部インターフェース変更なし
+- **設定ファイル**: AccountConfiguration/ServerConfigurationフロー維持
+- **エラーハンドリング**: 既存のフォールバック機能保持
+
+---
+
 **作成日**: 2025-01-05  
 **更新日**: 2025-01-05  
-**ステータス**: 計画段階  
+**ステータス**: Phase 1-2 完了、Phase 3-4 未実施  
 **責任者**: システム設計チーム
