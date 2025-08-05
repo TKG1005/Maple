@@ -398,14 +398,36 @@ class TestIPCClientWrapper:
 - 66行の機能拡張、67行の既存コード最適化
 - showdown ↔ IPC ↔ IPCClientWrapper ↔ poke-env アーキテクチャ完成
 
-### 📋 Phase 3: IPCBattle削除 (未実施)
-**予定**: 次回実装
-**目標**: IPCBattle関連ファイルの完全削除
+### ✅ Phase 3: IPCBattle削除 (完了)
+**実装日**: 2025-01-05  
+**コミット**: `e7b0c6b9c` - "Phase 3: Complete IPCBattle deprecation and fix indentation errors"
 
-#### 実施予定内容
-- [ ] IPCBattle関連ファイル削除（ipc_battle.py, ipc_battle_factory.py）
-- [ ] pokemon_env.pyからIPCBattleFactory呼び出し削除
-- [ ] 関連インポート文・テストコードの整理
+#### 完了した実装内容
+- ✅ **IPCBattle関連ファイル削除**: 完全削除実行
+  - `src/sim/ipc_battle.py`: 22,966行のIPCBattleクラス削除
+  - `src/sim/ipc_battle_factory.py`: 13,357行のIPCBattleFactoryクラス削除
+  - `simple_teampreview_debug.py`: 開発用分析ファイル削除
+
+- ✅ **pokemon_env.pyからIPCBattleFactory呼び出し削除**: 完全除去
+  - `_create_ipc_battles()`メソッド削除（67行）
+  - `full_ipc`モード処理の完全除去
+  - IndentationError修正: 孤立したコードの適切なインデント復元
+
+- ✅ **関連インポート文・参照の整理**: 全参照削除
+  - `from src.sim.ipc_battle_factory import IPCBattleFactory`削除
+  - エラーメッセージからIPCBattle参照削除
+  - 全Pythonファイルからの完全参照除去確認
+
+- ✅ **処理フロー整合性確保**: Step 3統合実装
+  - WebSocketモードとIPCモードの統合処理検証
+  - `full_ipc`特有処理の完全除去確認  
+  - 共通処理の動作確認と最適化
+
+#### 実装結果
+- IPCBattle関連コード完全削除: 1,004行削除、17行修正
+- アーキテクチャ簡素化: 複雑なIPCBattle層の除去完了
+- 統合処理確立: DualModeEnvPlayerによる自動モード切り替え
+- IndentationError解消: 構文エラー完全修正
 
 ### 📋 Phase 4: テスト・ドキュメント更新 (未実施)
 **予定**: Phase 3完了後
@@ -420,26 +442,30 @@ class TestIPCClientWrapper:
 
 ### アーキテクチャ改善
 ```
-【Before】
+【Before: 複雑な二重構造】
 showdown ↔ IPC ↔ IPCBattle ↔ poke-env (複雑)
                 ↕
          IPCClientWrapper (重複)
 
-【After】  
+【After: 統合された単一構造】  
 showdown ↔ IPC ↔ IPCClientWrapper ↔ poke-env (統合)
                     ↓
             PSClient互換インターフェース
+                    ↓
+        DualModeEnvPlayer自動切り替え
 ```
 
 ### 機能統合効果
-- **コード削減**: 重複機能の統合により保守性向上
+- **コード削減**: 重複機能の統合により保守性向上（1,004行削減）
 - **インターフェース統一**: PSClient互換によりpoke-env統合簡素化
 - **責任分離明確化**: IPCClientWrapperが唯一のIPC通信責任点
+- **エラー解消**: IndentationError等の構文エラー完全修正
 
 ### 互換性維持
 - **既存API**: DualModeEnvPlayerの外部インターフェース変更なし
 - **設定ファイル**: AccountConfiguration/ServerConfigurationフロー維持
 - **エラーハンドリング**: 既存のフォールバック機能保持
+- **コマンドライン**: `--battle-mode online/local`の動作継続
 
 ---
 
