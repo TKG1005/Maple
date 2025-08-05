@@ -424,16 +424,57 @@ class IPCClientWrapper:
     
     This class mimics the poke_env ps_client interface but uses IPC
     communication instead of WebSocket, allowing seamless integration
-    with existing EnvPlayer code.
+    with existing EnvPlayer code. Enhanced in Phase 1 to support PSClient
+    compatibility with AccountConfiguration and authentication.
     """
     
-    def __init__(self, communicator: BattleCommunicator, logger: logging.Logger):
+    def __init__(self, 
+                 account_configuration=None,
+                 *,
+                 server_configuration=None,
+                 communicator: BattleCommunicator = None, 
+                 logger: logging.Logger = None,
+                 # Legacy support
+                 **kwargs):
+        """Initialize IPCClientWrapper with PSClient-compatible interface.
+        
+        Args:
+            account_configuration: AccountConfiguration object (PSClient compatibility)
+            server_configuration: ServerConfiguration object (PSClient compatibility)
+            communicator: BattleCommunicator instance for IPC
+            logger: Logger instance
+            **kwargs: Additional arguments for compatibility
+        """
+        # PSClient-compatible attributes
+        if account_configuration is not None:
+            # New PSClient-compatible initialization
+            from poke_env.ps_client.account_configuration import AccountConfiguration
+            if not isinstance(account_configuration, AccountConfiguration):
+                raise TypeError(f"account_configuration must be AccountConfiguration, got {type(account_configuration)}")
+            self.account_configuration = account_configuration
+        else:
+            # Legacy initialization or auto-generate
+            if communicator is not None and logger is not None:
+                # Legacy mode: IPCClientWrapper(communicator, logger)
+                from poke_env.ps_client.account_configuration import AccountConfiguration
+                self.account_configuration = AccountConfiguration("IPCPlayer", None)
+            else:
+                raise ValueError("Either account_configuration or (communicator, logger) must be provided")
+        
+        self.server_configuration = server_configuration
         self.communicator = communicator
-        self.logger = logger
-        self._battle_counter = 0
-        # Mock WebSocket-like attributes that poke-env might check
+        self.logger = logger or logging.getLogger(__name__)
+        
+        # PSClient-compatible attributes
         self.closed = False
         self.state = "connected"
+        self.logged_in = asyncio.Event()  # PSClient compatibility
+        self._battle_counter = 0
+        
+        # IPC-specific attributes
+        self._message_queue = asyncio.Queue()
+        self._listen_task = None
+        self._parent_player = None  # Will be set by DualModeEnvPlayer
         
     async def send(self, message: str) -> None:
         """Send raw message via IPC (WebSocket interface compatibility)."""
@@ -609,6 +650,202 @@ class IPCClientWrapper:
         except Exception as e:
             self.logger.error(f"IPC ping failed: {e}")
             return False
+    
+    # Phase 1: PSClient-compatible methods
+    
+    async def listen(self) -> None:
+        """PSClient.listen() compatible method for IPC communication.
+        
+        This method mimics PSClient.listen() by establishing IPC connection
+        and starting the message processing loop, similar to WebSocket listening.
+        """
+        try:
+            self.logger.info(f"🎧 Starting IPC listen mode for {self.username}")
+            
+            # Ensure communicator is connected
+            if not await self.communicator.is_alive():
+                await self.communicator.connect()
+                self.logger.info(f"✅ IPC connection established for {self.username}")
+            
+            # Trigger login sequence (IPC doesn't need challenge string)
+            await self.log_in([])
+            
+            # Start message processing loop (similar to PSClient WebSocket loop)
+            self._listen_task = asyncio.create_task(self._message_loop())
+            
+            # Keep method running like PSClient.listen()
+            await self._listen_task
+            
+        except Exception as e:
+            self.logger.error(f"❌ IPC listen failed for {self.username}: {e}")
+            raise
+    
+    async def _message_loop(self) -> None:
+        """Main message processing loop (similar to PSClient WebSocket loop)."""
+        try:
+            while not self.closed:
+                try:
+                    # Receive message from IPC communicator
+                    message = await self.communicator.receive_message()
+                    self.logger.debug(f"📥 IPC received message: {message}")
+                    
+                    # Process message (similar to PSClient._handle_message)
+                    await self._handle_message(message)
+                    
+                except asyncio.CancelledError:
+                    self.logger.info(f"🛑 IPC message loop cancelled for {self.username}")
+                    break
+                except Exception as e:
+                    self.logger.error(f"❌ Error in IPC message loop: {e}")
+                    await asyncio.sleep(1)  # Brief pause before retrying
+                    
+        except Exception as e:
+            self.logger.error(f"❌ IPC message loop failed: {e}")
+        finally:
+            self.logger.info(f"🔚 IPC message loop ended for {self.username}")
+    
+    async def log_in(self, split_message=None) -> None:
+        """PSClient.log_in() compatible method for IPC authentication.
+        
+        Args:
+            split_message: Challenge string (not used in IPC, kept for compatibility)
+        """
+        try:
+            # IPC environment doesn't need authentication like online Showdown
+            # but we simulate the login process for PSClient compatibility
+            self.logger.info(f"🔐 IPC login for {self.username} (authentication bypassed)")
+            
+            # Set logged_in event to signal successful "authentication"
+            self.logged_in.set()
+            self.logger.info(f"✅ IPC login successful for {self.username}")
+            
+        except Exception as e:
+            self.logger.error(f"❌ IPC login failed for {self.username}: {e}")
+            raise
+    
+    async def wait_for_login(self) -> None:
+        """PSClient.wait_for_login() compatible method."""
+        await self.logged_in.wait()
+    
+    @property
+    def username(self) -> str:
+        """Get username from account configuration (PSClient compatibility)."""
+        return self.account_configuration.username
+    
+    async def is_alive(self) -> bool:
+        """Check if IPC connection is alive (PSClient compatibility)."""
+        return await self.communicator.is_alive()
+    
+    def set_parent_player(self, player) -> None:
+        """Set parent player reference for poke-env integration."""
+        self._parent_player = player
+    
+    async def _handle_message(self, message) -> None:
+        """Handle received IPC message (similar to PSClient._handle_message).
+        
+        This method parses messages and determines whether they should be
+        processed as Showdown protocol messages or IPC control messages.
+        """
+        try:
+            # Parse message type
+            is_showdown, parsed_message = self._parse_message_type(message)
+            
+            if is_showdown:
+                # Handle Showdown protocol message
+                await self._handle_showdown_message(parsed_message)
+            else:
+                # Handle IPC control message
+                await self._handle_ipc_control_message(parsed_message)
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error handling IPC message: {e}")
+    
+    def _parse_message_type(self, message) -> tuple[bool, dict]:
+        """Parse message and determine if it's Showdown protocol or IPC control.
+        
+        Args:
+            message: Raw message from IPC communicator
+            
+        Returns:
+            Tuple of (is_showdown_protocol, parsed_message)
+        """
+        if not isinstance(message, dict):
+            return False, {}
+        
+        msg_type = message.get("type")
+        
+        # Showdown protocol messages
+        if msg_type == "protocol":
+            return True, message
+        
+        # IPC control messages
+        elif msg_type in ["battle_created", "player_registered", "battle_end", "error", "pong"]:
+            return False, message
+        
+        else:
+            # Unknown message type - treat as IPC control
+            self.logger.warning(f"⚠️ Unknown message type: {msg_type}")
+            return False, message
+    
+    async def _handle_showdown_message(self, message: dict) -> None:
+        """Handle Showdown protocol message by forwarding to poke-env.
+        
+        Args:
+            message: Parsed protocol message dict
+        """
+        try:
+            protocol_data = message.get("data", "")
+            if protocol_data and self._parent_player:
+                # Forward to poke-env's _handle_message method
+                await self._parent_player._handle_message(protocol_data)
+                self.logger.debug(f"📤 Forwarded protocol message to poke-env")
+            else:
+                self.logger.warning(f"⚠️ No protocol data or parent player: {message}")
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error forwarding to poke-env: {e}")
+    
+    async def _handle_ipc_control_message(self, message: dict) -> None:
+        """Handle IPC control message.
+        
+        Args:
+            message: Parsed IPC control message dict
+        """
+        msg_type = message.get("type")
+        
+        if msg_type == "battle_created":
+            self.logger.info(f"🏟️ Battle created: {message.get('battle_id')}")
+        elif msg_type == "player_registered":
+            self.logger.info(f"👤 Player registered: {message.get('player_id')}")
+        elif msg_type == "battle_end":
+            result = message.get("result")
+            winner = message.get("winner")
+            self.logger.info(f"🏁 Battle ended: result={result}, winner={winner}")
+        elif msg_type == "error":
+            error_msg = message.get("error_message", "Unknown error")
+            self.logger.error(f"❌ IPC error: {error_msg}")
+        elif msg_type == "pong":
+            self.logger.debug(f"🏓 Pong received")
+        else:
+            self.logger.debug(f"🔍 Unhandled IPC control message: {msg_type}")
+    
+    async def close(self) -> None:
+        """Close IPC connection (PSClient compatibility)."""
+        self.closed = True
+        
+        # Cancel listen task
+        if self._listen_task and not self._listen_task.done():
+            self._listen_task.cancel()
+            try:
+                await self._listen_task
+            except asyncio.CancelledError:
+                pass
+        
+        # Disconnect communicator
+        if self.communicator:
+            await self.communicator.disconnect()
+        
+        self.logger.info(f"🔌 IPC connection closed for {self.username}")
 
 
 # Utility functions for mode management
