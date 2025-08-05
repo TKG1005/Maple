@@ -116,7 +116,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 # self._demonstrate_ipc_capability()  # Commented out to prevent blocking during initialization
     
     def _initialize_communicator(self) -> None:
-        """Initialize the appropriate communicator based on mode."""
+        """Initialize the appropriate communicator and IPCClientWrapper based on mode."""
         if self.mode == "local":
             self._logger.info(f"Local IPC mode configured for player {self.player_id}")
             try:
@@ -127,26 +127,38 @@ class DualModeEnvPlayer(EnvPlayer):
                     logger=self._logger
                 )
                 
+                # Phase 2: Create IPCClientWrapper with PSClient-compatible interface
+                account_config = getattr(self, 'account_configuration', None)
+                server_config = getattr(self, 'server_configuration', None) 
+                
+                self.ipc_client_wrapper = IPCClientWrapper(
+                    account_configuration=account_config,
+                    server_configuration=server_config,
+                    communicator=self._communicator,
+                    logger=self._logger
+                )
+                
                 if self.full_ipc:
                     # Phase 4: Full IPC mode requires immediate connection and WebSocket override
-                    self._logger.info(f"🔌 Phase 4: IPC communicator created for {self.player_id} (mandatory connection)")
+                    self._logger.info(f"🔌 Phase 4: IPCClientWrapper created for {self.player_id} (mandatory connection)")
                     # Override will be activated in _establish_full_ipc_connection()
                 else:
                     # Phase 3: IPC ready but not mandatory
-                    self._logger.info(f"✅ IPC communicator ready for {self.player_id} (Phase 3 demonstration mode)")
+                    self._logger.info(f"✅ IPCClientWrapper ready for {self.player_id} (Phase 3 demonstration mode)")
                 
             except Exception as e:
                 if self.full_ipc:
                     # Phase 4: Full IPC mode cannot fallback to WebSocket
-                    self._logger.error(f"❌ Full IPC mode requires working IPC communicator for {self.player_id}: {e}")
+                    self._logger.error(f"❌ Full IPC mode requires working IPCClientWrapper for {self.player_id}: {e}")
                     raise RuntimeError(f"Full IPC initialization failed: {e}") from e
                 else:
                     # Phase 3: Fallback to WebSocket is allowed
-                    self._logger.warning(f"⚠️ IPC communicator setup failed for {self.player_id}: {e}")
+                    self._logger.warning(f"⚠️ IPCClientWrapper setup failed for {self.player_id}: {e}")
                     self._logger.info(f"🔄 Falling back to WebSocket mode for {self.player_id}")
         else:
             self._logger.info(f"Using online WebSocket mode for player {self.player_id}")
             # For online mode, don't initialize custom communicator - let poke-env handle it
+            self.ipc_client_wrapper = None  # Phase 2: No IPC wrapper for online mode
     
     def _demonstrate_ipc_capability(self) -> None:
         """Demonstrate IPC capability for Phase 3 completion."""
@@ -217,7 +229,7 @@ class DualModeEnvPlayer(EnvPlayer):
     
     def _establish_full_ipc_connection(self) -> None:
         """Phase 4: Establish mandatory IPC connection for full IPC mode."""
-        if not self.full_ipc or self.mode != "local":
+        if not self.full_ipc or self.mode != "local" or not hasattr(self, 'ipc_client_wrapper'):
             return
         
         try:
@@ -227,57 +239,33 @@ class DualModeEnvPlayer(EnvPlayer):
             
             async def establish_connection():
                 try:
-                    # Connect to IPC server
-                    await self._ensure_communicator_connected()
-                    self._logger.info(f"🔗 Phase 4: IPC connection established for {self.player_id}")
+                    # Phase 2: Start IPCClientWrapper.listen() instead of manual connection
+                    self._logger.info(f"🔗 Phase 4: Starting IPCClientWrapper.listen() for {self.player_id}")
                     
-                    # Test connection with ping-pong
-                    ping_msg = {"type": "ping", "timestamp": asyncio.get_event_loop().time()}
-                    self._logger.info(f"📤 Phase 4: Sending ping message for {self.player_id}: {ping_msg}")
-                    await self._communicator.send_message(ping_msg)
-                    self._logger.info(f"✅ Phase 4: Ping sent, waiting for pong from {self.player_id}")
+                    # Start listen task (similar to PSClient.listen())
+                    listen_task = asyncio.create_task(self.ipc_client_wrapper.listen())
                     
-                    try:
-                        response = await asyncio.wait_for(
-                            self._communicator.receive_message(), 
-                            timeout=5.0  # Reduced timeout for faster debugging
-                        )
-                        self._logger.info(f"📥 Phase 4: Received response for {self.player_id}: {response}")
+                    # Wait for authentication completion
+                    await asyncio.wait_for(
+                        self.ipc_client_wrapper.wait_for_login(),
+                        timeout=10.0
+                    )
+                    self._logger.info(f"🔐 Phase 4: Authentication completed for {self.player_id}")
+                    
+                    # Test connection with ping-pong via IPCClientWrapper
+                    self._logger.info(f"📤 Phase 4: Testing IPC connection for {self.player_id}")
+                    ping_success = await self.ipc_client_wrapper.ping()
+                    
+                    if ping_success:
+                        self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
                         
-                        # Safely handle response that might be string or dict
-                        response_type = None
-                        response_success = False
+                        # Now override WebSocket methods since IPC is working
+                        self._override_websocket_methods()
+                        self._logger.info(f"✅ Phase 4: WebSocket overridden with IPC for {self.player_id}")
                         
-                        if isinstance(response, dict):
-                            response_type = response.get("type")
-                            response_success = response.get("success", False)
-                        elif isinstance(response, str):
-                            try:
-                                import json
-                                parsed_response = json.loads(response)
-                                response_type = parsed_response.get("type")
-                                response_success = parsed_response.get("success", False)
-                                self._logger.info(f"📝 Phase 4: Parsed JSON response: type={response_type}, success={response_success}")
-                            except json.JSONDecodeError:
-                                self._logger.warning(f"⚠️ Phase 4: Response is not valid JSON: {response}")
-                                raise RuntimeError(f"Invalid response format: {response}")
-                        else:
-                            self._logger.warning(f"⚠️ Phase 4: Unexpected response type: {type(response)}")
-                            raise RuntimeError(f"Unexpected response type: {type(response)}")
-                        
-                        if response_type == "pong" and response_success:
-                            self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
-                            
-                            # Now override WebSocket methods since IPC is working
-                            self._override_websocket_methods()
-                            self._logger.info(f"✅ Phase 4: WebSocket overridden with IPC for {self.player_id}")
-                            
-                            return True
-                        else:
-                            raise RuntimeError(f"Invalid pong response: type={response_type}, success={response_success}, response={response}")
-                    except asyncio.TimeoutError:
-                        self._logger.error(f"⏱️ Phase 4: Ping-pong timeout for {self.player_id} - no response received within 5 seconds")
-                        raise RuntimeError("IPC ping-pong timeout")
+                        return True
+                    else:
+                        raise RuntimeError("IPC ping-pong failed")
                         
                 except Exception as e:
                     self._logger.error(f"❌ Phase 4: IPC connection failed for {self.player_id}: {e}")
@@ -302,35 +290,46 @@ class DualModeEnvPlayer(EnvPlayer):
         This method replaces the WebSocket client functionality with IPC
         communication while maintaining the same interface.
         """
-        if self.mode != "local":
+        if self.mode != "local" or not hasattr(self, 'ipc_client_wrapper'):
             return
         
         # Store original ps_client for potential restoration
         self._original_ps_client = getattr(self, 'ps_client', None)
         
-        # Replace ps_client with IPC wrapper
-        self.ps_client = IPCClientWrapper(self._communicator, self._logger)
+        # Phase 2: Replace ps_client with IPCClientWrapper (created in _initialize_communicator)
+        self.ps_client = self.ipc_client_wrapper
+        
+        # Set parent player reference for poke-env integration
+        self.ipc_client_wrapper.set_parent_player(self)
         
         # Override poke-env internal methods to prevent WebSocket operations
         self._override_poke_env_internals()
         
-        self._logger.debug(f"Overridden ps_client and poke-env internals with IPC for player {self.player_id}")
+        self._logger.debug(f"Overridden ps_client with IPCClientWrapper for player {self.player_id}")
         
     def _override_poke_env_internals(self) -> None:
         """Override poke-env internal methods to prevent WebSocket operations."""
         
-        # Override the listening coroutine to prevent WebSocket listening
-        async def mock_listening_coroutine():
-            """Mock listening coroutine that does nothing."""
-            self._logger.info(f"🎧 Mock listening coroutine started for IPC player {self.player_id}")
-            # Just keep running without doing anything
-            while True:
-                await asyncio.sleep(10)
-                if hasattr(self, '_should_stop_listening') and self._should_stop_listening:
-                    break
+        # Phase 2: Override the listening coroutine to use IPCClientWrapper.listen()
+        async def ipc_listening_coroutine():
+            """IPC listening coroutine using IPCClientWrapper."""
+            self._logger.info(f"🎧 IPC listening coroutine started for player {self.player_id}")
+            try:
+                # Use IPCClientWrapper.listen() instead of WebSocket listening
+                if hasattr(self, 'ipc_client_wrapper'):
+                    await self.ipc_client_wrapper.listen()
+                else:
+                    self._logger.error(f"❌ No IPCClientWrapper available for {self.player_id}")
+                    # Fallback to mock behavior
+                    while True:
+                        await asyncio.sleep(10)
+                        if hasattr(self, '_should_stop_listening') and self._should_stop_listening:
+                            break
+            except Exception as e:
+                self._logger.error(f"❌ IPC listening coroutine failed for {self.player_id}: {e}")
                 
         # Replace the listening coroutine
-        self._listening_coroutine = mock_listening_coroutine
+        self._listening_coroutine = ipc_listening_coroutine
         
         # Override start_listening to prevent WebSocket initialization  
         def mock_start_listening():
