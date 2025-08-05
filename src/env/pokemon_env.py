@@ -415,46 +415,25 @@ class PokemonEnv(gym.Env):
         ):
             self.opponent_player.reset_battles()
 
-        # Battle creation based on mode
-        if self.full_ipc:
-            # Phase 4: Full IPC mode - create battles directly via IPC factory  
-            self._logger.info("🚀 Phase 4: Creating battles via IPC factory")
-            battle0, battle1 = asyncio.run_coroutine_threadsafe(
-                self._create_ipc_battles(team_player_0, team_player_1),
-                POKE_LOOP,
-            ).result()
-            
-            # In full IPC mode, battles are created directly without EnvPlayer
-            # So we need to manually put them in the battle queues for env.step()
-            self._logger.debug("Manually queuing IPC battles for env.step() processing")
-            asyncio.run_coroutine_threadsafe(
-                self._battle_queues["player_0"].put(battle0),
-                POKE_LOOP,
-            ).result()
-            asyncio.run_coroutine_threadsafe(
-                self._battle_queues["player_1"].put(battle1),
-                POKE_LOOP,
-            ).result()
-        else:
-            # Traditional WebSocket mode or IPC with WebSocket fallback
-            self._battle_task = asyncio.run_coroutine_threadsafe(
-                self._run_battle(),
-                POKE_LOOP,
-            )
+        # Battle creation - now unified for all modes (WebSocket/IPC both use DualModeEnvPlayer)
+        self._battle_task = asyncio.run_coroutine_threadsafe(
+            self._run_battle(),
+            POKE_LOOP,
+        )
 
-            # チーム選択リクエストを待機
-            battle0 = asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(self._battle_queues["player_0"].get(), self.timeout),
+        # チーム選択リクエストを待機
+        battle0 = asyncio.run_coroutine_threadsafe(
+            asyncio.wait_for(self._battle_queues["player_0"].get(), self.timeout),
+            POKE_LOOP,
+        ).result()
+        POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
+        battle1 = battle0
+        if "player_1" in self._env_players:
+            battle1 = asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(self._battle_queues["player_1"].get(), self.timeout),
                 POKE_LOOP,
             ).result()
-            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_0"].task_done)
-            battle1 = battle0
-            if "player_1" in self._env_players:
-                battle1 = asyncio.run_coroutine_threadsafe(
-                    asyncio.wait_for(self._battle_queues["player_1"].get(), self.timeout),
-                    POKE_LOOP,
-                ).result()
-                POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
+            POKE_LOOP.call_soon_threadsafe(self._battle_queues["player_1"].task_done)
 
         # 各プレイヤーの手持ちポケモン種別を保存しておく
         self._team_rosters["player_0"] = [p.species for p in battle0.team.values()]
@@ -1302,71 +1281,3 @@ class PokemonEnv(gym.Env):
             self._logger.error(f"Failed to restore battle state via communicator: {e}")
             raise RuntimeError(f"Communicator state restore failed: {e}") from e
     
-    async def _create_ipc_battles(self, team_player_0: str | None, team_player_1: str | None) -> tuple[Any, Any]:
-        """Create battles directly via IPC factory (Phase 4).
-        
-        Args:
-            team_player_0: Team configuration for player 0
-            team_player_1: Team configuration for player 1
-            
-        Returns:
-            Tuple of (battle0, battle1) - IPCBattle instances
-            
-        Raises:
-            RuntimeError: If IPC battle creation fails
-        """
-        try:
-            # Import required classes
-            from src.sim.ipc_battle_factory import IPCBattleFactory
-            from src.sim.battle_communicator import IPCCommunicator
-            
-            # Get communicator from player_0 (both players should use the same IPC process)
-            player_0 = self._env_players["player_0"]
-            if not hasattr(player_0, '_communicator') or player_0._communicator is None:
-                raise RuntimeError("Player 0 does not have IPC communicator initialized")
-            
-            communicator = player_0._communicator
-            
-            # Create IPC battle factory
-            factory = IPCBattleFactory(communicator, self._logger)
-            
-            # Prepare player names
-            player_names = ["Player1", "Player2"]
-            if hasattr(player_0, "username") and player_0.username:
-                player_names[0] = player_0.username
-            
-            if "player_1" in self._env_players:
-                player_1 = self._env_players["player_1"]
-                if hasattr(player_1, "username") and player_1.username:
-                    player_names[1] = player_1.username
-            
-            # Prepare teams
-            teams = [team_player_0, team_player_1]
-            
-            self._logger.info(f"Creating IPC battle with players: {player_names}")
-            
-            # Create separate battle instances for each player with proper filtering
-            battle_p1 = await factory.create_battle_for_player(
-                player_id="p1",
-                format_id="gen9bssregi", 
-                player_names=player_names,
-                teams=teams,
-                env_player=player_0  # Pass EnvPlayer for teampreview integration
-            )
-            
-            player_1 = self._env_players.get("player_1")
-            battle_p2 = await factory.create_battle_for_player(
-                player_id="p2",
-                format_id="gen9bssregi",
-                player_names=player_names, 
-                teams=teams,
-                env_player=player_1  # Pass EnvPlayer for teampreview integration
-            )
-            
-            self._logger.info(f"Successfully created independent IPC battles: {battle_p1.battle_id} (p1: {battle_p1.player_id}, p2: {battle_p2.player_id})")
-            
-            return battle_p1, battle_p2
-            
-        except Exception as e:
-            self._logger.error(f"Failed to create IPC battles: {e}")
-            raise RuntimeError(f"IPC battle creation failed: {e}") from e

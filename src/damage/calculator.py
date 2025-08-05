@@ -462,7 +462,7 @@ class DamageCalculator:
             
             raise ValueError(f"DAMAGE_CALC_ERROR: None values in damage calculation. "
                            f"Details: {error_details}. "
-                           f"Root cause: Pokemon or Move objects in IPCBattle are not properly initialized with required stats/attributes.")
+                           f"Root cause: Pokemon or Move objects are not properly initialized with required stats/attributes.")
             
         base_damage = (((2 * level / 5) + 2) * move_power * attack_stat / defense_stat) / 50 + 2
         
