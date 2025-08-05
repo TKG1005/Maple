@@ -1,13 +1,13 @@
 <!--
   SHOWDOWN_MESSAGE_SPEC.md
   MapleShowdownCore メッセージ仕様書
-  Python (IPCBattle) と Node.js MapleShowdownCore 間の IPC メッセージ仕様。
+  Python (IPCClientWrapper) と Node.js MapleShowdownCore 間の IPC メッセージ仕様。
   Pokemon Showdown シミュレータ プロトコル (SIM-PROTOCOL.md) との対応を示す。
 -->
 # MapleShowdownCore メッセージ仕様書
 
 ## 1. 目的
-このドキュメントは、Python (IPCBattle) と Node.js MapleShowdownCore 間の IPC メッセージ仕様を定義し、
+このドキュメントは、Python (IPCClientWrapper) と Node.js MapleShowdownCore 間の IPC メッセージ仕様を定義し、
 Pokemon Showdown のテキストプロトコルとの対応付けを行います。
 
 ## 2. Showdown テキストプロトコル (参考)

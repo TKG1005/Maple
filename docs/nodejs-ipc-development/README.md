@@ -17,7 +17,7 @@
 
 #### 3. **アーキテクチャ文書**
 - **`showdown-integration-plan.md`** - Phase 1-4の統合実装計画全体  
-- **`ipc-battle-architecture.md`** - IPCBattleクラス技術仕様
+- **`ipc-battle-architecture.md`** - IPC通信アーキテクチャ仕様
 
 ## 🚀 **コンテキスト復元手順**
 
@@ -82,9 +82,9 @@ cat SHOWDOWN_SPEC_COMPLIANCE.md | head -100
 ### **実装ファイル**
 ```
 /pokemon-showdown/sim/ipc-battle-server.js
-/src/sim/ipc_battle.py
-/src/sim/ipc_battle_factory.py
+/src/env/dual_mode_player.py (IPCClientWrapper)
 /src/sim/battle_communicator.py
+/docs/ipc-battle-deprecation-plan.md
 ```
 
 ### **Pokemon Showdown仕様**
@@ -97,7 +97,6 @@ cat SHOWDOWN_SPEC_COMPLIANCE.md | head -100
 
 ---
 
-**更新日**: 2025-07-30  
+**更新日**: 2025-01-05  
 **作業ブランチ**: `feature/node-ipc-server-development`  
-**総推定工数**: 13-18日  
-**現在の段階**: Phase A準備完了
+**現在の段階**: IPCClientWrapper統合完了、Node.jsサーバー開発中

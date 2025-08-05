@@ -1,24 +1,26 @@
-# IPCBattle アーキテクチャドキュメント
+# IPC通信アーキテクチャドキュメント
 
 ## 概要
 
-IPCBattleは、MapleのPhase 4実装のコアコンポーネントで、WebSocketベースのPokemon Showdown通信を直接的なプロセス間通信（IPC）に置き換えます。このアーキテクチャはネットワークオーバーヘッドを排除し、従来のWebSocket接続に対して75%のパフォーマンス向上を提供します。
+Mapleの IPC（Inter-Process Communication）システムは、WebSocketベースのPokemon Showdown通信を直接的なプロセス間通信に置き換えます。IPCClientWrapperがPSClient互換インターフェースを提供し、poke-envとの統合を簡素化しています。
 
 ## アーキテクチャ図
 
-### クラス継承階層
+### 統合アーキテクチャ
 
 ```
-AbstractBattle (poke-env)
+poke-env AbstractBattle
     └── CustomBattle (Maple拡張)
-        └── IPCBattle (IPC通信)
+        └── DualModeEnvPlayer (統合プレイヤー)
+            └── IPCClientWrapper (PSClient互換)
 ```
-※ **出力チャネル**:
-  - Node.jsプロセスはエラーメッセージを**stderr**に出力します
-  - IPCプロトコルメッセージ（`battle_created`, `player_registered`など）とShowdownメッセージは両方とも**JSON形式**で**stdout**に出力されます
-  - IPCCommunicatorは**stdoutのみ**を監視します
-  - IPCプロトコルメッセージには`type`フィールドによる識別子を付けてShowdownメッセージと区別します
-  - Showdownオリジナルメッセージは変更を加えずにpoke-envに渡され、互換性が保たれます
+
+**通信チャネル**:
+- Node.jsプロセスはエラーメッセージを**stderr**に出力
+- IPCプロトコルメッセージとShowdownメッセージは**JSON形式**で**stdout**に出力  
+- IPCClientWrapperは**stdoutのみ**を監視
+- `type`フィールドによりプロトコル/制御メッセージを自動判別
+- Showdownメッセージは変更なしでpoke-envに転送
 
 ### 通信フロー
 
@@ -29,359 +31,317 @@ Pythonプロセス                    Node.jsプロセス
 │       ↓         │              │                      │
 │ DualModeEnvPlayer│              │                      │
 │       ↓         │              │                      │
-│   IPCBattle     │ ←──IPC────→ │  Pokemon Showdown    │
+│ IPCClientWrapper│ ←──IPC────→ │  Pokemon Showdown    │
 │       ↓         │              │  互換エンジン         │
 │BattleCommunicator│              │                      │
 └─────────────────┘              └──────────────────────┘
 ```
 
-### 従来 vs IPC アーキテクチャ
+### アーキテクチャ改善
 
-#### 従来のWebSocket方式
+#### 旧アーキテクチャ（廃止済み）
 ```
-EnvPlayer A → WebSocket → Pokemon Showdown Server ← WebSocket ← EnvPlayer B
-     ↓                           ↓                           ↓
-  Battle A                  Central Battle               Battle B
-(プレイヤーA視点)           (完全な状態)              (プレイヤーB視点)
-```
-
-#### IPC方式 (Phase 4) - 修正版
-```
-EnvPlayer A → Battle A → IPCCommunicator → Node.js Battle Engine ← IPCCommunicator ← Battle B ← EnvPlayer B
-     ↓           ↓                               ↓                                  ↓        ↓
-独立Battle    プレイヤーA固有              メッセージルーター                   プレイヤーB固有   独立Battle
-オブジェクト   メッセージ                  (Player ID filtering)               メッセージ      オブジェクト
+EnvPlayer → WebSocket → ShowdownServer ← WebSocket ← EnvPlayer
+EnvPlayer → IPCBattle → IPCCommunicator → Node.js ← IPCCommunicator ← IPCBattle ← EnvPlayer
+                (重複構造)
 ```
 
-## IPCBattleクラス詳細
+#### 新アーキテクチャ（統合済み）
+```
+DualModeEnvPlayer → IPCClientWrapper → IPCCommunicator → Node.js ← IPCCommunicator ← IPCClientWrapper ← DualModeEnvPlayer
+            ↓                   ↓                                                              ↓                    ↓
+        PSClient互換     showdown/IPC自動判別                                           showdown/IPC自動判別    PSClient互換
+```
+
+## IPCClientWrapper詳細
 
 ### ファイル場所
-- **ファイル**: `/src/sim/ipc_battle.py`
-- **クラス**: `IPCBattle(CustomBattle)`
+- **ファイル**: `/src/env/dual_mode_player.py`
+- **クラス**: `IPCClientWrapper`
 
 ### 主要機能
 
-#### 1. 初期化 (修正版 - 不完全情報ゲーム対応)
+#### 1. PSClient互換初期化
 ```python
-def __init__(self, battle_id: str, username: str, logger: logging.Logger, 
-             communicator: BattleCommunicator, player_id: str, gen: int = 9):
-    # バトルタグを作成: "battle-gen9randombattle-{battle_id}"
-    # プレイヤー固有のIPC通信チャネルを初期化
-    # プレイヤーIDを保存（メッセージフィルタリング用）
-    self.player_id = player_id  # "p1" or "p2"
-    # プレイヤー視点のみのPokemonチームを設定
+def __init__(self, account_configuration, server_configuration=None, 
+             communicator=None, logger=None):
+    # PSClient互換のAccountConfiguration対応
+    # 認証状態管理（logged_in Event）
+    # メッセージキューとタスク管理
+    self.logged_in = asyncio.Event()
+    self._listen_task = None
 ```
 
-#### 2. プレイヤー固有チーム作成 (修正版)
+#### 2. 認証システム
 ```python
-def _create_player_specific_teams(self, player_id: str):
-    # 自分のチーム: 完全な情報を持つ6匹のPokemon
-    # 相手のチーム: 観測可能な情報のみを持つPokemon
-    # プレイヤー視点に基づく情報制限を実装
-    if player_id == "p1":
-        # Player 1視点: 自分=p1チーム、相手=p2チーム
-    else:
-        # Player 2視点: 自分=p2チーム、相手=p1チーム
-```
-
-**生成されるPokemon実数値の例 (メタモン)**:
-```python
-pokemon._stats = {
-    'hp': 155,   # ((48*2 + 31 + 63) * 50 / 100) + 50 + 10
-    'atk': 100,  # ((48*2 + 31 + 63) * 50 / 100) + 5  
-    'def': 100,
-    'spa': 100,
-    'spd': 100,
-    'spe': 100
-}
-```
-
-#### 3. IPC通信メソッド (修正版 - プレイヤー固有通信)
-```python
-async def send_battle_command(command: str):
-    # プレイヤー固有のバトルコマンドを送信 ("move 1", "switch 2"等)
-    # player_idを含めてMapleShowdownCoreに送信
+async def log_in(self, split_message=None):
+    # IPC環境での認証バイパス
+    # PSClient.log_in()互換インターフェース
+    self.logged_in.set()
     
-async def receive_player_message() -> Dict[str, Any]:
-    # 自分宛て(player_id一致)のメッセージのみ受信
-    # MapleShowdownCoreのメッセージフィルタリングを利用
-    
-def parse_message(split_message: List[str]):
-    # プレイヤー視点のPokemon Showdown形式メッセージを解析
-    # 相手の隠し情報は含まれない
+async def wait_for_login(self):
+    # PSClient.wait_for_login()互換
+    await self.logged_in.wait()
 ```
 
-#### 4. 環境互換性 (修正版)
+#### 3. メッセージ処理システム
 ```python
-@property
-def battle_id(self) -> str:
-    # 一意のバトル識別子を返す
+async def listen(self):
+    # PSClient.listen()互換のメッセージループ
+    # IPC接続確立とメッセージ処理開始
+    
+def _parse_message_type(self, message):
+    # showdownプロトコルとIPC制御メッセージの自動判別
+    # type="protocol" → showdown, その他 → IPC制御
+    
+async def _handle_message(self, message):
+    # メッセージディスパッチャ
+    # showdown → poke-env転送, IPC → 内部処理
+```
 
-@property
-def player_id(self) -> str:
-    # プレイヤー識別子を返す ("p1" or "p2")
-
-@property  
-def ipc_ready(self) -> bool:
-    # プレイヤー固有IPC通信の準備完了状態をチェック
+#### 4. poke-env統合
+```python
+async def _handle_showdown_message(self, message):
+    # showdownプロトコルをpoke-envの_handle_message()に転送
+    # 完全な互換性維持
+    
+def set_parent_player(self, player):
+    # DualModeEnvPlayerとの連携設定
+    self._parent_player = player
 ```
 
 ## データ構造
 
-### チーム構成 (修正版 - プレイヤー視点)
+### DualModeEnvPlayer統合
 ```python
-# プレイヤー1視点のIPCBattle (player_id="p1")
-_team = {  # 自分のチーム（完全情報）
-    'p1a': Pokemon(species='ditto', active=True, level=50, stats={...}),
-    'p1b': Pokemon(species='ditto', active=False, level=50, stats={...}),
-    # ... 完全な実数値、技、持ち物情報
-}
+# DualModeEnvPlayerによるモード切り替え
+player = DualModeEnvPlayer(
+    env=env,
+    player_id="player_0",
+    mode="local",  # "local" for IPC, "online" for WebSocket
+    server_configuration=server_config
+)
 
-_opponent_team = {  # 相手チーム（観測可能情報のみ）
-    'p2a': Pokemon(species='ditto', active=True, level=50),
-    'p2b': Pokemon(species=None, active=False),  # 未観測は不明
-    # ... 観測されていない情報はNone
-}
-
-# プレイヤー2視点のIPCBattle (player_id="p2")では逆転
-_team = {  # 自分のチーム（p2視点では p2チーム）
-    'p2a': Pokemon(species='ditto', active=True, level=50, stats={...}),
-    # ...
-}
-_opponent_team = {  # 相手チーム（p2視点では p1チーム、観測情報のみ）
-    'p1a': Pokemon(species='ditto', active=True, level=50),
-    # ...
-}
+# 内部でIPCClientWrapperが自動初期化
+# AccountConfiguration/ServerConfigurationから設定取得
+# ps_clientがIPCClientWrapperに置換される
 ```
 
 ### IPCメッセージ形式
 
-#### IPCプロトコルメッセージ（識別子付き）
+#### IPC制御メッセージ
 ```json
-// バトルコマンドメッセージ（プレイヤー固有）
+// バトルコマンド送信
 {
     "type": "battle_command",
     "battle_id": "test-001",
-    "player_id": "p1",
+    "player": "p1",
     "command": "move 1"
 }
 
-// プレイヤー固有状態要求
-{
-    "type": "get_battle_state",
-    "battle_id": "test-001",
-    "player_id": "p1"
-}
-
-// バトル作成メッセージ（全プレイヤー共通）
+// バトル作成
 {
     "type": "create_battle",
     "battle_id": "test-001",
     "format": "gen9randombattle",
     "players": [
-        {"name": "player1", "team": "...", "player_id": "p1"},
-        {"name": "player2", "team": "...", "player_id": "p2"}
+        {"name": "player1", "team": "..."},
+        {"name": "player2", "team": "..."}
     ]
 }
 
-// エラーメッセージ
+// エラー応答
 {
     "type": "error",
-    "error_type": "BATTLE_NOT_FOUND",
-    "error_message": "Battle test-001 not found",
+    "error_message": "Battle not found",
     "context": {"battle_id": "test-001"}
 }
 ```
 
-#### Showdownプロトコルメッセージ（WebSocket形式と同じ）
+#### Showdownプロトコルメッセージ
 ```json
-// 複数行を改行で結合した1つの長い文字列（最初の行は必ずバトルタグ）
+// IPCClientWrapperが自動判別して poke-env に転送
 {
     "type": "protocol",
-    "battle_id": "test-001",
-    "player_id": "p1",
-    "data": ">battle-gen9randombattle-test-001\n|init|battle\n|title|Player1 vs. Player2\n|j|☆Player1\n|request|{\"teamPreview\":true,\"maxChosenTeamSize\":3,\"side\":{...},\"rqid\":1}"
-}
-
-// ターン進行時のメッセージ（複数行を改行で結合）
-{
-    "type": "protocol",
-    "battle_id": "test-001",
-    "player_id": "p1",
-    "data": ">battle-gen9randombattle-test-001\n|move|p1a: Ditto|Tackle|p2a: Ditto\n|-damage|p2a|80/100\n|turn|2\n|request|{\"active\":[...],\"rqid\":2}"
+    "data": ">battle-gen9randombattle-test-001\n|init|battle\n|title|Player1 vs. Player2\n|request|{\"teamPreview\":true,\"side\":{...}}"
 }
 ```
 
 ## パフォーマンス比較
 
-| 項目 | 従来のWebSocket | IPCBattle |
-|------|----------------|-----------|
-| **通信方式** | ネットワークベース | ローカルIPC |
+| 項目 | WebSocket | IPC通信 |
+|------|-----------|---------|
+| **通信方式** | ネットワークベース | ローカルプロセス間 |
 | **遅延** | 10-100ms | <1ms |
 | **オーバーヘッド** | HTTP/WebSocketプロトコル | 直接プロセス通信 |
 | **初期化** | サーバー接続待機 | 即座に利用可能 |
-| **チーム設定** | サーバー側生成 | ローカルPokemon作成 |
-| **エラー処理** | ネットワークエラー回復 | プロセスレベルエラー処理 |
-| **パフォーマンス向上** | ベースライン | 75%向上目標 |
+| **アーキテクチャ** | 重複構造 | 統合IPCClientWrapper |
+| **保守性** | 複数クラス管理 | 単一責任点 |
 
 ## Mapleコンポーネントとの統合
 
-### StateObserver統合
-```python
-# IPCBattleは計算済み実数値を持つ適切なPokemonオブジェクトを提供
-active_pokemon = battle._active_pokemon
-attack_stat = active_pokemon.stats.get('atk', 100)  # Noneではなく100を返す
-
-# StateObserverはIPCBattleの観測値を正常に処理可能
-observer = StateObserver('config/state_spec.yml')
-observation = observer.observe(battle)  # 正常に動作
-```
-
-### 環境統合
-```python
-# PokemonEnvは訓練にIPCBattleを使用可能
+### 自動モード切り替え
+```python 
+# PokemonEnvで自動的にDualModeEnvPlayerが使用される
 env = PokemonEnv(
     state_observer=state_observer,
     action_helper=action_helper,
-    full_ipc=True  # IPCBattleモードを有効化
+    battle_mode="local"  # IPCClientWrapper経由のIPC通信
 )
-```
 
-## 現在の実装状況
-
-### ✅ 完了済み
-- [x] IPCBattleクラス実装
-- [x] 適切な実数値を持つPokemonチーム生成
-- [x] StateObserver統合
-- [x] 基本的なIPCメッセージ構造
-- [x] poke-env互換レイヤー
-
-### ⏳ 進行中
-- [ ] BattleCommunicator具体実装
-- [ ] Node.js IPCサーバー開発
-- [ ] バトル進行（step）統合
-- [ ] フル環境テスト
-
-### 🔄 保留中
-- [ ] パフォーマンスベンチマーク
-- [ ] エラー回復メカニズム
-- [ ] マルチバトルサポート
-- [ ] 本番デプロイ
-
-## 使用例
-
-### 基本的なIPCBattle作成
-```python
-from src.sim.ipc_battle import IPCBattle
-from src.sim.battle_communicator import BattleCommunicator
-import logging
-
-logger = logging.getLogger('battle')
-communicator = ConcreteCommunicator()  # 実装が必要
-battle = IPCBattle('battle-001', 'trainer1', logger, communicator)
-
-# バトル準備状態のチェック
-if battle.ipc_ready:
-    await battle.send_battle_command("move 1")
-    state = await battle.get_battle_state()
+# DualModeEnvPlayerが内部でIPCClientWrapperを初期化
+# poke-envの既存コードは変更不要
 ```
 
 ### StateObserver統合
 ```python
-from src.state.state_observer import StateObserver
-
+# DualModeEnvPlayerは標準的なpoke-env Battle オブジェクトを提供
+# IPCClientWrapperが透過的にShowdownプロトコルを処理
 observer = StateObserver('config/state_spec.yml')
-observation = observer.observe(battle)
-print(f"観測値の形状: {observation.shape}")  # (2534,)
+observation = observer.observe(battle)  # 従来通り動作
 ```
 
-### 環境での使用
+## 実装状況
+
+### ✅ 完了済み（IPCBattle廃止計画）
+- [x] IPCClientWrapper PSClient互換機能実装
+- [x] DualModeEnvPlayer統合
+- [x] IPCBattle/IPCBattleFactory完全削除
+- [x] メッセージ自動判別システム
+- [x] poke-env _handle_message() 統合
+
+### ⏳ 進行中
+- [ ] Node.js IPCサーバー開発
+- [ ] フルバトルフロー統合テスト
+- [ ] パフォーマンス検証
+
+### 📋 今後の課題
+- [ ] Phase 4: テスト・ドキュメント更新
+- [ ] マルチバトルサポート拡張
+- [ ] エラー回復メカニズム強化
+
+## 使用例
+
+### DualModeEnvPlayer作成
+```python
+from src.env.dual_mode_player import DualModeEnvPlayer
+from poke_env.ps_client.server_configuration import ServerConfiguration
+
+# ローカルIPC通信モード
+player = DualModeEnvPlayer(
+    env=env,
+    player_id="player_0",
+    mode="local",
+    server_configuration=ServerConfiguration("localhost", 8000)
+)
+
+# 内部でIPCClientWrapperが自動初期化される
+```
+
+### PokemonEnv統合
 ```python
 env = PokemonEnv(
     state_observer=observer,
-    action_helper=action_helper,
-    full_ipc=True
+    action_helper=action_helper, 
+    battle_mode="local"  # IPCClientWrapper使用
 )
 
-obs = env.reset()  # 内部でIPCBattleを使用
+obs = env.reset()  # DualModeEnvPlayerが自動選択される
+```
+
+### 手動IPCClientWrapper操作
+```python
+from src.env.dual_mode_player import IPCClientWrapper
+from poke_env.ps_client.account_configuration import AccountConfiguration
+
+account_config = AccountConfiguration("TestPlayer", None)
+wrapper = IPCClientWrapper(
+    account_configuration=account_config,
+    communicator=communicator
+)
+
+# PSClient互換の操作
+await wrapper.listen()  # メッセージループ開始
+await wrapper.wait_for_login()  # 認証完了待機
 ```
 
 ## 技術設計決定
 
-### 1. Pokemon種族の標準化
-- **決定**: テスト段階では全Pokemon に"ditto"を使用
-- **理由**: 統一された種族値（全能力値48）でデバッグを簡素化
-- **将来**: チーム設定から多様な種族をサポート予定
+### 1. アーキテクチャ統合
+- **決定**: IPCBattleを廃止しIPCClientWrapperに統合
+- **理由**: 機能重複の解消、責任分離の明確化
+- **効果**: 保守性向上、1,004行のコード削減
 
-### 2. 実数値計算方法
-- **計算式**: `((種族値 * 2 + 31 + 252/4) * レベル / 100) + 5`
-- **前提条件**: 最大努力値（252）、理想個体値（31）、補正なし性格
-- **レベル**: 対戦標準の50で固定
+### 2. PSClient互換設計
+- **方針**: poke-envの既存エコシステムとの自然な統合
+- **実装**: AccountConfiguration/ServerConfiguration対応
+- **利点**: 既存コードの変更不要、学習コスト削減
 
-### 3. 技構成の選択
-- **技**: tackle, rest, protect, struggle
-- **理由**: 物理攻撃、回復、守備、フォールバックをカバー
-- **範囲**: テスト用の基本的なバトル機能を提供
+### 3. メッセージ処理方式
+- **自動判別**: `type`フィールドによるshowdown/IPC制御メッセージ分離
+- **透過性**: showdownプロトコルは変更なしでpoke-envに転送
+- **拡張性**: 新しいIPC制御メッセージの追加が容易
 
-### 4. IPCプロトコル設計
-- **形式**: 人間が読めるJSONメッセージ
-- **転送**: プロセスのstdin/stdoutまたは名前付きパイプ
-- **エラー処理**: 詳細なコンテキストを含む例外ベース
+### 4. 統合アプローローチ
+- **DualModeEnvPlayer**: WebSocket/IPC両モード対応
+- **自動切り替え**: `battle_mode="local"`でIPC、`"online"`でWebSocket
+- **後方互換**: 既存のPokemonEnv APIは変更なし
 
 ## トラブルシューティング
 
 ### よくある問題
 
-#### 1. `attack_stat: None` エラー
-**原因**: Pokemon._statsが適切に初期化されていない
-**解決策**: IPCBattleがbase_statsから実数値を計算するよう修正済み
+#### 1. モード切り替えエラー
+**原因**: `battle_mode`パラメータの不正な値
+**解決策**: `"local"`（IPC）または`"online"`（WebSocket）を指定
 ```python
-# _create_minimal_teams()で修正済み
-pokemon._stats = {
-    'atk': int(((pokemon.base_stats['atk'] * 2 + 31 + 252/4) * level / 100) + 5)
-}
+env = PokemonEnv(battle_mode="local")  # 正しい指定
 ```
 
-#### 2. BattleCommunicator抽象クラスエラー  
-**原因**: BattleCommunicatorの具体実装が存在しない
-**状況**: Node.js IPCサーバー実装が必要
+#### 2. IPCClientWrapper初期化エラー
+**原因**: AccountConfigurationが未提供
+**解決策**: DualModeEnvPlayerが自動的にAccountConfigurationを生成
+```python
+# 手動作成時は必須
+account_config = AccountConfiguration("PlayerName", None)
+wrapper = IPCClientWrapper(account_configuration=account_config)
+```
 
-#### 3. 環境統合の問題
-**原因**: PokemonEnvコンストラクタの引数不一致
-**状況**: 適切な統合のため調査中
+#### 3. メッセージ処理エラー
+**原因**: Node.js IPCサーバーとの通信断絶
+**状況**: BattleCommunicator実装の確認が必要
 
 ### デバッグ情報
 ```python
-# IPCBattle Pokemon実数値の確認
-battle = IPCBattle(...)
-print(f"アクティブPokemon: {battle._active_pokemon.species}")
-print(f"種族値: {battle._active_pokemon.base_stats}")
-print(f"実数値: {battle._active_pokemon.stats}")
-print(f"攻撃実数値: {battle._active_pokemon.stats.get('atk')}")
+# DualModeEnvPlayer状態確認  
+player = DualModeEnvPlayer(...)
+print(f"Mode: {player.mode}")
+print(f"IPC Wrapper: {hasattr(player, 'ipc_client_wrapper')}")
+print(f"PS Client: {type(player.ps_client)}")
 ```
 
 ## 将来の開発
 
-### Phase 4完成要件
+### 完成要件
 1. **Node.js IPCサーバー**: Pokemon Showdown互換のバトルエンジン実装
-2. **BattleCommunicator**: プロセス通信の具体実装作成
-3. **バトル進行**: フルバトルフロー用のstep()メソッド統合
-4. **パフォーマンス検証**: 75%パフォーマンス向上目標の達成
+2. **BattleCommunicator**: プロセス通信の具体実装作成  
+3. **統合テスト**: フルバトルフロー検証
+4. **パフォーマンス検証**: IPC通信の性能測定
 
 ### 拡張可能性
 1. **マルチバトルサポート**: 並行バトルの効率的な処理
-2. **チーム多様性**: 多様なPokemon種族と技構成のサポート
-3. **高度なIPC**: 最大パフォーマンスのためのバイナリプロトコル
-4. **エラー回復**: プロセス障害の堅牢な処理
+2. **エラー回復強化**: プロセス障害の堅牢な処理
+3. **プロトコル最適化**: バイナリ形式による高速化
+4. **分散処理**: 複数Node.jsプロセスでの負荷分散
 
 ## 関連ドキュメント
-- `docs/showdown-integration-plan.md` - Phase 4実装計画全体
-- `src/sim/ipc_battle.py` - ソースコード実装
-- `src/sim/ipc_battle_factory.py` - バトル作成のファクトリーパターン
+- `docs/nodejs-ipc-development/showdown-integration-plan.md` - 統合計画全体
+- `docs/ipc-battle-deprecation-plan.md` - IPCBattle廃止記録
+- `src/env/dual_mode_player.py` - IPCClientWrapper実装
 - `CLAUDE.md` - プロジェクト概要と開発ガイドライン
 
 ---
 
-**最終更新**: 2025-07-30  
-**状況**: Phase 4実装 - コア完成、統合保留中  
-**次のステップ**: Node.js IPCサーバー開発とフル環境テスト
+**最終更新**: 2025-01-05  
+**状況**: IPCClientWrapper統合完了、Node.jsサーバー開発中  
+**次のステップ**: フル環境テストとパフォーマンス検証

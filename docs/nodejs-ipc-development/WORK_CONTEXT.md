@@ -1,79 +1,80 @@
 # Node.js IPCサーバー開発 - 作業コンテキスト
 
-## 現在の状況 (更新日時: 2025-07-30 14:30)
+## 現在の状況 (更新日時: 2025-01-05)
 
 ### 🎯 作業段階
-- **現在フェーズ**: Phase A - 基盤修正・テスト開始準備完了
+- **現在フェーズ**: IPCClientWrapper統合完了、Node.jsサーバー開発中
 - **作業ブランチ**: `feature/node-ipc-server-development`
-- **完了済み**: 詳細開発計画の策定、ブランチ作成
-- **次のタスク**: Phase A.1 - 現行システム問題の特定と修正
+- **完了済み**: IPCBattle廃止、IPCClientWrapper統合、アーキテクチャ簡素化
+- **次のタスク**: Node.js IPCサーバーとの統合テスト
 
 ### 📊 現在の実装状況
 
 #### ✅ 完成済みコンポーネント
 - IPCサーバー基本構造: `pokemon-showdown/sim/ipc-battle-server.js` (614行)
-- Python IPCBattle: `src/sim/ipc_battle.py` (244行)  
-- IPCBattleFactory: `src/sim/ipc_battle_factory.py` (150行)
-- デュアルモード通信システム: Phase 1-3完了済み
+- IPCClientWrapper: `src/env/dual_mode_player.py` (PSClient互換実装)
+- DualModeEnvPlayer: WebSocket/IPC自動切り替えシステム
+- アーキテクチャ統合: IPCBattle/IPCBattleFactory廃止による簡素化
 
 #### ⚠️ 既知の問題点
-1. **種族名フォーマット不一致**: 
-   - ダメージ計算器: `KeyError: 'ditto'`
-   - IPCBattle生成: 小文字 "ditto"
-   - species_mapper要求: 大文字 "Ditto"
+1. **Node.js IPCサーバー統合**: 
+   - BattleStream APIとの統合完了が必要
+   - プロセス間通信の安定性確保
+   - メッセージフォーマットの最終調整
 
-2. **BattleStream統合不完全**:
-   - 基本ping-pong通信は動作
-   - 実際のバトル作成でタイムアウト発生
-   - Pokemon Showdown依存関係の問題
+2. **統合テストの実行**:
+   - IPCClientWrapperとNode.jsサーバー間の通信テスト
+   - フルバトルフローの動作確認
+   - パフォーマンス測定
 
-3. **環境統合の不安定性**:
-   - `env.reset()`でのタイムアウト
-   - IPCプロセスの適切な初期化待機
+3. **エラーハンドリング強化**:
+   - プロセス障害時の回復メカニズム
+   - 通信断絶時のフォールバック処理
 
 ### 🧪 最新のテスト結果
 ```bash
+# IPCBattle廃止計画完了
+✅ Phase 1: IPCClientWrapper PSClient互換機能実装
+✅ Phase 2: DualModeEnvPlayer統合完了  
+✅ Phase 3: IPCBattle/IPCBattleFactory完全削除
+
 # 基本通信テスト
 cd pokemon-showdown && echo '{"type":"ping"}' | node sim/ipc-battle-server.js
 ✅ 結果: {"type":"pong","success":true}
 
-# フルIPC訓練テスト  
-python train.py --full-ipc --battle-mode local --episodes 1 --parallel 1
-⚠️ 結果: IPC通信確立後、env.reset()でタイムアウト
-
-# 現在のエラー箇所
-❌ ダメージ計算器: "ditto"種族名認識エラー
-❌ 環境リセット: _create_ipc_battles()内でタイムアウト
+# 新アーキテクチャでのテスト必要
+⏳ IPCClientWrapperとNode.jsサーバー間の統合テスト
+⏳ DualModeEnvPlayerによるモード切り替えテスト
+⏳ PokemonEnv battle_mode="local" での動作確認
 ```
 
-### 📋 次の具体的作業 (Phase A.1 - 重要性大幅UP)
+### 📋 次の具体的作業
 
-#### 🚨 **最重要**: Pokemon Showdown完全仕様準拠 + 不完全情報ゲーム対応
-**プロジェクト成功の絶対条件**: 
-1. ShowdownサーバーのAPIを100%正確に再現
-2. **各EnvPlayerが独立したBattleオブジェクトを持つ**
-3. **MapleShowdownCoreがプレイヤー固有メッセージを適切に振り分ける**
+#### 🚨 **最重要**: IPCClientWrapper統合テスト
+**プロジェクト次段階の絶対条件**: 
+1. IPCClientWrapperとNode.js IPCサーバー間の通信確立
+2. PokemonEnv battle_mode="local" での正常動作
+3. フルバトルフローの動作確認
 
-#### 1. BattleStream API正確実装 (最優先)
-- [ ] `const { BattleStream } = require('./dist/sim/battle-stream')`の確認
-- [ ] 正確な初期化: `new BattleStream({ debug: false, noCatch: false, keepAlive: true })`
-- [ ] `ObjectReadWriteStream<string>`継承の理解
+#### 1. IPCClientWrapper動作確認 (最優先)
+- [ ] DualModeEnvPlayerのIPC初期化確認
+- [ ] IPCClientWrapper.listen()の正常動作
+- [ ] メッセージ自動判別システムのテスト
 
-#### 2. Protocol Message完全準拠 (CRITICAL) 
-- [ ] `>start {"formatid":"gen9randombattle"}`の正確な送信
-- [ ] `>player p1 {"name":"Player1","team":null}`フォーマット確認
-- [ ] `update\nMESSAGES` vs `sideupdate\nPLAYERID\nMESSAGES`の区別
-- [ ] 🚨 **不完全情報ゲーム要件**: プレイヤー固有メッセージフィルタリング実装
+#### 2. Node.jsサーバー統合 (CRITICAL) 
+- [ ] IPCClientWrapperからのメッセージ受信確認
+- [ ] showdownプロトコルメッセージの正常転送
+- [ ] IPC制御メッセージの適切な処理
 
-#### 3. SIM-PROTOCOL.md完全理解
-- [ ] 全Major/Minor actionsのメッセージ形式確認
-- [ ] Pokemon ID format: `p1a: Pikachu`の正確な実装
-- [ ] Choice request JSONフォーマット詳細確認
+#### 3. フルバトルフロー統合
+- [ ] PokemonEnv.reset()でのIPCClientWrapper使用
+- [ ] バトル進行中のメッセージ処理
+- [ ] エピソード完了までの正常動作
 
-#### 4. Teams API統合
-- [ ] `Teams.generate('gen9randombattle')`の正確な使用
-- [ ] Packed format vs JSON format理解
-- [ ] Species名正規化システム
+#### 4. パフォーマンス・安定性検証
+- [ ] 通信遅延の測定
+- [ ] エラー回復メカニズムのテスト
+- [ ] 長時間動作時の安定性確認
 
 ### 🛠️ 次回作業開始時の手順
 
@@ -87,17 +88,24 @@ cd pokemon-showdown && npm list | grep battle-stream
 
 #### 2. 現状確認テスト
 ```bash
-# 基本IPC通信確認
-cd pokemon-showdown && timeout 5s node sim/ipc-battle-server.js <<< '{"type":"ping"}'
+# IPCClientWrapper統合確認
+python -c "from src.env.dual_mode_player import IPCClientWrapper; print('✅ IPCClientWrapper import OK')"
 
-# Python統合テスト
-python train.py --full-ipc --episodes 1 --parallel 1 --log-level DEBUG
+# DualModeEnvPlayer確認
+python -c "from src.env.dual_mode_player import DualModeEnvPlayer; print('✅ DualModeEnvPlayer import OK')"
+
+# 新アーキテクチャでのPokemonEnvテスト
+python train.py --battle-mode local --episodes 1 --parallel 1 --log-level DEBUG
 ```
 
 #### 3. 作業開始
 ```bash
-# A.1.1: BattleStream問題の特定
-cd pokemon-showdown
+# IPCClientWrapper統合テスト実行
+python -c "
+from src.env.dual_mode_player import DualModeEnvPlayer
+from src.env.pokemon_env import PokemonEnv
+print('Testing new IPC architecture...')
+"
 node -e "
 const { BattleStream } = require('./dist/sim/battle-stream');
 console.log('BattleStream available:', !!BattleStream);

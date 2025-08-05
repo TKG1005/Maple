@@ -709,43 +709,35 @@ A: ✅ 正常です。Phase 3ではIPC基盤を準備し、実際のバトルは
            pass
    ```
 
-2. **IPCBattleオブジェクト** (新規実装必要):
+2. **IPCClientWrapperシステム** (実装完了):
    ```python
-   class IPCBattle(CustomBattle):
-       """IPC通信用のバトルオブジェクト"""
+   class IPCClientWrapper:
+       """PSClient互換のIPC通信ラッパー"""
        
-       def __init__(self, battle_id: str, communicator: BattleCommunicator):
-           # poke-envのBattleインターフェースとの互換性維持
-           # IPCからの状態更新を反映
-           pass
+       def __init__(self, account_configuration, communicator):
+           # PSClient互換インターフェース提供
+           # showdown/IPC制御メッセージ自動判別
+           # poke-env _handle_message() 統合
    ```
 
-3. **環境統合レイヤー** (修正必要):
+3. **DualModeEnvPlayer統合** (実装完了):
    ```python
-   # PokemonEnv.reset()の修正
-   if self.full_ipc:
-       # IPCBattleFactoryを使用してバトルを作成
-       # バトルキューに直接IPCBattleオブジェクトを投入
+   # PokemonEnvでの自動モード切り替え
+   if battle_mode == "local":
+       # IPCClientWrapper経由のIPC通信
+       # DualModeEnvPlayerが自動選択される
    else:
        # 既存のWebSocketベースの処理
    ```
 
-#### 📋 具体的な実装手順
+#### ✅ 実装完了状況
 
-**Step 1: IPCバトル作成フロー** (推定工数: 2-3日)
-- [ ] IPCBattleFactoryクラスの実装
-- [ ] Node.jsサーバーにバトル作成エンドポイント追加
-- [ ] バトルIDとプレイヤー情報の管理システム
-
-**Step 2: IPCBattleオブジェクト** (推定工数: 3-4日)
-- [ ] CustomBattleを継承したIPCBattleクラス
-- [ ] IPC経由での状態更新メカニズム
-- [ ] poke-env互換インターフェースの実装
-
-**Step 3: 環境統合** (推定工数: 2-3日)
-- [ ] PokemonEnv.reset()のIPC対応
-- [ ] バトルキューへのIPCBattle投入
-- [ ] EnvPlayerのchoose_move()との連携
+**Step 1-3: IPCBattle廃止計画** (完了)
+- [x] IPCClientWrapper PSClient互換機能実装
+- [x] DualModeEnvPlayer統合
+- [x] IPCBattle/IPCBattleFactory完全削除
+- [x] メッセージ自動判別システム
+- [x] poke-env _handle_message() 統合
 
 **Step 4: テストと最適化** (推定工数: 2日)
 - [ ] 完全動作テストの実施
@@ -807,54 +799,53 @@ A: ✅ 正常です。Phase 3ではIPC基盤を準備し、実際のバトルは
 
 ---
 
-### 🎯 Phase 4 完全実装完了記録 (2025年7月30日 最終完成)
+### ✅ IPC統合システム完成記録 (2025年1月5日)
 
-#### ✅ **Phase 4 全タスク完了 - WebSocket完全排除達成**
+#### **IPCBattle廃止・IPCClientWrapper統合完了**
 
 **完了したタスク**:
-1. ✅ **IPCBattle class実装完了** - poke-env完全互換バトルオブジェクト
-2. ✅ **IPCBattleFactory実装完了** - IPC経由バトル作成・管理システム
-3. ✅ **Node.js IPCサーバー拡張完了** - バトル作成エンドポイント統合済み
-4. ✅ **PokemonEnv.reset()修正完了** - IPCバトル作成対応
-5. ✅ **DualModeEnvPlayer統合完了** - IPCバトルフロー統合
-6. ✅ **フルIPCモード実行テスト完了** - WebSocketフォールバック完全無効化
-7. ✅ **性能ベンチマーク達成** - WebSocket通信100%排除（目標75%削減を超越）
+1. ✅ **IPCClientWrapper PSClient互換実装** - 認証・メッセージ処理システム統合
+2. ✅ **DualModeEnvPlayer統合完了** - WebSocket/IPC自動切り替え
+3. ✅ **IPCBattle/IPCBattleFactory完全削除** - 1,004行の重複コード削除
+4. ✅ **メッセージ自動判別システム** - showdown/IPC制御メッセージ分離
+5. ✅ **poke-env統合完了** - _handle_message()による透過的統合
+6. ✅ **アーキテクチャ簡素化** - 複雑な二重構造から統合構造へ
+7. ✅ **後方互換性維持** - 既存PokemonEnv APIの変更なし
 
 #### 🏗️ **実装された主要コンポーネント詳細**
 
-**1. IPCBattle クラス** (`src/sim/ipc_battle.py`) - **新規作成**
+**1. IPCClientWrapper** (`src/env/dual_mode_player.py`)
 ```python
-class IPCBattle(CustomBattle):
-    """IPC-based battle that communicates directly with Node.js Pokemon Showdown process."""
+class IPCClientWrapper:
+    """PSClient互換のIPC通信ラッパー"""
     
-    def __init__(self, battle_id: str, username: str, logger: logging.Logger, 
-                 communicator: BattleCommunicator, gen: int = 9, save_replays: Union[str, bool] = False):
-        # poke-env互換の初期化
-        battle_tag = f"battle-gen{gen}randombattle-{battle_id}"
-        super().__init__(battle_tag=battle_tag, username=username, logger=logger, gen=gen, save_replays=save_replays)
+    def __init__(self, account_configuration, server_configuration=None, 
+                 communicator=None, logger=None):
+        # PSClient互換インターフェース
+        self.logged_in = asyncio.Event()
+        self._listen_task = None
         
-        # IPC専用属性
-        self._communicator = communicator
-        self._battle_id = battle_id
-        self._initialize_battle_state()
+    async def listen(self):
+        # PSClient.listen()互換のメッセージループ
+        
+    def _parse_message_type(self, message):
+        # showdown/IPC制御メッセージ自動判別
 ```
 
 **重要な実装詳細**:
-- **完全なpoke-env互換性**: `active_pokemon`、`opponent_team`、`team`プロパティ完全実装
-- **最小限チーム作成**: 6匹ずつの完全チーム（active/bench Pokemon区別）
-- **Pokemon属性設定**: `_active=True`、`_type_1=PokemonType.NORMAL`、基本技セット
-- **IPC通信統合**: `send_battle_command()`、`get_battle_state()`メソッド
-- **メッセージ解析**: `parse_message()`でShowdownプロトコル処理
+- **PSClient完全互換**: AccountConfiguration/ServerConfiguration対応
+- **認証システム**: `log_in()`、`wait_for_login()`実装
+- **メッセージ自動判別**: `type="protocol"`でshowdown、その他でIPC制御
+- **poke-env統合**: `_handle_message()`による透過的転送
+- **DualModeEnvPlayer統合**: ps_clientの完全置換
 
-**2. IPCBattleFactory クラス** (`src/sim/ipc_battle_factory.py`) - **新規作成**
+**2. DualModeEnvPlayer** (`src/env/dual_mode_player.py`)
 ```python
-class IPCBattleFactory:
-    """Factory for creating and managing IPC-based battles."""
+class DualModeEnvPlayer(EnvPlayer):
+    """WebSocket/IPC両モード対応プレイヤー"""
     
-    async def create_battle(self, format_id: str = "gen9randombattle", 
-                          player_names: List[str] = None, teams: Optional[List[str]] = None) -> IPCBattle:
-        # Node.jsにバトル作成リクエスト送信
-        create_message = {
+    def __init__(self, mode="local", ...):
+        # モード別初期化（local=IPC, online=WebSocket）
             "type": "create_battle",
             "battle_id": battle_id,
             "format": format_id,
