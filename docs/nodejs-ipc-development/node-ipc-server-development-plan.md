@@ -9,7 +9,10 @@ Node.jsプロセス部分とIPC通信部分をあわせてMapleShowdownCoreと�
 
 - Node.jsプロセスは、オリジナルのPokemon Showdownサーバーの動作をトレースし、メッセージフォーマット・シーケンスを完全に再現して送受信すること  
 - IPCサーバーは、既存のWebSocket通信機能を最小限に置き換えることを目的とし、可能な限りShowdown準拠のNode.jsプロセスおよびpoke-env（EnvPlayer相当）の仕様をそのまま活用すること
-- 🚨 **不完全情報ゲーム要件**: 各プレイヤーが独立したBattleオブジェクトを持ち、MapleShowdownCoreがプレイヤー固有のメッセージを適切に振り分けること  
+- 🚨 **不完全情報ゲーム要件**: 各プレイヤーが独立したBattleオブジェクトを持ち、MapleShowdownCoreがプレイヤー固有のメッセージを適切に振り分けること
+- **通信仕様**: Node.jsはエラーメッセージをstderrに、IPCプロトコルメッセージとShowdownメッセージをJSON形式でstdoutに出力
+- **メッセージ識別**: IPCプロトコルメッセージには`type`フィールドで識別子を付与、Showdownメッセージは`{"type": "protocol", "data": "..."}`形式でラップ
+- **互換性保持**: Showdownオリジナルメッセージは変更を加えずにpoke-envに渡される  
 
 
 ## 段階的開発計画
@@ -31,9 +34,13 @@ Node.jsプロセス部分とIPC通信部分をあわせてMapleShowdownCoreと�
 **目標**: BattleStreamから出力される生のShowdownプロトコルメッセージをそのまま転送し、Python側のpoke-env標準処理に委任
 
 **作業内容**:
-1. **Showdonwプロトコルメッセージの転送**
-   - メッセージから振り分け先のプレイヤーを特定して、対応するEnvPlayerにshowdownプロトコルメッセージをそのまま転送
-   - メッセージには変更を加えない（Python側のpoke-env標準処理でエラーが発生）
+1. **Showdownプロトコルメッセージの転送**
+   - BattleStreamからの複数行メッセージを改行で結合した1つの文字列として処理
+   - 最初の行は必ず`>battle-format-id`形式のバトルタグ
+   - 形式：`{"type": "protocol", "data": ">battle-format-id\n|init|battle\n..."}`
+   - プレイヤー固有メッセージには`player_id`フィールドを追加
+   - すべてのメッセージをstdoutにJSON形式で出力
+   - `|request|`メッセージには`rqid`が含まれることを保証
 
 
 

@@ -29,9 +29,11 @@
    チーム文字列など多行メッセージを安全に受信できない可能性あり
 
 ## 3. リファクタリング方針
-- Node.js 側は「テキストプロトコル透過リレー」に徹し、Python 側が JSON 変換とパースを担当
-- `BattleTextStream` または AsyncIterable で受信し、1行ずつ stdout に出力
-- バトル生成は純正の `|start|`→`|player|`→`|teamsize|`→`|teampreview|`→`|start`… の順序で送出
+- Node.js 側はエラーメッセージを stderr に、IPCプロトコルメッセージとShowdownメッセージを stdout に出力
+- すべてのstdout出力はJSON形式に統一（IPCプロトコルメッセージとShowdownプロトコルメッセージ両方）
+- IPCプロトコルメッセージには`type`フィールドで識別子を付与
+- Showdownオリジナルメッセージは`{"type": "protocol", "data": "..."}`形式でラップして互換性を保持
+- Python側のIPCCommunicatorはstdoutのみを監視し、JSONをパースして処理
 - `save/restore` 周りは削除。エラーは JSON エラーオブジェクトのみ stdout へ出力
 - active battles Map は単一バトル前提に簡素化。`destroy_battle` で必ず解放
 
@@ -41,9 +43,12 @@
    - `.on('data')` → `battleTextStream.on('data')` あるいは `for await(...)` 形式で受信
 2. **純正プロトコルによるバトル生成**  
    - JSON埋め込み起動から、テキストコマンド列 `|start|format`, `|player|…`, `|teamsize|…` へ移行
-3. **メッセージ透過の最小化**  
-   - Node 側はテキスト行をそのまま stdout へ流す（例: `console.log(rawLine)`）
-   - Python 側の `IPCCommunicator` で JSON 化・イベント識別を実装
+3. **JSON形式での統一出力**  
+   - Node 側はすべてのメッセージをJSON形式でstdoutへ出力
+   - Showdownプロトコルメッセージ：WebSocket形式と同じく複数行を改行で結合した1つの文字列
+   - 形式：`{"type": "protocol", "battle_id": "...", "data": ">battle-format-id\n|init|battle\n..."}`
+   - IPCプロトコルメッセージ：`{"type": "battle_created", "battle_id": "...", ...}`
+   - Python 側の `IPCCommunicator` で統一的にJSONパースして処理
 4. **不要機能の除去**  
    - `save_battle_state`/`restore_battle_state`/`list_saved_states` などを削除
 5. **エラーハンドリングの統一**  

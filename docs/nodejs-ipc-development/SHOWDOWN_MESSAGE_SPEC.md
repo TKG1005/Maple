@@ -24,6 +24,12 @@ Pokemon Showdown のテキストプロトコルとの対応付けを行います
 
 ## 3. IPC JSON メッセージ
 
+### メッセージ形式の統一
+- すべてのstdout出力はJSON形式で統一
+- IPCプロトコルメッセージ：`type`フィールドで識別（`battle_created`, `error`など）
+- Showdownプロトコルメッセージ：`{"type": "protocol", "data": "..."}`形式でラップ
+- エラーメッセージはstderrに出力、IPCエラーはJSON形式でstdoutにも出力
+
 ### 3.1 リクエスト (Python → Node.js MapleShowdownCore)
 
 | type               | フィールド        | 型             | 必須 | 説明                                 |
@@ -44,24 +50,30 @@ interface Player {
 }
 ```
 
-### 3.2 イベント通知 (Node.js MapleShowdownCore → Python) - 修正版
+### 3.2 イベント通知 (Node.js MapleShowdownCore → Python)
+
+#### IPCプロトコルメッセージ（識別子付き）
 
 | type               | フィールド        | 型               | 必須 | 説明                             |
 |--------------------|-------------------|------------------|------|----------------------------------|
 | `battle_created`   | `battle_id`       | string           | ◯   | バトル作成完了                   |
-|                    |                   |                  |      | **出力チャネル**: stdout         |
 | `battle_update`    | `battle_id`       | string           | ◯   | バトル ID                        |
-|                    |                   |                  |      | **出力チャネル**: stdout         |
 |                    | `player_id`       | string           | ◯   | 対象プレイヤー ("p1" or "p2")    |
 |                    | `log`             | string[]         | ◯   | プレイヤー固有のイベント配列     |
 | `battle_end`       | `battle_id`       | string           | ◯   | バトル ID                        |
-|                    |                   |                  |      | **出力チャネル**: stdout         |
 |                    | `result`          | 'win' \| 'tie' | ◯   | 結果                             |
 |                    | `winner?`         | string           | ×   | 勝者 (result='win' の場合)       |
-| `error`            | `battle_id?`      | string?          | ×   | 対象バトル ID                    |
-|                    |                   |                  |      | **出力チャネル**: stdout         |
-|                    | `player_id?`      | string?          | ×   | 対象プレイヤー                   |
-|                    | `message`         | string           | ◯   | エラーメッセージ                 |
+| `error`            | `error_type`      | string           | ◯   | エラータイプ                     |
+|                    | `error_message`   | string           | ◯   | エラーメッセージ                 |
+|                    | `context`         | object           | ×   | エラーコンテキスト               |
+
+#### Showdownプロトコルメッセージ（JSON形式でラップ）
+
+| type               | フィールド        | 型               | 必須 | 説明                             |
+|--------------------|-------------------|------------------|------|----------------------------------|
+| `protocol`         | `battle_id`       | string           | ◯   | バトル ID                        |
+|                    | `player_id`       | string           | ×   | 対象プレイヤー（省略時は両方）   |
+|                    | `data`            | string           | ◯   | Showdownオリジナルメッセージ     |
 
 #### ActiveInfo / SideInfo 型 (抜粋)
 ```ts
@@ -94,22 +106,28 @@ interface SideInfo {
 ```
 
 ### 4.2 プレイヤー固有メッセージ配信
-MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコル行（`>battle-…` や `|request|…` を含む各行）を**加工せずそのまま** `log` 配列に入れて送信します。
-**出力チャネル**: これらの生テキスト行と JSON 形式のイベント通知は stdout にのみ書き出されます。
-各EnvPlayer側では `player_id` タグで自分宛のメッセージを受け取り、`log` 内のすべての文字列をそのまま分割せずに `parse_message`（CustomBattle → Battle）に渡すことで、poke-env の標準処理を完全に再現します。
+MapleShowdownCore はWebSocketモードと同じ形式でメッセージを送信します：
+- **IPCプロトコルメッセージ**: `{"type": "battle_created", ...}`形式で送信
+- **Showdownプロトコルメッセージ**: `{"type": "protocol", "data": "..."}`形式でラップ
+- **メッセージ形式**: 複数行を改行（`\n`）で結合した1つの長い文字列
+- **最初の行**: 必ず`>battle-format-id`形式のバトルタグ
+- **出力チャネル**: すべてのメッセージはstdoutにJSON形式で出力、エラーはstderrに出力
 
-例: MapleShowdownCore → Python EnvPlayer A 向け JSON
+例: MapleShowdownCore → Python 向け JSON
 ```json
+// Showdownプロトコルメッセージ（WebSocket形式と同じ）
 {
-  "type": "battle_update",
+  "type": "protocol",
   "battle_id": "b1",
   "player_id": "p1",
-  "log": [
-    ">battle-gen9bssregi-203804",
-    "|request|{\"active\":[…],\"side\":{…},\"rqid\":36}",
-    "|move|p1a|Glacial Lance|…",
-    "…"
-  ]
+  "data": ">battle-gen9bssregi-203804\n|init|battle\n|title|Player1 vs. Player2\n|j|☆Player1\n|request|{\"active\":[…],\"side\":{…},\"rqid\":36}"
+}
+
+// IPCプロトコルメッセージ
+{
+  "type": "battle_created",
+  "battle_id": "b1",
+  "success": true
 }
 ```
 
@@ -118,13 +136,23 @@ MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコ
 ```json
 { "type":"battle_command", "battle_id":"b1", "command":"move 1" }
 ```
-5. MapleShowdownCore → Python EnvPlayer A (A視点ログ):
+5. MapleShowdownCore → Python (Showdownメッセージ):
 ```json
-{ "type":"battle_update", "battle_id":"b1", "player_id":"p1", "log":["|move|p1a|Tackle|p2a","|turn|2",…] }
-```
-5. MapleShowdownCore → Python EnvPlayer B (B視点ログ):
-```json
-{ "type":"battle_update", "battle_id":"b1", "player_id":"p2", "log":["|move|p1a|Tackle|p2a","|turn|2",…] }
+// プレイヤー1向け（複数行を改行で結合）
+{ 
+  "type":"protocol", 
+  "battle_id":"b1", 
+  "player_id":"p1", 
+  "data":">battle-gen9bssregi-b1\n|move|p1a|Tackle|p2a\n|-damage|p2a|80/100\n|turn|2\n|request|{\"active\":[...],\"rqid\":2}"
+}
+
+// プレイヤー2向け（複数行を改行で結合）
+{ 
+  "type":"protocol", 
+  "battle_id":"b1", 
+  "player_id":"p2", 
+  "data":">battle-gen9bssregi-b1\n|move|p1a|Tackle|p2a\n|-damage|p2a|80/100\n|turn|2\n|request|{\"active\":[...],\"rqid\":2}" 
+}
 ```
 
 ### 4.4 バトル終了
@@ -138,24 +166,21 @@ MapleShowdownCore は各プレイヤーに対して、生のShowdownプロトコ
 ### 4.5 rqid保持要件
 **MapleShowdownCore側の責務**:
 - 生のShowdownログに含まれる`rqid`を必ず保持・転送
-- `"log"`配列内のメッセージ（通常は最後）に`"rqid"`が含まれることを保証
+- `|request|`メッセージに`rqid`が含まれることを保証（存在しない場合は追加）
+- メッセージは必ずバトルタグから始まる改行区切りの文字列として送信
 
 **実装例**:
 ```json
-// MapleShowdownCore → EnvPlayer
+// MapleShowdownCore → EnvPlayer (WebSocket形式と同じ)
 {
-  "type": "battle_update",
+  "type": "protocol",
   "battle_id": "b1", 
   "player_id": "p1",
-  "log": [
-    "|move|p1a|Tackle|p2a",
-    "|turn|2",
-    "|request|{\"requestType\":\"move\",\"rqid\":2,\"active\":[...]}"
-  ]
+  "data": ">battle-gen9bssregi-b1\n|move|p1a|Tackle|p2a\n|turn|2\n|request|{\"requestType\":\"move\",\"rqid\":2,\"active\":[...]}"
 }
 ```
 
-これによりEnvPlayerは`battle.last_request`から正しく`rqid`を取得できます。
+これによりEnvPlayerは標準のpoke-env処理パイプラインでメッセージを処理でき、`battle.last_request`から正しく`rqid`を取得できます。
 
 ---
 詳細は `SIM-PROTOCOL.md` の各メッセージ定義と照合してください。
