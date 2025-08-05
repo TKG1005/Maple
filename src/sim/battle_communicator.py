@@ -349,7 +349,7 @@ class IPCCommunicator(BattleCommunicator):
             self.process = None
     
     async def _read_responses(self) -> None:
-        """Background task to read responses (JSON or raw protocol) from Node.js process."""
+        """Background task to read JSON responses from Node.js process stdout."""
         if not self.process or not self.process.stdout:
             self.logger.error("No process or stdout available for reading responses")
             return
@@ -367,16 +367,24 @@ class IPCCommunicator(BattleCommunicator):
                 self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator._read_responses read line: {text}")
                 if not text:
                     continue
-                # Enqueue raw message without parsing
-                await self._message_queue.put(text)
-                self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator._read_responses queued raw: {text}")
+                
+                # Parse JSON from stdout - all stdout should be JSON format
+                try:
+                    json_message = json.loads(text)
+                    await self._message_queue.put(json_message)
+                    self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator._read_responses queued JSON: {json_message.get('type')}")
+                except json.JSONDecodeError as e:
+                    self.logger.error(f"Invalid JSON from stdout: {text} - Error: {e}")
+                    # Skip non-JSON output as it violates the protocol
+                    continue
+                    
         except Exception as e:
             self.logger.error(f"Error in IPC response reader: {e}")
         finally:
             self.logger.info("IPC response reader task finished")
     
     async def _read_stderr(self) -> None:
-        """Background task to read stderr from Node.js process for debugging and JSON control messages."""
+        """Background task to read stderr from Node.js process for debugging logs only."""
         if not self.process or not self.process.stderr:
             self.logger.error("❌ No process or stderr available for reading")
             return
@@ -396,20 +404,8 @@ class IPCCommunicator(BattleCommunicator):
                     
                     stderr_data = line.decode().strip()
                     if stderr_data:
+                        # All stderr output is treated as debug/error logs only
                         self.logger.info(f"🟡 Node.js stderr: {stderr_data}")
-                        
-                        # Check if this is a JSON control message
-                        try:
-                            json_msg = json.loads(stderr_data)
-                            # This is a valid JSON message - add to message queue
-                            self.logger.info(f"📥 JSON control message detected: type={json_msg.get('type')}")
-                            self.logger.info(f"📥 Full JSON message: {json_msg}")
-                            await self._message_queue.put(json_msg)
-                            self.logger.info(f"✅ JSON control message queued: {json_msg.get('type')}")
-                        except json.JSONDecodeError:
-                            # Not JSON - just a regular stderr log message
-                            self.logger.info(f"🔍 Non-JSON stderr line (first 100 chars): {stderr_data[:100]}")
-                            pass
                     
                 except Exception as e:
                     self.logger.error(f"❌ Error reading Node.js stderr: {e}")
@@ -435,14 +431,14 @@ class IPCCommunicator(BattleCommunicator):
             self.logger.error(f"Failed to send IPC message: {e}")
             raise
     
-    async def receive_message(self) -> Union[Dict[str, Any], str]:
-        """Receive message via IPC (either JSON control message or raw protocol string)."""
+    async def receive_message(self) -> Dict[str, Any]:
+        """Receive JSON message via IPC - all messages are now JSON format."""
         if not self.connected:
             raise RuntimeError("IPC process not connected")
         
         try:
             self.logger.info("[IPC_DEBUG_PY] Enter BattleCommunicator.receive_message")
-            # Wait for message from background reader
+            # Wait for message from background reader - always returns Dict[str, Any]
             message = await asyncio.wait_for(self._message_queue.get(), timeout=30.0)
             self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator.receive_message returning message: {message}")
             return message

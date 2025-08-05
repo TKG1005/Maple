@@ -128,86 +128,58 @@ class IPCBattle(CustomBattle):
         except Exception as e:
             self.logger.error(f"Failed to send IPC command {command}: {e}")
     
-    def _is_json_message(self, message: str) -> bool:
-        """Check if a message is a JSON control message.
-        
-        Args:
-            message: Raw message string
-            
-        Returns:
-            True if message is valid JSON, False otherwise
-        """
-        if not isinstance(message, str):
-            return False
-        
-        try:
-            json.loads(message)
-            return True
-        except json.JSONDecodeError:
-            return False
     
-    def _parse_message_safely(self, message: Any) -> tuple[bool, Dict[str, Any] | str]:
-        """Safely parse a message and determine its type.
+    def _parse_message_safely(self, message: Dict[str, Any]) -> tuple[bool, Dict[str, Any]]:
+        """Parse JSON message and determine if it's a control message or protocol message.
         
         Args:
-            message: Message from BattleCommunicator (could be string or dict)
+            message: JSON message dict from BattleCommunicator
             
         Returns:
-            Tuple of (is_json_control, parsed_message)
-            - is_json_control: True if JSON control message, False if raw protocol
-            - parsed_message: Parsed dict for JSON, original string for raw protocol
+            Tuple of (is_json_control, message)
+            - is_json_control: True if IPC control message, False if protocol message
+            - message: The original message dict
         """
-        # If already a dict, it's a JSON control message
-        if isinstance(message, dict):
+        # All messages are now JSON dicts
+        if not isinstance(message, dict):
+            self.logger.error(f"Expected dict message, got {type(message)}: {message}")
+            return False, {}
+        
+        # Check message type to determine if it's a control message or protocol message
+        msg_type = message.get("type")
+        if msg_type == "protocol":
+            # This is a wrapped Showdown protocol message
+            return False, message
+        elif msg_type in ["battle_created", "battle_update", "battle_end", "error", "player_registered", "pong"]:
+            # This is an IPC control message
             return True, message
-        
-        # If string, check if it's JSON or raw protocol
-        if isinstance(message, str):
-            if self._is_json_message(message):
-                try:
-                    parsed = json.loads(message)
-                    return True, parsed
-                except json.JSONDecodeError:
-                    # Fallback to raw protocol if parsing fails
-                    return False, message
-            else:
-                # Raw protocol string
-                return False, message
-        
-        # Unknown type - convert to string and treat as raw protocol
-        return False, str(message)
+        else:
+            # Unknown message type - treat as control message
+            self.logger.warning(f"Unknown message type: {msg_type}")
+            return True, message
 
     async def _ipc_listen(self) -> None:
-        """Listen for messages from IPC communicator and batch them for standard poke-env processing."""
+        """Listen for JSON messages from IPC communicator and process them."""
         self.logger.info("[IPC_DEBUG_PY] Enter IPCBattle._ipc_listen // start listening for IPC messages")
-        current_batch = []
-        battle_tag = None
         
         while True:
             self.logger.info("[IPC_DEBUG_PY] IPCBattle._ipc_listen waiting for message")
             try:
                 self.logger.info("[IPC_DEBUG_PY] Calling BattleCommunicator.receive_message")
-                raw_msg = await self._communicator.receive_message()
-                self.logger.info(f"[IPC_DEBUG_PY] IPCBattle._ipc_listen received raw_msg: {raw_msg} (type={type(raw_msg)})")
+                message = await self._communicator.receive_message()  # Always returns Dict[str, Any]
+                self.logger.info(f"[IPC_DEBUG_PY] IPCBattle._ipc_listen received message: {message}")
                 
-                # Safely parse message and determine type
-                is_json_control, parsed_msg = self._parse_message_safely(raw_msg)
+                # Parse message and determine type
+                is_json_control, parsed_msg = self._parse_message_safely(message)
                 
-                if is_json_control:
-                    self.logger.info(f"[IPC_DEBUG_PY] JSON control message detected: type={parsed_msg.get('type')} player_id={parsed_msg.get('player_id')}")
-                else:
-                    line = parsed_msg.strip() if isinstance(parsed_msg, str) else str(parsed_msg)
-                    self.logger.info(f"[IPC_DEBUG_PY] Raw protocol message detected: {line}")
-                
-                self.logger.error(f"[IPC_DEBUG_PY] Received IPC message - is_json_control={is_json_control}, parsed_msg={parsed_msg}")
+                self.logger.info(f"[IPC_DEBUG_PY] Message type: {parsed_msg.get('type')}, is_control: {is_json_control}")
             except Exception as e:
                 self.logger.error(f"IPC listen receive failed: {e}")
                 await asyncio.sleep(0.1)
                 continue
                 
-            # Handle JSON control messages
-            if is_json_control and isinstance(parsed_msg, dict):
-                # Safe access to dict attributes
+            # Handle IPC control messages
+            if is_json_control:
                 mtype = parsed_msg.get("type")
                 msg_player_id = parsed_msg.get("player_id")
                 
@@ -219,79 +191,44 @@ class IPCBattle(CustomBattle):
                     self.logger.info(f"Battle created (IPC): {self._battle_id}")
                 elif mtype == "player_registered":
                     self.logger.info(f"Player {self._player_id} registered successfully")
-                elif mtype == "pong":
-                    # Handle pong response safely
-                    original_msg = parsed_msg.get("original_message", {})
-                    success = parsed_msg.get("success", False)
-                    self.logger.info(f"Received pong response: success={success}, original={original_msg}")
                 elif mtype == "battle_update":
-                    # Batch raw Showdown protocol lines and forward as multiline payloads
+                    # Handle legacy battle_update format (if still used)
                     if msg_player_id == self._player_id and self._env_player:
                         log_lines = parsed_msg.get("log", [])
                         self.logger.debug(f"[IPC_DEBUG] battle_update for battle_id={self._battle_id}, player={self._player_id}, lines={len(log_lines)}")
-                        for line in log_lines:
-                            self.logger.debug(f"[IPC_DEBUG] processing battle_update line: {line}")
-                            if not isinstance(line, str):
-                                continue
-                            # Start of new batch with battle tag
-                            if line.startswith(">battle-"):
-                                # Flush previous batch
-                                if battle_tag is not None and current_batch:
-                                    self.logger.debug(f"[IPC_DEBUG] flushing batch tag={battle_tag}, size={len(current_batch)}")
-                                    payload = battle_tag + "\n" + "\n".join(current_batch)
-                                    self.logger.debug(f"[IPC_DEBUG] forwarding payload[0:200]: {payload[:200].replace(chr(10), ' ')}...")
-                                    asyncio.create_task(self._env_player.ps_client._handle_message(payload))
-                                battle_tag = line
-                                current_batch = []
-                                continue
-                            # Accumulate protocol lines
-                            current_batch.append(line)
-                            # On trigger messages, flush batch
-                            parts = line.split("|")
-                            if len(parts) >= 2 and parts[1] in ["request", "turn", "win", "tie", "teampreview"]:
-                                self.logger.debug(f"[IPC_DEBUG] trigger '{parts[1]}' detected, flushing batch size={len(current_batch)}")
-                                payload = battle_tag + "\n" + "\n".join(current_batch)
-                                self.logger.debug(f"[IPC_DEBUG] forwarding triggered payload[0:200]: {payload[:200].replace(chr(10), ' ')}...")
-                                asyncio.create_task(self._env_player.ps_client._handle_message(payload))
-                                current_batch = []
+                        # Process log lines as needed
+                elif mtype == "battle_end":
+                    result = parsed_msg.get("result")
+                    winner = parsed_msg.get("winner")
+                    self.logger.info(f"Battle ended: result={result}, winner={winner}")
                 elif mtype == "error":
                     error_message = parsed_msg.get('error_message', 'Unknown error')
                     self.logger.error(f"IPC error: {error_message}")
                 else:
-                    self.logger.debug(f"[IPC_DEBUG] Ignoring control message type: {mtype}, msg={parsed_msg}")
-                # ignore other control messages
-                continue
+                    self.logger.debug(f"[IPC_DEBUG] Ignoring control message type: {mtype}")
+                    
+            # Handle protocol messages (new format: {"type": "protocol", "data": "..."})
+            else:
+                # Extract protocol data from the wrapped message
+                protocol_data = parsed_msg.get("data", "")
+                battle_id = parsed_msg.get("battle_id")
+                msg_player_id = parsed_msg.get("player_id")
                 
-            # Handle raw Showdown protocol lines
-            if not is_json_control and isinstance(parsed_msg, str):
-                line = parsed_msg.strip()
-                self.logger.debug(f"[IPC_DEBUG] battle_id={self._battle_id}, player={self._player_id}, raw protocol line: {line}")
-                self.logger.error(f"[IPC_DEBUG_PY] Raw protocol line: {line}")
-                if not line.startswith("|") and not line.startswith(">battle-"):
-                    continue
+                # Filter messages by player_id if specified
+                if msg_player_id and msg_player_id != self._player_id:
+                    continue  # Skip messages not for this player
                 
-                # Detect battle tag line (start of new batch)
-                if line.startswith(">battle-"):
-                    # Process previous batch if exists
-                    if current_batch:
-                        await self._process_battle_batch(current_batch, battle_tag)
-                    
-                    # Start new batch
-                    battle_tag = line
-                    current_batch = []
-                    self.logger.debug(f"Started new battle batch: {battle_tag}")
-                    
-                elif line.startswith("|"):
-                    # Add to current batch
-                    current_batch.append(line)
-                    
-                    # Process batch on completion triggers
-                    split_line = line.split("|")
-                    if len(split_line) >= 2 and split_line[1] in ["win", "tie", "turn", "request", "teampreview"]:
-                        self.logger.debug(f"Processing batch trigger: {split_line[1]}, batch size: {len(current_batch)}")
-                        await self._process_battle_batch(current_batch, battle_tag)
-                        current_batch = []
-                        battle_tag = None
+                self.logger.info(f"[IPC_DEBUG_PY] Protocol message for battle_id={battle_id}, player={msg_player_id}")
+                self.logger.info(f"[IPC_DEBUG_PY] Protocol data preview: {protocol_data[:200]}")
+                
+                # Process the protocol data directly using WebSocket-style processing
+                if protocol_data and self._env_player:
+                    try:
+                        # Forward the complete protocol message to poke-env
+                        asyncio.create_task(self._env_player.ps_client._handle_message(protocol_data))
+                        self.logger.debug(f"[IPC_DEBUG] Forwarded protocol message to poke-env")
+                    except Exception as e:
+                        self.logger.error(f"Error forwarding protocol message: {e}")
     
     async def _process_battle_batch(self, lines: list[str], battle_tag: str | None) -> None:
         """Process batched lines using standard poke-env message handling."""
