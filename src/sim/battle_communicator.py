@@ -440,7 +440,14 @@ class IPCCommunicator(BattleCommunicator):
             self.logger.info("[IPC_DEBUG_PY] Enter BattleCommunicator.receive_message")
             # Wait for message from background reader - always returns Dict[str, Any]
             message = await asyncio.wait_for(self._message_queue.get(), timeout=30.0)
-            self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator.receive_message returning message: {message}")
+            
+            # DEBUG_TEAMPREVIEW: Check for teampreview messages at communicator level
+            message_str = str(message)
+            if "teampreview" in message_str.lower() or "poke|" in message_str:
+                self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] BattleCommunicator received: {message}")
+            else:
+                self.logger.info(f"[IPC_DEBUG_PY] BattleCommunicator.receive_message returning message: {message}")
+            
             return message
         except asyncio.TimeoutError:
             self.logger.error("Timeout waiting for IPC message")

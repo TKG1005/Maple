@@ -55,6 +55,7 @@ class DualModeEnvPlayer(EnvPlayer):
         self._communicator: Optional[BattleCommunicator] = None
         self._original_ps_client = None
         self.player_id = player_id  # Set player_id early for logging
+        self._env = env  # Store environment reference for battle queue access
         
         self._logger = logging.getLogger(__name__)
         
@@ -239,36 +240,33 @@ class DualModeEnvPlayer(EnvPlayer):
             
             async def establish_connection():
                 try:
-                    # Phase 2: Start IPCClientWrapper.listen() instead of manual connection
-                    self._logger.info(f"🔗 Phase 4: Starting IPCClientWrapper.listen() for {self.player_id}")
-                    
-                    # Start listen task (similar to PSClient.listen())
-                    listen_task = asyncio.create_task(self.ipc_client_wrapper.listen())
-                    
-                    # Wait for authentication completion
-                    await asyncio.wait_for(
-                        self.ipc_client_wrapper.wait_for_login(),
-                        timeout=10.0
-                    )
+                    # Phase 4: Ensure IPC communicator is connected
+                    self._logger.info(f"🔌 Phase 4: Establishing mandatory IPC connection for {self.player_id}")
+                    if not await self.ipc_client_wrapper.is_alive():
+                        await self.ipc_client_wrapper.communicator.connect()
+
+                    # Phase 4: Simulate login (authentication bypassed)
+                    await self.ipc_client_wrapper.log_in([])
                     self._logger.info(f"🔐 Phase 4: Authentication completed for {self.player_id}")
-                    
-                    # Test connection with ping-pong via IPCClientWrapper
+
+                    # Phase 4: Test IPC connection with ping-pong
                     self._logger.info(f"📤 Phase 4: Testing IPC connection for {self.player_id}")
                     ping_success = await self.ipc_client_wrapper.ping()
-                    
-                    if ping_success:
-                        self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
-                        
-                        # Now override WebSocket methods since IPC is working
-                        self._override_websocket_methods()
-                        self._logger.info(f"✅ Phase 4: WebSocket overridden with IPC for {self.player_id}")
-                        
-                        return True
-                    else:
+                    if not ping_success:
                         raise RuntimeError("IPC ping-pong failed")
-                        
+                    self._logger.info(f"🏓 Phase 4: IPC ping-pong successful for {self.player_id}")
+
+                    # Phase 4: Start listening for IPC messages
+                    self._logger.info(f"🔗 Phase 4: Starting IPCClientWrapper.listen() for {self.player_id}")
+                    listen_task = asyncio.create_task(self.ipc_client_wrapper.listen())
+
+                    # Phase 4: Override WebSocket methods now that IPC is verified
+                    self._override_websocket_methods()
+                    self._logger.info(f"✅ Phase 4: WebSocket overridden with IPC for {self.player_id}")
+
+                    return True
                 except Exception as e:
-                    self._logger.error(f"❌ Phase 4: IPC connection failed for {self.player_id}: {e}")
+                    self._logger.error(f"❌ Phase 4: Could not establish full IPC connection for {self.player_id}: {e}")
                     raise
             
             # Execute connection establishment synchronously
@@ -347,14 +345,15 @@ class DualModeEnvPlayer(EnvPlayer):
             
         self.stop_listening = mock_stop_listening
         
-        # Override accept_challenges to prevent WebSocket operations
-        async def mock_accept_challenges(opponent, n_challenges=1, packed_team=None):
-            """Mock accept_challenges for IPC mode."""
-            self._logger.info(f"🏟️ Mock accept_challenges called for IPC player {self.player_id}")
-            # In IPC mode, battles are managed differently
-            raise NotImplementedError("accept_challenges not supported in full IPC mode")
+        # Override accept_challenges for IPC mode
+        async def ipc_accept_challenges(opponent, n_challenges=1, packed_team=None):
+            """IPC version of accept_challenges."""
+            self._logger.info(f"🏟️ IPC accept_challenges called for {self.player_id}")
+            # In IPC mode, we don't need to accept challenges - battles are created directly
+            # This is just a placeholder to prevent errors
+            return
             
-        self.accept_challenges = mock_accept_challenges
+        self.accept_challenges = ipc_accept_challenges
         
         # Override send_message to use IPC
         async def ipc_send_message(message, room=""):
@@ -416,6 +415,121 @@ class DualModeEnvPlayer(EnvPlayer):
         # Call parent close if in online mode
         if self.mode == "online" and hasattr(super(), 'close_connection'):
             await super().close_connection()
+    
+    async def battle_against(self, opponent, n_battles=1):
+        """Override battle_against for IPC mode.
+        
+        In IPC mode, we create battles directly through IPC instead of using
+        the WebSocket challenge/accept mechanism.
+        """
+        if self.mode != "local" or not self.full_ipc:
+            # Use parent class implementation for WebSocket mode
+            return await super().battle_against(opponent, n_battles)
+        
+        self._logger.info(f"🎮 IPC battle_against called for {self.player_id} vs {opponent.username}")
+        
+        for i in range(n_battles):
+            # Generate unique battle ID
+            battle_id = f"battle-{self.player_id}-{opponent.username}-{i}-{asyncio.get_event_loop().time()}"
+            
+            # Create battle via IPC
+            await self._create_ipc_battle(battle_id, opponent)
+            
+            # Wait for battle to complete
+            await self._wait_for_battle_completion(battle_id)
+    
+    async def _create_ipc_battle(self, battle_id: str, opponent):
+        """Create a battle through IPC."""
+        try:
+            # Get battle format
+            battle_format = self._format if hasattr(self, '_format') else "gen9randombattle"
+            
+            # Prepare player configurations
+            # Convert team objects to strings if needed
+            p1_team = None
+            if hasattr(self, '_team') and self._team is not None:
+                # Get the packed team string
+                if hasattr(self._team, 'yield_team'):
+                    p1_team = self._team.yield_team()
+                else:
+                    p1_team = str(self._team)
+            
+            p2_team = None
+            if hasattr(opponent, '_team') and opponent._team is not None:
+                # Get the packed team string
+                if hasattr(opponent._team, 'yield_team'):
+                    p2_team = opponent._team.yield_team()
+                else:
+                    p2_team = str(opponent._team)
+            
+            players = [
+                {
+                    "id": "p1",
+                    "name": self.username,
+                    "team": p1_team
+                },
+                {
+                    "id": "p2", 
+                    "name": opponent.username,
+                    "team": p2_team
+                }
+            ]
+            
+            # Create battle via IPC
+            await self.ipc_client_wrapper.create_battle(battle_id, battle_format, players)
+            
+            # Register battle with both players
+            self._battles[battle_id] = None  # Will be populated when battle starts
+            opponent._battles[battle_id] = None
+            
+            # Notify both players about the battle
+            await self._handle_battle_start(battle_id)
+            await opponent._handle_battle_start(battle_id)
+            
+            self._logger.info(f"✅ IPC battle created: {battle_id}")
+            
+        except Exception as e:
+            self._logger.error(f"❌ Failed to create IPC battle: {e}")
+            raise
+    
+    async def _handle_battle_start(self, battle_id: str):
+        """Handle battle start notification."""
+        try:
+            # Create battle object
+            from poke_env.environment.abstract_battle import AbstractBattle
+            from poke_env.environment.battle import Battle
+            
+            # Get the generation from the format
+            gen = 9  # Default to gen 9
+            if hasattr(self, '_format'):
+                # Extract generation number from format string (e.g., "gen9bssregi" -> 9)
+                import re
+                match = re.search(r'gen(\d+)', self._format)
+                if match:
+                    gen = int(match.group(1))
+            
+            # Initialize battle with the given ID and generation
+            battle = Battle(battle_id, self.username, self._logger, gen=gen)
+            self._battles[battle_id] = battle
+            
+            # Queue battle for environment processing
+            if hasattr(self, '_env') and hasattr(self._env, '_battle_queues'):
+                await self._env._battle_queues[self.player_id].put(battle)
+                self._logger.debug(f"📥 Battle {battle_id} queued for {self.player_id}")
+            
+        except Exception as e:
+            self._logger.error(f"❌ Failed to handle battle start: {e}")
+            raise
+    
+    async def _wait_for_battle_completion(self, battle_id: str):
+        """Wait for a battle to complete."""
+        while battle_id in self._battles:
+            battle = self._battles[battle_id]
+            if battle and battle.finished:
+                break
+            await asyncio.sleep(0.1)
+        
+        self._logger.info(f"🏁 Battle {battle_id} completed")
 
 
 class IPCClientWrapper:
@@ -686,10 +800,16 @@ class IPCClientWrapper:
                 try:
                     # Receive message from IPC communicator
                     message = await self.communicator.receive_message()
-                    self.logger.debug(f"📥 IPC received message: {message}")
                     
-                    # Process message (similar to PSClient._handle_message)
-                    await self._handle_message(message)
+                    # DEBUG_TEAMPREVIEW: Check for teampreview messages
+                    message_str = str(message)
+                    if "teampreview" in message_str.lower() or "poke|" in message_str:
+                        self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] IPCClientWrapper received: {message}")
+                    else:
+                        self.logger.debug(f"📥 IPC received message: {message}")
+                    
+                    # Process message (IPC message routing based on type)
+                    await self._route_ipc_message(message)
                     
                 except asyncio.CancelledError:
                     self.logger.info(f"🛑 IPC message loop cancelled for {self.username}")
@@ -739,15 +859,24 @@ class IPCClientWrapper:
         """Set parent player reference for poke-env integration."""
         self._parent_player = player
     
-    async def _handle_message(self, message) -> None:
-        """Handle received IPC message (similar to PSClient._handle_message).
+    async def _route_ipc_message(self, message) -> None:
+        """Route IPC message based on type (protocol vs control).
         
-        This method parses messages and determines whether they should be
-        processed as Showdown protocol messages or IPC control messages.
+        This method determines whether the message is a Showdown protocol message
+        that should be forwarded to poke-env, or an IPC control message that
+        should be handled internally.
+        
+        Args:
+            message: Raw IPC message from communicator
         """
         try:
             # Parse message type
             is_showdown, parsed_message = self._parse_message_type(message)
+            
+            # DEBUG_TEAMPREVIEW: Log routing decision for teampreview
+            message_str = str(message)
+            if "teampreview" in message_str.lower() or "poke|" in message_str:
+                self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] Routing decision - is_showdown: {is_showdown}, message_type: {parsed_message.get('type', 'unknown')}")
             
             if is_showdown:
                 # Handle Showdown protocol message
@@ -757,7 +886,7 @@ class IPCClientWrapper:
                 await self._handle_ipc_control_message(parsed_message)
                 
         except Exception as e:
-            self.logger.error(f"❌ Error handling IPC message: {e}")
+            self.logger.error(f"❌ Error routing IPC message: {e}")
     
     def _parse_message_type(self, message) -> tuple[bool, dict]:
         """Parse message and determine if it's Showdown protocol or IPC control.
@@ -778,7 +907,7 @@ class IPCClientWrapper:
             return True, message
         
         # IPC control messages
-        elif msg_type in ["battle_created", "player_registered", "battle_end", "error", "pong"]:
+        elif msg_type in ["battle_created", "battle_update", "player_registered", "battle_end", "error", "pong"]:
             return False, message
         
         else:
@@ -794,10 +923,20 @@ class IPCClientWrapper:
         """
         try:
             protocol_data = message.get("data", "")
+            
+            # DEBUG_TEAMPREVIEW: Check for teampreview in protocol data
+            if "teampreview" in str(protocol_data).lower() or "poke|" in str(protocol_data):
+                self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] About to forward to poke-env: {protocol_data}")
+            
             if protocol_data and self._parent_player:
                 # Forward to poke-env's _handle_message method
+                if "teampreview" in str(protocol_data).lower() or "poke|" in str(protocol_data):
+                    self.logger.info(f"📤 [DEBUG_TEAMPREVIEW] Forwarding to poke-env._handle_message(): {protocol_data}")
+                else:
+                    self.logger.debug(f"📤 Forwarded protocol message to poke-env : {protocol_data}")
+                    
                 await self._parent_player._handle_message(protocol_data)
-                self.logger.debug(f"📤 Forwarded protocol message to poke-env")
+                
             else:
                 self.logger.warning(f"⚠️ No protocol data or parent player: {message}")
                 
@@ -813,7 +952,26 @@ class IPCClientWrapper:
         msg_type = message.get("type")
         
         if msg_type == "battle_created":
-            self.logger.info(f"🏟️ Battle created: {message.get('battle_id')}")
+            battle_id = message.get('battle_id')
+            self.logger.info(f"🏟️ Battle created: {battle_id}")
+            # Notify parent player about battle creation
+            if self._parent_player and hasattr(self._parent_player, '_handle_battle_start'):
+                # Run in the event loop to avoid blocking
+                asyncio.create_task(self._parent_player._handle_battle_start(battle_id))
+        elif msg_type == "battle_update":
+            # Handle battle updates (teampreview, turn requests, etc.)
+            battle_id = message.get('battle_id')
+            updates = message.get('updates', '')
+            
+            # DEBUG_TEAMPREVIEW: Check for teampreview in battle updates
+            if "teampreview" in str(updates).lower() or "poke|" in str(updates):
+                self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] Battle update contains teampreview: battle_id={battle_id}, updates={updates}")
+                
+            if updates and self._parent_player:
+                # Forward as Showdown protocol message
+                if "teampreview" in str(updates).lower() or "poke|" in str(updates):
+                    self.logger.info(f"📤 [DEBUG_TEAMPREVIEW] Forwarding battle update to poke-env._handle_message(): {updates}")
+                await self._parent_player._handle_message(updates)
         elif msg_type == "player_registered":
             self.logger.info(f"👤 Player registered: {message.get('player_id')}")
         elif msg_type == "battle_end":

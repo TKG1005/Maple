@@ -415,7 +415,7 @@ class PokemonEnv(gym.Env):
         ):
             self.opponent_player.reset_battles()
 
-        # Battle creation - now unified for all modes (WebSocket/IPC both use DualModeEnvPlayer)
+        # Battle creation - unified for all modes (DualModeEnvPlayer handles WebSocket/IPC automatically)
         self._battle_task = asyncio.run_coroutine_threadsafe(
             self._run_battle(),
             POKE_LOOP,
@@ -985,10 +985,7 @@ class PokemonEnv(gym.Env):
             Player instance (DualModeEnvPlayer or EnvPlayer based on mode)
         """
         if self.battle_mode == "local":
-            if self.full_ipc:
-                self._logger.info(f"Creating full IPC player (Phase 4): {player_id}")
-            else:
-                self._logger.info(f"Creating local IPC player: {player_id}")
+            self._logger.info(f"Creating local IPC player: {player_id}")
             return DualModeEnvPlayer(
                 env=self,
                 player_id=player_id,
@@ -999,7 +996,7 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
-                full_ipc=self.full_ipc,  # Phase 4: Pass full IPC setting
+                full_ipc=self.full_ipc,  # Keep for backward compatibility
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
@@ -1013,7 +1010,7 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
-                full_ipc=False,  # Phase 4: Online mode never uses full IPC
+                full_ipc=False,  # Online mode uses WebSocket
             )
     
     def get_battle_mode(self) -> str:

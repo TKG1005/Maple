@@ -33,6 +33,7 @@ local_mode:
   process_timeout: 300   # Process timeout in seconds
   reuse_processes: true  # Whether to reuse Node.js processes across battles
   ipc_script_path: "sim/ipc-battle-server.js"  # Path to IPC server script
+  full_ipc: true        # Phase 4: Full IPC mode without WebSocket fallback
 
 # Pokemon Showdown server configuration (for battle_mode: "online") 
 pokemon_showdown:
