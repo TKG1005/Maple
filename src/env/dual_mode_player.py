@@ -809,6 +809,7 @@ class IPCClientWrapper:
                         self.logger.debug(f"📥 IPC received message: {message}")
                     
                     # Process message (IPC message routing based on type)
+                    # message is a dict with keys {type, data, battle_id, …}
                     await self._route_ipc_message(message)
                     
                 except asyncio.CancelledError:
@@ -879,7 +880,7 @@ class IPCClientWrapper:
                 self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] Routing decision - is_showdown: {is_showdown}, message_type: {parsed_message.get('type', 'unknown')}")
             
             if is_showdown:
-                # Handle Showdown protocol message
+                # Handle Showdown protocol messages (including battle tag and request lines)
                 await self._handle_showdown_message(parsed_message)
             else:
                 # Handle IPC control message
@@ -923,18 +924,16 @@ class IPCClientWrapper:
         """
         try:
             protocol_data = message.get("data", "")
+            # Debug: show raw protocol_data forwarded from IPC (should include >battle tag)
+            self.logger.debug(f"[IPC_DEBUG_PY] Forwarding raw protocol data to poke-env:\n{protocol_data}")
             
             # DEBUG_TEAMPREVIEW: Check for teampreview in protocol data
             if "teampreview" in str(protocol_data).lower() or "poke|" in str(protocol_data):
                 self.logger.info(f"🔍 [DEBUG_TEAMPREVIEW] About to forward to poke-env: {protocol_data}")
             
             if protocol_data and self._parent_player:
-                # Forward to poke-env's _handle_message method
-                if "teampreview" in str(protocol_data).lower() or "poke|" in str(protocol_data):
-                    self.logger.info(f"📤 [DEBUG_TEAMPREVIEW] Forwarding to poke-env._handle_message(): {protocol_data}")
-                else:
-                    self.logger.debug(f"📤 Forwarded protocol message to poke-env : {protocol_data}")
-                    
+                # Always forward full protocol_data (with tag and body) to poke-env
+                self.logger.debug(f"[IPC_DEBUG_PY] Sending to poke-env._handle_message: {protocol_data}")
                 await self._parent_player._handle_message(protocol_data)
                 
             else:
