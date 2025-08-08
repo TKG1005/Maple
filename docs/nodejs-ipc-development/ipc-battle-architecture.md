@@ -205,6 +205,22 @@ sequenceDiagram
 - **プロセス管理**: BattleManagerによる複数バトルのNode.jsプロセス管理
 - **エラーハンドリング**: プロセス異常終了・通信エラーの適切な処理
 
+### 責務分担（Controller vs Wrapper）
+
+- **IPCBattleController が担当すること**
+  - 対戦開始のオーケストレーション（player_0 主導の開始手順）
+  - `create_battle` コマンドの送出と完了待機
+  - Ping/Pong による疎通・ヘルスチェック（インターバル、タイムアウト、再試行／再起動ポリシーの実装）
+  - Node.js プロセスの起動・終了・監視（stdout/stderr の読み取り、クラッシュ検知）
+  - メッセージのプレイヤー別ルーティング（`target_player` に基づく複製・配信）
+  - ID 変換（`player_0`/`player_1` ⇔ `p1`/`p2`）の境界吸収
+
+- **IPCClientWrapper が担当すること**
+  - 送信／受信の最小限ラップとメッセージ種別判別（IPC制御か Showdown プロトコルか）
+  - Showdown プロトコルメッセージの PSClient への委譲（`listen()`/`_handle_message()` 経路、オーバーライドはしない）
+  - Ping/Pong の主体的な実施は行わない（必要に応じて Controller にフォワード）
+  - バトル作成処理は行わない（Controller に要求し、通知を受け取る）
+
 ## バトル作成
 
 ### 概要
