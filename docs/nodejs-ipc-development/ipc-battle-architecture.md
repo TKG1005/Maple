@@ -10,6 +10,7 @@
 3. **Player-scoped messaging** – Node.js 側が `target_player` メタデータを付与し、Python 側 (`IPCBattleController`) がプレイヤーごとのキューに振り分ける.
 4. **Id mapping at the boundary** – Showdown 側は `p1` / `p2`、PokemonEnv 側は `player_0` / `player_1` を用いる。広域改修は避け、ID の相互変換は `IPCBattleController` / `IPCClientWrapper` の境界でのみ行う。
 5. **Up-stream compatibility** – 既存 poke-env / Showdown の API・プロトコルとの互換性を最優先し、変更は最小限にとどめる。
+6. **PSClient-first processing** – IPCClientWrapper は送受信の最小ラップのみに徹し、Showdown プロトコルメッセージは PSClient.listen/_handle_message にそのまま委譲（_handle_message はオーバーライドしない）。
 
 ---
 
@@ -25,7 +26,7 @@
 
 - **Node.jsプロセス**: 1バトル専用のShowdownサーバー。プレイヤー指定メタデータ付きメッセージを送受信
 - **IPCBattleController**: Node.jsプロセス管理・メッセージルーティング・バトル制御・通信中継を一元管理（IPC 層の中核。専用の `IPCCommunicator` 等は作らず本クラスに集約）
-- **IPCClientWrapper**: PSClient 互換を目指す薄いラッパー。アプリ側が利用しやすい I/F を提供しつつ、実処理は `IPCBattleController` に委譲（Controller 経由の I/F に一本化）
+- **IPCClientWrapper**: PSClient を IPC 通信で利用可能にするための「薄いラッパー」。送受信（stdin/stdout）とメッセージ種別判別（IPC制御か Showdown プロトコルか）のみを担当し、Showdown プロトコルと判断したメッセージは PSClient.listen/_handle_message にそのまま委譲（_handle_message はオーバーライドしない）。実際のプロセス管理や配信は `IPCBattleController` に委譲。
 - **DualModePlayer**: 各プレイヤーが独自のIPCClientWrapperインスタンスを保持
 - **BattleManager**: 複数バトルのNode.jsプロセス管理
 
@@ -118,8 +119,18 @@ async def route_message(self, message):
 # IPCClientWrapper内
 async def receive_message(self):
     # 自分専用のキューから受信
-    message = await self._message_queue.get()
-    return message
+    msg = await self._message_queue.get()
+    return msg
+
+async def listen(self):
+    # PSClient の標準ループと同等に、受信メッセージを分類して委譲
+    while True:
+        raw = await self.receive_message()
+        if self._is_ipc_control(raw):
+            await self._handle_ipc_control(raw)  # ping/pong 等
+        else:
+            # Showdown プロトコル: そのまま PSClient の処理系に委譲
+            await self.ps_client._handle_message(raw)  # _handle_message はオーバーライドしない
 ```
 
 ---
@@ -189,6 +200,7 @@ sequenceDiagram
 ## 実装要件
 
 - **POKE_LOOP互換**: 標準`asyncio.subprocess`を使用してPOKE_LOOPとの完全互換性を確保
+- **PSClient互換 I/F**: IPCClientWrapper は送受信と種別判別のみを担当し、Showdown プロトコルメッセージは PSClient.listen/_handle_message に委譲（_handle_message はオーバーライドしない）
 - **プラットフォーム対応**: Windows/Unix両対応のプロセス作成・終了処理
 - **プロセス管理**: BattleManagerによる複数バトルのNode.jsプロセス管理
 - **エラーハンドリング**: プロセス異常終了・通信エラーの適切な処理
@@ -412,6 +424,7 @@ class IPCBattleController:
 |  | 認証モジュール | auth / verifier | **Stub 化** – ローカルなので常に成功 |
 |  | Ping/Pong ハンドラ | WS Ping | JSON Ping/Pong へ差し替え |
 | Python (環境側) | `poke_env.player.Player`, `Battle` | 戦闘解析・行動決定 | **変更不要** |
+|  | `PSClient` | メッセージ受信・_handle_message | **変更不要**（_handle_message はオーバーライドしない） |
 |  | `src/sim/battle_communicator.WebSocketCommunicator` | WS 送受信ラッパ | 既存のまま（IPC 用の Communicator は新設しない） |
 |  | `src/env/dual_mode_player.DualModeEnvPlayer` | モード選択 | IPC モード時でも内部は `IPCClientWrapper` → `IPCBattleController` を使用 |
 |  | `IPCClientWrapper` | ― | **実装必須** – Controller 経由での I/F を提供（薄いラッパー） |
