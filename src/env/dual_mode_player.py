@@ -137,6 +137,22 @@ class IPCClientWrapper:
         ctrl = await self._ensure_controller(battle_id)
         await ctrl.create_battle(format_id, players, seed)
 
+    async def create_battle_by_room(self, room_tag: str, format_id: str, players: list[dict], seed: Optional[list[int]] = None) -> None:
+        """Create a battle referenced by `room_tag` instead of a numeric battle_id.
+
+        This helper registers/obtains a controller keyed by `room_tag` and
+        delegates the create_battle call. This allows Phase3-style room_tag
+        based creation while keeping backwards-compatible APIs available.
+        """
+        from src.env.controller_registry import ControllerRegistry  # type: ignore
+
+        # Create or fetch controller using room_tag as the primary identifier
+        ctrl = ControllerRegistry.get_or_create(self.node_script_path, room_tag, room_tag, logger=self.logger)
+        # Ensure controller process is running
+        if not await ctrl.is_alive():
+            await ctrl.connect()
+        await ctrl.create_battle(format_id, players, seed)
+
     async def listen(self) -> None:
         """Compatibility stub: controller streams are push-based; nothing to do here."""
         return None
@@ -162,6 +178,26 @@ class IPCClientWrapper:
             return await queue.get()
         else:
             return await asyncio.wait_for(queue.get(), timeout=timeout)
+
+    async def recv_by_room(self, room_tag: str, player_py_id: str, timeout: Optional[float] = None) -> str:
+        """Receive a protocol line by room_tag (migration helper).
+
+        This temporarily maps the room_tag to a battle_id and delegates to
+        `recv`. During the migration period callers can use room_tag.
+        """
+        battle_id = self._get_battle_id_from_room(room_tag)
+        return await self.recv(battle_id, player_py_id, timeout=timeout)
+
+    def _get_battle_id_from_room(self, room_tag: str) -> str:
+        """Derive a best-effort battle_id from a room_tag.
+
+        Example: "battle-gen9randombattle-1234-5678" -> "battle-1234-5678"
+        If pattern doesn't match, return the original room_tag.
+        """
+        parts = room_tag.split("-")
+        if len(parts) >= 4 and parts[0] == "battle":
+            return f"battle-{parts[-2]}-{parts[-1]}"
+        return room_tag
 
     # ---- Internals ----
     async def _ensure_controller(self, battle_id: str):
@@ -225,8 +261,15 @@ class DualModeEnvPlayer(EnvPlayer):
         self._logger = logging.getLogger(__name__)
         # Background receive pump tasks per battle_id (IPC mode)
         self._ipc_pump_tasks: dict[str, asyncio.Task] = {}
+        # Phase1: mapping between battle_id and room_tag (provided by Node.js)
+        # battle_id -> room_tag and reverse
+        self._battle_to_room: dict[str, str] = {}
+        self._room_to_battle: dict[str, str] = {}
         # 招待を受け取るためのキュー（player_1）
         self._ipc_invitations: asyncio.Queue[str] = asyncio.Queue()
+        # Phase2: room-based battle and pump registries
+        self._battles_by_room: dict[str, "Battle"] = {}
+        self._pump_tasks_by_room: dict[str, asyncio.Task] = {}
         
         # Initialize parent class based on mode and full_ipc setting
         if mode == "online":
@@ -323,12 +366,14 @@ class DualModeEnvPlayer(EnvPlayer):
             # Only player_0 generates battle ID to avoid duplicates
             if self.player_id == "player_0":
                 # Generate unique battle ID
+                # Phase3: Generate room_tag and create battle by room
                 timestamp = int(time.time() * 1000)
-                battle_id = f"battle-{timestamp}-{random.randint(1000, 9999)}"
-                self._logger.info(f"🎲 [player_0] Creating battle: {battle_id}")
-                
-                # Create battle via IPC
-                await self._create_ipc_battle(battle_id, opponent)
+                random_id = random.randint(1000, 9999)
+                format_id = self._format if hasattr(self, '_format') else "gen9randombattle"
+                room_tag = f"battle-{format_id}-{timestamp}-{random_id}"
+                self._logger.info(f"🎲 [player_0] Creating battle (room_tag): {room_tag}")
+                # Create battle via IPC using room_tag
+                await self._create_ipc_battle_by_room(room_tag, opponent)
             else:
                 # player_1 waits for invitation
                 self._logger.info(f"⏳ [player_1] Waiting for battle invitation...")
@@ -391,6 +436,24 @@ class DualModeEnvPlayer(EnvPlayer):
 
             # Create battle via IPC and待機（ACKまたは初回|request|）
             await self.ipc_client_wrapper.create_battle(battle_id, battle_format, players)
+
+            # Phase1: obtain room_tag from the controller created for this battle
+            try:
+                creator_ctrl = await self.ipc_client_wrapper._ensure_controller(battle_id)
+                room_tag = getattr(creator_ctrl, "_room_tag", None)
+                if isinstance(room_tag, str) and room_tag:
+                    # Save mapping for both creator and opponent (if applicable)
+                    self._battle_to_room[battle_id] = room_tag
+                    self._room_to_battle[room_tag] = battle_id
+                    if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
+                        opponent._battle_to_room[battle_id] = room_tag
+                        opponent._room_to_battle[room_tag] = battle_id
+                    self._logger.info(f"Battle {battle_id} mapped to room {room_tag}")
+                else:
+                    # Defensive: log a warning if room_tag not yet available
+                    self._logger.warning(f"room_tag not available immediately for {battle_id}")
+            except Exception as e:
+                self._logger.error(f"Failed to retrieve room_tag for {battle_id}: {e}")
             
             # Register battle with both players
             self._battles[battle_id] = None  # Will be populated when battle starts
@@ -413,12 +476,83 @@ class DualModeEnvPlayer(EnvPlayer):
         """player_1 が招待（battle_id）を待つ。"""
         battle_id = await self._ipc_invitations.get()
         # 自身のラッパーを同じControllerに接続
+        # battle_id may be a room_tag in Phase3; ensure controller for that id
         await self.ipc_client_wrapper._ensure_controller(battle_id)
         
         # Register battle placeholder
         self._battles[battle_id] = None
         
         return battle_id
+
+    async def _create_ipc_battle_by_room(self, room_tag: str, opponent):
+        """Create a battle through IPC using a room_tag as the identifier.
+
+        This mirrors `_create_ipc_battle` but uses `room_tag` as the battle key
+        so Python-side registries and controllers are keyed by the room.
+        """
+        try:
+            # Get battle format
+            battle_format = self._format if hasattr(self, '_format') else "gen9randombattle"
+
+            # Prepare player configurations
+            p1_team = None
+            if hasattr(self, '_team') and self._team is not None:
+                if hasattr(self._team, 'yield_team'):
+                    p1_team = self._team.yield_team()
+                else:
+                    p1_team = str(self._team)
+
+            p2_team = None
+            if hasattr(opponent, '_team') and opponent._team is not None:
+                if hasattr(opponent._team, 'yield_team'):
+                    p2_team = opponent._team.yield_team()
+                else:
+                    p2_team = str(opponent._team)
+
+            players = [
+                {
+                    "id": "p1",
+                    "name": self.username,
+                    "team": p1_team
+                },
+                {
+                    "id": "p2", 
+                    "name": opponent.username,
+                    "team": p2_team
+                }
+            ]
+
+            # Use new API to create by room
+            await self.ipc_client_wrapper.create_battle_by_room(room_tag, battle_format, players)
+
+            # Register battle using room_tag as key
+            self._battles[room_tag] = None
+            opponent._battles[room_tag] = None
+
+            # Try to persist mapping (Phase1 compatibility)
+            try:
+                creator_ctrl = await self.ipc_client_wrapper._ensure_controller(room_tag)
+                rt = getattr(creator_ctrl, "_room_tag", None)
+                if isinstance(rt, str) and rt:
+                    self._battle_to_room[room_tag] = rt
+                    self._room_to_battle[rt] = room_tag
+                    if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
+                        opponent._battle_to_room[room_tag] = rt
+                        opponent._room_to_battle[rt] = room_tag
+            except Exception:
+                pass
+
+            # Notify both players
+            await self._handle_battle_start(room_tag)
+            await opponent._handle_battle_start(room_tag)
+            if hasattr(opponent, '_ipc_invitations'):
+                await opponent._ipc_invitations.put(room_tag)
+
+            self._logger.info(f"✅ IPC battle created by room: {room_tag}")
+
+        except Exception as e:
+            self._logger.error(f"❌ Failed to create IPC battle by room: {e}")
+            raise
     
     async def _handle_battle_start(self, battle_id: str):
         """Handle battle start notification."""
@@ -439,6 +573,13 @@ class DualModeEnvPlayer(EnvPlayer):
             # Initialize battle with the given ID and generation
             battle = Battle(battle_id, self.username, self._logger, gen=gen)
             self._battles[battle_id] = battle
+            # Phase2: register by room_tag if available
+            try:
+                room_tag = self.get_room_tag(battle_id)
+                if isinstance(room_tag, str) and room_tag:
+                    self._battles_by_room[room_tag] = battle
+            except Exception:
+                pass
             
             # Queue battle for environment processing
             if hasattr(self, '_env') and hasattr(self._env, '_battle_queues'):
@@ -489,6 +630,13 @@ class DualModeEnvPlayer(EnvPlayer):
         if task is not None and not task.done():
             return
         self._ipc_pump_tasks[battle_id] = asyncio.create_task(self._ipc_receive_pump(battle_id))
+        # Also register pump by room_tag (Phase2)
+        try:
+            room_tag = self.get_room_tag(battle_id)
+            if isinstance(room_tag, str) and room_tag:
+                self._pump_tasks_by_room[room_tag] = self._ipc_pump_tasks[battle_id]
+        except Exception:
+            pass
 
     async def _stop_ipc_pump(self, battle_id: str) -> None:
         task = self._ipc_pump_tasks.pop(battle_id, None)
@@ -498,6 +646,29 @@ class DualModeEnvPlayer(EnvPlayer):
                 await task
             except asyncio.CancelledError:
                 pass
+        # Also cleanup room-based pump registry
+        try:
+            room_tag = self.get_room_tag(battle_id)
+            if isinstance(room_tag, str) and room_tag:
+                other = self._pump_tasks_by_room.pop(room_tag, None)
+                if other is not None and other is not task:
+                    if not other.done():
+                        other.cancel()
+                        try:
+                            await other
+                        except asyncio.CancelledError:
+                            pass
+        except Exception:
+            pass
+
+    # ---- Phase1: room_tag <-> battle_id mapping accessors ----
+    def get_room_tag(self, battle_id: str) -> Optional[str]:
+        """Return the room_tag associated with a battle_id, or None."""
+        return self._battle_to_room.get(battle_id)
+
+    def get_battle_id(self, room_tag: str) -> Optional[str]:
+        """Return the battle_id associated with a room_tag, or None."""
+        return self._room_to_battle.get(room_tag)
 
     async def _ipc_receive_pump(self, battle_id: str) -> None:
         """Continuously forward IPC messages to PSClient handler for this player."""
