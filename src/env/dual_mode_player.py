@@ -201,9 +201,13 @@ class IPCClientWrapper:
 
     # ---- Internals ----
     async def _ensure_controller(self, battle_id: str):
+        # In full migration, controllers are keyed by room_tag. The identifier
+        # passed here may already be a room_tag. We store controllers locally
+        # keyed by the same identifier for reuse.
         from src.env.controller_registry import ControllerRegistry  # type: ignore
         ctrl = self._controllers.get(battle_id)
         if ctrl is None:
+            # Treat `battle_id` as room_tag in the registry
             ctrl = ControllerRegistry.get_or_create(self.node_script_path, battle_id, logger=self.logger)
             self._controllers[battle_id] = ctrl
         if not await ctrl.is_alive():
@@ -623,7 +627,9 @@ class DualModeEnvPlayer(EnvPlayer):
             timeout = 10.0  # seconds
             start_time = time.time()
             while time.time() - start_time < timeout:
-                battle = self._battles.get(battle_id)
+                # prefer room_tag key if available
+                room_key = self.get_room_tag(battle_id) or battle_id
+                battle = self._battles.get(room_key) or self._battles.get(battle_id)
                 # When first |request| arrives, poke-env sets last_request
                 if battle is not None and getattr(battle, "last_request", None):
                     self._logger.info(f"✅ [{self.player_id}] Battle {battle_id} is ready!")
@@ -636,8 +642,10 @@ class DualModeEnvPlayer(EnvPlayer):
     
     async def _wait_for_battle_completion(self, battle_id: str):
         """Wait for a battle to complete."""
-        while battle_id in self._battles:
-            battle = self._battles[battle_id]
+        # prefer room_tag key if available
+        room_key = self.get_room_tag(battle_id) or battle_id
+        while room_key in self._battles or battle_id in self._battles:
+            battle = self._battles.get(room_key) or self._battles.get(battle_id)
             if battle and battle.finished:
                 break
             await asyncio.sleep(0.1)
@@ -700,13 +708,15 @@ class DualModeEnvPlayer(EnvPlayer):
         """Continuously forward IPC messages to PSClient handler for this player."""
         try:
             while True:
-                raw = await self.ipc_client_wrapper.recv(battle_id, self.player_id)
+                # Use room_key to receive: if we have room mapping, prefer it
+                room_key = self.get_room_tag(battle_id) or battle_id
+                raw = await self.ipc_client_wrapper.recv(room_key, self.player_id)
                 if not raw:
                     continue
                 await self.ps_client._handle_message(raw)  # reuse existing PSClient path
 
                 # Exit if battle finished
-                battle = self._battles.get(battle_id)
+                battle = self._battles.get(room_key) or self._battles.get(battle_id)
                 if battle and getattr(battle, "finished", False):
                     break
         except asyncio.CancelledError:

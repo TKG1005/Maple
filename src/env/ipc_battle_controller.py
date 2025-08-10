@@ -164,9 +164,12 @@ class IPCBattleController:
             players: list like [{"name": str, "team": Optional[str]}, {"name": str, "team": Optional[str]}]
             seed: Optional PRNG seed array
         """
+        # Full-migration: use room_tag as primary identifier in payload.
+        # `self.battle_id` is used as the room_tag when controllers are created
+        # with room identifiers.
         payload: Dict[str, Any] = {
             "type": "create_battle",
-            "battle_id": self.battle_id,
+            "room_tag": self.battle_id,
             "format": format_id,
             "players": players,
         }
@@ -175,7 +178,9 @@ class IPCBattleController:
         # Reset readiness events per creation
         self._battle_created_event = asyncio.Event()
         self._first_request_event = asyncio.Event()
-        # room_tag is provided by Node; clear any previous cache
+        # When using room_tag-based controllers, self.battle_id may already be
+        # the room_tag. Clear previous cache and allow node to return canonical
+        # room_tag via battle_created message if needed.
         self._room_tag = None
         self._room_header_cache = None
 
