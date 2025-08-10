@@ -279,6 +279,11 @@ class IPCBattleController:
         if py_player is None:
             data_line = str(message.get("data", ""))
             tagged = self._tag_with_room_header(data_line)
+            # Log the queued line for each player
+            try:
+                self.logger.debug("[NODE->QUEUE] broadcast -> %s", tagged)
+            except Exception:
+                pass
             for q in self.player_queues.values():
                 await q.put(tagged)
             # Detect readiness markers in data
@@ -289,6 +294,10 @@ class IPCBattleController:
         if py_player in self.player_queues:
             data_line = str(message.get("data", ""))
             tagged = self._tag_with_room_header(data_line)
+            try:
+                self.logger.debug("[NODE->QUEUE] %s <- %s", py_player, tagged)
+            except Exception:
+                pass
             await self.player_queues[py_player].put(tagged)
             # Detect readiness markers
             if self._first_request_event is not None and ("|init|" in data_line or "|request|" in data_line):
