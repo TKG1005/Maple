@@ -361,6 +361,10 @@ class DualModeEnvPlayer(EnvPlayer):
             node_script_path=self.ipc_script_path,
             logger=self._logger,
         )
+
+    def _sd_id(self) -> str:
+        """Return Showdown player id for this player (p1/p2)."""
+        return "p1" if self.player_id == "player_0" else "p2"
     
     
     

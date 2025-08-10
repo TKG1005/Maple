@@ -26,6 +26,56 @@ class EnvPlayer(Player):
         # 前回処理した Battle.last_request を保持しておく
         self._last_request: Any | None = None
 
+    async def _send_battle_message_local_aware(self, battle: AbstractBattle, message: str) -> None:
+        """Send a battle message via IPC in local mode, otherwise via PSClient.
+
+        - Local (IPC) mode: route to Node controller using room mapping.
+        - Online mode: fallback to PSClient (standard poke-env behavior).
+        """
+        try:
+            # Prefer IPC route when available and configured for local mode
+            if hasattr(self, "mode") and getattr(self, "mode") == "local" and hasattr(self, "ipc_client_wrapper"):
+                # Resolve room key (room_tag) from battle tag if mapping exists
+                room_key = battle.battle_tag
+                try:
+                    if hasattr(self, "get_room_tag"):
+                        mapped = self.get_room_tag(battle.battle_tag)  # type: ignore[attr-defined]
+                        if isinstance(mapped, str) and mapped:
+                            room_key = mapped
+                except Exception:
+                    pass
+
+                # Map python player id to Showdown id (p1/p2)
+                sd_id = "p1" if self.player_id == "player_0" else "p2"
+                self._logger.debug(
+                    "[DBG] %s IPC send protocol battle_id=%s sd_id=%s data=%s",
+                    self.player_id,
+                    room_key,
+                    sd_id,
+                    message,
+                )
+                payload = {
+                    "type": "protocol",
+                    "battle_id": room_key,
+                    "player_id": sd_id,
+                    "data": message,
+                }
+                # Use IPC client wrapper to send protocol to the controller
+                await self.ipc_client_wrapper.send(payload)  # type: ignore[attr-defined]
+                return
+
+            # Fallback to PSClient (online mode)
+            await self.ps_client.send_message(message, battle.battle_tag)
+        except Exception:
+            # Ensure exceptions propagate but log context for diagnostics
+            self._logger.exception(
+                "Failed to send battle message (mode=%s, room=%s, msg=%s)",
+                getattr(self, "mode", "unknown"),
+                getattr(battle, "battle_tag", "unknown"),
+                message,
+            )
+            raise
+
     async def choose_move(self, battle):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
         
@@ -146,7 +196,7 @@ class EnvPlayer(Player):
                     battle.battle_tag,
                     battle.last_request,
                 )
-                await self.ps_client.send_message(message, battle.battle_tag)
+                await self._send_battle_message_local_aware(battle, message)
                 self._last_request = battle.last_request
                 return
             except asyncio.TimeoutError:
@@ -212,7 +262,7 @@ class EnvPlayer(Player):
             battle.battle_tag,
             battle.last_request,
         )
-        await self.ps_client.send_message(message, battle.battle_tag)
+        await self._send_battle_message_local_aware(battle, message)
         # 処理した last_request を記録
         self._last_request = battle.last_request
 
