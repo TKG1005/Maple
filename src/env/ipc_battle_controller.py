@@ -167,12 +167,15 @@ class IPCBattleController:
         # Full-migration: use room_tag as primary identifier in payload.
         # `self.battle_id` is used as the room_tag when controllers are created
         # with room identifiers.
+        # Include both `battle_id` and `room_tag` for backward compatibility
         payload: Dict[str, Any] = {
             "type": "create_battle",
+            "battle_id": self.battle_id,
             "room_tag": self.battle_id,
             "format": format_id,
             "players": players,
         }
+        self.logger.debug("Sending create_battle payload: %s", payload)
         if seed is not None:
             payload["seed"] = seed
         # Reset readiness events per creation
