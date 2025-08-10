@@ -226,6 +226,11 @@ class IPCBattleController:
         Expected Node protocol shape:
           {"type":"protocol","battle_id":...,"target_player":"p1|p2","data":"..."}
         """
+        # Log incoming parsed messages for debugging
+        try:
+            self.logger.debug("[NODE->PY] parsed message: %s", message)
+        except Exception:
+            pass
         mtype = message.get("type")
         if mtype != "protocol":
             # handle control side-effects (pong, errors) or ignore
@@ -316,6 +321,11 @@ class IPCBattleController:
                 text = line.decode("utf-8", "replace").strip()
                 if not text:
                     continue
+                # Log raw NDJSON line from Node for debugging
+                try:
+                    self.logger.debug("[NODE STDOUT RAW] %s", text)
+                except Exception:
+                    pass
                 try:
                     msg = json.loads(text)
                 except json.JSONDecodeError:
@@ -338,7 +348,12 @@ class IPCBattleController:
                     break
                 text = line.decode("utf-8", "replace").rstrip("\n")
                 if text:
-                    self.logger.error("[NODE] %s", text)
+                    # Preserve existing stderr logging but also emit debug
+                    self.logger.error("[NODE STDERR] %s", text)
+                    try:
+                        self.logger.debug("[NODE STDERR RAW] %s", text)
+                    except Exception:
+                        pass
         except asyncio.CancelledError:
             pass
         except Exception as e:
