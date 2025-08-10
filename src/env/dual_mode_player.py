@@ -265,6 +265,8 @@ class DualModeEnvPlayer(EnvPlayer):
         # battle_id -> room_tag and reverse
         self._battle_to_room: dict[str, str] = {}
         self._room_to_battle: dict[str, str] = {}
+        # Lock protecting mapping updates
+        self._mapping_lock: asyncio.Lock = asyncio.Lock()
         # 招待を受け取るためのキュー（player_1）
         self._ipc_invitations: asyncio.Queue[str] = asyncio.Queue()
         # Phase2: room-based battle and pump registries
@@ -443,12 +445,16 @@ class DualModeEnvPlayer(EnvPlayer):
                 room_tag = getattr(creator_ctrl, "_room_tag", None)
                 if isinstance(room_tag, str) and room_tag:
                     # Save mapping for both creator and opponent (if applicable)
-                    self._battle_to_room[battle_id] = room_tag
-                    self._room_to_battle[room_tag] = battle_id
-                    if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
-                        opponent._battle_to_room[battle_id] = room_tag
-                        opponent._room_to_battle[room_tag] = battle_id
-                    self._logger.info(f"Battle {battle_id} mapped to room {room_tag}")
+                    try:
+                        async with self._mapping_lock:
+                            self._battle_to_room[battle_id] = room_tag
+                            self._room_to_battle[room_tag] = battle_id
+                            if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
+                                opponent._battle_to_room[battle_id] = room_tag
+                                opponent._room_to_battle[room_tag] = battle_id
+                        self._logger.info(f"Battle {battle_id} mapped to room {room_tag}")
+                    except Exception:
+                        self._logger.exception("Failed to store mapping for %s", battle_id)
                 else:
                     # Defensive: log a warning if room_tag not yet available
                     self._logger.warning(f"room_tag not available immediately for {battle_id}")
@@ -534,11 +540,15 @@ class DualModeEnvPlayer(EnvPlayer):
                 creator_ctrl = await self.ipc_client_wrapper._ensure_controller(room_tag)
                 rt = getattr(creator_ctrl, "_room_tag", None)
                 if isinstance(rt, str) and rt:
-                    self._battle_to_room[room_tag] = rt
-                    self._room_to_battle[rt] = room_tag
-                    if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
-                        opponent._battle_to_room[room_tag] = rt
-                        opponent._room_to_battle[rt] = room_tag
+                    try:
+                        async with self._mapping_lock:
+                            self._battle_to_room[room_tag] = rt
+                            self._room_to_battle[rt] = room_tag
+                            if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
+                                opponent._battle_to_room[room_tag] = rt
+                                opponent._room_to_battle[rt] = room_tag
+                    except Exception:
+                        self._logger.exception("Failed to store mapping for room %s", room_tag)
             except Exception:
                 pass
 
@@ -571,13 +581,26 @@ class DualModeEnvPlayer(EnvPlayer):
                     gen = int(match.group(1))
             
             # Initialize battle with the given ID and generation
-            battle = Battle(battle_id, self.username, self._logger, gen=gen)
+            # Use room_tag as the Battle.battle_tag if available (separation step A)
+            try:
+                rt = self.get_room_tag(battle_id)
+            except Exception:
+                rt = None
+            battle_tag_for_obj = rt if isinstance(rt, str) and rt else battle_id
+            battle = Battle(battle_tag_for_obj, self.username, self._logger, gen=gen)
+            # store battle under local battle_id to keep controller mapping stable
             self._battles[battle_id] = battle
             # Phase2: register by room_tag if available
             try:
                 room_tag = self.get_room_tag(battle_id)
                 if isinstance(room_tag, str) and room_tag:
-                    self._battles_by_room[room_tag] = battle
+                    async def _reg_battles_by_room():
+                        self._battles_by_room[room_tag] = battle
+                    try:
+                        async with self._mapping_lock:
+                            await _reg_battles_by_room()
+                    except Exception:
+                        self._logger.exception("Failed to register battle by room %s", room_tag)
             except Exception:
                 pass
             
@@ -588,7 +611,7 @@ class DualModeEnvPlayer(EnvPlayer):
 
             # Start background receive pump to forward IPC messages to PSClient
             if self.mode == "local":
-                self._start_ipc_pump(battle_id)
+                await self._start_ipc_pump(battle_id)
             
         except Exception as e:
             self._logger.error(f"❌ Failed to handle battle start: {e}")
@@ -624,7 +647,7 @@ class DualModeEnvPlayer(EnvPlayer):
         await self._stop_ipc_pump(battle_id)
 
     # ---- IPC receive pump ----
-    def _start_ipc_pump(self, battle_id: str) -> None:
+    async def _start_ipc_pump(self, battle_id: str) -> None:
         # Avoid duplicate pumps
         task = self._ipc_pump_tasks.get(battle_id)
         if task is not None and not task.done():
@@ -634,7 +657,8 @@ class DualModeEnvPlayer(EnvPlayer):
         try:
             room_tag = self.get_room_tag(battle_id)
             if isinstance(room_tag, str) and room_tag:
-                self._pump_tasks_by_room[room_tag] = self._ipc_pump_tasks[battle_id]
+                async with self._mapping_lock:
+                    self._pump_tasks_by_room[room_tag] = self._ipc_pump_tasks[battle_id]
         except Exception:
             pass
 
@@ -647,17 +671,18 @@ class DualModeEnvPlayer(EnvPlayer):
             except asyncio.CancelledError:
                 pass
         # Also cleanup room-based pump registry
-        try:
-            room_tag = self.get_room_tag(battle_id)
-            if isinstance(room_tag, str) and room_tag:
-                other = self._pump_tasks_by_room.pop(room_tag, None)
-                if other is not None and other is not task:
-                    if not other.done():
-                        other.cancel()
-                        try:
-                            await other
-                        except asyncio.CancelledError:
-                            pass
+            try:
+                room_tag = self.get_room_tag(battle_id)
+                if isinstance(room_tag, str) and room_tag:
+                    async with self._mapping_lock:
+                        other = self._pump_tasks_by_room.pop(room_tag, None)
+                    if other is not None and other is not task:
+                        if not other.done():
+                            other.cancel()
+                            try:
+                                await other
+                            except asyncio.CancelledError:
+                                pass
         except Exception:
             pass
 
