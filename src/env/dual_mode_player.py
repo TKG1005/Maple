@@ -380,6 +380,8 @@ class DualModeEnvPlayer(EnvPlayer):
                 self._logger.info(f"🎲 [player_0] Creating battle (room_tag): {room_tag}")
                 # Create battle via IPC using room_tag
                 await self._create_ipc_battle_by_room(room_tag, opponent)
+                # For downstream logic use battle_id variable (set to room_tag)
+                battle_id = room_tag
             else:
                 # player_1 waits for invitation
                 self._logger.info(f"⏳ [player_1] Waiting for battle invitation...")
