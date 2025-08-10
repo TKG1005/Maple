@@ -561,19 +561,8 @@ def main(
     # Battle mode configuration from config file (unless explicitly provided)
     # Note: battle_mode comes from CLI parameter and should not be overridden
     
-    # Load full_ipc from config if not provided via CLI
-    if not full_ipc and battle_mode == "local":
-        local_mode_config = cfg.get("local_mode", {})
-        full_ipc = bool(local_mode_config.get("full_ipc", False))
-    
-    # Phase 4: Validate full_ipc parameter
-    if full_ipc and battle_mode != "local":
-        raise ValueError("--full-ipc can only be used with --battle-mode local")
-    
-    if full_ipc:
-        logger.info("🚀 Phase 4: Full IPC mode enabled (WebSocket fallback disabled)")
-    elif battle_mode == "local":
-        logger.info("📋 Phase 3: Local mode with WebSocket fallback enabled")
+    if battle_mode == "local":
+        logger.info("📋 Local mode with IPC communication")
     else:
         logger.info("🌐 Online mode: WebSocket communication enabled")
     

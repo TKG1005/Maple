@@ -13,3 +13,4 @@ runs/
 .gitignore
 !pokemon-showdown/sim/ipc-battle-server.js
 checkpoints/
+.aider*

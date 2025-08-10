@@ -168,12 +168,12 @@ sequenceDiagram
     I1->>D1: handle_message
     
     %% player_0がムーブ選択
-    D0->>I0: send_message({player_id: "player_0", data: "/choose move 1"})
+    D0->>I0: send({player_id: "player_0", data: "/choose move 1"})
     I0->>IBC: forward to controller
     IBC->>N: JSON to stdin
     
     %% player_1がムーブ選択
-    D1->>I1: send_message({player_id: "player_1", data: "/choose move 2"})
+    D1->>I1: send({player_id: "player_1", data: "/choose move 2"})
     I1->>IBC: forward to controller
     IBC->>N: JSON to stdin
     

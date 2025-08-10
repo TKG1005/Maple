@@ -46,7 +46,6 @@ class PokemonEnv(gym.Env):
         server_configuration: Any = None,
         battle_mode: str = "local",  # "local" or "online"
         log_level: int = logging.DEBUG,
-        full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -84,7 +83,6 @@ class PokemonEnv(gym.Env):
         self.normalize_rewards = normalize_rewards
         self.server_configuration = server_configuration
         self.battle_mode = battle_mode
-        self.full_ipc = full_ipc  # Phase 4: Store full IPC setting
         
         # Skip validation for now as it requires complete configuration
         # TODO: Implement proper configuration validation in Phase 3
@@ -996,7 +994,6 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
-                full_ipc=self.full_ipc,  # Keep for backward compatibility
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
@@ -1010,7 +1007,6 @@ class PokemonEnv(gym.Env):
                 log_level=self.log_level,
                 save_replays=self.save_replays,
                 account_configuration=account_config,
-                full_ipc=False,  # Online mode uses WebSocket
             )
     
     def get_battle_mode(self) -> str:

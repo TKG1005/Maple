@@ -32,7 +32,7 @@ local_mode:
   max_processes: 10      # Maximum number of Node.js processes for IPC
   process_timeout: 300   # Process timeout in seconds
   reuse_processes: true  # Whether to reuse Node.js processes across battles
-  ipc_script_path: "sim/ipc-battle-server.js"  # Path to IPC server script
+  ipc_script_path: "scripts/node-ipc-bridge.js"  # Path to IPC server script (override with MAPLE_NODE_SCRIPT)
   full_ipc: true        # Phase 4: Full IPC mode without WebSocket fallback
 
 # Pokemon Showdown server configuration (for battle_mode: "online") 
