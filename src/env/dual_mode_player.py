@@ -174,10 +174,29 @@ class IPCClientWrapper:
         except KeyError as e:
             raise ValueError(f"Unknown player_py_id: {player_py_id}") from e
 
-        if timeout is None:
-            return await queue.get()
-        else:
-            return await asyncio.wait_for(queue.get(), timeout=timeout)
+        try:
+            if timeout is None:
+                raw = await queue.get()
+            else:
+                raw = await asyncio.wait_for(queue.get(), timeout=timeout)
+
+            # Log the raw Showdown line received from the IPC controller for debugging.
+            # Use repr to make control characters visible and avoid accidental formatting.
+            try:
+                self.logger.debug(
+                    "IPCClientWrapper.recv battle_id=%s player=%s raw=%r",
+                    battle_id,
+                    player_py_id,
+                    raw,
+                )
+            except Exception:
+                # Logging must not interfere with normal flow.
+                pass
+
+            return raw
+        except Exception:
+            # Let callers handle timeouts and other exceptions.
+            raise
 
     async def recv_by_room(self, room_tag: str, player_py_id: str, timeout: Optional[float] = None) -> str:
         """Receive a protocol line by room_tag (migration helper).
@@ -467,9 +486,9 @@ class DualModeEnvPlayer(EnvPlayer):
             except Exception as e:
                 self._logger.error(f"Failed to retrieve room_tag for {battle_id}: {e}")
             
-            # Register battle with both players
-            self._battles[battle_id] = None  # Will be populated when battle starts
-            opponent._battles[battle_id] = None
+            # Do not register None placeholders here; the real Battle object
+            # will be created and stored by `_handle_battle_start` to avoid
+            # races where PSClient observes a None value.
             
             # Notify both players about the battle (invitation for player_1)
             await self._handle_battle_start(battle_id)
@@ -491,8 +510,8 @@ class DualModeEnvPlayer(EnvPlayer):
         # battle_id may be a room_tag in Phase3; ensure controller for that id
         await self.ipc_client_wrapper._ensure_controller(battle_id)
         
-        # Register battle placeholder
-        self._battles[battle_id] = None
+        # Do not register a placeholder here; `_handle_battle_start` will
+        # create and register the Battle object when ready.
         
         return battle_id
 
@@ -537,9 +556,11 @@ class DualModeEnvPlayer(EnvPlayer):
             # Use new API to create by room
             await self.ipc_client_wrapper.create_battle_by_room(room_tag, battle_format, players)
 
-            # Register battle using room_tag as key
-            self._battles[room_tag] = None
-            opponent._battles[room_tag] = None
+            # Registering a placeholder (None) here causes a race where
+            # poke_env may see a None battle object before the real
+            # Battle is constructed in `_handle_battle_start`. Avoid
+            # inserting a None placeholder; the real Battle will be
+            # created and stored by `_handle_battle_start`.
 
             # Try to persist mapping (Phase1 compatibility)
             try:
@@ -594,8 +615,27 @@ class DualModeEnvPlayer(EnvPlayer):
                 rt = None
             battle_tag_for_obj = rt if isinstance(rt, str) and rt else battle_id
             battle = Battle(battle_tag_for_obj, self.username, self._logger, gen=gen)
+            # Debug: log before registering the battle to help diagnose races
+            try:
+                self._logger.debug(
+                    "DualModeEnvPlayer._handle_battle_start: creating battle_id=%s battle_tag=%s keys_before=%s",
+                    battle_id,
+                    battle_tag_for_obj,
+                    list(self._battles.keys()),
+                )
+            except Exception:
+                pass
             # store battle under local battle_id to keep controller mapping stable
             self._battles[battle_id] = battle
+            try:
+                self._logger.debug(
+                    "DualModeEnvPlayer._handle_battle_start: stored battle_id=%s value=%r keys_after=%s",
+                    battle_id,
+                    repr(battle),
+                    list(self._battles.keys()),
+                )
+            except Exception:
+                pass
             # Phase2: register by room_tag if available
             try:
                 room_tag = self.get_room_tag(battle_id)

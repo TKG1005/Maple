@@ -92,6 +92,12 @@ class EnvPlayer(Player):
         from_teampreview_request: bool = False,
         maybe_default_order: bool = False,
     ):
+        """Handle battle requests with teampreview prioritized (poke-env parity).
+
+        Standard poke-env behavior does not wait for available moves during
+        teampreview. To avoid deadlocks with sequential message processing,
+        we short-circuit the teampreview branch before any waits.
+        """
 
         # 受信した request の内容をデバッグ出力する
         self._logger.debug(
@@ -100,6 +106,58 @@ class EnvPlayer(Player):
             battle.last_request,
         )
 
+        # --- Teampreview: handle first, no waiting ---
+        if from_teampreview_request:
+            self._logger.debug(
+                "[DBG] %s send team preview request for %s",
+                self.player_id,
+                battle.battle_tag,
+            )
+            try:
+                # Notify env and wait for team command from agent
+                put_result = await asyncio.wait_for(
+                    self._env._battle_queues[self.player_id].put(battle),
+                    self._env.timeout,
+                )
+                if put_result is not None:
+                    self._env._battle_queues[self.player_id].task_done()
+                self._logger.debug(
+                    "[DBG] %s waiting team preview action (qsize=%d)",
+                    self.player_id,
+                    self._env._action_queues[self.player_id].qsize(),
+                )
+                message = await asyncio.wait_for(
+                    self._env._action_queues[self.player_id].get(),
+                    self._env.timeout,
+                )
+                self._env._action_queues[self.player_id].task_done()
+                self._logger.debug(
+                    "[DBG] %s team preview message %s (%s)",
+                    self.player_id,
+                    message,
+                    battle.player_username,
+                )
+
+                # Send immediately and return to keep pipeline flowing
+                self._logger.debug(
+                    "[DBG] %s send message '%s' to battle %s last = %s",
+                    self.player_id,
+                    message,
+                    battle.battle_tag,
+                    battle.last_request,
+                )
+                await self.ps_client.send_message(message, battle.battle_tag)
+                self._last_request = battle.last_request
+                return
+            except asyncio.TimeoutError:
+                self._logger.error(
+                    "[TIMEOUT] %s team preview action queue size=%d",
+                    self.player_id,
+                    self._env._action_queues[self.player_id].qsize(),
+                )
+                raise
+
+        # --- Non-teampreview: original behavior ---
         # 同一の request が続いた場合は更新を待機する
         if battle.last_request is self._last_request:
             self._logger.debug(
@@ -139,43 +197,6 @@ class EnvPlayer(Player):
             "illusion" in [p.ability for p in battle.team.values()]
         ):
             message = self.choose_default_move().message
-        elif from_teampreview_request:
-            # チーム選択を PokemonEnv に通知して待機
-            self._logger.debug(
-                "[DBG] %s send team preview request for %s",
-                self.player_id,
-                battle.battle_tag,
-            )
-            try:
-                put_result = await asyncio.wait_for(
-                    self._env._battle_queues[self.player_id].put(battle),
-                    self._env.timeout,
-                )
-                if put_result is not None:
-                    self._env._battle_queues[self.player_id].task_done()
-                self._logger.debug(
-                    "[DBG] %s waiting team preview action (qsize=%d)",
-                    self.player_id,
-                    self._env._action_queues[self.player_id].qsize(),
-                )
-                message = await asyncio.wait_for(
-                    self._env._action_queues[self.player_id].get(),
-                    self._env.timeout,
-                )
-                self._env._action_queues[self.player_id].task_done()
-                self._logger.debug(
-                    "[DBG] %s team preview message %s (%s)",
-                    self.player_id,
-                    message,
-                    battle.player_username,
-                )
-            except asyncio.TimeoutError:
-                self._logger.error(
-                    "[TIMEOUT] %s team preview action queue size=%d",
-                    self.player_id,
-                    self._env._action_queues[self.player_id].qsize(),
-                )
-                raise
         else:
             if maybe_default_order:
                 self._trying_again.set()
@@ -255,4 +276,3 @@ class EnvPlayer(Player):
             self.logger.critical(
                 "Unmanaged battle initialisation message received: %s", split_message
             )
-

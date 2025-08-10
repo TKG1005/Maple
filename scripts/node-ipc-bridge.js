@@ -19,9 +19,14 @@ const { BattleStream, getPlayerStreams } = require(path.join(showdownDist, 'batt
 
 // Helpers
 function deriveRoomTag(format, battleId) {
-  const idPart = typeof battleId === 'string' && battleId.startsWith('battle-')
-    ? battleId.slice(7)
-    : String(battleId || '').trim();
+  // If battleId is already a canonical room tag for this format, return it
+  const asStr = String(battleId || '').trim();
+  if (asStr.startsWith(`battle-${format}-`)) return asStr;
+
+  // Otherwise, derive the id part. If battleId already starts with `battle-`
+  // but for a different format, strip the leading `battle-` prefix to avoid
+  // constructing tags like `battle-<format>-battle-<other>-...`.
+  const idPart = asStr.startsWith('battle-') ? asStr.slice(7) : asStr;
   return `battle-${format}-${idPart}`;
 }
 
@@ -52,6 +57,9 @@ class BattleSession {
     this.streams = null;
     this.closed = false;
     this.roomTag = deriveRoomTag(this.format, this.battleId);
+    // Counter used to inject rqid for request/init messages when missing.
+    // Only used when the JSON payload does not already contain an `rqid`.
+    this.rqidCounter = 0;
   }
 
   async init() {
@@ -84,6 +92,35 @@ class BattleSession {
           const lines = String(chunk).split('\n');
           for (const line of lines) {
             if (!line.trim()) continue;
+
+            // If this is a |request| or |init| line with a JSON payload, ensure it
+            // contains an `rqid` field. Parse and inject only when missing.
+            try {
+              let handled = false;
+              if (line.startsWith('|request|') || line.startsWith('|init|')) {
+                const prefix = line.startsWith('|request|') ? '|request|' : '|init|';
+                const payloadText = line.slice(prefix.length).trim();
+                if (payloadText) {
+                  try {
+                    const payload = JSON.parse(payloadText);
+                    if (!Object.prototype.hasOwnProperty.call(payload, 'rqid')) {
+                      this.rqidCounter += 1;
+                      payload.rqid = this.rqidCounter;
+                    }
+                    const newLine = prefix + JSON.stringify(payload);
+                    writeJSON({ type: 'protocol', battle_id: battleId, room_tag: roomTag, target_player: target, data: newLine });
+                    handled = true;
+                  } catch (e) {
+                    // JSON parse failed, fall through to send original line
+                  }
+                }
+              }
+
+              if (handled) continue;
+            } catch (e) {
+              // Defensive: any unexpected error should not break the read loop
+            }
+
             writeJSON({ type: 'protocol', battle_id: battleId, room_tag: roomTag, target_player: target, data: line });
           }
         }
