@@ -181,6 +181,16 @@ class EnvPlayer(Player):
                     self._env.timeout,
                 )
                 self._env._action_queues[self.player_id].task_done()
+                # Normalize team selection command for local IPC: '/team 123' -> '/choose team 123'
+                try:
+                    if (
+                        isinstance(message, str)
+                        and message.startswith("/team ")
+                        and getattr(self, "mode", None) == "local"
+                    ):
+                        message = "/choose team " + message[len("/team "):]
+                except Exception:
+                    pass
                 self._logger.debug(
                     "[DBG] %s team preview message %s (%s)",
                     self.player_id,
