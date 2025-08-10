@@ -147,7 +147,7 @@ class IPCClientWrapper:
         from src.env.controller_registry import ControllerRegistry  # type: ignore
 
         # Create or fetch controller using room_tag as the primary identifier
-        ctrl = ControllerRegistry.get_or_create(self.node_script_path, room_tag, room_tag, logger=self.logger)
+        ctrl = ControllerRegistry.get_or_create(self.node_script_path, room_tag, logger=self.logger)
         # Ensure controller process is running
         if not await ctrl.is_alive():
             await ctrl.connect()
