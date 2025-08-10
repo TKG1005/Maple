@@ -670,19 +670,20 @@ class DualModeEnvPlayer(EnvPlayer):
                 await task
             except asyncio.CancelledError:
                 pass
+
         # Also cleanup room-based pump registry
-            try:
-                room_tag = self.get_room_tag(battle_id)
-                if isinstance(room_tag, str) and room_tag:
-                    async with self._mapping_lock:
-                        other = self._pump_tasks_by_room.pop(room_tag, None)
-                    if other is not None and other is not task:
-                        if not other.done():
-                            other.cancel()
-                            try:
-                                await other
-                            except asyncio.CancelledError:
-                                pass
+        try:
+            room_tag = self.get_room_tag(battle_id)
+            if isinstance(room_tag, str) and room_tag:
+                async with self._mapping_lock:
+                    other = self._pump_tasks_by_room.pop(room_tag, None)
+                if other is not None and other is not task:
+                    if not other.done():
+                        other.cancel()
+                        try:
+                            await other
+                        except asyncio.CancelledError:
+                            pass
         except Exception:
             pass
 
