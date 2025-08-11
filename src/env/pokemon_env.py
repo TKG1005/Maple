@@ -616,12 +616,15 @@ class PokemonEnv(gym.Env):
             mapping = self.action_helper.get_action_mapping(battle)
             mask = self._build_action_mask(mapping)
             
-            if all(m == 0 for m in mask):
-                print(f"All actions disabled for {pid}. Mapping: {mapping}")
-                print(f"Battle state - force_switch: {getattr(battle, 'force_switch', 'N/A')}")
-                print(f"Available moves: {len(getattr(battle, 'available_moves', []))}")
-                print(f"Available switches: {len(getattr(battle, 'available_switches', []))}")
-                print(f"Active Pokemon fainted: {getattr(getattr(battle, 'active_pokemon', None), 'fainted', 'N/A')}")
+            # Suppress noisy prints during mask computation; rely on explicit debug logs when needed
+            # if all(m == 0 for m in mask):
+            #     self._logger.debug(
+            #         "All actions disabled for %s. force_switch=%s moves=%d switches=%d",
+            #         pid,
+            #         getattr(battle, 'force_switch', 'N/A'),
+            #         len(getattr(battle, 'available_moves', [])),
+            #         len(getattr(battle, 'available_switches', [])),
+            #     )
 
 
             switches_info = [

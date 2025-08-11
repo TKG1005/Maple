@@ -306,7 +306,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 server_configuration=server_configuration,
                 **kwargs
             )
-            self._logger.info(f"🌐 Online mode player initialized for {player_id}")
+            self._logger.debug(f"Online mode player initialized for {player_id}")
         else:
             # Local mode initialization - Phase 4 adds full_ipc support
             if server_configuration is None:
@@ -315,7 +315,7 @@ class DualModeEnvPlayer(EnvPlayer):
             
             if full_ipc:
                 # Phase 4: Full IPC mode - completely disable WebSocket
-                self._logger.info(f"🚀 Phase 4: Initializing full IPC mode for {player_id}")
+                self._logger.debug(f"Phase 4: Initializing full IPC mode for {player_id}")
                 kwargs['start_listening'] = False  # Disable WebSocket completely
                 
                 try:
@@ -325,7 +325,7 @@ class DualModeEnvPlayer(EnvPlayer):
                         server_configuration=server_configuration,
                         **kwargs
                     )
-                    self._logger.info(f"✅ Full IPC mode player initialized for {player_id} (WebSocket disabled)")
+                    self._logger.debug(f"Full IPC mode player initialized for {player_id} (WebSocket disabled)")
                 except Exception as e:
                     self._logger.error(f"❌ Full IPC initialization failed for {player_id}: {e}")
                     raise RuntimeError(f"Full IPC mode requires working IPC infrastructure: {e}") from e
@@ -337,7 +337,7 @@ class DualModeEnvPlayer(EnvPlayer):
                     server_configuration=server_configuration,
                     **kwargs
                 )
-                self._logger.info(f"✅ Local mode player initialized for {player_id} with IPC capability (WebSocket fallback for Phase 3)")
+                self._logger.debug(f"Local mode player initialized for {player_id} with IPC capability (WebSocket fallback for Phase 3)")
         
         # For local mode, initialize IPC communicator and (if requested) establish full IPC
         if mode == "local":
@@ -345,17 +345,17 @@ class DualModeEnvPlayer(EnvPlayer):
             self._initialize_communicator()
             if full_ipc:
                 # Phase 4: Full IPC mode - must establish working connection
-                self._logger.info(f"🔌 Phase 4: Establishing mandatory IPC connection for {self.player_id}")
+                self._logger.debug(f"Phase 4: Establishing mandatory IPC connection for {self.player_id}")
                 self._establish_full_ipc_connection()
             else:
                 # Phase 3: IPC capability initialized
-                self._logger.info(f"🚀 IPC capability initialized for {self.player_id} (WebSocket fallback)")
+                self._logger.debug(f"IPC capability initialized for {self.player_id} (WebSocket fallback)")
     
     def _initialize_communicator(self) -> None:
         """Initialize IPCClientWrapper for local mode."""
         if self.mode != "local":
             return
-        self._logger.info(f"Local IPC mode configured for player {self.player_id}")
+        self._logger.debug(f"Local IPC mode configured for player {self.player_id}")
         # Create the IPC client wrapper; actual process start is deferred
         self.ipc_client_wrapper = IPCClientWrapper(
             node_script_path=self.ipc_script_path,
@@ -389,7 +389,7 @@ class DualModeEnvPlayer(EnvPlayer):
             # Use parent class implementation for WebSocket mode
             return await super().battle_against(opponent, n_battles)
         
-        self._logger.info(f"🎮 IPC battle_against called for {self.player_id} vs {opponent.username}")
+        self._logger.debug(f"IPC battle_against called for {self.player_id} vs {opponent.username}")
         
         for i in range(n_battles):
             # Only player_0 generates battle ID to avoid duplicates
@@ -400,19 +400,19 @@ class DualModeEnvPlayer(EnvPlayer):
                 random_id = random.randint(1000, 9999)
                 format_id = self._format if hasattr(self, '_format') else "gen9randombattle"
                 room_tag = f"battle-{format_id}-{timestamp}-{random_id}"
-                self._logger.info(f"🎲 [player_0] Creating battle (room_tag): {room_tag}")
+                self._logger.debug(f"[player_0] Creating battle (room_tag): {room_tag}")
                 # Create battle via IPC using room_tag
                 await self._create_ipc_battle_by_room(room_tag, opponent)
                 # For downstream logic use battle_id variable (set to room_tag)
                 battle_id = room_tag
             else:
                 # player_1 waits for invitation
-                self._logger.info(f"⏳ [player_1] Waiting for battle invitation...")
+                self._logger.debug(f"[player_1] Waiting for battle invitation...")
                 battle_id = await self._wait_for_battle_invitation()
-                self._logger.info(f"📨 [player_1] Received invitation for battle: {battle_id}")
+                self._logger.debug(f"[player_1] Received invitation for battle: {battle_id}")
             
             # Both players now wait for battle to be ready
-            self._logger.info(f"🔄 [{self.player_id}] Waiting for battle {battle_id} to be ready...")
+            self._logger.debug(f"[{self.player_id}] Waiting for battle {battle_id} to be ready...")
             await self._wait_for_battle_ready(battle_id)
             
             # Wait for battle to complete
@@ -481,7 +481,7 @@ class DualModeEnvPlayer(EnvPlayer):
                             if hasattr(opponent, '_battle_to_room') and hasattr(opponent, '_room_to_battle'):
                                 opponent._battle_to_room[battle_id] = room_tag
                                 opponent._room_to_battle[room_tag] = battle_id
-                        self._logger.info(f"Battle {battle_id} mapped to room {room_tag}")
+                        self._logger.debug(f"Battle {battle_id} mapped to room {room_tag}")
                     except Exception:
                         self._logger.exception("Failed to store mapping for %s", battle_id)
                 else:
@@ -501,7 +501,7 @@ class DualModeEnvPlayer(EnvPlayer):
             if hasattr(opponent, '_ipc_invitations'):
                 await opponent._ipc_invitations.put(battle_id)
             
-            self._logger.info(f"✅ IPC battle created: {battle_id}")
+            self._logger.debug(f"IPC battle created: {battle_id}")
 
         except Exception as e:
             self._logger.error(f"❌ Failed to create IPC battle: {e}")
@@ -589,7 +589,7 @@ class DualModeEnvPlayer(EnvPlayer):
             if hasattr(opponent, '_ipc_invitations'):
                 await opponent._ipc_invitations.put(room_tag)
 
-            self._logger.info(f"✅ IPC battle created by room: {room_tag}")
+            self._logger.debug(f"IPC battle created by room: {room_tag}")
 
         except Exception as e:
             self._logger.error(f"❌ Failed to create IPC battle by room: {e}")
@@ -678,7 +678,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 battle = self._battles.get(room_key) or self._battles.get(battle_id)
                 # When first |request| arrives, poke-env sets last_request
                 if battle is not None and getattr(battle, "last_request", None):
-                    self._logger.info(f"✅ [{self.player_id}] Battle {battle_id} is ready!")
+                    self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready!")
                     return
                 await asyncio.sleep(0.05)
             raise TimeoutError(f"Battle {battle_id} did not start within {timeout} seconds")
@@ -696,7 +696,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 break
             await asyncio.sleep(0.1)
         
-        self._logger.info(f"🏁 Battle {battle_id} completed")
+        self._logger.debug(f"Battle {battle_id} completed")
         # Stop and cleanup receive pump
         await self._stop_ipc_pump(battle_id)
 
