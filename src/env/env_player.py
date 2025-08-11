@@ -45,6 +45,16 @@ class EnvPlayer(Player):
                 except Exception:
                     pass
 
+                # Convert chat-style commands to engine choice format
+                try:
+                    if isinstance(message, str):
+                        if message.startswith("/team "):
+                            message = "team " + message[len("/team "):]
+                        elif message.startswith("/choose "):
+                            message = message[1:]  # drop leading '/'
+                except Exception:
+                    pass
+
                 # Map python player id to Showdown id (p1/p2)
                 sd_id = "p1" if self.player_id == "player_0" else "p2"
                 self._logger.debug(
@@ -181,14 +191,14 @@ class EnvPlayer(Player):
                     self._env.timeout,
                 )
                 self._env._action_queues[self.player_id].task_done()
-                # Normalize team selection command for local IPC: '/team 123' -> '/choose team 123'
+                # Normalize team selection command for local IPC: '/team 123' -> 'team 123'
                 try:
                     if (
                         isinstance(message, str)
                         and message.startswith("/team ")
                         and getattr(self, "mode", None) == "local"
                     ):
-                        message = "/choose team " + message[len("/team "):]
+                        message = "team " + message[len("/team "):]
                 except Exception:
                     pass
                 self._logger.debug(
