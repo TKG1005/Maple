@@ -11,6 +11,8 @@ import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Dict
 import asyncio
+import time
+import sys
 import random
 import logging
 from pathlib import Path
@@ -164,6 +166,10 @@ class PokemonEnv(gym.Env):
         self._last_requests: dict[str, Any] = {
             agent_id: None for agent_id in self.agent_ids
         }
+        # Track last seen rqid per player to detect request updates
+        self._last_rqids: dict[str, int | None] = {
+            agent_id: None for agent_id in self.agent_ids
+        }
 
         # HPDeltaReward をプレイヤーごとに保持
         self._hp_delta_rewards: dict[str, HPDeltaReward] = {}
@@ -300,6 +306,7 @@ class PokemonEnv(gym.Env):
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._need_action = {agent_id: True for agent_id in self.agent_ids}
         self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
+        self._last_rqids = {agent_id: None for agent_id in self.agent_ids}
         self._logger.debug("environment reset: cleared action queues and mappings")
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
@@ -764,6 +771,8 @@ class PokemonEnv(gym.Env):
         # TODO: Implement _retrieve_battles_parallel() for further performance gains
         battles: dict[str, Any] = {}
         updated: dict[str, bool] = {}
+        # Snapshot previous rqids for synchronization check
+        prev_rqids: dict[str, int | None] = {pid: self._last_rqids.get(pid) for pid in self.agent_ids}
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
             battle = self._race_get(
@@ -784,6 +793,80 @@ class PokemonEnv(gym.Env):
             updated[pid] = battle is not None and (
                 battle.last_request is not self._last_requests.get(pid)
             )
+
+        # RQID synchronization before building observations
+        def _get_rqid(b: Any) -> int | None:
+            lr = getattr(b, "last_request", None)
+            return lr.get("rqid") if isinstance(lr, dict) else None
+
+        pending: set[str] = set()
+        for pid in self.agent_ids:
+            b = battles[pid]
+            # Skip during teampreview and when battle finished
+            if self._is_teampreview(b) or getattr(b, "finished", False):
+                continue
+            prev = prev_rqids.get(pid)
+            curr = _get_rqid(b)
+            if prev is not None and curr == prev:
+                pending.add(pid)
+
+        if pending:
+            deadline = time.monotonic() + float(self.timeout)
+            while pending and time.monotonic() < deadline:
+                progressed = False
+                for pid in list(pending):
+                    # Drain any queued battle updates first
+                    if not self._battle_queues[pid].empty():
+                        opp = "player_1" if pid == "player_0" else "player_0"
+                        nb = self._race_get(
+                            self._battle_queues[pid],
+                            self._env_players[pid]._waiting,
+                            self._env_players[opp]._trying_again,
+                        )
+                        self._env_players[pid]._waiting.clear()
+                        if nb is not None:
+                            self._current_battles[pid] = nb
+                            battles[pid] = nb
+                            progressed = True
+                    # Re-evaluate conditions
+                    b = battles[pid]
+                    if self._is_teampreview(b) or getattr(b, "finished", False):
+                        pending.discard(pid)
+                        continue
+                    prev = prev_rqids.get(pid)
+                    curr = _get_rqid(b)
+                    if prev is not None and curr != prev:
+                        pending.discard(pid)
+                if not progressed:
+                    asyncio.run_coroutine_threadsafe(asyncio.sleep(0.05), POKE_LOOP).result()
+
+        if pending:
+            # Log detailed error per player then exit fatally
+            for pid in sorted(pending):
+                b = battles.get(pid, None) or self._current_battles.get(pid)
+                curr = _get_rqid(b) if b is not None else None
+                prev = prev_rqids.get(pid)
+                sd_id = "p1" if pid == "player_0" else "p2"
+                lr = getattr(b, "last_request", None) if b is not None else None
+                lr_type = (
+                    "teampreview" if isinstance(lr, dict) and lr.get("teamPreview") else ("normal" if isinstance(lr, dict) else "none")
+                )
+                self._logger.error(
+                    "[RQID TIMEOUT] %s(%s) battle=%s turn=%s teampreview=%s prev_rqid=%s curr_rqid=%s last_request_type=%s",
+                    pid,
+                    sd_id,
+                    getattr(b, "battle_tag", "?"),
+                    getattr(b, "turn", "?"),
+                    self._is_teampreview(b) if b is not None else "?",
+                    prev,
+                    curr,
+                    lr_type,
+                )
+            raise SystemExit(1)
+
+        # Update last rqids after successful sync
+        for pid in self.agent_ids:
+            self._last_rqids[pid] = _get_rqid(battles[pid])
 
         masks = self._compute_all_masks()
         for pid in self.agent_ids:

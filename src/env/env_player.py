@@ -45,13 +45,20 @@ class EnvPlayer(Player):
                 except Exception:
                     pass
 
-                # Convert chat-style commands to engine choice format
+                # Normalize commands for IPC: use engine tokens without 'choose'
                 try:
                     if isinstance(message, str):
-                        if message.startswith("/team "):
-                            message = "team " + message[len("/team "):]
-                        elif message.startswith("/choose "):
-                            message = message[1:]  # drop leading '/'
+                        m = message.strip()
+                        # '/team 123' -> 'team 123'
+                        if m.startswith("/team "):
+                            m = "team " + m[len("/team "):]
+                        # Drop any leading '/choose ' or 'choose '
+                        if m.startswith("/choose "):
+                            m = m[len("/"):]
+                        if m.startswith("choose "):
+                            m = m[len("choose "):]
+                        # Keep bare engine tokens as-is (move/switch/pass/default/shift)
+                        message = m.strip()
                 except Exception:
                     pass
 
