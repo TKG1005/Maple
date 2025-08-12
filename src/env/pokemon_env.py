@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any, Tuple
+import os
 import warnings
 
 
@@ -49,7 +50,7 @@ class PokemonEnv(gym.Env):
         battle_mode: str = "local",  # "local" or "online"
         log_level: int = logging.DEBUG,
         **kwargs: Any,
-    ) -> None:
+        ) -> None:
         super().__init__()
 
         # "gen9bss"ルールでは行動空間は10で固定だったが、
@@ -181,6 +182,24 @@ class PokemonEnv(gym.Env):
             storage_dir="battle_states"
         )
         
+        # Feature toggles (can be reverted easily if needed)
+        # Use per-step battle snapshot for mask computation
+        self.use_snapshot_masks: bool = True
+        try:
+            env_flag = os.environ.get("MAPLE_USE_SNAPSHOT_MASKS")
+            if env_flag is not None:
+                self.use_snapshot_masks = env_flag.lower() in ("1", "true", "yes")
+        except Exception:
+            pass
+        # Defer int->BattleOrder conversion to choose_move time
+        self.defer_action_conversion: bool = True
+        try:
+            env_flag = os.environ.get("MAPLE_DEFER_CONVERSION")
+            if env_flag is not None:
+                self.defer_action_conversion = env_flag.lower() in ("1", "true", "yes")
+        except Exception:
+            pass
+        
     def _get_team_for_battle(self) -> str | None:
         """Get team content for the current battle.
         
@@ -262,7 +281,11 @@ class PokemonEnv(gym.Env):
             return mask, mapping
 
         # without details use internal computation routine
-        masks = self._compute_all_masks()
+        if self.use_snapshot_masks:
+            battles_snapshot = {pid: self.get_current_battle(pid) for pid in self.agent_ids}
+            masks = self._compute_all_masks(battles_snapshot)
+        else:
+            masks = self._compute_all_masks()
         idx = self.agent_ids.index(player_id)
         return masks[idx], self._action_mappings[player_id]
 
@@ -602,12 +625,20 @@ class PokemonEnv(gym.Env):
             dtype=np.int8,
         )
 
-    def _compute_all_masks(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Return current legal action masks for both players."""
+    def _compute_all_masks(self, battles: dict[str, Any] | None = None) -> Tuple[np.ndarray, np.ndarray]:
+        """Return current legal action masks for both players.
+
+        When ``battles`` is provided, compute masks from this per-step snapshot
+        rather than re-reading ``self._current_battles``.
+        """
 
         masks: list[np.ndarray] = []
         for pid in self.agent_ids:
-            battle = self.get_current_battle(pid)
+            battle = None
+            if battles is not None:
+                battle = battles.get(pid)
+            if battle is None:
+                battle = self.get_current_battle(pid)
             if battle is None:
                 masks.append(np.zeros(self.ACTION_SIZE, dtype=np.int8))
                 self._action_mappings[pid] = {}
@@ -677,58 +708,29 @@ class PokemonEnv(gym.Env):
             if isinstance(action, str):
                 await self._action_queues[agent_id].put(action)
                 return
-            
+
             # Integer action processing
+            if self.defer_action_conversion:
+                # Defer int->BattleOrder conversion to EnvPlayer.choose_move
+                await self._action_queues[agent_id].put(int(action))
+                return
+
+            # Legacy path: convert immediately using current battle snapshot
             battle = self._current_battles.get(agent_id)
             if battle is None:
                 raise ValueError(f"No current battle for {agent_id}")
-                
-            # CPU-intensive mapping computation
+
             mapping = self.action_helper.get_action_mapping(battle)
             self._action_mappings[agent_id] = mapping
-
-            # Debug information (preserved from original)
-            switch_info = [
-                f"({getattr(p, 'species', '?')},"
-                f"{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%,"
-                f"{getattr(p, 'fainted', False)},"
-                f"{getattr(p, 'active', False)})"
-                for p in getattr(battle, "available_switches", [])
-            ]
-            
-            active_pokemon = getattr(battle, "active_pokemon", None)
-            active_info = "None"
-            if active_pokemon:
-                active_info = (
-                    f"{getattr(active_pokemon, 'species', '?')} "
-                    f"(active={getattr(active_pokemon, 'active', '?')})"
-                )
-            
-            self._logger.debug(
-                "[DBG] %s mapping=%s sw=%d force=%s active=%s switches=%s",
-                agent_id,
-                mapping,
-                len(getattr(battle, "available_switches", [])),
-                getattr(battle, "force_switch", False),
-                active_info,
-                switch_info,
-            )
-
-            # Action conversion with error handling
             DisabledErr = getattr(self.action_helper, "DisabledMoveError", ValueError)
             try:
                 order = self.action_helper.action_index_to_order_from_mapping(
-                    self._env_players[agent_id],
-                    battle,
-                    int(action),
-                    mapping,
+                    self._env_players[agent_id], battle, int(action), mapping
                 )
-            except DisabledErr:
+            except DisabledErr as e:
                 err_msg = f"invalid action: {agent_id} selected {action} with mapping {mapping}"
                 self._logger.error(err_msg)
-                raise RuntimeError(err_msg)
-            
-            # Queue submission
+                raise RuntimeError(err_msg) from e
             await self._action_queues[agent_id].put(order)
         
         # Validate all required actions are present
@@ -775,6 +777,7 @@ class PokemonEnv(gym.Env):
         prev_rqids: dict[str, int | None] = {pid: self._last_rqids.get(pid) for pid in self.agent_ids}
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
+            # Try to retrieve the latest battle update for this player
             battle = self._race_get(
                 self._battle_queues[pid],
                 self._env_players[pid]._waiting,
@@ -903,7 +906,11 @@ class PokemonEnv(gym.Env):
         for pid in self.agent_ids:
             self._last_rqids[pid] = _get_rqid(battles[pid])
 
-        masks = self._compute_all_masks()
+        # Build masks from this step snapshot if enabled
+        if self.use_snapshot_masks:
+            masks = self._compute_all_masks(battles)
+        else:
+            masks = self._compute_all_masks()
         for pid in self.agent_ids:
             self._last_requests[pid] = self._current_battles[pid].last_request
 
