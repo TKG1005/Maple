@@ -126,7 +126,7 @@ def get_action_mapping(battle: Battle) -> OrderedDict[int, Tuple[str, Union[str,
         """Get positions of Pokemon that can be switched to within the selected team."""
         try:
             # Get selected team from battle request
-            request = getattr(battle, '_last_request', None)
+            request = getattr(battle, 'last_request', None)
             if not request or 'side' not in request or 'pokemon' not in request['side']:
                 logger.warning("No request data available for selected team")
                 return []
@@ -257,7 +257,7 @@ def get_available_actions_with_details(
             # sub_id is now a selected team position, get Pokemon from available_switches
             try:
                 # Get selected team from battle request
-                request = getattr(battle, '_last_request', None)
+                request = getattr(battle, 'last_request', None)
                 if request and 'side' in request and 'pokemon' in request['side']:
                     selected_team = request['side']['pokemon']
                     player_role = getattr(battle, '_player_role', None)
@@ -363,7 +363,7 @@ def action_index_to_order_from_mapping(
             raise ValueError(f"Switch selected team position must be int, got: {sub_id}")
         
         # Get selected team from request message
-        request = getattr(battle, '_last_request', None)
+        request = getattr(battle, 'last_request', None)
         if not request:
             raise ValueError(f"No request data available for battle {battle.battle_tag}")
         
@@ -437,7 +437,7 @@ def action_index_to_order(
             raise ValueError(f"Switch selected team position must be int, got: {sub_id}")
         
         # Get selected team from request message
-        request = getattr(battle, '_last_request', None)
+        request = getattr(battle, 'last_request', None)
         if not request:
             raise ValueError(f"No request data available for battle {battle.battle_tag}")
         
@@ -470,4 +470,3 @@ def action_index_to_order(
 
 class DisabledMoveError(ValueError):
     pass
-

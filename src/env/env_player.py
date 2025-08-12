@@ -263,17 +263,18 @@ class EnvPlayer(Player):
             except asyncio.TimeoutError as exc:
                 raise RuntimeError("No available moves after 10 seconds") from exc
 
-        if maybe_default_order and (
-            "illusion" in [p.ability for p in battle.team.values()]
-        ):
-            message = self.choose_default_move().message
-        else:
-            if maybe_default_order:
-                self._trying_again.set()
-            choice = self.choose_move(battle)
-            if isinstance(choice, Awaitable):
-                choice = await choice
-            message = choice.message
+        # Always obtain the order via choose_move to avoid inconsistent defaults
+        choice = self.choose_move(battle)
+        if isinstance(choice, Awaitable):
+            choice = await choice
+        message = getattr(choice, "message", None)
+        # Guard against empty or invalid messages
+        if not isinstance(message, str) or not message.strip():
+            self._logger.error(
+                "[%s] empty/invalid message from choose_move; aborting",
+                self.player_id,
+            )
+            raise RuntimeError("choose_move returned empty/invalid message")
 
         self._logger.debug(
             "[DBG] %s send message '%s' to battle %s last = %s",

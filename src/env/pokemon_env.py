@@ -503,16 +503,9 @@ class PokemonEnv(gym.Env):
         return observation, info
 
     def _is_teampreview(self, battle: Any) -> bool:
-        """Check if battle is in teampreview phase."""
-        # Check if active_pokemon is None (main indicator of teampreview)
-        if battle.active_pokemon is None:
-            return True
-        
-        # Additional check: teampreview flag if available
-        if hasattr(battle, 'teampreview') and battle.teampreview:
-            return True
-            
-        return False
+        """Check teampreview strictly by absence of active_pokemon."""
+        # 判定を単純化: アクティブが立っていない場合のみチームプレビューとみなす
+        return battle.active_pokemon is None
 
     def _get_teampreview_observation(self) -> np.ndarray:
         """Generate dummy observation for teampreview phase."""
