@@ -44,8 +44,8 @@ function sanitizePlayerCommand(raw) {
   // If payload contains a battle tag like "battle-xxx|/choose ...", extract after last '|'
   const idx = raw.lastIndexOf('|');
   const cmd = idx >= 0 ? raw.slice(idx + 1) : raw;
-  // Ensure ends with newline for stream
-  return cmd.endsWith('\n') ? cmd : cmd + '\n';
+  // Do not forcibly append a trailing newline; send as-is
+  return cmd;
 }
 
 class BattleSession {
