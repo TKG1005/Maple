@@ -105,6 +105,13 @@ class EnvPlayer(Player):
         # PokemonEnv.step からアクションが投入されるまで待機
         try:
             self._logger.debug(
+                "[ACTWAIT] %s start waiting battle=%s obj=%s qsize=%d",
+                self.player_id,
+                getattr(battle, "battle_tag", "?"),
+                hex(id(battle)),
+                self._env._action_queues[self.player_id].qsize(),
+            )
+            self._logger.debug(
                 "[DBG] %s waiting action (qsize=%d)", 
                 self.player_id,
                 self._env._action_queues[self.player_id].qsize(),
@@ -166,12 +173,37 @@ class EnvPlayer(Player):
         we short-circuit the teampreview branch before any waits.
         """
 
-        # 受信した request の内容をデバッグ出力する
-        self._logger.debug(
-            "[DBG] %s last_request=%s",
-            self.player_id,
-            battle.last_request,
-        )
+        # 受信した request の内容を詳細出力（型/フェーズ/ rqid など）
+        try:
+            lr = getattr(battle, "last_request", None)
+            if isinstance(lr, dict):
+                tp = bool(lr.get("teamPreview"))
+                wt = bool(lr.get("wait"))
+                fs = bool(lr.get("forceSwitch"))
+                rq = lr.get("rqid")
+                has_active = "active" in lr
+                self._logger.debug(
+                    "[REQ] %s tag=%s obj=%s type=%s rqid=%s active=%s wait=%s force=%s tp=%s",
+                    self.player_id,
+                    getattr(battle, "battle_tag", "?"),
+                    hex(id(battle)),
+                    ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    rq,
+                    has_active,
+                    wt,
+                    fs,
+                    tp,
+                )
+            else:
+                self._logger.debug(
+                    "[REQ] %s tag=%s obj=%s last_request=%r",
+                    self.player_id,
+                    getattr(battle, "battle_tag", "?"),
+                    hex(id(battle)),
+                    lr,
+                )
+        except Exception:
+            pass
 
         # --- Teampreview: handle first, no waiting ---
         if from_teampreview_request:

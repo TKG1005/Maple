@@ -793,51 +793,85 @@ class PokemonEnv(gym.Env):
             updated[pid] = battle is not None and (
                 battle.last_request is not self._last_requests.get(pid)
             )
+            # Log current battle object and last_request summary for each player
+            try:
+                lr = getattr(battle, "last_request", None)
+                rq = lr.get("rqid") if isinstance(lr, dict) else None
+                tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                self._logger.debug(
+                    "[RQSRC] %s obj=%s tag=%s lr_type=%s rqid=%s wait=%s force=%s tp=%s prev_rqid=%s",
+                    pid,
+                    hex(id(battle)) if battle else None,
+                    getattr(battle, "battle_tag", "?"),
+                    ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    rq,
+                    wt,
+                    fs,
+                    tp,
+                    prev_rqids.get(pid),
+                )
+            except Exception:
+                pass
 
-        # RQID synchronization before building observations
+        # RQID synchronization before building observations (also during teampreview)
         def _get_rqid(b: Any) -> int | None:
             lr = getattr(b, "last_request", None)
             return lr.get("rqid") if isinstance(lr, dict) else None
 
-        pending: set[str] = set()
-        for pid in self.agent_ids:
-            b = battles[pid]
-            # Skip during teampreview and when battle finished
-            if self._is_teampreview(b) or getattr(b, "finished", False):
-                continue
-            prev = prev_rqids.get(pid)
-            curr = _get_rqid(b)
-            if prev is not None and curr == prev:
-                pending.add(pid)
+        def _needs_update(b: Any, prev: int | None) -> bool:
+            # finished battles do not require updates
+            if getattr(b, "finished", False):
+                return False
+            lr = getattr(b, "last_request", None)
+            if isinstance(lr, dict):
+                # Consider teampreview as not-ready
+                if lr.get("teamPreview"):
+                    return True
+                # If we have a previous rqid, require it to change
+                if prev is not None:
+                    curr = lr.get("rqid")
+                    return curr == prev
+                return False
+            # If we don't have a structured request yet, wait
+            return True
 
+        pending: set[str] = set(
+            pid for pid in self.agent_ids if _needs_update(battles[pid], prev_rqids.get(pid))
+        )
+
+        # RQID 同期: 以降は同一 Battle オブジェクトの in-place 更新を待つ。
+        # 追加のバトル更新キューのドレインは行わず、PSClient による
+        # battle.last_request の更新が反映されるまで短いスリープで再評価する。
         if pending:
             deadline = time.monotonic() + float(self.timeout)
             while pending and time.monotonic() < deadline:
-                progressed = False
                 for pid in list(pending):
-                    # Drain any queued battle updates first
-                    if not self._battle_queues[pid].empty():
-                        opp = "player_1" if pid == "player_0" else "player_0"
-                        nb = self._race_get(
-                            self._battle_queues[pid],
-                            self._env_players[pid]._waiting,
-                            self._env_players[opp]._trying_again,
-                        )
-                        self._env_players[pid]._waiting.clear()
-                        if nb is not None:
-                            self._current_battles[pid] = nb
-                            battles[pid] = nb
-                            progressed = True
-                    # Re-evaluate conditions
                     b = battles[pid]
-                    if self._is_teampreview(b) or getattr(b, "finished", False):
+                    if not _needs_update(b, prev_rqids.get(pid)):
                         pending.discard(pid)
-                        continue
-                    prev = prev_rqids.get(pid)
-                    curr = _get_rqid(b)
-                    if prev is not None and curr != prev:
-                        pending.discard(pid)
-                if not progressed:
+                    else:
+                        # Trace unchanged state for diagnostics
+                        try:
+                            lr = getattr(b, "last_request", None)
+                            rq = lr.get("rqid") if isinstance(lr, dict) else None
+                            tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                            wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                            fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                            self._logger.debug(
+                                "[RQSYNC] %s pending obj=%s tag=%s type=%s rqid=%s prev=%s",
+                                pid,
+                                hex(id(b)) if b else None,
+                                getattr(b, "battle_tag", "?"),
+                                ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                                rq,
+                                prev_rqids.get(pid),
+                            )
+                        except Exception:
+                            pass
+                # Allow PSClient/IPC pumps to process and update in-place
+                if pending:
                     asyncio.run_coroutine_threadsafe(asyncio.sleep(0.05), POKE_LOOP).result()
 
         if pending:
@@ -852,7 +886,7 @@ class PokemonEnv(gym.Env):
                     "teampreview" if isinstance(lr, dict) and lr.get("teamPreview") else ("normal" if isinstance(lr, dict) else "none")
                 )
                 self._logger.error(
-                    "[RQID TIMEOUT] %s(%s) battle=%s turn=%s teampreview=%s prev_rqid=%s curr_rqid=%s last_request_type=%s",
+                    "[RQID TIMEOUT] %s(%s) battle=%s turn=%s teampreview=%s prev_rqid=%s curr_rqid=%s last_request_type=%s obj=%s",
                     pid,
                     sd_id,
                     getattr(b, "battle_tag", "?"),
@@ -861,6 +895,7 @@ class PokemonEnv(gym.Env):
                     prev,
                     curr,
                     lr_type,
+                    hex(id(b)) if b else None,
                 )
             raise SystemExit(1)
 

@@ -284,6 +284,12 @@ class DualModeEnvPlayer(EnvPlayer):
         self._logger = logging.getLogger(__name__)
         # Background receive pump tasks per battle_id (IPC mode)
         self._ipc_pump_tasks: dict[str, asyncio.Task] = {}
+        # In-flight handler tasks per battle_id (for parallel dispatch & cleanup)
+        self._ipc_inflight_tasks: dict[str, set[asyncio.Task]] = {}
+        # Per-battle execution semaphores to cap parallelism
+        self._exec_semaphores: dict[str, asyncio.Semaphore] = {}
+        # Default max parallel handler tasks per battle
+        self._ipc_max_concurrency: int = 2
         # Phase1: mapping between battle_id and room_tag (provided by Node.js)
         # battle_id -> room_tag and reverse
         self._battle_to_room: dict[str, str] = {}
@@ -633,9 +639,10 @@ class DualModeEnvPlayer(EnvPlayer):
             self._battles[battle_id] = battle
             try:
                 self._logger.debug(
-                    "DualModeEnvPlayer._handle_battle_start: stored battle_id=%s value=%r keys_after=%s",
+                    "DualModeEnvPlayer._handle_battle_start: stored battle_id=%s value=%r id=%s keys_after=%s",
                     battle_id,
                     repr(battle),
+                    hex(id(battle)),
                     list(self._battles.keys()),
                 )
             except Exception:
@@ -725,6 +732,18 @@ class DualModeEnvPlayer(EnvPlayer):
             except asyncio.CancelledError:
                 pass
 
+        # Cancel any in-flight handler tasks for this battle
+        inflight = self._ipc_inflight_tasks.pop(battle_id, set())
+        for t in list(inflight):
+            if not t.done():
+                t.cancel()
+            try:
+                await t
+            except asyncio.CancelledError:
+                pass
+        # Drop semaphore for this battle
+        self._exec_semaphores.pop(battle_id, None)
+
         # Also cleanup room-based pump registry
         try:
             room_tag = self.get_room_tag(battle_id)
@@ -751,15 +770,51 @@ class DualModeEnvPlayer(EnvPlayer):
         return self._room_to_battle.get(room_tag)
 
     async def _ipc_receive_pump(self, battle_id: str) -> None:
-        """Continuously forward IPC messages to PSClient handler for this player."""
+        """Continuously forward IPC messages, dispatching handlers in parallel.
+
+        This mirrors PSClient.listen() behavior where each incoming websocket
+        message is handled in its own task. We cap per-battle concurrency via a
+        semaphore to avoid unbounded parallelism.
+        """
         try:
             while True:
                 # Use room_key to receive: if we have room mapping, prefer it
                 room_key = self.get_room_tag(battle_id) or battle_id
                 raw = await self.ipc_client_wrapper.recv(room_key, self.player_id)
+                try:
+                    first_line = raw.split("\n", 1)[0] if isinstance(raw, str) else str(raw)
+                    is_req = "|request|" in raw if isinstance(raw, str) else False
+                    # Log current battle mapping and object presence
+                    b_room = self._battles.get(room_key)
+                    b_id = self._battles.get(battle_id)
+                    self._logger.debug(
+                        "[PUMP] %s recv room=%s is_request=%s first=%r have_room=%s have_id=%s obj_room=%s obj_id=%s",
+                        self.player_id,
+                        room_key,
+                        is_req,
+                        first_line,
+                        bool(b_room),
+                        bool(b_id),
+                        hex(id(b_room)) if b_room else None,
+                        hex(id(b_id)) if b_id else None,
+                    )
+                except Exception:
+                    pass
                 if not raw:
                     continue
-                await self.ps_client._handle_message(raw)  # reuse existing PSClient path
+
+                # Dispatch handling in a background task (parallelize like WS)
+                if battle_id not in self._ipc_inflight_tasks:
+                    self._ipc_inflight_tasks[battle_id] = set()
+                task = asyncio.create_task(self._dispatch_handle_message(battle_id, raw))
+                self._ipc_inflight_tasks[battle_id].add(task)
+                # Ensure cleanup on task completion
+                def _done_cb(t: asyncio.Task, bid: str = battle_id) -> None:
+                    try:
+                        self._ipc_inflight_tasks.get(bid, set()).discard(t)
+                    except Exception:
+                        pass
+                task.add_done_callback(_done_cb)
 
                 # Exit if battle finished
                 battle = self._battles.get(room_key) or self._battles.get(battle_id)
@@ -770,6 +825,23 @@ class DualModeEnvPlayer(EnvPlayer):
         except Exception as e:
             self._logger.error(f"❌ IPC receive pump error for {battle_id}: {e}")
             return
+
+    async def _dispatch_handle_message(self, battle_id: str, raw: str) -> None:
+        """Handle a single raw message with per-battle concurrency limits."""
+        # Acquire per-battle semaphore
+        sem = self._exec_semaphores.get(battle_id)
+        if sem is None:
+            sem = asyncio.Semaphore(self._ipc_max_concurrency)
+            self._exec_semaphores[battle_id] = sem
+        async with sem:
+            try:
+                start = time.monotonic()
+                await self.ps_client._handle_message(raw)
+                dur = (time.monotonic() - start) * 1000.0
+                self._logger.debug("[PUMP] %s handle_message done in %.1fms", self.player_id, dur)
+            except Exception as e:
+                # Surface errors but do not crash the pump
+                self._logger.error("[PUMP] %s handler error: %s", self.player_id, e)
 
 
 def create_dual_mode_players(
