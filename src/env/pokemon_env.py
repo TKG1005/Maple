@@ -171,6 +171,10 @@ class PokemonEnv(gym.Env):
         self._last_rqids: dict[str, int | None] = {
             agent_id: None for agent_id in self.agent_ids
         }
+        # RQID used to build the last mask returned to the agent
+        self._mask_rqids: dict[str, int | None] = {
+            agent_id: None for agent_id in self.agent_ids
+        }
 
         # HPDeltaReward をプレイヤーごとに保持
         self._hp_delta_rewards: dict[str, HPDeltaReward] = {}
@@ -702,16 +706,97 @@ class PokemonEnv(gym.Env):
         
         async def _process_single_action(agent_id: str, action: int | str):
             """Process action for single agent asynchronously."""
+            # Enforce need_action gate based on current request type
             if not self._need_action.get(agent_id, True):
+                # Drop silently but with debug log to avoid invalid sends (e.g., wait:true)
+                try:
+                    battle = self._current_battles.get(agent_id)
+                    lr = getattr(battle, "last_request", None)
+                    rq = lr.get("rqid") if isinstance(lr, dict) else None
+                    tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                    wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                    fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                    self._logger.debug(
+                        "[ACTCTX] %s drop action=%r need_action=%s rqid=%s type=%s",
+                        agent_id,
+                        action,
+                        self._need_action.get(agent_id, None),
+                        rq,
+                        ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    )
+                except Exception:
+                    pass
                 return
                 
             if isinstance(action, str):
+                # Log context around string actions (e.g., team preview)
+                try:
+                    battle = self._current_battles.get(agent_id)
+                    lr = getattr(battle, "last_request", None)
+                    rq = lr.get("rqid") if isinstance(lr, dict) else None
+                    tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                    wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                    fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                    self._logger.debug(
+                        "[ACTCTX] %s enqueue STR action=%r need_action=%s rqid=%s type=%s",
+                        agent_id,
+                        action,
+                        self._need_action.get(agent_id, None),
+                        rq,
+                        ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    )
+                except Exception:
+                    pass
                 await self._action_queues[agent_id].put(action)
                 return
 
             # Integer action processing
             if self.defer_action_conversion:
                 # Defer int->BattleOrder conversion to EnvPlayer.choose_move
+                # Log context about action, previous mask, and current request type for diagnosis
+                try:
+                    # Reject numeric actions during teampreview phase
+                    battle = self._current_battles.get(agent_id)
+                    lr = getattr(battle, "last_request", None)
+                    if isinstance(lr, dict) and lr.get("teamPreview"):
+                        self._logger.debug(
+                            "[ACTCTX] %s reject INT during teampreview action=%s",
+                            agent_id,
+                            action,
+                        )
+                        return
+
+                    prev_mapping = self._action_mappings.get(agent_id, {})
+                    prev_mask = self._build_action_mask(prev_mapping) if prev_mapping else None
+                    was_enabled_prev = None
+                    if prev_mask is not None and 0 <= int(action) < len(prev_mask):
+                        was_enabled_prev = bool(prev_mask[int(action)])
+                    rq = lr.get("rqid") if isinstance(lr, dict) else None
+                    tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                    wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                    fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                    # Validate rqid consistency: numeric action must target last mask's rqid
+                    last_mask_rqid = self._mask_rqids.get(agent_id)
+                    if last_mask_rqid is not None and rq is not None and rq != last_mask_rqid:
+                        self._logger.debug(
+                            "[ACTCTX] %s drop INT action=%s due to rqid mismatch current=%s expected(mask)=%s",
+                            agent_id,
+                            action,
+                            rq,
+                            last_mask_rqid,
+                        )
+                        return
+                    self._logger.debug(
+                        "[ACTCTX] %s enqueue INT action=%s need_action=%s prev_enabled=%s rqid=%s type=%s",
+                        agent_id,
+                        action,
+                        self._need_action.get(agent_id, None),
+                        was_enabled_prev,
+                        rq,
+                        ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    )
+                except Exception:
+                    pass
                 await self._action_queues[agent_id].put(int(action))
                 return
 
@@ -913,6 +998,9 @@ class PokemonEnv(gym.Env):
             masks = self._compute_all_masks()
         for pid in self.agent_ids:
             self._last_requests[pid] = self._current_battles[pid].last_request
+            # Also track rqid used for these masks
+            lr = getattr(self._current_battles[pid], "last_request", None)
+            self._mask_rqids[pid] = (lr.get("rqid") if isinstance(lr, dict) else None)
 
         # Check if we're in teampreview phase for step() as well
         battle0 = battles["player_0"]

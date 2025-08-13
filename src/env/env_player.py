@@ -116,13 +116,36 @@ class EnvPlayer(Player):
                 self.player_id,
                 self._env._action_queues[self.player_id].qsize(),
             )
-            action_data = await asyncio.wait_for(
-                self._env._action_queues[self.player_id].get(), self._env.timeout
-            )
-            self._env._action_queues[self.player_id].task_done()
-            self._logger.debug(
-                "[DBG] %s action received %s", self.player_id, action_data
-            )
+            # Loop to skip stale actions that don't match current rqid
+            while True:
+                action_data = await asyncio.wait_for(
+                    self._env._action_queues[self.player_id].get(), self._env.timeout
+                )
+                self._logger.debug(
+                    "[DBG] %s action received %s", self.player_id, action_data
+                )
+                # Validate rqid consistency for integer actions
+                try:
+                    if isinstance(action_data, int):
+                        lr = getattr(battle, "last_request", None)
+                        curr_rqid = lr.get("rqid") if isinstance(lr, dict) else None
+                        last_mask_rqid = self._env._mask_rqids.get(self.player_id)
+                        if curr_rqid is not None and last_mask_rqid is not None and curr_rqid != last_mask_rqid:
+                            self._logger.debug(
+                                "[DBG] %s drop stale action=%s curr_rqid=%s expected(mask)=%s",
+                                self.player_id,
+                                action_data,
+                                curr_rqid,
+                                last_mask_rqid,
+                            )
+                            # Drop and continue waiting for a matching action
+                            self._env._action_queues[self.player_id].task_done()
+                            continue
+                except Exception:
+                    pass
+                # Accept this action
+                self._env._action_queues[self.player_id].task_done()
+                break
         except asyncio.TimeoutError:
             self._logger.error(
                 "[TIMEOUT] %s action queue empty=%s waiting=%s trying_again=%s",
