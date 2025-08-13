@@ -706,28 +706,6 @@ class PokemonEnv(gym.Env):
         
         async def _process_single_action(agent_id: str, action: int | str):
             """Process action for single agent asynchronously."""
-            # Enforce need_action gate based on current request type
-            if not self._need_action.get(agent_id, True):
-                # Drop silently but with debug log to avoid invalid sends (e.g., wait:true)
-                try:
-                    battle = self._current_battles.get(agent_id)
-                    lr = getattr(battle, "last_request", None)
-                    rq = lr.get("rqid") if isinstance(lr, dict) else None
-                    tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
-                    wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
-                    fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
-                    self._logger.debug(
-                        "[ACTCTX] %s drop action=%r need_action=%s rqid=%s type=%s",
-                        agent_id,
-                        action,
-                        self._need_action.get(agent_id, None),
-                        rq,
-                        ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
-                    )
-                except Exception:
-                    pass
-                return
-                
             if isinstance(action, str):
                 # Log context around string actions (e.g., team preview)
                 try:
@@ -748,6 +726,28 @@ class PokemonEnv(gym.Env):
                 except Exception:
                     pass
                 await self._action_queues[agent_id].put(action)
+                return
+
+            # Enforce need_action gate for numeric actions based on current request type
+            if not self._need_action.get(agent_id, True):
+                # Drop silently but with debug log to avoid invalid sends (e.g., wait:true)
+                try:
+                    battle = self._current_battles.get(agent_id)
+                    lr = getattr(battle, "last_request", None)
+                    rq = lr.get("rqid") if isinstance(lr, dict) else None
+                    tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
+                    wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
+                    fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
+                    self._logger.debug(
+                        "[ACTCTX] %s drop INT action=%r need_action=%s rqid=%s type=%s",
+                        agent_id,
+                        action,
+                        self._need_action.get(agent_id, None),
+                        rq,
+                        ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
+                    )
+                except Exception:
+                    pass
                 return
 
             # Integer action processing
