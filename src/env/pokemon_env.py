@@ -755,17 +755,8 @@ class PokemonEnv(gym.Env):
                 # Defer int->BattleOrder conversion to EnvPlayer.choose_move
                 # Log context about action, previous mask, and current request type for diagnosis
                 try:
-                    # Reject numeric actions during teampreview phase
                     battle = self._current_battles.get(agent_id)
                     lr = getattr(battle, "last_request", None)
-                    if isinstance(lr, dict) and lr.get("teamPreview"):
-                        self._logger.debug(
-                            "[ACTCTX] %s reject INT during teampreview action=%s",
-                            agent_id,
-                            action,
-                        )
-                        return
-
                     prev_mapping = self._action_mappings.get(agent_id, {})
                     prev_mask = self._build_action_mask(prev_mapping) if prev_mapping else None
                     was_enabled_prev = None
