@@ -843,7 +843,24 @@ class PokemonEnv(gym.Env):
         Phase 1 Optimization: Action processing is now parallelized for improved performance.
         """
 
-        # Phase 1: Parallel action processing
+        # Phase 1: Set need_action flags based on current request types (before sending actions)
+        for pid in self.agent_ids:
+            battle = self._current_battles.get(pid)
+            lr = getattr(battle, "last_request", None)
+            req_type = "none"
+            if isinstance(lr, dict):
+                if lr.get("teamPreview"):
+                    req_type = "teampreview"
+                elif lr.get("forceSwitch"):
+                    req_type = "force"
+                elif lr.get("wait"):
+                    req_type = "wait"
+                else:
+                    req_type = "normal"
+            # need_action: normal or force requires actions, wait/teampreview do not here
+            self._need_action[pid] = req_type in ("normal", "force")
+
+        # Phase 2: Parallel action processing
         asyncio.run_coroutine_threadsafe(
             self._process_actions_parallel(action_dict), POKE_LOOP
         ).result()
@@ -872,10 +889,34 @@ class PokemonEnv(gym.Env):
             if battle is None:
                 self._env_players[opp]._trying_again.clear()
                 battle = self._current_battles[pid]
-                self._need_action[pid] = False
+                # Update need_action based on current request for next step
+                lr = getattr(battle, "last_request", None)
+                if isinstance(lr, dict):
+                    if lr.get("teamPreview"):
+                        self._need_action[pid] = False
+                    elif lr.get("wait"):
+                        self._need_action[pid] = False
+                    elif lr.get("forceSwitch"):
+                        self._need_action[pid] = True
+                    else:
+                        self._need_action[pid] = True
+                else:
+                    self._need_action[pid] = False
             else:
                 self._current_battles[pid] = battle
-                self._need_action[pid] = True
+                # Update need_action based on new request for next step
+                lr = getattr(battle, "last_request", None)
+                if isinstance(lr, dict):
+                    if lr.get("teamPreview"):
+                        self._need_action[pid] = False
+                    elif lr.get("wait"):
+                        self._need_action[pid] = False
+                    elif lr.get("forceSwitch"):
+                        self._need_action[pid] = True
+                    else:
+                        self._need_action[pid] = True
+                else:
+                    self._need_action[pid] = False
             battles[pid] = battle
 
             updated[pid] = battle is not None and (
