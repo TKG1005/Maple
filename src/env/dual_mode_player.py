@@ -819,6 +819,30 @@ class DualModeEnvPlayer(EnvPlayer):
                 # Exit if battle finished
                 battle = self._battles.get(room_key) or self._battles.get(battle_id)
                 if battle and getattr(battle, "finished", False):
+                    try:
+                        inflight = len(self._ipc_inflight_tasks.get(battle_id, set()))
+                        self._logger.debug(
+                            "[PUMP] %s finishing battle=%s obj=%s turn=%s inflight=%d",
+                            self.player_id,
+                            getattr(battle, "battle_tag", None),
+                            hex(id(battle)),
+                            getattr(battle, "turn", None),
+                            inflight,
+                        )
+                    except Exception:
+                        pass
+                    # Fallback: ensure environment is notified before breaking
+                    try:
+                        if hasattr(self, "_env") and hasattr(self._env, "_notify_battle_finished"):
+                            self._env._notify_battle_finished(self.player_id, battle)
+                            self._logger.debug(
+                                "[ENDSIG-FB] %s notified env (pump) tag=%s obj=%s",
+                                self.player_id,
+                                getattr(battle, "battle_tag", None),
+                                hex(id(battle)),
+                            )
+                    except Exception as e:
+                        self._logger.error("[ENDSIG-FB] notify (pump) failed: %s", e)
                     break
         except asyncio.CancelledError:
             return
@@ -839,6 +863,21 @@ class DualModeEnvPlayer(EnvPlayer):
                 await self.ps_client._handle_message(raw)
                 dur = (time.monotonic() - start) * 1000.0
                 self._logger.debug("[PUMP] %s handle_message done in %.1fms", self.player_id, dur)
+                # Fallback: if this handling finished the battle, ensure env is notified
+                try:
+                    room_key = self.get_room_tag(battle_id) or battle_id
+                    battle = self._battles.get(room_key) or self._battles.get(battle_id)
+                    if battle and getattr(battle, "finished", False):
+                        if hasattr(self, "_env") and hasattr(self._env, "_notify_battle_finished"):
+                            self._env._notify_battle_finished(self.player_id, battle)
+                            self._logger.debug(
+                                "[ENDSIG-FB] %s notified env (dispatch) tag=%s obj=%s",
+                                self.player_id,
+                                getattr(battle, "battle_tag", None),
+                                hex(id(battle)),
+                            )
+                except Exception as e:
+                    self._logger.error("[ENDSIG-FB] notify (dispatch) failed: %s", e)
             except Exception as e:
                 # Surface errors but do not crash the pump
                 self._logger.error("[PUMP] %s handler error: %s", self.player_id, e)

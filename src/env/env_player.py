@@ -173,14 +173,23 @@ class EnvPlayer(Player):
 
     def _battle_finished_callback(self, battle: AbstractBattle) -> None:
         """Called when a battle ends to notify :class:`PokemonEnv`."""
-
+        try:
+            q = self._env._battle_queues[self.player_id]
+            qsize_before = q.qsize()
+        except Exception:
+            qsize_before = -1
         self._logger.debug(
-            "[DBG] %s finished battle %s", self.player_id, battle.battle_tag
+            "[FINCB] %s finished battle tag=%s obj=%s qsize_before=%s",
+            self.player_id,
+            getattr(battle, "battle_tag", None),
+            hex(id(battle)),
+            qsize_before,
         )
-        asyncio.run_coroutine_threadsafe(
-            self._env._battle_queues[self.player_id].put(battle),
-            POKE_LOOP,
-        )
+        # Use environment unified notifier (handles events + queue put)
+        try:
+            self._env._notify_battle_finished(self.player_id, battle)
+        except Exception:
+            self._logger.exception("failed to notify env about finished battle")
 
     # Playerクラスの_handle_battle_requestをオーバーライド
     async def _handle_battle_request(

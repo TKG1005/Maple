@@ -78,6 +78,11 @@ class PokemonEnv(gym.Env):
         self.save_replays = save_replays
         self._logger = logging.getLogger(__name__)
         self.log_level = log_level
+        try:
+            # Ensure env logger honors requested level so diagnosis logs appear
+            self._logger.setLevel(self.log_level)
+        except Exception:
+            pass
         self.reward_type = reward
         self.reward_config_path = reward_config_path
         self.player_names = player_names
@@ -185,6 +190,10 @@ class PokemonEnv(gym.Env):
             serializer=self._battle_serializer,
             storage_dir="battle_states"
         )
+        # Per-player finished events to signal end of battle (WS and IPC unified)
+        self._finished_events: dict[str, asyncio.Event] = {
+            agent_id: asyncio.Event() for agent_id in self.agent_ids
+        }
         
         # Feature toggles (can be reverted easily if needed)
         # Use per-step battle snapshot for mask computation
@@ -331,6 +340,7 @@ class PokemonEnv(gym.Env):
         # 前回エピソードのキューをクリア
         self._action_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
         self._battle_queues = {agent_id: asyncio.Queue() for agent_id in self.agent_ids}
+        self._finished_events = {agent_id: asyncio.Event() for agent_id in self.agent_ids}
         self._need_action = {agent_id: True for agent_id in self.agent_ids}
         self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
         self._last_rqids = {agent_id: None for agent_id in self.agent_ids}
@@ -560,6 +570,33 @@ class PokemonEnv(gym.Env):
             ),
         )
 
+    def _notify_battle_finished(self, player_id: str, battle: Any) -> None:
+        """Notify environment that player's battle has finished (WS/IPCsafe).
+
+        This method is idempotent and schedules updates on POKE_LOOP where needed.
+        """
+        try:
+            # Update current battle reference
+            self._current_battles[player_id] = battle
+            # Signal finished event on the asyncio loop thread-safely
+            POKE_LOOP.call_soon_threadsafe(self._finished_events[player_id].set)
+            # Also enqueue the latest battle snapshot for consumers waiting on queue
+            asyncio.run_coroutine_threadsafe(
+                self._battle_queues[player_id].put(battle), POKE_LOOP
+            )
+            try:
+                self._logger.debug(
+                    "[ENDSIG] %s notify finished tag=%s obj=%s qsize=%d",
+                    player_id,
+                    getattr(battle, "battle_tag", None),
+                    hex(id(battle)),
+                    self._battle_queues[player_id].qsize(),
+                )
+            except Exception:
+                pass
+        except Exception:
+            self._logger.exception("failed to notify battle finished for %s", player_id)
+
     def _race_get(
         self,
         queue: asyncio.Queue[Any],
@@ -568,6 +605,26 @@ class PokemonEnv(gym.Env):
         """Return queue item or ``None`` if any event fires first."""
 
         async def _race() -> Any | None:
+            # Identify pid for logging by matching queue object
+            pid_label = None
+            try:
+                for _pid, _q in self._battle_queues.items():
+                    if _q is queue:
+                        pid_label = _pid
+                        break
+            except Exception:
+                pass
+            ts_start = time.monotonic()
+            try:
+                self._logger.debug(
+                    "[RACE] start pid=%s ts=%.6f qsize=%d events=%s",
+                    pid_label,
+                    ts_start,
+                    queue.qsize(),
+                    [e.is_set() for e in events],
+                )
+            except Exception:
+                pass
             get_task = asyncio.create_task(queue.get())
             wait_tasks = [asyncio.create_task(e.wait()) for e in events]
             done, pending = await asyncio.wait(
@@ -577,7 +634,28 @@ class PokemonEnv(gym.Env):
             for p in pending:
                 p.cancel()
             if get_task in done:
+                try:
+                    self._logger.debug(
+                        "[RACE] done pid=%s kind=get elapsed_ms=%.1f rem_qsize=%d",
+                        pid_label,
+                        (time.monotonic() - ts_start) * 1000.0,
+                        queue.qsize(),
+                    )
+                except Exception:
+                    pass
                 return get_task.result()
+            # Some event fired first
+            try:
+                fired = [i for i, t in enumerate(wait_tasks) if t in done]
+                self._logger.debug(
+                    "[RACE] event pid=%s idx=%s elapsed_ms=%.1f qsize=%d",
+                    pid_label,
+                    fired,
+                    (time.monotonic() - ts_start) * 1000.0,
+                    queue.qsize(),
+                )
+            except Exception:
+                pass
             # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
             if not queue.empty():
                 return await queue.get()
@@ -835,6 +913,30 @@ class PokemonEnv(gym.Env):
         """
 
         # Phase 1: Set need_action flags based on current request types (before sending actions)
+        try:
+            ts = time.monotonic()
+            for _pid in self.agent_ids:
+                _b = getattr(self, "_current_battles", {}).get(_pid)
+                lr = getattr(_b, "last_request", None) if _b is not None else None
+                rq = (lr.get("rqid") if isinstance(lr, dict) else None)
+                tp = (bool(lr.get("teamPreview")) if isinstance(lr, dict) else None)
+                wt = (bool(lr.get("wait")) if isinstance(lr, dict) else None)
+                fs = (bool(lr.get("forceSwitch")) if isinstance(lr, dict) else None)
+                self._logger.debug(
+                    "[STEP] begin ts=%.6f pid=%s finished=%s turn=%s obj=%s tag=%s rqid=%s tp=%s wt=%s fs=%s",
+                    ts,
+                    _pid,
+                    (getattr(_b, "finished", None) if _b is not None else None),
+                    (getattr(_b, "turn", None) if _b is not None else None),
+                    (hex(id(_b)) if _b is not None else None),
+                    (getattr(_b, "battle_tag", None) if _b is not None else None),
+                    rq,
+                    tp,
+                    wt,
+                    fs,
+                )
+        except Exception:
+            pass
         for pid in self.agent_ids:
             battle = self._current_battles.get(pid)
             lr = getattr(battle, "last_request", None)
@@ -871,10 +973,22 @@ class PokemonEnv(gym.Env):
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
             # Try to retrieve the latest battle update for this player
+            try:
+                self._logger.debug(
+                    "[ACTWAIT] %s will race_get qsize=%d wait=%s try_again=%s finished_evt=%s",
+                    pid,
+                    self._battle_queues[pid].qsize(),
+                    self._env_players[pid]._waiting.is_set(),
+                    self._env_players[opp]._trying_again.is_set(),
+                    self._finished_events[pid].is_set(),
+                )
+            except Exception:
+                pass
             battle = self._race_get(
                 self._battle_queues[pid],
                 self._env_players[pid]._waiting,
                 self._env_players[opp]._trying_again,
+                self._finished_events[pid],
             )
             self._env_players[pid]._waiting.clear()
             if battle is None:
@@ -913,6 +1027,22 @@ class PokemonEnv(gym.Env):
             updated[pid] = battle is not None and (
                 battle.last_request is not self._last_requests.get(pid)
             )
+            # Snapshot per-pid summary after retrieval path is decided
+            try:
+                lr = getattr(battle, "last_request", None)
+                rq = lr.get("rqid") if isinstance(lr, dict) else None
+                self._logger.debug(
+                    "[STEP] src pid=%s finished=%s turn=%s obj=%s tag=%s rqid=%s updated=%s",
+                    pid,
+                    getattr(battle, "finished", None),
+                    getattr(battle, "turn", None),
+                    hex(id(battle)) if battle else None,
+                    getattr(battle, "battle_tag", None),
+                    rq,
+                    updated[pid],
+                )
+            except Exception:
+                pass
             # Log current battle object and last_request summary for each player
             try:
                 lr = getattr(battle, "last_request", None)
@@ -1190,9 +1320,26 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "_env_players"):
             for p in self._env_players.values():
-                asyncio.run_coroutine_threadsafe(
-                    p.ps_client.stop_listening(), POKE_LOOP
-                ).result()
+                # Prefer player's own close_connection if available (handles IPC/WS)
+                try:
+                    if hasattr(p, "close_connection"):
+                        asyncio.run_coroutine_threadsafe(
+                            p.close_connection(), POKE_LOOP
+                        ).result()
+                        continue
+                except Exception:
+                    pass
+                # Fallback to PSClient.stop_listening only when websocket exists
+                try:
+                    ps_client = getattr(p, "ps_client", None)
+                    stop_listening = getattr(ps_client, "stop_listening", None)
+                    websocket_obj = getattr(ps_client, "websocket", None)
+                    if callable(stop_listening) and websocket_obj is not None:
+                        asyncio.run_coroutine_threadsafe(
+                            stop_listening(), POKE_LOOP
+                        ).result()
+                except Exception:
+                    pass
             self._env_players.clear()
 
         for q in self._action_queues.values():
