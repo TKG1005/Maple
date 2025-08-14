@@ -576,22 +576,59 @@ class PokemonEnv(gym.Env):
         This method is idempotent and schedules updates on POKE_LOOP where needed.
         """
         try:
+            # Initialize once-guard map lazily
+            if not hasattr(self, "_finished_enqueued"):
+                # { player_id: set(battle_tag) } to prevent duplicate queue puts
+                self._finished_enqueued: dict[str, set[str]] = {pid: set() for pid in self.agent_ids}
             # Update current battle reference
             self._current_battles[player_id] = battle
-            # Signal finished event on the asyncio loop thread-safely
-            POKE_LOOP.call_soon_threadsafe(self._finished_events[player_id].set)
-            # Also enqueue the latest battle snapshot for consumers waiting on queue
-            asyncio.run_coroutine_threadsafe(
-                self._battle_queues[player_id].put(battle), POKE_LOOP
-            )
+            # Also enqueue the latest battle snapshot exactly once per (pid, battle)
             try:
-                self._logger.debug(
-                    "[ENDSIG] %s notify finished tag=%s obj=%s qsize=%d",
-                    player_id,
-                    getattr(battle, "battle_tag", None),
-                    hex(id(battle)),
-                    self._battle_queues[player_id].qsize(),
-                )
+                tag = getattr(battle, "battle_tag", None)
+                already = tag in self._finished_enqueued.get(player_id, set())
+            except Exception:
+                tag = None
+                already = False
+            if not already:
+                # Order stabilization: ensure put is scheduled on loop before event set
+                try:
+                    POKE_LOOP.call_soon_threadsafe(
+                        self._battle_queues[player_id].put_nowait, battle
+                    )
+                except Exception:
+                    # As a fallback, schedule async put without waiting
+                    try:
+                        asyncio.run_coroutine_threadsafe(
+                            self._battle_queues[player_id].put(battle), POKE_LOOP
+                        )
+                    except Exception:
+                        pass
+                try:
+                    self._finished_enqueued[player_id].add(tag)
+                except Exception:
+                    pass
+            # Signal finished event on the asyncio loop thread-safely (after scheduling put)
+            try:
+                POKE_LOOP.call_soon_threadsafe(self._finished_events[player_id].set)
+            except Exception:
+                pass
+            try:
+                if already:
+                    self._logger.debug(
+                        "[ENDSIG-SKIP] %s duplicate finish notify skipped tag=%s obj=%s qsize=%d",
+                        player_id,
+                        getattr(battle, "battle_tag", None),
+                        hex(id(battle)),
+                        self._battle_queues[player_id].qsize(),
+                    )
+                else:
+                    self._logger.debug(
+                        "[ENDSIG] %s notify finished tag=%s obj=%s qsize=%d",
+                        player_id,
+                        getattr(battle, "battle_tag", None),
+                        hex(id(battle)),
+                        self._battle_queues[player_id].qsize(),
+                    )
             except Exception:
                 pass
         except Exception:

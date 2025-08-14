@@ -831,18 +831,7 @@ class DualModeEnvPlayer(EnvPlayer):
                         )
                     except Exception:
                         pass
-                    # Fallback: ensure environment is notified before breaking
-                    try:
-                        if hasattr(self, "_env") and hasattr(self._env, "_notify_battle_finished"):
-                            self._env._notify_battle_finished(self.player_id, battle)
-                            self._logger.debug(
-                                "[ENDSIG-FB] %s notified env (pump) tag=%s obj=%s",
-                                self.player_id,
-                                getattr(battle, "battle_tag", None),
-                                hex(id(battle)),
-                            )
-                    except Exception as e:
-                        self._logger.error("[ENDSIG-FB] notify (pump) failed: %s", e)
+                    # Do not notify env from pump to avoid duplicate finish signals.
                     break
         except asyncio.CancelledError:
             return
