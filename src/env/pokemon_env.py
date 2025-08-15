@@ -661,25 +661,7 @@ class PokemonEnv(gym.Env):
                             pass
                     except Exception:
                         pass
-            try:
-                if already:
-                    self._logger.debug(
-                        "[ENDSIG-SKIP] %s duplicate finish notify skipped tag=%s obj=%s qsize=%d",
-                        player_id,
-                        getattr(battle, "battle_tag", None),
-                        hex(id(battle)),
-                        self._battle_queues[player_id].qsize(),
-                    )
-                else:
-                    self._logger.debug(
-                        "[ENDSIG] %s notify finished tag=%s obj=%s qsize=%d",
-                        player_id,
-                        getattr(battle, "battle_tag", None),
-                        hex(id(battle)),
-                        self._battle_queues[player_id].qsize(),
-                    )
-            except Exception:
-                pass
+            
         except Exception:
             self._logger.exception("failed to notify battle finished for %s", player_id)
 
@@ -703,16 +685,7 @@ class PokemonEnv(gym.Env):
             ts_start = time.monotonic()
             # By convention, the last event (if provided) is the finished_event
             finished_idx = len(events) - 1 if events else None
-            try:
-                self._logger.debug(
-                    "[RACE] start pid=%s ts=%.6f qsize=%d events=%s",
-                    pid_label,
-                    ts_start,
-                    queue.qsize(),
-                    [e.is_set() for e in events],
-                )
-            except Exception:
-                pass
+            
             get_task = asyncio.create_task(queue.get())
             wait_tasks = [asyncio.create_task(e.wait()) for e in events]
             done, pending = await asyncio.wait(
@@ -722,51 +695,17 @@ class PokemonEnv(gym.Env):
             for p in pending:
                 p.cancel()
             if get_task in done:
-                try:
-                    self._logger.debug(
-                        "[RACE] done pid=%s kind=get elapsed_ms=%.1f rem_qsize=%d",
-                        pid_label,
-                        (time.monotonic() - ts_start) * 1000.0,
-                        queue.qsize(),
-                    )
-                except Exception:
-                    pass
+                
                 return get_task.result()
             # Some event fired first
-            try:
-                fired = [i for i, t in enumerate(wait_tasks) if t in done]
-                self._logger.debug(
-                    "[RACE] event pid=%s idx=%s elapsed_ms=%.1f qsize=%d",
-                    pid_label,
-                    fired,
-                    (time.monotonic() - ts_start) * 1000.0,
-                    queue.qsize(),
-                )
-            except Exception:
-                pass
+            
             # If the finished_event fired, consume the final snapshot from the queue
             try:
                 if finished_idx is not None and 0 <= finished_idx < len(wait_tasks) and wait_tasks[finished_idx] in done:
-                    try:
-                        ts_fin = time.monotonic()
-                        self._logger.debug(
-                            "[RACE-FIN] pid=%s ts=%.6f finished_event fired; blocking get for final snapshot",
-                            pid_label,
-                            ts_fin,
-                        )
-                    except Exception:
-                        pass
+                    
                     # Block until the final snapshot is available (bounded by outer timeout)
                     fin_battle = await queue.get()
-                    try:
-                        self._logger.debug(
-                            "[RACE-FIN-GET-DONE] pid=%s elapsed_ms=%.1f rem_qsize=%d",
-                            pid_label,
-                            (time.monotonic() - ts_start) * 1000.0,
-                            queue.qsize(),
-                        )
-                    except Exception:
-                        pass
+                    
                     return fin_battle
             except Exception:
                 pass
@@ -783,11 +722,7 @@ class PokemonEnv(gym.Env):
                     return await queue.get()
             return None
 
-        self._logger.debug(
-            "[DBG] race_get start qsize=%d events=%s",
-            queue.qsize(),
-            [e.is_set() for e in events],
-        )
+        
         try:
             result = asyncio.run_coroutine_threadsafe(
                 asyncio.wait_for(_race(), self.timeout),
@@ -801,9 +736,7 @@ class PokemonEnv(gym.Env):
                 exc,
             )
             raise
-        self._logger.debug(
-            "[DBG] race_get done result=%s qsize=%d", result, queue.qsize()
-        )
+        
         if result is not None:
             POKE_LOOP.call_soon_threadsafe(queue.task_done)
         return result
@@ -1087,17 +1020,7 @@ class PokemonEnv(gym.Env):
         for pid in self.agent_ids:
             opp = "player_1" if pid == "player_0" else "player_0"
             # Try to retrieve the latest battle update for this player
-            try:
-                self._logger.debug(
-                    "[ACTWAIT] %s will race_get qsize=%d wait=%s try_again=%s finished_evt=%s",
-                    pid,
-                    self._battle_queues[pid].qsize(),
-                    self._env_players[pid]._waiting.is_set(),
-                    self._env_players[opp]._trying_again.is_set(),
-                    self._finished_events[pid].is_set(),
-                )
-            except Exception:
-                pass
+            
             # Always include finished_event in race; _race_get consumes from queue
             # when finished_event wins to prevent leftover snapshots.
             battle = self._race_get(
@@ -1106,16 +1029,7 @@ class PokemonEnv(gym.Env):
                 self._env_players[opp]._trying_again,
                 self._finished_events[pid],
             )
-            try:
-                self._logger.debug(
-                    "[ACTWAIT-EXIT] %s got=%s qsize=%d finished_evt=%s",
-                    pid,
-                    ("battle" if battle is not None else "none"),
-                    self._battle_queues[pid].qsize(),
-                    self._finished_events[pid].is_set(),
-                )
-            except Exception:
-                pass
+            
             self._env_players[pid]._waiting.clear()
             if battle is None:
                 self._env_players[opp]._trying_again.clear()
@@ -1348,13 +1262,7 @@ class PokemonEnv(gym.Env):
 
                 prev_qsize = q.qsize()
                 drained = asyncio.run_coroutine_threadsafe(_drain(q), POKE_LOOP).result()
-                if drained > 0:
-                    self._logger.debug(
-                        "[DRAIN] %s finished=True drained=%d prev_qsize=%d",
-                        pid,
-                        drained,
-                        prev_qsize,
-                    )
+                
         except Exception:
             # Draining is a best-effort safeguard; failures should not break the step
             pass

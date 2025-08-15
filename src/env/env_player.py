@@ -69,13 +69,7 @@ class EnvPlayer(Player):
 
                 # Map python player id to Showdown id (p1/p2)
                 sd_id = "p1" if self.player_id == "player_0" else "p2"
-                self._logger.debug(
-                    "[DBG] %s IPC send protocol battle_id=%s sd_id=%s data=%s",
-                    self.player_id,
-                    room_key,
-                    sd_id,
-                    message,
-                )
+                
                 payload = {
                     "type": "protocol",
                     "battle_id": room_key,
@@ -102,33 +96,18 @@ class EnvPlayer(Player):
         """Return the order chosen by the external agent via :class:`PokemonEnv`."""
         
         # PokemonEnv に最新の battle オブジェクトを送信
-        self._logger.debug(
-            "[DBG] %s queue battle -> %s trapped = %s", self.player_id, battle.battle_tag,battle.trapped
-        )
+        
         await self._env._battle_queues[self.player_id].put(battle)
 
         # PokemonEnv.step からアクションが投入されるまで待機
         try:
-            self._logger.debug(
-                "[ACTWAIT] %s start waiting battle=%s obj=%s qsize=%d",
-                self.player_id,
-                getattr(battle, "battle_tag", "?"),
-                hex(id(battle)),
-                self._env._action_queues[self.player_id].qsize(),
-            )
-            self._logger.debug(
-                "[DBG] %s waiting action (qsize=%d)", 
-                self.player_id,
-                self._env._action_queues[self.player_id].qsize(),
-            )
+            
             # Loop to skip stale actions that don't match current rqid
             while True:
                 action_data = await asyncio.wait_for(
                     self._env._action_queues[self.player_id].get(), self._env.timeout
                 )
-                self._logger.debug(
-                    "[DBG] %s action received %s", self.player_id, action_data
-                )
+                
                 # Validate rqid consistency for integer actions
                 try:
                     if isinstance(action_data, int):
@@ -136,13 +115,7 @@ class EnvPlayer(Player):
                         curr_rqid = lr.get("rqid") if isinstance(lr, dict) else None
                         last_mask_rqid = self._env._mask_rqids.get(self.player_id)
                         if curr_rqid is not None and last_mask_rqid is not None and curr_rqid != last_mask_rqid:
-                            self._logger.debug(
-                                "[DBG] %s drop stale action=%s curr_rqid=%s expected(mask)=%s",
-                                self.player_id,
-                                action_data,
-                                curr_rqid,
-                                last_mask_rqid,
-                            )
+                            
                             # Drop and continue waiting for a matching action
                             self._env._action_queues[self.player_id].task_done()
                             continue
@@ -166,14 +139,9 @@ class EnvPlayer(Player):
             order = self._env.action_helper.action_index_to_order(
                 self, battle, action_data
             )
-            self._logger.debug(
-                "[DBG] %s action index %s -> %s",
-                self.player_id,
-                action_data,
-                order.message,
-            )
+            
             return order
-        self._logger.debug("[DBG] %s direct order %s", self.player_id, action_data)
+        
         return action_data
 
     def _battle_finished_callback(self, battle: AbstractBattle) -> None:
@@ -191,18 +159,7 @@ class EnvPlayer(Player):
             self._last_finish_cb_battle_tag = getattr(battle, "battle_tag", None)
         except Exception:
             self._last_finish_cb_battle_tag = None
-        try:
-            q = self._env._battle_queues[self.player_id]
-            qsize_before = q.qsize()
-        except Exception:
-            qsize_before = -1
-        self._logger.debug(
-            "[FINCB] %s finished battle tag=%s obj=%s qsize_before=%s",
-            self.player_id,
-            getattr(battle, "battle_tag", None),
-            hex(id(battle)),
-            qsize_before,
-        )
+        
         # Use environment unified notifier (handles events + queue put)
         try:
             self._env._notify_battle_finished(self.player_id, battle)
@@ -290,21 +247,10 @@ class EnvPlayer(Player):
                         message = "team " + message[len("/team "):]
                 except Exception:
                     pass
-                self._logger.debug(
-                    "[DBG] %s team preview message %s (%s)",
-                    self.player_id,
-                    message,
-                    battle.player_username,
-                )
+                
 
                 # Send immediately and return to keep pipeline flowing
-                self._logger.debug(
-                    "[DBG] %s send message '%s' to battle %s last = %s",
-                    self.player_id,
-                    message,
-                    battle.battle_tag,
-                    battle.last_request,
-                )
+                
                 await self._send_battle_message_local_aware(battle, message)
                 self._last_request = battle.last_request
                 return
@@ -319,9 +265,7 @@ class EnvPlayer(Player):
         # --- Non-teampreview: original behavior ---
         # 同一の request が続いた場合は更新を待機する
         if battle.last_request is self._last_request:
-            self._logger.debug(
-                "[DBG] %s waiting last_request update", self.player_id
-            )
+            
 
             async def _wait_update() -> None:
                 while battle.last_request is self._last_request:
@@ -365,13 +309,7 @@ class EnvPlayer(Player):
             )
             raise RuntimeError("choose_move returned empty/invalid message")
 
-        self._logger.debug(
-            "[DBG] %s send message '%s' to battle %s last = %s",
-            self.player_id,
-            message,
-            battle.battle_tag,
-            battle.last_request,
-        )
+        
         await self._send_battle_message_local_aware(battle, message)
         # 処理した last_request を記録
         self._last_request = battle.last_request

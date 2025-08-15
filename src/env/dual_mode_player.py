@@ -724,27 +724,6 @@ class DualModeEnvPlayer(EnvPlayer):
             pass
 
     async def _stop_ipc_pump(self, battle_id: str) -> None:
-        # Diagnostic snapshot before stopping pump/inflight tasks
-        try:
-            room_key = self.get_room_tag(battle_id) or battle_id
-            inflight_before = len(self._ipc_inflight_tasks.get(battle_id, set()))
-            if hasattr(self, "_env") and hasattr(self._env, "_finished_events"):
-                fin_p0 = self._env._finished_events.get("player_0").is_set() if self._env and self._env._finished_events.get("player_0") else None
-                fin_p1 = self._env._finished_events.get("player_1").is_set() if self._env and self._env._finished_events.get("player_1") else None
-                q0 = self._env._battle_queues.get("player_0").qsize() if self._env and self._env._battle_queues.get("player_0") else None
-                q1 = self._env._battle_queues.get("player_1").qsize() if self._env and self._env._battle_queues.get("player_1") else None
-                self._logger.debug(
-                    "[PUMP-STOP] %s battle=%s inflight=%d finished_events(p0=%s,p1=%s) queues(p0=%s,p1=%s)",
-                    self.player_id,
-                    room_key,
-                    inflight_before,
-                    fin_p0,
-                    fin_p1,
-                    q0,
-                    q1,
-                )
-        except Exception:
-            pass
 
         task = self._ipc_pump_tasks.pop(battle_id, None)
         if task is not None and not task.done():
@@ -763,23 +742,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 await t
             except asyncio.CancelledError:
                 pass
-        try:
-            if hasattr(self, "_env") and hasattr(self._env, "_finished_events"):
-                fin_p0 = self._env._finished_events.get("player_0").is_set() if self._env and self._env._finished_events.get("player_0") else None
-                fin_p1 = self._env._finished_events.get("player_1").is_set() if self._env and self._env._finished_events.get("player_1") else None
-                q0 = self._env._battle_queues.get("player_0").qsize() if self._env and self._env._battle_queues.get("player_0") else None
-                q1 = self._env._battle_queues.get("player_1").qsize() if self._env and self._env._battle_queues.get("player_1") else None
-                self._logger.debug(
-                    "[PUMP-STOP-DONE] %s battle=%s inflight_cleared finished_events(p0=%s,p1=%s) queues(p0=%s,p1=%s)",
-                    self.player_id,
-                    battle_id,
-                    fin_p0,
-                    fin_p1,
-                    q0,
-                    q1,
-                )
-        except Exception:
-            pass
+        
         # Drop semaphore for this battle
         self._exec_semaphores.pop(battle_id, None)
 
@@ -931,33 +894,14 @@ class DualModeEnvPlayer(EnvPlayer):
             try:
                 from poke_env.concurrency import POKE_LOOP  # type: ignore
                 POKE_LOOP.call_soon_threadsafe(self._battle_finished_callback, battle)
-                self._logger.debug(
-                    "[FINTRIG] %s scheduled finished-callback tag=%s", 
-                    self.player_id, getattr(battle, "battle_tag", None)
-                )
             except Exception:
                 # If POKE_LOOP is not accessible, call directly (we're already on loop in local mode)
                 try:
                     self._battle_finished_callback(battle)
-                    self._logger.debug(
-                        "[FINTRIG-DIRECT] %s invoked finished-callback tag=%s", 
-                        self.player_id, getattr(battle, "battle_tag", None)
-                    )
                 except Exception:
                     self._logger.exception("failed to invoke finished callback")
             # Optionally wait briefly and log propagation status
-            try:
-                await asyncio.sleep(0.01)
-                fin_ev = None
-                qsz = None
-                if hasattr(self, "_env"):
-                    fin_ev = self._env._finished_events.get(self.player_id).is_set()  # type: ignore[attr-defined]
-                    qsz = self._env._battle_queues.get(self.player_id).qsize()  # type: ignore[attr-defined]
-                self._logger.debug(
-                    "[FINPROP] %s after-schedule fin_ev=%s qsize=%s", self.player_id, fin_ev, qsz
-                )
-            except Exception:
-                pass
+            
         except Exception:
             # Non-fatal: only affects timely propagation
             self._logger.exception("finish scheduling failed")
