@@ -49,7 +49,7 @@ function sanitizePlayerCommand(raw) {
 }
 
 class BattleSession {
-  constructor(battleId, format, players, seed) {
+  constructor(battleId, format, players, seed, onEnd) {
     this.battleId = battleId;
     this.format = format;
     this.players = players;
@@ -60,6 +60,7 @@ class BattleSession {
     // Counter used to inject rqid for request/init messages when missing.
     // Only used when the JSON payload does not already contain an `rqid`.
     this.rqidCounter = 0;
+    this.onEnd = typeof onEnd === 'function' ? onEnd : null;
   }
 
   async init() {
@@ -122,6 +123,18 @@ class BattleSession {
             }
 
             writeJSON({ type: 'protocol', battle_id: battleId, room_tag: roomTag, target_player: target, data: line });
+
+            // Detect battle end signals and trigger session cleanup once
+            try {
+              if (!this.closed && (line.startsWith('|win|') || line.startsWith('|tie|'))) {
+                this.closed = true;
+                if (this.onEnd) {
+                  try { this.onEnd(battleId); } catch {}
+                }
+                // Inform Python side explicitly (optional)
+                writeJSON({ type: 'battle_closed', battle_id: battleId, room_tag: roomTag });
+              }
+            } catch {}
           }
         }
       } catch (e) {
@@ -194,7 +207,7 @@ class IPCBridge {
       return writeJSON({ type: 'error', code: 'BATTLE_EXISTS', message: `Battle already exists: ${battle_id}` });
     }
     try {
-      const session = new BattleSession(battle_id, format, players, seed);
+      const session = new BattleSession(battle_id, format, players, seed, (id) => this._onSessionEnd(id));
       this.sessions.set(battle_id, session);
       await session.init();
       // Acknowledge creation; first protocol lines will arrive asynchronously
@@ -202,6 +215,14 @@ class IPCBridge {
     } catch (e) {
       writeJSON({ type: 'error', code: 'CREATE_FAILED', message: e?.message, battle_id });
     }
+  }
+
+  _onSessionEnd(battleId) {
+    const sess = this.sessions.get(battleId);
+    if (sess) {
+      try { void sess.close(); } catch {}
+    }
+    this.sessions.delete(battleId);
   }
 
   _shutdown(code) {

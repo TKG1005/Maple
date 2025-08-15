@@ -87,7 +87,7 @@ from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", full_ipc: bool = False, log_level: int = logging.DEBUG) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", full_ipc: bool = False, log_level: int = logging.DEBUG, reuse_processes: bool | None = None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -103,6 +103,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         battle_mode=battle_mode,
         full_ipc=full_ipc,  # Phase 4: Pass full IPC setting
         log_level=log_level,
+        reuse_processes=reuse_processes,
     )
     return env
 
@@ -646,7 +647,10 @@ def main(
     ckpt_dir = Path(checkpoint_dir)
     
     # Create sample environment for network setup
-    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, battle_mode=battle_mode, full_ipc=full_ipc, log_level=log_level)
+    # Read local_mode.reuse_processes from config (default True)
+    local_mode_cfg = cfg.get("local_mode", {})
+    cfg_reuse_processes = local_mode_cfg.get("reuse_processes", True)
+    sample_env = init_env(reward=reward, reward_config=reward_config, team_mode=team_mode, teams_dir=teams_dir, normalize_rewards=True, battle_mode=battle_mode, full_ipc=full_ipc, log_level=log_level, reuse_processes=cfg_reuse_processes)
     
     # Get network configuration
     network_config = cfg.get("network", {})
@@ -963,7 +967,8 @@ def main(
                 server_config=server_config,
                 battle_mode=battle_mode,
                 full_ipc=full_ipc,  # Phase 4: Pass full IPC setting
-                log_level=log_level
+                log_level=log_level,
+                reuse_processes=cfg_reuse_processes,
             )
             
             # Determine opponent type for this environment

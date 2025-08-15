@@ -22,7 +22,7 @@ from src.sim.battle_communicator import CommunicatorFactory, BattleCommunicator
 class IPCClientWrapper:
     """IPC client wrapper to manage a Node.js process and JSON message exchange."""
 
-    def __init__(self, node_script_path: str, logger: Optional[logging.Logger] = None) -> None:
+    def __init__(self, node_script_path: str, logger: Optional[logging.Logger] = None, reuse_enabled: Optional[bool] = None) -> None:
         """
         Initialize the IPC client wrapper.
 
@@ -39,7 +39,10 @@ class IPCClientWrapper:
         self._registry = ControllerRegistry
         self._controllers: dict[str, "IPCBattleController"] = {}
         # Phase1: enable controller reuse (sequential battles per process)
-        self._reuse_enabled: bool = os.environ.get("MAPLE_IPC_REUSE", "1").lower() in ("1", "true", "yes")
+        if reuse_enabled is None:
+            self._reuse_enabled: bool = os.environ.get("MAPLE_IPC_REUSE", "1").lower() in ("1", "true", "yes")
+        else:
+            self._reuse_enabled = bool(reuse_enabled)
         self.connected: bool = False  # True if at least one controller is alive
 
     async def connect(self) -> None:
@@ -282,6 +285,7 @@ class DualModeEnvPlayer(EnvPlayer):
         server_configuration: Optional[ServerConfiguration] = None,
         ipc_script_path: str = "scripts/node-ipc-bridge.js",
         full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
+        reuse_processes: Optional[bool] = None,
         **kwargs: Any
     ) -> None:
         """Initialize dual-mode player.
@@ -369,7 +373,7 @@ class DualModeEnvPlayer(EnvPlayer):
         # For local mode, initialize IPC communicator and (if requested) establish full IPC
         if mode == "local":
             # Initialize communicator (create IPCClientWrapper)
-            self._initialize_communicator()
+            self._initialize_communicator(reuse_processes)
             if full_ipc:
                 # Phase 4: Full IPC mode - must establish working connection
                 self._logger.debug(f"Phase 4: Establishing mandatory IPC connection for {self.player_id}")
@@ -378,7 +382,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 # Phase 3: IPC capability initialized
                 self._logger.debug(f"IPC capability initialized for {self.player_id} (WebSocket fallback)")
     
-    def _initialize_communicator(self) -> None:
+    def _initialize_communicator(self, reuse_processes: Optional[bool] = None) -> None:
         """Initialize IPCClientWrapper for local mode."""
         if self.mode != "local":
             return
@@ -387,6 +391,7 @@ class DualModeEnvPlayer(EnvPlayer):
         self.ipc_client_wrapper = IPCClientWrapper(
             node_script_path=self.ipc_script_path,
             logger=self._logger,
+            reuse_enabled=reuse_processes,
         )
 
     def _sd_id(self) -> str:
