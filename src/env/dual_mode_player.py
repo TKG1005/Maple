@@ -22,7 +22,7 @@ from src.sim.battle_communicator import CommunicatorFactory, BattleCommunicator
 class IPCClientWrapper:
     """IPC client wrapper to manage a Node.js process and JSON message exchange."""
 
-    def __init__(self, node_script_path: str, logger: Optional[logging.Logger] = None, reuse_enabled: Optional[bool] = None) -> None:
+    def __init__(self, node_script_path: str, logger: Optional[logging.Logger] = None, reuse_enabled: Optional[bool] = None, max_processes: Optional[int] = None) -> None:
         """
         Initialize the IPC client wrapper.
 
@@ -43,6 +43,18 @@ class IPCClientWrapper:
             self._reuse_enabled: bool = os.environ.get("MAPLE_IPC_REUSE", "1").lower() in ("1", "true", "yes")
         else:
             self._reuse_enabled = bool(reuse_enabled)
+        # Pool upper bound (default 2, overridable via env/argument)
+        if max_processes is None:
+            env_val = os.environ.get("MAPLE_IPC_MAX_PROCESSES")
+            try:
+                self._max_processes = int(env_val) if env_val else 2
+            except Exception:
+                self._max_processes = 2
+        else:
+            try:
+                self._max_processes = int(max(1, max_processes))
+            except Exception:
+                self._max_processes = 2
         self.connected: bool = False  # True if at least one controller is alive
 
     async def connect(self) -> None:
@@ -231,8 +243,14 @@ class IPCClientWrapper:
             # Stable pool key per node script path (both players share the same)
             base = os.path.basename(self.node_script_path) or "node-ipc-bridge.js"
             pool_key = f"__ipc_pool__:{base}"
-            # Use a small pool with upper bound 2
-            ctrl = ControllerRegistry.get_shared_for_battle(self.node_script_path, pool_key, battle_id, max_processes=2, logger=self.logger)
+            # Use pool with upper bound from config/env
+            ctrl = ControllerRegistry.get_shared_for_battle(
+                self.node_script_path,
+                pool_key,
+                battle_id,
+                max_processes=self._max_processes,
+                logger=self.logger,
+            )
             self._controllers[pool_key] = ctrl
         else:
             ctrl = ControllerRegistry.get_or_create(self.node_script_path, battle_id, logger=self.logger)
@@ -287,6 +305,7 @@ class DualModeEnvPlayer(EnvPlayer):
         ipc_script_path: str = "scripts/node-ipc-bridge.js",
         full_ipc: bool = False,  # Phase 4: Enable full IPC mode without WebSocket fallback
         reuse_processes: Optional[bool] = None,
+        max_processes: Optional[int] = None,
         **kwargs: Any
     ) -> None:
         """Initialize dual-mode player.
@@ -374,7 +393,7 @@ class DualModeEnvPlayer(EnvPlayer):
         # For local mode, initialize IPC communicator and (if requested) establish full IPC
         if mode == "local":
             # Initialize communicator (create IPCClientWrapper)
-            self._initialize_communicator(reuse_processes)
+            self._initialize_communicator(reuse_processes, max_processes)
             if full_ipc:
                 # Phase 4: Full IPC mode - must establish working connection
                 self._logger.debug(f"Phase 4: Establishing mandatory IPC connection for {self.player_id}")
@@ -383,7 +402,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 # Phase 3: IPC capability initialized
                 self._logger.debug(f"IPC capability initialized for {self.player_id} (WebSocket fallback)")
     
-    def _initialize_communicator(self, reuse_processes: Optional[bool] = None) -> None:
+    def _initialize_communicator(self, reuse_processes: Optional[bool] = None, max_processes: Optional[int] = None) -> None:
         """Initialize IPCClientWrapper for local mode."""
         if self.mode != "local":
             return
@@ -393,6 +412,7 @@ class DualModeEnvPlayer(EnvPlayer):
             node_script_path=self.ipc_script_path,
             logger=self._logger,
             reuse_enabled=reuse_processes,
+            max_processes=max_processes,
         )
 
     def _sd_id(self) -> str:

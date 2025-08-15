@@ -50,6 +50,7 @@ class PokemonEnv(gym.Env):
         battle_mode: str = "local",  # "local" or "online"
         log_level: int = logging.DEBUG,
         reuse_processes: bool | None = None,
+        max_processes: int | None = None,
         **kwargs: Any,
         ) -> None:
         super().__init__()
@@ -93,6 +94,7 @@ class PokemonEnv(gym.Env):
         self.server_configuration = server_configuration
         self.battle_mode = battle_mode
         self.reuse_processes = reuse_processes
+        self.max_processes = max_processes
         
         # Skip validation for now as it requires complete configuration
         # TODO: Implement proper configuration validation in Phase 3
@@ -1399,6 +1401,7 @@ class PokemonEnv(gym.Env):
                 save_replays=self.save_replays,
                 account_configuration=account_config,
                 reuse_processes=self.reuse_processes,
+                max_processes=self.max_processes,
             )
         else:
             self._logger.info(f"Creating online WebSocket player: {player_id}")
