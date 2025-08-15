@@ -226,11 +226,7 @@ class IPCBattleController:
         Expected Node protocol shape:
           {"type":"protocol","battle_id":...,"target_player":"p1|p2","data":"..."}
         """
-        # Log incoming parsed messages for debugging
-        try:
-                
-        except Exception:
-            pass
+        # Log incoming parsed messages for debugging (removed)
         mtype = message.get("type")
         if mtype != "protocol":
             # handle control side-effects (pong, errors) or ignore
@@ -279,11 +275,7 @@ class IPCBattleController:
         if py_player is None:
             data_line = str(message.get("data", ""))
             tagged = self._tag_with_room_header(data_line)
-            # Log the queued line for each player
-            try:
-                
-            except Exception:
-                pass
+            # Log the queued line for each player (removed)
             for q in self.player_queues.values():
                 await q.put(tagged)
             # Detect readiness markers in data
@@ -294,10 +286,7 @@ class IPCBattleController:
         if py_player in self.player_queues:
             data_line = str(message.get("data", ""))
             tagged = self._tag_with_room_header(data_line)
-            try:
-                
-            except Exception:
-                pass
+            
             await self.player_queues[py_player].put(tagged)
             # Detect readiness markers
             if self._first_request_event is not None and ("|init|" in data_line or "|request|" in data_line):
@@ -330,11 +319,7 @@ class IPCBattleController:
                 text = line.decode("utf-8", "replace").strip()
                 if not text:
                     continue
-                # Log raw NDJSON line from Node for debugging
-                try:
-                    
-                except Exception:
-                    pass
+                # Log raw NDJSON line from Node for debugging (removed)
                 try:
                     msg = json.loads(text)
                 except json.JSONDecodeError:
@@ -357,12 +342,8 @@ class IPCBattleController:
                     break
                 text = line.decode("utf-8", "replace").rstrip("\n")
                 if text:
-                    # Preserve existing stderr logging but also emit debug
+                    # Preserve existing stderr logging
                     self.logger.error("%s", text)
-                    try:
-                        
-                    except Exception:
-                        pass
         except asyncio.CancelledError:
             pass
         except Exception as e:
