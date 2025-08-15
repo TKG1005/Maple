@@ -38,6 +38,8 @@ class IPCClientWrapper:
         from src.env.controller_registry import ControllerRegistry  # type: ignore
         self._registry = ControllerRegistry
         self._controllers: dict[str, "IPCBattleController"] = {}
+        # Phase1: enable controller reuse (sequential battles per process)
+        self._reuse_enabled: bool = os.environ.get("MAPLE_IPC_REUSE", "1").lower() in ("1", "true", "yes")
         self.connected: bool = False  # True if at least one controller is alive
 
     async def connect(self) -> None:
@@ -135,7 +137,7 @@ class IPCClientWrapper:
     async def create_battle(self, battle_id: str, format_id: str, players: list[dict], seed: Optional[list[int]] = None) -> None:
         """Create a battle by delegating to the per-battle controller."""
         ctrl = await self._ensure_controller(battle_id)
-        await ctrl.create_battle(format_id, players, seed)
+        await ctrl.create_battle(format_id, players, seed, battle_id=battle_id)
 
     async def create_battle_by_room(self, room_tag: str, format_id: str, players: list[dict], seed: Optional[list[int]] = None) -> None:
         """Create a battle referenced by `room_tag` instead of a numeric battle_id.
@@ -144,14 +146,9 @@ class IPCClientWrapper:
         delegates the create_battle call. This allows Phase3-style room_tag
         based creation while keeping backwards-compatible APIs available.
         """
-        from src.env.controller_registry import ControllerRegistry  # type: ignore
-
-        # Create or fetch controller using room_tag as the primary identifier
-        ctrl = ControllerRegistry.get_or_create(self.node_script_path, room_tag, logger=self.logger)
-        # Ensure controller process is running
-        if not await ctrl.is_alive():
-            await ctrl.connect()
-        await ctrl.create_battle(format_id, players, seed)
+        # Use shared controller when reuse is enabled
+        ctrl = await self._ensure_controller(room_tag)
+        await ctrl.create_battle(format_id, players, seed, battle_id=room_tag)
 
     async def listen(self) -> None:
         """Compatibility stub: controller streams are push-based; nothing to do here."""
@@ -217,6 +214,30 @@ class IPCClientWrapper:
         if len(parts) >= 4 and parts[0] == "battle":
             return f"battle-{parts[-2]}-{parts[-1]}"
         return room_tag
+
+    async def _ensure_controller(self, battle_id: str):
+        """Get or create a controller, optionally reusing a shared instance.
+
+        When reuse is enabled, return a shared controller identified by a pool key
+        derived from the node script path so both players land on the same process.
+        Otherwise, return a per-battle controller keyed by battle_id.
+        """
+        from src.env.controller_registry import ControllerRegistry  # type: ignore
+
+        if self._reuse_enabled:
+            # Stable pool key per node script path (both players share the same)
+            base = os.path.basename(self.node_script_path) or "node-ipc-bridge.js"
+            pool_key = f"__ipc_pool__:{base}"
+            ctrl = ControllerRegistry.get_or_create_shared(self.node_script_path, pool_key, logger=self.logger)
+            self._controllers[pool_key] = ctrl
+        else:
+            ctrl = ControllerRegistry.get_or_create(self.node_script_path, battle_id, logger=self.logger)
+            self._controllers[battle_id] = ctrl
+
+        if not await ctrl.is_alive():
+            await ctrl.connect()
+        self.connected = True
+        return ctrl
 
     # ---- Internals ----
     async def _ensure_controller(self, battle_id: str):

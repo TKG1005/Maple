@@ -31,6 +31,21 @@ class _ControllerRegistry:
             self._by_room[room_tag] = ctrl
             return ctrl
 
+    def get_or_create_shared(self, node_script_path: str, pool_key: str = "__ipc_pool__", logger: Optional[logging.Logger] = None) -> IPCBattleController:
+        """Get or create a shared (reusable) controller.
+
+        This returns a controller instance that can be reused sequentially across
+        multiple battles. The controller's battle_id will be updated at
+        `create_battle` time. Concurrency per process remains 1 in Phase 1.
+        """
+        with self._lock:
+            ctrl = self._by_room.get(pool_key)
+            if ctrl is not None:
+                return ctrl
+            ctrl = IPCBattleController(node_script_path=node_script_path, battle_id=pool_key, logger=logger)
+            self._by_room[pool_key] = ctrl
+            return ctrl
+
     def remove(self, room_tag: str) -> None:
         with self._lock:
             self._by_room.pop(room_tag, None)

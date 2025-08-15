@@ -156,7 +156,7 @@ class IPCBattleController:
             except AttributeError:
                 pass
 
-    async def create_battle(self, format_id: str, players: list[Dict[str, Any]], seed: Optional[list[int]] = None, timeout: float = 10.0) -> None:
+    async def create_battle(self, format_id: str, players: list[Dict[str, Any]], seed: Optional[list[int]] = None, timeout: float = 10.0, battle_id: Optional[str] = None) -> None:
         """Send create_battle to Node bridge.
 
         Args:
@@ -168,6 +168,19 @@ class IPCBattleController:
         # `self.battle_id` is used as the room_tag when controllers are created
         # with room identifiers.
         # Include both `battle_id` and `room_tag` for backward compatibility
+        # Allow Phase1 reuse: update current battle_id when provided
+        if isinstance(battle_id, str) and battle_id:
+            self.battle_id = battle_id
+
+        # Flush any leftover lines in player queues before starting a new battle
+        try:
+            for q in self.player_queues.values():
+                while not q.empty():
+                    _ = q.get_nowait()
+                    q.task_done()
+        except Exception:
+            pass
+
         payload: Dict[str, Any] = {
             "type": "create_battle",
             "battle_id": self.battle_id,
