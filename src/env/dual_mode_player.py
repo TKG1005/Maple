@@ -724,6 +724,28 @@ class DualModeEnvPlayer(EnvPlayer):
             pass
 
     async def _stop_ipc_pump(self, battle_id: str) -> None:
+        # Diagnostic snapshot before stopping pump/inflight tasks
+        try:
+            room_key = self.get_room_tag(battle_id) or battle_id
+            inflight_before = len(self._ipc_inflight_tasks.get(battle_id, set()))
+            if hasattr(self, "_env") and hasattr(self._env, "_finished_events"):
+                fin_p0 = self._env._finished_events.get("player_0").is_set() if self._env and self._env._finished_events.get("player_0") else None
+                fin_p1 = self._env._finished_events.get("player_1").is_set() if self._env and self._env._finished_events.get("player_1") else None
+                q0 = self._env._battle_queues.get("player_0").qsize() if self._env and self._env._battle_queues.get("player_0") else None
+                q1 = self._env._battle_queues.get("player_1").qsize() if self._env and self._env._battle_queues.get("player_1") else None
+                self._logger.debug(
+                    "[PUMP-STOP] %s battle=%s inflight=%d finished_events(p0=%s,p1=%s) queues(p0=%s,p1=%s)",
+                    self.player_id,
+                    room_key,
+                    inflight_before,
+                    fin_p0,
+                    fin_p1,
+                    q0,
+                    q1,
+                )
+        except Exception:
+            pass
+
         task = self._ipc_pump_tasks.pop(battle_id, None)
         if task is not None and not task.done():
             task.cancel()
@@ -741,6 +763,23 @@ class DualModeEnvPlayer(EnvPlayer):
                 await t
             except asyncio.CancelledError:
                 pass
+        try:
+            if hasattr(self, "_env") and hasattr(self._env, "_finished_events"):
+                fin_p0 = self._env._finished_events.get("player_0").is_set() if self._env and self._env._finished_events.get("player_0") else None
+                fin_p1 = self._env._finished_events.get("player_1").is_set() if self._env and self._env._finished_events.get("player_1") else None
+                q0 = self._env._battle_queues.get("player_0").qsize() if self._env and self._env._battle_queues.get("player_0") else None
+                q1 = self._env._battle_queues.get("player_1").qsize() if self._env and self._env._battle_queues.get("player_1") else None
+                self._logger.debug(
+                    "[PUMP-STOP-DONE] %s battle=%s inflight_cleared finished_events(p0=%s,p1=%s) queues(p0=%s,p1=%s)",
+                    self.player_id,
+                    battle_id,
+                    fin_p0,
+                    fin_p1,
+                    q0,
+                    q1,
+                )
+        except Exception:
+            pass
         # Drop semaphore for this battle
         self._exec_semaphores.pop(battle_id, None)
 
@@ -834,6 +873,13 @@ class DualModeEnvPlayer(EnvPlayer):
                     # Do not notify env from pump to avoid duplicate finish signals.
                     break
         except asyncio.CancelledError:
+            try:
+                room_key = self.get_room_tag(battle_id) or battle_id
+                self._logger.debug(
+                    "[PUMP-CANCEL] %s pump cancelled battle=%s", self.player_id, room_key
+                )
+            except Exception:
+                pass
             return
         except Exception as e:
             self._logger.error(f"❌ IPC receive pump error for {battle_id}: {e}")
@@ -852,10 +898,114 @@ class DualModeEnvPlayer(EnvPlayer):
                 await self.ps_client._handle_message(raw)
                 dur = (time.monotonic() - start) * 1000.0
                 self._logger.debug("[PUMP] %s handle_message done in %.1fms", self.player_id, dur)
+                # After handling, drive WS-like post-processing in local mode.
+                if getattr(self, "mode", None) == "local":
+                    try:
+                        await self._schedule_finish_callbacks_if_needed(battle_id)
+                    except Exception:
+                        self._logger.exception("post-handle finish scheduling failed")
                 # Do not notify env from dispatch; rely solely on Player._battle_finished_callback.
+                try:
+                    room_key = self.get_room_tag(battle_id) or battle_id
+                    battle = self._battles.get(room_key) or self._battles.get(battle_id)
+                    if battle and getattr(battle, "finished", False):
+                        self._logger.debug(
+                            "[FINCHK] %s detected finished (dispatch); relying on Player._battle_finished_callback",
+                            self.player_id,
+                        )
+                        # Schedule a short delayed check to confirm callback delivery
+                        async def _post_finish_check() -> None:
+                            try:
+                                await asyncio.sleep(0.02)
+                                # Inspect EnvPlayer callback diagnostics
+                                t = getattr(self, "_last_finish_cb_called_at", None)
+                                tag = getattr(self, "_last_finish_cb_battle_tag", None)
+                                fin_ev = None
+                                qsz = None
+                                try:
+                                    if hasattr(self, "_env"):
+                                        fin_ev = self._env._finished_events.get(self.player_id).is_set()  # type: ignore[attr-defined]
+                                        qsz = self._env._battle_queues.get(self.player_id).qsize()  # type: ignore[attr-defined]
+                                except Exception:
+                                    pass
+                                if not t or (isinstance(tag, str) and tag != getattr(battle, "battle_tag", None)):
+                                    self._logger.debug(
+                                        "[CALLBACK-MISS] %s no finished-callback observed yet tag_now=%s diag_tag=%s fin_ev=%s qsize=%s",
+                                        self.player_id,
+                                        getattr(battle, "battle_tag", None),
+                                        tag,
+                                        fin_ev,
+                                        qsz,
+                                    )
+                                else:
+                                    self._logger.debug(
+                                        "[CALLBACK-CHK] %s finished-callback seen tag=%s fin_ev=%s qsize=%s",
+                                        self.player_id,
+                                        tag,
+                                        fin_ev,
+                                        qsz,
+                                    )
+                            except Exception:
+                                pass
+                        asyncio.create_task(_post_finish_check())
+                except Exception:
+                    pass
             except Exception as e:
                 # Surface errors but do not crash the pump
                 self._logger.error("[PUMP] %s handler error: %s", self.player_id, e)
+
+    async def _schedule_finish_callbacks_if_needed(self, battle_id: str) -> None:
+        """Drive WS-like finish callback scheduling in local mode.
+
+        - If the current battle is finished but the EnvPlayer callback diagnostics
+          show no invocation, trigger the callback path on the correct loop.
+        - Idempotent at the environment level due to _finished_enqueued.
+        """
+        if getattr(self, "mode", None) != "local":
+            return
+        try:
+            room_key = self.get_room_tag(battle_id) or battle_id
+            battle = self._battles.get(room_key) or self._battles.get(battle_id)
+            if not battle or not getattr(battle, "finished", False):
+                return
+            # If diagnostics show callback already invoked for this tag, skip.
+            diag_tag = getattr(self, "_last_finish_cb_battle_tag", None)
+            if isinstance(diag_tag, str) and diag_tag == getattr(battle, "battle_tag", None):
+                return
+            # Trigger EnvPlayer callback path on POKE_LOOP to match WS semantics.
+            try:
+                from poke_env.concurrency import POKE_LOOP  # type: ignore
+                POKE_LOOP.call_soon_threadsafe(self._battle_finished_callback, battle)
+                self._logger.debug(
+                    "[FINTRIG] %s scheduled finished-callback tag=%s", 
+                    self.player_id, getattr(battle, "battle_tag", None)
+                )
+            except Exception:
+                # If POKE_LOOP is not accessible, call directly (we're already on loop in local mode)
+                try:
+                    self._battle_finished_callback(battle)
+                    self._logger.debug(
+                        "[FINTRIG-DIRECT] %s invoked finished-callback tag=%s", 
+                        self.player_id, getattr(battle, "battle_tag", None)
+                    )
+                except Exception:
+                    self._logger.exception("failed to invoke finished callback")
+            # Optionally wait briefly and log propagation status
+            try:
+                await asyncio.sleep(0.01)
+                fin_ev = None
+                qsz = None
+                if hasattr(self, "_env"):
+                    fin_ev = self._env._finished_events.get(self.player_id).is_set()  # type: ignore[attr-defined]
+                    qsz = self._env._battle_queues.get(self.player_id).qsize()  # type: ignore[attr-defined]
+                self._logger.debug(
+                    "[FINPROP] %s after-schedule fin_ev=%s qsize=%s", self.player_id, fin_ev, qsz
+                )
+            except Exception:
+                pass
+        except Exception:
+            # Non-fatal: only affects timely propagation
+            self._logger.exception("finish scheduling failed")
 
 
 def create_dual_mode_players(

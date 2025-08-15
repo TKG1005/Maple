@@ -25,6 +25,11 @@ class EnvPlayer(Player):
         self._logger = logging.getLogger(__name__)
         # 前回処理した Battle.last_request を保持しておく
         self._last_request: Any | None = None
+        # --- Diagnostics for finished-callback delivery ---
+        # Last time the finished callback was invoked (monotonic timestamp)
+        self._last_finish_cb_called_at: float | None = None
+        # Last battle_tag observed in finished callback
+        self._last_finish_cb_battle_tag: str | None = None
 
     async def _send_battle_message_local_aware(self, battle: AbstractBattle, message: str) -> None:
         """Send a battle message via IPC in local mode, otherwise via PSClient.
@@ -173,6 +178,19 @@ class EnvPlayer(Player):
 
     def _battle_finished_callback(self, battle: AbstractBattle) -> None:
         """Called when a battle ends to notify :class:`PokemonEnv`."""
+        # Mark diagnostics prior to env notification
+        try:
+            self._last_finish_cb_called_at = asyncio.get_running_loop().time()
+        except Exception:
+            try:
+                # Fallback to time.monotonic via asyncio API if no loop
+                self._last_finish_cb_called_at = asyncio.get_event_loop().time()
+            except Exception:
+                self._last_finish_cb_called_at = None
+        try:
+            self._last_finish_cb_battle_tag = getattr(battle, "battle_tag", None)
+        except Exception:
+            self._last_finish_cb_battle_tag = None
         try:
             q = self._env._battle_queues[self.player_id]
             qsize_before = q.qsize()

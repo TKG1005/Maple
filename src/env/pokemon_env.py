@@ -590,28 +590,106 @@ class PokemonEnv(gym.Env):
                 tag = None
                 already = False
             if not already:
-                # Order stabilization: ensure put is scheduled on loop before event set
+                # If currently on POKE_LOOP, perform immediate put/set for strict ordering.
+                on_loop = False
                 try:
-                    POKE_LOOP.call_soon_threadsafe(
-                        self._battle_queues[player_id].put_nowait, battle
-                    )
+                    loop = asyncio.get_running_loop()
+                    on_loop = loop is POKE_LOOP
                 except Exception:
-                    # As a fallback, schedule async put without waiting
+                    on_loop = False
+                if on_loop:
                     try:
-                        asyncio.run_coroutine_threadsafe(
-                            self._battle_queues[player_id].put(battle), POKE_LOOP
-                        )
+                        self._battle_queues[player_id].put_nowait(battle)
+                        try:
+                            self._logger.debug(
+                                "[ENDSIG-PUT] %s ts=%.6f on_loop=True mode=direct qsize=%d",
+                                player_id,
+                                time.monotonic(),
+                                self._battle_queues[player_id].qsize(),
+                            )
+                        except Exception:
+                            pass
+                    except Exception:
+                        # Fallback to async put on same loop
+                        try:
+                            awaitable = self._battle_queues[player_id].put(battle)  # type: ignore[attr-defined]
+                            # Schedule without blocking current task progression
+                            asyncio.create_task(awaitable)
+                            try:
+                                self._logger.debug(
+                                    "[ENDSIG-PUT] %s ts=%.6f on_loop=True mode=async qsize=%d",
+                                    player_id,
+                                    time.monotonic(),
+                                    self._battle_queues[player_id].qsize(),
+                                )
+                            except Exception:
+                                pass
+                        except Exception:
+                            pass
+                    try:
+                        self._finished_enqueued[player_id].add(tag)
                     except Exception:
                         pass
-                try:
-                    self._finished_enqueued[player_id].add(tag)
-                except Exception:
-                    pass
-            # Signal finished event on the asyncio loop thread-safely (after scheduling put)
-            try:
-                POKE_LOOP.call_soon_threadsafe(self._finished_events[player_id].set)
-            except Exception:
-                pass
+                    try:
+                        self._finished_events[player_id].set()
+                        try:
+                            self._logger.debug(
+                                "[ENDSIG-SET] %s ts=%.6f on_loop=True",
+                                player_id,
+                                time.monotonic(),
+                            )
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+                else:
+                    # Schedule on POKE_LOOP thread-safely (ordering: put -> set)
+                    try:
+                        ts_put = time.monotonic()
+                        POKE_LOOP.call_soon_threadsafe(
+                            self._battle_queues[player_id].put_nowait, battle
+                        )
+                        try:
+                            self._logger.debug(
+                                "[ENDSIG-PUT] %s ts=%.6f on_loop=False mode=scheduled",
+                                player_id,
+                                ts_put,
+                            )
+                        except Exception:
+                            pass
+                    except Exception:
+                        try:
+                            ts_put_async = time.monotonic()
+                            asyncio.run_coroutine_threadsafe(
+                                self._battle_queues[player_id].put(battle), POKE_LOOP
+                            )
+                            try:
+                                self._logger.debug(
+                                    "[ENDSIG-PUT] %s ts=%.6f on_loop=False mode=run_coroutine",
+                                    player_id,
+                                    ts_put_async,
+                                )
+                            except Exception:
+                                pass
+                        except Exception:
+                            pass
+                    try:
+                        self._finished_enqueued[player_id].add(tag)
+                    except Exception:
+                        pass
+                    try:
+                        ts_set = time.monotonic()
+                        POKE_LOOP.call_soon_threadsafe(self._finished_events[player_id].set)
+                        try:
+                            self._logger.debug(
+                                "[ENDSIG-SET] %s ts=%.6f on_loop=False",
+                                player_id,
+                                ts_set,
+                            )
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
             try:
                 if already:
                     self._logger.debug(
@@ -652,6 +730,8 @@ class PokemonEnv(gym.Env):
             except Exception:
                 pass
             ts_start = time.monotonic()
+            # By convention, the last event (if provided) is the finished_event
+            finished_idx = len(events) - 1 if events else None
             try:
                 self._logger.debug(
                     "[RACE] start pid=%s ts=%.6f qsize=%d events=%s",
@@ -691,6 +771,32 @@ class PokemonEnv(gym.Env):
                     (time.monotonic() - ts_start) * 1000.0,
                     queue.qsize(),
                 )
+            except Exception:
+                pass
+            # If the finished_event fired, consume the final snapshot from the queue
+            try:
+                if finished_idx is not None and 0 <= finished_idx < len(wait_tasks) and wait_tasks[finished_idx] in done:
+                    try:
+                        ts_fin = time.monotonic()
+                        self._logger.debug(
+                            "[RACE-FIN] pid=%s ts=%.6f finished_event fired; blocking get for final snapshot",
+                            pid_label,
+                            ts_fin,
+                        )
+                    except Exception:
+                        pass
+                    # Block until the final snapshot is available (bounded by outer timeout)
+                    fin_battle = await queue.get()
+                    try:
+                        self._logger.debug(
+                            "[RACE-FIN-GET-DONE] pid=%s elapsed_ms=%.1f rem_qsize=%d",
+                            pid_label,
+                            (time.monotonic() - ts_start) * 1000.0,
+                            queue.qsize(),
+                        )
+                    except Exception:
+                        pass
+                    return fin_battle
             except Exception:
                 pass
             # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
@@ -1021,12 +1127,24 @@ class PokemonEnv(gym.Env):
                 )
             except Exception:
                 pass
+            # Always include finished_event in race; _race_get consumes from queue
+            # when finished_event wins to prevent leftover snapshots.
             battle = self._race_get(
                 self._battle_queues[pid],
                 self._env_players[pid]._waiting,
                 self._env_players[opp]._trying_again,
                 self._finished_events[pid],
             )
+            try:
+                self._logger.debug(
+                    "[ACTWAIT-EXIT] %s got=%s qsize=%d finished_evt=%s",
+                    pid,
+                    ("battle" if battle is not None else "none"),
+                    self._battle_queues[pid].qsize(),
+                    self._finished_events[pid].is_set(),
+                )
+            except Exception:
+                pass
             self._env_players[pid]._waiting.clear()
             if battle is None:
                 self._env_players[opp]._trying_again.clear()
@@ -1231,6 +1349,44 @@ class PokemonEnv(gym.Env):
             rewards = {agent_id: 0.0 for agent_id in self.agent_ids}
 
         infos = {agent_id: {} for agent_id in self.agent_ids}
+
+        # Drain any leftover final snapshots to avoid queue.join() blocking and stalls.
+        try:
+            for pid in self.agent_ids:
+                b = battles.get(pid)
+                is_finished = bool(getattr(b, "finished", False))
+                if not is_finished:
+                    continue
+                # Only drain if the finished event is set and queue has remaining items
+                q = self._battle_queues.get(pid)
+                ev = self._finished_events.get(pid)
+                if q is None or ev is None or not ev.is_set():
+                    continue
+
+                async def _drain(q: asyncio.Queue[Any]) -> int:
+                    drained = 0
+                    while True:
+                        try:
+                            item = q.get_nowait()
+                        except asyncio.QueueEmpty:
+                            break
+                        else:
+                            drained += 1
+                            q.task_done()
+                    return drained
+
+                prev_qsize = q.qsize()
+                drained = asyncio.run_coroutine_threadsafe(_drain(q), POKE_LOOP).result()
+                if drained > 0:
+                    self._logger.debug(
+                        "[DRAIN] %s finished=True drained=%d prev_qsize=%d",
+                        pid,
+                        drained,
+                        prev_qsize,
+                    )
+        except Exception:
+            # Draining is a best-effort safeguard; failures should not break the step
+            pass
 
         if hasattr(self, "single_agent_mode"):
             mask0 = masks[0]
