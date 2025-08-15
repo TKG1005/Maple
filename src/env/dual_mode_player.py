@@ -905,51 +905,6 @@ class DualModeEnvPlayer(EnvPlayer):
                     except Exception:
                         self._logger.exception("post-handle finish scheduling failed")
                 # Do not notify env from dispatch; rely solely on Player._battle_finished_callback.
-                try:
-                    room_key = self.get_room_tag(battle_id) or battle_id
-                    battle = self._battles.get(room_key) or self._battles.get(battle_id)
-                    if battle and getattr(battle, "finished", False):
-                        self._logger.debug(
-                            "[FINCHK] %s detected finished (dispatch); relying on Player._battle_finished_callback",
-                            self.player_id,
-                        )
-                        # Schedule a short delayed check to confirm callback delivery
-                        async def _post_finish_check() -> None:
-                            try:
-                                await asyncio.sleep(0.02)
-                                # Inspect EnvPlayer callback diagnostics
-                                t = getattr(self, "_last_finish_cb_called_at", None)
-                                tag = getattr(self, "_last_finish_cb_battle_tag", None)
-                                fin_ev = None
-                                qsz = None
-                                try:
-                                    if hasattr(self, "_env"):
-                                        fin_ev = self._env._finished_events.get(self.player_id).is_set()  # type: ignore[attr-defined]
-                                        qsz = self._env._battle_queues.get(self.player_id).qsize()  # type: ignore[attr-defined]
-                                except Exception:
-                                    pass
-                                if not t or (isinstance(tag, str) and tag != getattr(battle, "battle_tag", None)):
-                                    self._logger.debug(
-                                        "[CALLBACK-MISS] %s no finished-callback observed yet tag_now=%s diag_tag=%s fin_ev=%s qsize=%s",
-                                        self.player_id,
-                                        getattr(battle, "battle_tag", None),
-                                        tag,
-                                        fin_ev,
-                                        qsz,
-                                    )
-                                else:
-                                    self._logger.debug(
-                                        "[CALLBACK-CHK] %s finished-callback seen tag=%s fin_ev=%s qsize=%s",
-                                        self.player_id,
-                                        tag,
-                                        fin_ev,
-                                        qsz,
-                                    )
-                            except Exception:
-                                pass
-                        asyncio.create_task(_post_finish_check())
-                except Exception:
-                    pass
             except Exception as e:
                 # Surface errors but do not crash the pump
                 self._logger.error("[PUMP] %s handler error: %s", self.player_id, e)

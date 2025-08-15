@@ -610,22 +610,7 @@ class PokemonEnv(gym.Env):
                         except Exception:
                             pass
                     except Exception:
-                        # Fallback to async put on same loop
-                        try:
-                            awaitable = self._battle_queues[player_id].put(battle)  # type: ignore[attr-defined]
-                            # Schedule without blocking current task progression
-                            asyncio.create_task(awaitable)
-                            try:
-                                self._logger.debug(
-                                    "[ENDSIG-PUT] %s ts=%.6f on_loop=True mode=async qsize=%d",
-                                    player_id,
-                                    time.monotonic(),
-                                    self._battle_queues[player_id].qsize(),
-                                )
-                            except Exception:
-                                pass
-                        except Exception:
-                            pass
+                        pass
                     try:
                         self._finished_enqueued[player_id].add(tag)
                     except Exception:
@@ -658,21 +643,7 @@ class PokemonEnv(gym.Env):
                         except Exception:
                             pass
                     except Exception:
-                        try:
-                            ts_put_async = time.monotonic()
-                            asyncio.run_coroutine_threadsafe(
-                                self._battle_queues[player_id].put(battle), POKE_LOOP
-                            )
-                            try:
-                                self._logger.debug(
-                                    "[ENDSIG-PUT] %s ts=%.6f on_loop=False mode=run_coroutine",
-                                    player_id,
-                                    ts_put_async,
-                                )
-                            except Exception:
-                                pass
-                        except Exception:
-                            pass
+                        pass
                     try:
                         self._finished_enqueued[player_id].add(tag)
                     except Exception:
