@@ -783,25 +783,7 @@ class DualModeEnvPlayer(EnvPlayer):
                 # Use room_key to receive: if we have room mapping, prefer it
                 room_key = self.get_room_tag(battle_id) or battle_id
                 raw = await self.ipc_client_wrapper.recv(room_key, self.player_id)
-                try:
-                    first_line = raw.split("\n", 1)[0] if isinstance(raw, str) else str(raw)
-                    is_req = "|request|" in raw if isinstance(raw, str) else False
-                    # Log current battle mapping and object presence
-                    b_room = self._battles.get(room_key)
-                    b_id = self._battles.get(battle_id)
-                    self._logger.debug(
-                        "[PUMP] %s recv room=%s is_request=%s first=%r have_room=%s have_id=%s obj_room=%s obj_id=%s",
-                        self.player_id,
-                        room_key,
-                        is_req,
-                        first_line,
-                        bool(b_room),
-                        bool(b_id),
-                        hex(id(b_room)) if b_room else None,
-                        hex(id(b_id)) if b_id else None,
-                    )
-                except Exception:
-                    pass
+                
                 if not raw:
                     continue
 
@@ -821,28 +803,10 @@ class DualModeEnvPlayer(EnvPlayer):
                 # Exit if battle finished
                 battle = self._battles.get(room_key) or self._battles.get(battle_id)
                 if battle and getattr(battle, "finished", False):
-                    try:
-                        inflight = len(self._ipc_inflight_tasks.get(battle_id, set()))
-                        self._logger.debug(
-                            "[PUMP] %s finishing battle=%s obj=%s turn=%s inflight=%d",
-                            self.player_id,
-                            getattr(battle, "battle_tag", None),
-                            hex(id(battle)),
-                            getattr(battle, "turn", None),
-                            inflight,
-                        )
-                    except Exception:
-                        pass
+                    
                     # Do not notify env from pump to avoid duplicate finish signals.
                     break
         except asyncio.CancelledError:
-            try:
-                room_key = self.get_room_tag(battle_id) or battle_id
-                self._logger.debug(
-                    "[PUMP-CANCEL] %s pump cancelled battle=%s", self.player_id, room_key
-                )
-            except Exception:
-                pass
             return
         except Exception as e:
             self._logger.error(f"❌ IPC receive pump error for {battle_id}: {e}")
@@ -857,10 +821,7 @@ class DualModeEnvPlayer(EnvPlayer):
             self._exec_semaphores[battle_id] = sem
         async with sem:
             try:
-                start = time.monotonic()
                 await self.ps_client._handle_message(raw)
-                dur = (time.monotonic() - start) * 1000.0
-                self._logger.debug("[PUMP] %s handle_message done in %.1fms", self.player_id, dur)
                 # After handling, drive WS-like post-processing in local mode.
                 if getattr(self, "mode", None) == "local":
                     try:
@@ -868,9 +829,9 @@ class DualModeEnvPlayer(EnvPlayer):
                     except Exception:
                         self._logger.exception("post-handle finish scheduling failed")
                 # Do not notify env from dispatch; rely solely on Player._battle_finished_callback.
-            except Exception as e:
+            except Exception:
                 # Surface errors but do not crash the pump
-                self._logger.error("[PUMP] %s handler error: %s", self.player_id, e)
+                pass
 
     async def _schedule_finish_callbacks_if_needed(self, battle_id: str) -> None:
         """Drive WS-like finish callback scheduling in local mode.

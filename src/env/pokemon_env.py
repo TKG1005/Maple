@@ -787,34 +787,13 @@ class PokemonEnv(gym.Env):
             #     )
 
 
-            switches_info = [
-                f"{getattr(p, 'species', '?')}"
-                f"(HP:{getattr(p, 'current_hp_fraction', 0) * 100:.1f}%"
-                f", fainted={getattr(p, 'fainted', False)}"
-                f", active={getattr(p, 'active', False)})"
-                for p in getattr(battle, "available_switches", [])
-            ]
-            self._logger.debug("[DBG] %s available_switches: %s", pid, switches_info)
+            
             
             # Add additional debug info about the active Pokemon
             active_pokemon = getattr(battle, "active_pokemon", None)
-            if active_pokemon:
-                self._logger.debug(
-                    "[DBG] %s active_pokemon: species=%s, active=%s, ident=%s",
-                    pid,
-                    getattr(active_pokemon, 'species', '?'),
-                    getattr(active_pokemon, 'active', '?'),
-                    getattr(active_pokemon, '_ident', '?')
-                )
                 
             # Log all team members' active status
-            team_info = []
-            for poke_id, poke in getattr(battle, "team", {}).items():
-                team_info.append(
-                    f"{poke_id}: {getattr(poke, 'species', '?')} "
-                    f"(active={getattr(poke, 'active', '?')})"
-                )
-            self._logger.debug("[DBG] %s team status: %s", pid, team_info)
+            
 
 
             # Team restriction system removed - all switches allowed based on battle state only
@@ -960,30 +939,7 @@ class PokemonEnv(gym.Env):
         """
 
         # Phase 1: Set need_action flags based on current request types (before sending actions)
-        try:
-            ts = time.monotonic()
-            for _pid in self.agent_ids:
-                _b = getattr(self, "_current_battles", {}).get(_pid)
-                lr = getattr(_b, "last_request", None) if _b is not None else None
-                rq = (lr.get("rqid") if isinstance(lr, dict) else None)
-                tp = (bool(lr.get("teamPreview")) if isinstance(lr, dict) else None)
-                wt = (bool(lr.get("wait")) if isinstance(lr, dict) else None)
-                fs = (bool(lr.get("forceSwitch")) if isinstance(lr, dict) else None)
-                self._logger.debug(
-                    "[STEP] begin ts=%.6f pid=%s finished=%s turn=%s obj=%s tag=%s rqid=%s tp=%s wt=%s fs=%s",
-                    ts,
-                    _pid,
-                    (getattr(_b, "finished", None) if _b is not None else None),
-                    (getattr(_b, "turn", None) if _b is not None else None),
-                    (hex(id(_b)) if _b is not None else None),
-                    (getattr(_b, "battle_tag", None) if _b is not None else None),
-                    rq,
-                    tp,
-                    wt,
-                    fs,
-                )
-        except Exception:
-            pass
+        
         for pid in self.agent_ids:
             battle = self._current_battles.get(pid)
             lr = getattr(battle, "last_request", None)
@@ -1068,21 +1024,7 @@ class PokemonEnv(gym.Env):
                 battle.last_request is not self._last_requests.get(pid)
             )
             # Snapshot per-pid summary after retrieval path is decided
-            try:
-                lr = getattr(battle, "last_request", None)
-                rq = lr.get("rqid") if isinstance(lr, dict) else None
-                self._logger.debug(
-                    "[STEP] src pid=%s finished=%s turn=%s obj=%s tag=%s rqid=%s updated=%s",
-                    pid,
-                    getattr(battle, "finished", None),
-                    getattr(battle, "turn", None),
-                    hex(id(battle)) if battle else None,
-                    getattr(battle, "battle_tag", None),
-                    rq,
-                    updated[pid],
-                )
-            except Exception:
-                pass
+            
             # Log current battle object and last_request summary for each player
             try:
                 lr = getattr(battle, "last_request", None)

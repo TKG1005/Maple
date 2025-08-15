@@ -228,7 +228,7 @@ class IPCBattleController:
         """
         # Log incoming parsed messages for debugging
         try:
-            self.logger.debug("[NODE->PY] parsed message: %s", message)
+                
         except Exception:
             pass
         mtype = message.get("type")
@@ -281,7 +281,7 @@ class IPCBattleController:
             tagged = self._tag_with_room_header(data_line)
             # Log the queued line for each player
             try:
-                self.logger.debug("[NODE->QUEUE] broadcast -> %s", tagged)
+                
             except Exception:
                 pass
             for q in self.player_queues.values():
@@ -295,7 +295,7 @@ class IPCBattleController:
             data_line = str(message.get("data", ""))
             tagged = self._tag_with_room_header(data_line)
             try:
-                self.logger.debug("[NODE->QUEUE] %s <- %s", py_player, tagged)
+                
             except Exception:
                 pass
             await self.player_queues[py_player].put(tagged)
@@ -332,7 +332,7 @@ class IPCBattleController:
                     continue
                 # Log raw NDJSON line from Node for debugging
                 try:
-                    self.logger.debug("[NODE STDOUT RAW] %s", text)
+                    
                 except Exception:
                     pass
                 try:
@@ -358,9 +358,9 @@ class IPCBattleController:
                 text = line.decode("utf-8", "replace").rstrip("\n")
                 if text:
                     # Preserve existing stderr logging but also emit debug
-                    self.logger.error("[NODE STDERR] %s", text)
+                    self.logger.error("%s", text)
                     try:
-                        self.logger.debug("[NODE STDERR RAW] %s", text)
+                        
                     except Exception:
                         pass
         except asyncio.CancelledError:
