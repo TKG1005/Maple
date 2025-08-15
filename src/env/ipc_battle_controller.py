@@ -59,6 +59,8 @@ class IPCBattleController:
         self._room_tag: Optional[str] = None
         # Cached room header string (e.g., ">battle-gen9randombattle-12345\n")
         self._room_header_cache: Optional[str] = None
+        # Phase2: simple busy flag for pool assignment
+        self._busy: bool = False
 
     # ---- Process lifecycle ----
     async def connect(self) -> None:
@@ -180,6 +182,8 @@ class IPCBattleController:
                     q.task_done()
         except Exception:
             pass
+        # Mark busy during active battle
+        self._busy = True
 
         payload: Dict[str, Any] = {
             "type": "create_battle",
@@ -265,6 +269,10 @@ class IPCBattleController:
                 self._room_header_cache = None
                 if self._battle_created_event is not None:
                     self._battle_created_event.set()
+                return
+            if mtype == "battle_closed":
+                # Release busy flag when battle is closed by Node side
+                self._busy = False
                 return
             if mtype in ("error", "exit"):
                 # In a fuller impl, surface to control queue; for now, log

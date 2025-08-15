@@ -231,7 +231,8 @@ class IPCClientWrapper:
             # Stable pool key per node script path (both players share the same)
             base = os.path.basename(self.node_script_path) or "node-ipc-bridge.js"
             pool_key = f"__ipc_pool__:{base}"
-            ctrl = ControllerRegistry.get_or_create_shared(self.node_script_path, pool_key, logger=self.logger)
+            # Use a small pool with upper bound 2
+            ctrl = ControllerRegistry.get_shared_for_battle(self.node_script_path, pool_key, battle_id, max_processes=2, logger=self.logger)
             self._controllers[pool_key] = ctrl
         else:
             ctrl = ControllerRegistry.get_or_create(self.node_script_path, battle_id, logger=self.logger)
