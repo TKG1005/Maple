@@ -138,7 +138,9 @@ class BattleSession {
           }
         }
       } catch (e) {
-        console.error(`[IPC_NODE] Read loop error for ${battleId}/${target}:`, e?.message);
+        if (process.env.MAPLE_IPC_DEBUG) {
+          console.error(`[IPC_NODE] Read loop error for ${battleId}/${target}:`, e?.message);
+        }
       }
     })();
   }
@@ -166,7 +168,10 @@ class IPCBridge {
     this.rl.on('line', (line) => this._onLine(line));
     process.on('SIGINT', () => this._shutdown(130));
     process.on('SIGTERM', () => this._shutdown(143));
-    console.error('[IPC_NODE] Bridge started');
+    // Startup log suppressed (enable with MAPLE_IPC_DEBUG to restore)
+    if (process.env.MAPLE_IPC_DEBUG) {
+      console.error('[IPC_NODE] Bridge started');
+    }
   }
 
   _onLine(line) {

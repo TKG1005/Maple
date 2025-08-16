@@ -363,8 +363,8 @@ class IPCBattleController:
                     break
                 text = line.decode("utf-8", "replace").rstrip("\n")
                 if text:
-                    # Preserve existing stderr logging
-                    self.logger.error("%s", text)
+                    # Downgrade to debug to reduce noise; enable upstream with MAPLE_IPC_DEBUG
+                    self.logger.debug("%s", text)
         except asyncio.CancelledError:
             pass
         except Exception as e:

@@ -192,18 +192,7 @@ class IPCClientWrapper:
             else:
                 raw = await asyncio.wait_for(queue.get(), timeout=timeout)
 
-            # Log the raw Showdown line received from the IPC controller for debugging.
-            # Use repr to make control characters visible and avoid accidental formatting.
-            try:
-                self.logger.debug(
-                    "IPCClientWrapper.recv battle_id=%s player=%s raw=%r",
-                    battle_id,
-                    player_py_id,
-                    raw,
-                )
-            except Exception:
-                # Logging must not interfere with normal flow.
-                pass
+            # Raw line logging removed to reduce overhead
 
             return raw
         except Exception:
