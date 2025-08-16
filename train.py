@@ -1853,6 +1853,12 @@ if __name__ == "__main__":
     else:
         level = getattr(logging, args.log_level.upper(), logging.INFO)
         log_format = "%(message)s"
+
+    # Initialize root logging so INFO logs appear on stdout
+    try:
+        logging.basicConfig(level=level, format=log_format)
+    except Exception:
+        pass
     
     logging.basicConfig(level=level, format=log_format)
     setup_logging("logs", vars(args))
