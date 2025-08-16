@@ -340,7 +340,6 @@ class IPCBattleController:
                 text = line.decode("utf-8", "replace").strip()
                 if not text:
                     continue
-                # Log raw NDJSON line from Node for debugging (removed)
                 try:
                     msg = json.loads(text)
                 except json.JSONDecodeError:
