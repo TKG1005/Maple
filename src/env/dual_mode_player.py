@@ -715,6 +715,7 @@ class DualModeEnvPlayer(EnvPlayer):
         try:
             timeout = 10.0  # seconds
             start_time = time.time()
+            polls = 0
             while time.time() - start_time < timeout:
                 # prefer room_tag key if available
                 room_key = self.get_room_tag(battle_id) or battle_id
@@ -722,10 +723,35 @@ class DualModeEnvPlayer(EnvPlayer):
                 # When first |request| arrives, poke-env sets last_request
                 if battle is not None and getattr(battle, "last_request", None):
                     self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready!")
+                    # Metrics: ready wait latency and poll iterations
+                    try:
+                        dt_ms = int((time.time() - start_time) * 1000)
+                        self._logger.info(
+                            "[METRIC] tag=ready_wait player=%s battle=%s ready_wait_latency_ms=%d ready_poll_iterations=%d",
+                            self.player_id,
+                            battle_id,
+                            dt_ms,
+                            polls,
+                        )
+                    except Exception:
+                        pass
                     return
+                polls += 1
                 await asyncio.sleep(0.05)
             raise TimeoutError(f"Battle {battle_id} did not start within {timeout} seconds")
         except Exception as e:
+            # Metrics: timeout/error in ready wait
+            try:
+                dt_ms = int((time.time() - start_time) * 1000)
+                self._logger.info(
+                    "[METRIC] tag=ready_wait_timeout player=%s battle=%s ready_timeouts_count=1 elapsed_ms=%d polls=%d",
+                    self.player_id,
+                    battle_id,
+                    dt_ms,
+                    polls,
+                )
+            except Exception:
+                pass
             self._logger.error(f"❌ [{self.player_id}] Error waiting for battle ready: {e}")
             raise
     

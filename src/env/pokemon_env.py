@@ -720,10 +720,32 @@ class PokemonEnv(gym.Env):
             # _waiting イベントがトリガーされた直後にキューへバトルデータが
             # 追加される場合がある。直後にチェックすると空のままになってしまい
             # マスク生成に失敗するため、僅かに待機してから再確認する。
+            micro_sleeps = 0
             for _ in range(10):
                 await asyncio.sleep(0.05)  # タスク切り替えを促す
+                micro_sleeps += 1
                 if not queue.empty():
+                    try:
+                        if pid_label is not None:
+                            dt_ms = int((time.monotonic() - ts_start) * 1000)
+                            self._logger.info(
+                                "[METRIC] tag=race_get_micro_sleep pid=%s micro_sleep_hits_count=1 sleeps=%d race_get_wait_ms=%d",
+                                pid_label,
+                                micro_sleeps,
+                                dt_ms,
+                            )
+                    except Exception:
+                        pass
                     return await queue.get()
+            # Exhausted micro-sleeps without data
+            try:
+                if pid_label is not None:
+                    self._logger.info(
+                        "[METRIC] tag=race_get_micro_sleep_exhausted pid=%s micro_sleep_exhausted_count=1",
+                        pid_label,
+                    )
+            except Exception:
+                pass
             return None
 
         
@@ -1081,6 +1103,8 @@ class PokemonEnv(gym.Env):
         # 追加のバトル更新キューのドレインは行わず、PSClient による
         # battle.last_request の更新が反映されるまで短いスリープで再評価する。
         if pending:
+            rqid_sync_start = time.monotonic()
+            iterations = 0
             deadline = time.monotonic() + float(self.timeout)
             while pending and time.monotonic() < deadline:
                 for pid in list(pending):
@@ -1108,7 +1132,20 @@ class PokemonEnv(gym.Env):
                             pass
                 # Allow PSClient/IPC pumps to process and update in-place
                 if pending:
+                    iterations += 1
                     asyncio.run_coroutine_threadsafe(asyncio.sleep(0.05), POKE_LOOP).result()
+
+        # Log success metrics when pending cleared without timeout
+        if not pending:
+            try:
+                dt_ms = int((time.monotonic() - rqid_sync_start) * 1000) if 'rqid_sync_start' in locals() else 0
+                self._logger.info(
+                    "[METRIC] tag=rqid_sync_success rqid_wait_latency_ms=%d rqid_poll_iterations=%d",
+                    dt_ms,
+                    iterations if 'iterations' in locals() else 0,
+                )
+            except Exception:
+                pass
 
         if pending:
             # Log detailed error per player then exit fatally
@@ -1121,6 +1158,18 @@ class PokemonEnv(gym.Env):
                 lr_type = (
                     "teampreview" if isinstance(lr, dict) and lr.get("teamPreview") else ("normal" if isinstance(lr, dict) else "none")
                 )
+                try:
+                    dt_ms = int((time.monotonic() - rqid_sync_start) * 1000) if 'rqid_sync_start' in locals() else 0
+                    self._logger.info(
+                        "[METRIC] tag=rqid_sync_timeout pid=%s rqid_timeouts_count=1 elapsed_ms=%d iterations=%d prev_rqid=%s curr_rqid=%s",
+                        pid,
+                        dt_ms,
+                        iterations if 'iterations' in locals() else 0,
+                        prev,
+                        curr,
+                    )
+                except Exception:
+                    pass
                 self._logger.error(
                     "[RQID TIMEOUT] %s(%s) battle=%s turn=%s teampreview=%s prev_rqid=%s curr_rqid=%s last_request_type=%s obj=%s",
                     pid,
