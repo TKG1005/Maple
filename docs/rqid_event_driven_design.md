@@ -187,7 +187,7 @@
 - [x] S0: メトリクスフックを既存ポーリングに追加
 - [x] S1: ベースライン計測を取得
 - [x] S2: Notifier 骨組み作成
-- [ ] S3: Publish を受信ポンプに挿入
+- [x] S3: Publish を受信ポンプに挿入
 - [ ] S4: `_wait_for_battle_ready` をイベント化
 - [ ] S5: `race_get` 微待機を撤廃
 - [ ] S6: rQID 同期ループをイベント化

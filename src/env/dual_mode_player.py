@@ -712,49 +712,74 @@ class DualModeEnvPlayer(EnvPlayer):
             raise
     
     async def _wait_for_battle_ready(self, battle_id: str) -> None:
-        """Wait until first request is processed (without consuming IPC queues)."""
-        try:
-            timeout = 10.0  # seconds
-            start_time = time.time()
-            polls = 0
-            while time.time() - start_time < timeout:
-                # prefer room_tag key if available
-                room_key = self.get_room_tag(battle_id) or battle_id
-                battle = self._battles.get(room_key) or self._battles.get(battle_id)
-                # When first |request| arrives, poke-env sets last_request
-                if battle is not None and getattr(battle, "last_request", None):
-                    self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready!")
-                    # Metrics: ready wait latency and poll iterations
-                    try:
-                        dt_ms = int((time.time() - start_time) * 1000)
-                        self._logger.info(
-                            "[METRIC] tag=ready_wait player=%s battle=%s ready_wait_latency_ms=%d ready_poll_iterations=%d",
-                            self.player_id,
-                            battle_id,
-                            dt_ms,
-                            polls,
-                        )
-                    except Exception:
-                        pass
-                    return
-                polls += 1
-                await asyncio.sleep(0.05)
-            raise TimeoutError(f"Battle {battle_id} did not start within {timeout} seconds")
-        except Exception as e:
-            # Metrics: timeout/error in ready wait
+        """Wait until first request is processed via event-driven rqid update."""
+        timeout = 10.0  # seconds
+        start_time = time.time()
+        # prefer room_tag key if available
+        room_key = self.get_room_tag(battle_id) or battle_id
+        battle = self._battles.get(room_key) or self._battles.get(battle_id)
+        # If the first request already arrived, return immediately
+        if battle is not None and getattr(battle, "last_request", None):
+            self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready (pre-check)!")
             try:
                 dt_ms = int((time.time() - start_time) * 1000)
                 self._logger.info(
-                    "[METRIC] tag=ready_wait_timeout player=%s battle=%s ready_timeouts_count=1 elapsed_ms=%d polls=%d",
+                    "[METRIC] tag=ready_wait_event player=%s battle=%s ready_wait_latency_ms=%d",
                     self.player_id,
                     battle_id,
                     dt_ms,
-                    polls,
                 )
             except Exception:
                 pass
-            self._logger.error(f"❌ [{self.player_id}] Error waiting for battle ready: {e}")
-            raise
+            return
+
+        # Determine baseline rqid (None if no last_request yet)
+        baseline = None
+        if battle is not None:
+            lr = getattr(battle, "last_request", None)
+            if isinstance(lr, dict):
+                baseline = lr.get("rqid")
+
+        # Register and wait for rqid update
+        notifier = get_global_rqid_notifier()
+        try:
+            notifier.register_battle(self.player_id, initial_rqid=baseline)
+            await notifier.wait_for_rqid_change(self.player_id, baseline_rqid=baseline, timeout=timeout)
+            # Success
+            self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready (event)!")
+            try:
+                dt_ms = int((time.time() - start_time) * 1000)
+                self._logger.info(
+                    "[METRIC] tag=ready_wait_event player=%s battle=%s ready_wait_latency_ms=%d",
+                    self.player_id,
+                    battle_id,
+                    dt_ms,
+                )
+            except Exception:
+                pass
+            return
+        except Exception as e:
+            # Fail-fast per policy (no fallback)
+            try:
+                dt_ms = int((time.time() - start_time) * 1000)
+                self._logger.exception(
+                    "[READY WAIT ERROR] player=%s battle=%s room_key=%s baseline=%s elapsed_ms=%d err=%s",
+                    self.player_id,
+                    battle_id,
+                    room_key,
+                    baseline,
+                    dt_ms,
+                    e,
+                )
+                self._logger.info(
+                    "[METRIC] tag=ready_wait_event_timeout player=%s battle=%s elapsed_ms=%d",
+                    self.player_id,
+                    battle_id,
+                    dt_ms,
+                )
+            except Exception:
+                pass
+            raise SystemExit(1)
     
     async def _wait_for_battle_completion(self, battle_id: str):
         """Wait for a battle to complete."""
