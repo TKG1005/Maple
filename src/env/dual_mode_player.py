@@ -891,7 +891,7 @@ class DualModeEnvPlayer(EnvPlayer):
                         await self._schedule_finish_callbacks_if_needed(battle_id)
                     except Exception:
                         self._logger.exception("post-handle finish scheduling failed")
-                # Publish rQID update (rqid が更新＝発火)
+                # Publish rQID update (rqid が更新＝発火)。失敗時はログ出力後に停止。
                 try:
                     room_key = self.get_room_tag(battle_id) or battle_id
                     battle = self._battles.get(room_key) or self._battles.get(battle_id)
@@ -901,11 +901,21 @@ class DualModeEnvPlayer(EnvPlayer):
                         if isinstance(lr, dict):
                             rqid = lr.get("rqid")
                     notifier = get_global_rqid_notifier()
-                    # Fire-and-forget publish on same loop; notifier ignores unchanged/None
                     await notifier.publish_rqid_update(self.player_id, rqid)
-                except Exception:
-                    # Never crash the pump due to metrics/publish
-                    pass
+                except Exception as e:
+                    # 仕様: フォールバックせずに停止
+                    try:
+                        self._logger.exception(
+                            "[RQID PUBLISH ERROR] battle_id=%s room_key=%s player=%s rqid=%s err=%s",
+                            battle_id,
+                            room_key if 'room_key' in locals() else battle_id,
+                            self.player_id,
+                            rqid if 'rqid' in locals() else None,
+                            e,
+                        )
+                    except Exception:
+                        pass
+                    raise SystemExit(1)
                 # Do not notify env from dispatch; rely solely on Player._battle_finished_callback.
             except Exception:
                 # Surface errors but do not crash the pump
