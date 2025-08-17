@@ -186,7 +186,7 @@
 ## 16. Checklist (Per-Section Resume)
 - [x] S0: メトリクスフックを既存ポーリングに追加
 - [x] S1: ベースライン計測を取得
-- [ ] S2: Notifier 骨組み作成
+- [x] S2: Notifier 骨組み作成
 - [ ] S3: Publish を受信ポンプに挿入
 - [ ] S4: `_wait_for_battle_ready` をイベント化
 - [ ] S5: `race_get` 微待機を撤廃

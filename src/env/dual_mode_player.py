@@ -18,6 +18,7 @@ from poke_env.ps_client.server_configuration import ServerConfiguration
 
 from .env_player import EnvPlayer
 from src.sim.battle_communicator import CommunicatorFactory, BattleCommunicator
+from src.env.rqid_notifier import get_global_rqid_notifier
 
 class IPCClientWrapper:
     """IPC client wrapper to manage a Node.js process and JSON message exchange."""
@@ -890,6 +891,21 @@ class DualModeEnvPlayer(EnvPlayer):
                         await self._schedule_finish_callbacks_if_needed(battle_id)
                     except Exception:
                         self._logger.exception("post-handle finish scheduling failed")
+                # Publish rQID update (rqid が更新＝発火)
+                try:
+                    room_key = self.get_room_tag(battle_id) or battle_id
+                    battle = self._battles.get(room_key) or self._battles.get(battle_id)
+                    rqid = None
+                    if battle is not None:
+                        lr = getattr(battle, "last_request", None)
+                        if isinstance(lr, dict):
+                            rqid = lr.get("rqid")
+                    notifier = get_global_rqid_notifier()
+                    # Fire-and-forget publish on same loop; notifier ignores unchanged/None
+                    await notifier.publish_rqid_update(self.player_id, rqid)
+                except Exception:
+                    # Never crash the pump due to metrics/publish
+                    pass
                 # Do not notify env from dispatch; rely solely on Player._battle_finished_callback.
             except Exception:
                 # Surface errors but do not crash the pump
