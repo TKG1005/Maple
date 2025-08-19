@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import asyncio
 import logging
+import time
 from typing import Any, Awaitable
 
 from poke_env.concurrency import POKE_LOOP
@@ -101,7 +102,11 @@ class EnvPlayer(Player):
 
         # PokemonEnv.step からアクションが投入されるまで待機
         try:
-            
+            # 計測: rQID不整合による破棄回数とギャップ時間
+            drop_count: int = 0
+            wait_started = time.monotonic()
+            last_drop_ts: float | None = None
+
             # Loop to skip stale actions that don't match current rqid
             while True:
                 action_data = await asyncio.wait_for(
@@ -115,7 +120,27 @@ class EnvPlayer(Player):
                         curr_rqid = lr.get("rqid") if isinstance(lr, dict) else None
                         last_mask_rqid = self._env._mask_rqids.get(self.player_id)
                         if curr_rqid is not None and last_mask_rqid is not None and curr_rqid != last_mask_rqid:
-                            
+                            # rQID不整合: このアクションを破棄して待機継続
+                            drop_count += 1
+                            now = time.monotonic()
+                            if last_drop_ts is None:
+                                last_drop_ts = now
+                            try:
+                                q = self._env._action_queues[self.player_id]
+                                self._logger.info(
+                                    "[METRIC] tag=rqid_action_drop player=%s curr_rqid=%s mask_rqid=%s drop_count=%d qsize=%d empty=%s waiting=%s trying_again=%s elapsed_ms=%d",
+                                    self.player_id,
+                                    curr_rqid,
+                                    last_mask_rqid,
+                                    drop_count,
+                                    q.qsize(),
+                                    q.empty(),
+                                    self._waiting.is_set(),
+                                    self._trying_again.is_set(),
+                                    int((now - wait_started) * 1000),
+                                )
+                            except Exception:
+                                pass
                             # Drop and continue waiting for a matching action
                             self._env._action_queues[self.player_id].task_done()
                             continue
@@ -123,6 +148,26 @@ class EnvPlayer(Player):
                     pass
                 # Accept this action
                 self._env._action_queues[self.player_id].task_done()
+                # 計測ログ: 直前の破棄から次の受理までのギャップ
+                try:
+                    if drop_count > 0 and last_drop_ts is not None:
+                        gap_ms = int((time.monotonic() - last_drop_ts) * 1000)
+                    else:
+                        gap_ms = 0
+                    # 受理時点の rQID も記録
+                    lr2 = getattr(battle, "last_request", None)
+                    accept_rqid = lr2.get("rqid") if isinstance(lr2, dict) else None
+                    self._logger.info(
+                        "[METRIC] tag=rqid_action_accept player=%s drop_count=%d gap_ms=%d total_wait_ms=%d accept_rqid=%s accepted_type=%s",
+                        self.player_id,
+                        drop_count,
+                        gap_ms,
+                        int((time.monotonic() - wait_started) * 1000),
+                        accept_rqid,
+                        ("int" if isinstance(action_data, int) else ("str" if isinstance(action_data, str) else type(action_data).__name__)),
+                    )
+                except Exception:
+                    pass
                 break
         except asyncio.TimeoutError:
             self._logger.error(
@@ -132,6 +177,16 @@ class EnvPlayer(Player):
                 self._waiting.is_set(),
                 self._trying_again.is_set(),
             )
+            try:
+                # 追加計測: タイムアウト時点での破棄回数/待機時間
+                self._logger.info(
+                    "[METRIC] tag=rqid_action_timeout player=%s drop_count=%s total_wait_ms=%d",
+                    self.player_id,
+                    'unknown' if 'drop_count' not in locals() else drop_count,
+                    int((time.monotonic() - (wait_started if 'wait_started' in locals() else time.monotonic())) * 1000),
+                )
+            except Exception:
+                pass
             raise
 
         # 文字列はそのまま、整数は BattleOrder へ変換
