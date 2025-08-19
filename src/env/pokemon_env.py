@@ -844,6 +844,24 @@ class PokemonEnv(gym.Env):
                 # Fallback without dedup if anything goes wrong
                 self._log_fd_stats("battle_finished_notify")
 
+        # Also notify rQID waiters that this player's battle has been closed.
+        # This prevents any in-flight wait_for_rqid_change from hanging past battle end.
+        try:
+            notifier = get_global_rqid_notifier()
+            notifier.close_battle(player_id)
+            try:
+                self._logger.debug(
+                    "[RQID-CLOSE] player=%s battle=%s closed_at=%.6f",
+                    player_id,
+                    getattr(battle, "battle_tag", None),
+                    time.monotonic(),
+                )
+            except Exception:
+                pass
+        except Exception:
+            # Per policy: no fallback, but don't crash finish signaling path
+            self._logger.exception("rqid notifier close failed for %s", player_id)
+
     def _race_get(
         self,
         queue: asyncio.Queue[Any],
