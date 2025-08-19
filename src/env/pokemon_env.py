@@ -97,13 +97,7 @@ class PokemonEnv(gym.Env):
         self.battle_mode = battle_mode
         self.reuse_processes = reuse_processes
         self.max_processes = max_processes
-        # Toggle: disable micro-sleeps in _race_get when True (config-driven)
-        try:
-            self.disable_race_get_micro_sleep: bool = bool(
-                kwargs.get("disable_race_get_micro_sleep", False)
-            )
-        except Exception:
-            self.disable_race_get_micro_sleep = False
+        # micro-sleep 撤廃に伴いトグルは廃止（Step4-2）
         
         # Skip validation for now as it requires complete configuration
         # TODO: Implement proper configuration validation in Phase 3
@@ -951,50 +945,7 @@ class PokemonEnv(gym.Env):
                 except Exception:
                     pass
                 return await queue.get()
-            # ---- 遅延対策 -------------------------------------------------
-            # _waiting イベントがトリガーされた直後にキューへバトルデータが
-            # 追加される場合がある。直後にチェックすると空のままになってしまい
-            # マスク生成に失敗するため、僅かに待機してから再確認する。
-            micro_sleeps = 0
-            # Optional: skip micro-sleeps entirely when disabled via config
-            if getattr(self, "disable_race_get_micro_sleep", False):
-                try:
-                    if pid_label is not None:
-                        dt_ms = int((time.monotonic() - ts_start) * 1000)
-                        self._logger.info(
-                            "[METRIC] tag=race_get_no_micro_sleep pid=%s latency_ms=%d qsize0=%d",
-                            pid_label,
-                            dt_ms,
-                            qsize0 if 'qsize0' in locals() else -1,
-                        )
-                except Exception:
-                    pass
-                return None
-            for _ in range(10):
-                await asyncio.sleep(0.05)  # タスク切り替えを促す
-                micro_sleeps += 1
-                if not queue.empty():
-                    try:
-                        if pid_label is not None:
-                            dt_ms = int((time.monotonic() - ts_start) * 1000)
-                            self._logger.info(
-                                "[METRIC] tag=race_get_micro_sleep pid=%s micro_sleep_hits_count=1 sleeps=%d race_get_wait_ms=%d",
-                                pid_label,
-                                micro_sleeps,
-                                dt_ms,
-                            )
-                    except Exception:
-                        pass
-                    return await queue.get()
-            # Exhausted micro-sleeps without data
-            try:
-                if pid_label is not None:
-                    self._logger.info(
-                        "[METRIC] tag=race_get_micro_sleep_exhausted pid=%s micro_sleep_exhausted_count=1",
-                        pid_label,
-                    )
-            except Exception:
-                pass
+            # micro-sleep は撤廃。イベントに依存し、即時 None を返す。
             try:
                 dt_ms = int((time.monotonic() - ts_start) * 1000)
                 if pid_label is not None:
