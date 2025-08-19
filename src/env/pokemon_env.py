@@ -880,6 +880,10 @@ class PokemonEnv(gym.Env):
             except Exception:
                 pass
             ts_start = time.monotonic()
+            try:
+                qsize0 = queue.qsize()
+            except Exception:
+                qsize0 = -1
             # By convention, the last event (if provided) is the finished_event
             finished_idx = len(events) - 1 if events else None
             
@@ -892,14 +896,34 @@ class PokemonEnv(gym.Env):
             for p in pending:
                 p.cancel()
             if get_task in done:
-                
+                try:
+                    dt_ms = int((time.monotonic() - ts_start) * 1000)
+                    if pid_label is not None:
+                        self._logger.info(
+                            "[METRIC] tag=race_get_decision pid=%s decision=get_task qsize0=%d latency_ms=%d",
+                            pid_label,
+                            qsize0,
+                            dt_ms,
+                        )
+                except Exception:
+                    pass
                 return get_task.result()
             # Some event fired first
             
             # If the finished_event fired, consume the final snapshot from the queue
             try:
                 if finished_idx is not None and 0 <= finished_idx < len(wait_tasks) and wait_tasks[finished_idx] in done:
-                    
+                    try:
+                        dt_ms = int((time.monotonic() - ts_start) * 1000)
+                        if pid_label is not None:
+                            self._logger.info(
+                                "[METRIC] tag=race_get_decision pid=%s decision=finished_event qsize0=%d latency_ms=%d",
+                                pid_label,
+                                qsize0,
+                                dt_ms,
+                            )
+                    except Exception:
+                        pass
                     # Block until the final snapshot is available (bounded by outer timeout)
                     fin_battle = await queue.get()
                     
@@ -908,6 +932,17 @@ class PokemonEnv(gym.Env):
                 pass
             # イベントが先に完了した場合でも、キューにデータが残っていれば取得する
             if not queue.empty():
+                try:
+                    dt_ms = int((time.monotonic() - ts_start) * 1000)
+                    if pid_label is not None:
+                        self._logger.info(
+                            "[METRIC] tag=race_get_decision pid=%s decision=drain_after_event qsize0=%d latency_ms=%d",
+                            pid_label,
+                            qsize0,
+                            dt_ms,
+                        )
+                except Exception:
+                    pass
                 return await queue.get()
             # ---- 遅延対策 -------------------------------------------------
             # _waiting イベントがトリガーされた直後にキューへバトルデータが
@@ -936,6 +971,17 @@ class PokemonEnv(gym.Env):
                     self._logger.info(
                         "[METRIC] tag=race_get_micro_sleep_exhausted pid=%s micro_sleep_exhausted_count=1",
                         pid_label,
+                    )
+            except Exception:
+                pass
+            try:
+                dt_ms = int((time.monotonic() - ts_start) * 1000)
+                if pid_label is not None:
+                    self._logger.info(
+                        "[METRIC] tag=race_get_decision pid=%s decision=event_none qsize0=%d latency_ms=%d",
+                        pid_label,
+                        qsize0,
+                        dt_ms,
                     )
             except Exception:
                 pass
