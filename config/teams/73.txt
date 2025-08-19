@@ -1,0 +1,64 @@
+Calyrex-Shadow @ Leftovers  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Fairy  
+EVs: 140 HP / 180 Def / 28 SpA / 20 SpD / 140 Spe  
+Timid Nature  
+- Substitute  
+- Draining Kiss  
+- Astral Barrage  
+- Calm Mind  
+
+Ho-Oh @ Heavy-Duty Boots  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Normal  
+EVs: 204 HP / 44 Atk / 156 Def / 84 SpD / 12 Spe  
+Impish Nature  
+- Sacred Fire  
+- Recover  
+- Earthquake  
+- Whirlwind  
+
+Sneasler @ Focus Sash  
+Ability: Unburden  
+Level: 50  
+Tera Type: Ice  
+EVs: 252 Atk / 4 SpD / 252 Spe  
+Adamant Nature  
+- Dire Claw  
+- Toxic Spikes  
+- Close Combat  
+- Tera Blast  
+
+Chien-Pao @ Rocky Helmet  
+Ability: Sword of Ruin  
+Level: 50  
+Tera Type: Ground  
+EVs: 252 HP / 252 Def / 4 Spe  
+Impish Nature  
+- Recover  
+- Swords Dance  
+- Ice Shard  
+- Crunch  
+
+Ditto @ Choice Scarf  
+Ability: Imposter  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP  
+IVs: 30 Atk  
+- Transform  
+
+Ting-Lu @ Covert Cloak  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Fairy  
+EVs: 244 HP / 252 Def / 12 SpD  
+Impish Nature  
+IVs: 0 Atk  
+- Rest  
+- Taunt  
+- Spite  
+- Mean Look  
+

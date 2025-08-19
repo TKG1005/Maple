@@ -464,21 +464,21 @@ def main(
     episodes: int | None = None,
     save_path: str | None = None,
     tensorboard: bool = False,
-    ppo_epochs: int = 1,
-    clip_range: float = 0.0,
-    gae_lambda: float = 1.0,
-    value_coef: float = 0.0,
-    entropy_coef: float = 0.0,
-    gamma: float = 0.99,
-    parallel: int = 1,
-    checkpoint_interval: int = 0,
-    checkpoint_dir: str = "checkpoints",
-    algo: str = "ppo",
-    reward: str = "composite",
-    reward_config: str | None = str(ROOT_DIR / "config" / "reward.yaml"),
+    ppo_epochs: int | None = None,
+    clip_range: float | None = None,
+    gae_lambda: float | None = None,
+    value_coef: float | None = None,
+    entropy_coef: float | None = None,
+    gamma: float | None = None,
+    parallel: int | None = None,
+    checkpoint_interval: int | None = None,
+    checkpoint_dir: str | None = None,
+    algo: str | None = None,
+    reward: str | None = None,
+    reward_config: str | None = None,
     opponent: str | None = None,
     opponent_mix: str | None = None,
-    team: str = "default",
+    team: str | None = None,
     teams_dir: str | None = None,
     load_model: str | None = None,
     reset_optimizer: bool = False,
@@ -523,40 +523,40 @@ def main(
     cfg = load_config(config_path)
     logger.info("Loading configuration from: %s", config_path)
     
-    # Load all configuration from config file, with command line overrides
+    # Load all configuration from config file, with CLI taking precedence when provided
     episodes = episodes if episodes is not None else int(cfg.get("episodes", 1))
     lr = float(cfg.get("lr", 1e-3))
     batch_size = int(cfg.get("batch_size", 4096))
     buffer_capacity = int(cfg.get("buffer_capacity", 800000))
-    gamma = float(cfg.get("gamma", gamma))
-    lam = float(cfg.get("gae_lambda", gae_lambda))
-    ppo_epochs = int(cfg.get("ppo_epochs", ppo_epochs))
-    clip_range = float(cfg.get("clip_range", clip_range))
-    value_coef = float(cfg.get("value_coef", value_coef))
-    entropy_coef = float(cfg.get("entropy_coef", entropy_coef))
-    algo_name = str(cfg.get("algorithm", algo)).lower()
-    reward = str(cfg.get("reward", reward))
-    reward_config = cfg.get("reward_config", reward_config)
+    gamma = float(gamma) if gamma is not None else float(cfg.get("gamma", 0.99))
+    lam = float(gae_lambda) if gae_lambda is not None else float(cfg.get("gae_lambda", 1.0))
+    ppo_epochs = int(ppo_epochs) if ppo_epochs is not None else int(cfg.get("ppo_epochs", 1))
+    clip_range = float(clip_range) if clip_range is not None else float(cfg.get("clip_range", 0.0))
+    value_coef = float(value_coef) if value_coef is not None else float(cfg.get("value_coef", 0.0))
+    entropy_coef = float(entropy_coef) if entropy_coef is not None else float(cfg.get("entropy_coef", 0.0))
+    algo_name = (str(algo) if algo is not None else str(cfg.get("algorithm", "ppo"))).lower()
+    reward = str(reward) if reward is not None else str(cfg.get("reward", "composite"))
+    reward_config = reward_config if reward_config is not None else cfg.get("reward_config", str(ROOT_DIR / "config" / "reward.yaml"))
     if reward_config is not None:
         reward_config = str(reward_config)
     
-    # Training configuration from config file
-    parallel = int(cfg.get("parallel", parallel))
-    checkpoint_interval = int(cfg.get("checkpoint_interval", checkpoint_interval))
-    checkpoint_dir = str(cfg.get("checkpoint_dir", checkpoint_dir))
-    tensorboard = bool(cfg.get("tensorboard", tensorboard))
+    # Training configuration from config file (CLI has precedence)
+    parallel = int(parallel) if parallel is not None else int(cfg.get("parallel", 1))
+    checkpoint_interval = int(checkpoint_interval) if checkpoint_interval is not None else int(cfg.get("checkpoint_interval", 0))
+    checkpoint_dir = str(checkpoint_dir) if checkpoint_dir is not None else str(cfg.get("checkpoint_dir", "checkpoints"))
+    tensorboard = bool(tensorboard) if tensorboard else bool(cfg.get("tensorboard", tensorboard))
     
-    # Team configuration from config file
-    team = str(cfg.get("team", team))
-    teams_dir = cfg.get("teams_dir", teams_dir)
+    # Team configuration (CLI has precedence)
+    team = str(team) if team is not None else str(cfg.get("team", "default"))
+    teams_dir = teams_dir if teams_dir is not None else cfg.get("teams_dir", teams_dir)
     if teams_dir is not None:
         teams_dir = str(teams_dir)
     
-    # Opponent configuration from config file
-    opponent = cfg.get("opponent", opponent)
+    # Opponent configuration (CLI has precedence)
+    opponent = str(opponent) if opponent is not None else cfg.get("opponent", None)
     if opponent is not None:
         opponent = str(opponent)
-    opponent_mix = cfg.get("opponent_mix", opponent_mix)
+    opponent_mix = str(opponent_mix) if opponent_mix is not None else cfg.get("opponent_mix", None)
     if opponent_mix is not None:
         opponent_mix = str(opponent_mix)
     
@@ -569,8 +569,8 @@ def main(
         logger.info("🌐 Online mode: WebSocket communication enabled")
     
     # Win rate configuration from config file
-    win_rate_threshold = float(cfg.get("win_rate_threshold", win_rate_threshold))
-    win_rate_window = int(cfg.get("win_rate_window", win_rate_window))
+    win_rate_threshold = float(win_rate_threshold) if win_rate_threshold is not None else float(cfg.get("win_rate_threshold", 0.6))
+    win_rate_window = int(win_rate_window) if win_rate_window is not None else int(cfg.get("win_rate_window", 50))
     
     # Model management from config file
     load_model = cfg.get("load_model", load_model)
@@ -1696,43 +1696,43 @@ if __name__ == "__main__":
         "--tensorboard", action="store_true", help="enable TensorBoard logging"
     )
     parser.add_argument(
-        "--ppo-epochs", type=int, help="PPO update epochs per episode"
+        "--ppo-epochs", type=int, help="PPO update epochs per episode", default=None
     )
-    parser.add_argument("--clip", type=float, help="PPO clipping range")
-    parser.add_argument("--gae-lambda", type=float, help="GAE lambda")
-    parser.add_argument("--value-coef", type=float, help="value loss coefficient")
-    parser.add_argument("--entropy-coef", type=float, help="entropy bonus coefficient")
-    parser.add_argument("--gamma", type=float, help="discount factor")
-    parser.add_argument("--parallel", type=int, default=1, help="number of parallel environments")
+    parser.add_argument("--clip", type=float, help="PPO clipping range", default=None)
+    parser.add_argument("--gae-lambda", type=float, help="GAE lambda", default=None)
+    parser.add_argument("--value-coef", type=float, help="value loss coefficient", default=None)
+    parser.add_argument("--entropy-coef", type=float, help="entropy bonus coefficient", default=None)
+    parser.add_argument("--gamma", type=float, help="discount factor", default=None)
+    parser.add_argument("--parallel", type=int, default=None, help="number of parallel environments")
     parser.add_argument(
         "--algo",
         type=str,
         choices=["reinforce", "ppo"],
-        default="ppo",
+        default=None,
         help="training algorithm (reinforce or ppo)",
     )
     parser.add_argument(
         "--checkpoint-interval",
         type=int,
-        default=0,
+        default=None,
         help="save intermediate models every N episodes (0 to disable)",
     )
     parser.add_argument(
         "--checkpoint-dir",
         type=str,
-        default="checkpoints",
+        default=None,
         help="directory to store checkpoint files",
     )
     parser.add_argument(
         "--reward",
         type=str,
-        default="composite",
+        default=None,
         help="reward function to use (composite)",
     )
     parser.add_argument(
         "--reward-config",
         type=str,
-        default=str(ROOT_DIR / "config" / "reward.yaml"),
+        default=None,
         help="path to composite reward YAML file",
     )
     parser.add_argument(
@@ -1749,7 +1749,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--team",
         type=str,
-        default="default",
+        default=None,
         help="team selection: 'default', 'random', or a filename in --teams-dir",
     )
     parser.add_argument(
@@ -1776,13 +1776,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--win-rate-threshold",
         type=float,
-        default=0.6,
+        default=None,
         help="win rate threshold for updating self-play opponent (default: 0.6)",
     )
     parser.add_argument(
         "--win-rate-window",
         type=int,
-        default=50,
+        default=None,
         help="number of recent battles to track for win rate calculation (default: 50)",
     )
     parser.add_argument(
@@ -1868,12 +1868,12 @@ if __name__ == "__main__":
         episodes=args.episodes,
         save_path=args.save,
         tensorboard=args.tensorboard,
-        ppo_epochs=args.ppo_epochs if args.ppo_epochs is not None else 1,
-        clip_range=args.clip if args.clip is not None else 0.0,
-        gae_lambda=args.gae_lambda if args.gae_lambda is not None else 1.0,
-        value_coef=args.value_coef if args.value_coef is not None else 0.0,
-        entropy_coef=args.entropy_coef if args.entropy_coef is not None else 0.0,
-        gamma=args.gamma if args.gamma is not None else 0.99,
+        ppo_epochs=args.ppo_epochs,
+        clip_range=args.clip,
+        gae_lambda=args.gae_lambda,
+        value_coef=args.value_coef,
+        entropy_coef=args.entropy_coef,
+        gamma=args.gamma,
         parallel=args.parallel,
         checkpoint_interval=args.checkpoint_interval,
         checkpoint_dir=args.checkpoint_dir,

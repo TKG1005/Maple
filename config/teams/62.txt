@@ -1,0 +1,69 @@
+Ho-Oh @ Choice Band  
+Ability: Regenerator  
+Level: 50  
+Shiny: Yes  
+Tera Type: Ground  
+EVs: 76 HP / 212 Atk / 36 Def / 76 SpD / 108 Spe  
+Adamant Nature  
+- Sacred Fire  
+- Brave Bird  
+- Dual Wingbeat  
+- Earthquake  
+
+Terapagos @ Leftovers  
+Ability: Tera Shift  
+Level: 50  
+Tera Type: Stellar  
+EVs: 172 HP / 28 Def / 4 SpA / 252 SpD / 52 Spe  
+Calm Nature  
+- Tera Starstorm  
+- Toxic  
+- Protect  
+- Rapid Spin  
+
+Alomomola @ Rocky Helmet  
+Ability: Regenerator  
+Level: 50  
+Shiny: Yes  
+Tera Type: Fairy  
+EVs: 116 HP / 252 Def / 140 SpD  
+Relaxed Nature  
+IVs: 0 Spe  
+- Flip Turn  
+- Skill Swap  
+- Wish  
+- Protect  
+
+Mimikyu @ Choice Scarf  
+Ability: Disguise  
+Level: 50  
+Tera Type: Normal  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Serious Nature  
+- Play Rough  
+- Trick  
+- Curse  
+- Destiny Bond  
+
+Clodsire @ Sitrus Berry  
+Ability: Unaware  
+Level: 50  
+Tera Type: Dark  
+EVs: 252 HP / 252 Def / 4 SpD  
+Impish Nature  
+- Earthquake  
+- Counter  
+- Stockpile  
+- Recover  
+
+Iron Hands @ Assault Vest  
+Ability: Quark Drive  
+Level: 50  
+Tera Type: Steel  
+EVs: 60 HP / 196 Atk / 252 SpD  
+Adamant Nature  
+- Supercell Slam  
+- Drain Punch  
+- Volt Switch  
+- Fake Out  
+

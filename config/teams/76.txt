@@ -1,0 +1,67 @@
+Calyrex-Shadow @ Leftovers  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Fighting  
+EVs: 140 HP / 4 Def / 108 SpA / 4 SpD / 252 Spe  
+Timid Nature  
+- Astral Barrage  
+- Tera Blast  
+- Nasty Plot  
+- Substitute  
+
+Kyogre @ Rocky Helmet  
+Ability: Drizzle  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 236 Def / 4 SpA / 4 SpD / 12 Spe  
+Bold Nature  
+IVs: 0 Atk  
+- Surf  
+- Thunder  
+- Ice Beam  
+- Thunder Wave  
+
+Ogerpon-Hearthflame (F) @ Hearthflame Mask  
+Ability: Mold Breaker  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 28 Atk / 140 Def / 28 SpD / 60 Spe  
+Careful Nature  
+- Ivy Cudgel  
+- Play Rough  
+- Knock Off  
+- Synthesis  
+
+Dragonite @ Choice Band  
+Ability: Multiscale  
+Level: 50  
+Tera Type: Normal  
+EVs: 132 HP / 252 Atk / 124 Spe  
+Adamant Nature  
+- Extreme Speed  
+- Earthquake  
+- Outrage  
+- Facade  
+
+Urshifu-Rapid-Strike @ Focus Sash  
+Ability: Unseen Fist  
+Level: 50  
+Tera Type: Stellar  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Surging Strikes  
+- Close Combat  
+- Aqua Jet  
+- Counter  
+
+Ting-Lu @ Assault Vest  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Poison  
+EVs: 180 HP / 76 Atk / 252 SpD  
+Adamant Nature  
+- Earthquake  
+- Payback  
+- Rock Tomb  
+- Tera Blast  
+

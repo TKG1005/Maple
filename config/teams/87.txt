@@ -1,0 +1,66 @@
+Koraidon @ Choice Scarf  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fire  
+EVs: 236 HP / 188 Atk / 4 Def / 60 SpD / 20 Spe  
+Adamant Nature  
+- Flare Blitz  
+- Collision Course  
+- Outrage  
+- U-turn  
+
+Tyranitar @ Assault Vest  
+Ability: Sand Stream  
+Level: 50  
+Tera Type: Ground  
+EVs: 252 HP / 100 Atk / 68 Def / 84 SpD / 4 Spe  
+Adamant Nature  
+- Knock Off  
+- Stone Edge  
+- Earthquake  
+- Low Kick  
+
+Landorus-Therian @ Rocky Helmet  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Fairy  
+EVs: 244 HP / 12 Atk / 252 Def  
+Adamant Nature  
+- Earthquake  
+- U-turn  
+- Taunt  
+- Stealth Rock  
+
+Heatran @ Leftovers  
+Ability: Flash Fire  
+Level: 50  
+Tera Type: Fairy  
+EVs: 244 HP / 172 Def / 92 SpD  
+Calm Nature  
+- Magma Storm  
+- Earth Power  
+- Taunt  
+- Protect  
+
+Eternatus @ Weakness Policy  
+Ability: Pressure  
+Level: 50  
+Tera Type: Fire  
+EVs: 12 HP / 108 Def / 212 SpA / 44 SpD / 132 Spe  
+Modest Nature  
+- Dynamax Cannon  
+- Sludge Bomb  
+- Flamethrower  
+- Agility  
+
+Enamorus (F) @ Shell Bell  
+Ability: Contrary  
+Level: 50  
+Tera Type: Fairy  
+EVs: 220 HP / 84 Def / 4 SpA / 12 SpD / 188 Spe  
+Timid Nature  
+- Alluring Voice  
+- Superpower  
+- Tera Blast  
+- Substitute  
+

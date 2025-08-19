@@ -1,0 +1,67 @@
+Koraidon @ Choice Band  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Flare Blitz  
+- Close Combat  
+- Outrage  
+- U-turn  
+
+Lunala @ Choice Scarf  
+Ability: Shadow Shield  
+Level: 50  
+Tera Type: Fairy  
+EVs: 12 Def / 244 SpA / 252 Spe  
+Modest Nature  
+IVs: 0 Atk  
+- Moongeist Beam  
+- Moonblast  
+- Trick  
+- Moonlight  
+
+Dondozo @ Leftovers  
+Ability: Unaware  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 198 Def / 60 SpD  
+Impish Nature  
+- Wave Crash  
+- Fissure  
+- Rest  
+- Protect  
+
+Gliscor @ Toxic Orb  
+Ability: Poison Heal  
+Level: 50  
+Tera Type: Steel  
+EVs: 228 HP / 36 Def / 244 SpD  
+Impish Nature  
+- Earthquake  
+- Toxic  
+- Protect  
+- Substitute  
+
+Rillaboom @ Assault Vest  
+Ability: Grassy Surge  
+Level: 50  
+Tera Type: Grass  
+EVs: 252 HP / 4 Atk / 252 SpD  
+Careful Nature  
+- Drum Beating  
+- Knock Off  
+- U-turn  
+- Grassy Glide  
+
+Muk-Alola @ Black Sludge  
+Ability: Poison Touch  
+Level: 50  
+Tera Type: Stellar  
+EVs: 252 HP / 4 Atk / 252 SpD  
+Careful Nature  
+- Knock Off  
+- Poison Jab  
+- Drain Punch  
+- Protect  
+

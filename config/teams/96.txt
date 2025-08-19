@@ -1,0 +1,66 @@
+Miraidon @ Choice Scarf  
+Ability: Hadron Engine  
+Level: 50  
+Tera Type: Water  
+EVs: 156 HP / 4 Def / 244 SpA / 4 SpD / 100 Spe  
+Modest Nature  
+- Electro Drift  
+- Draco Meteor  
+- Tera Blast  
+- Volt Switch  
+
+Urshifu-Rapid-Strike @ Choice Band  
+Ability: Unseen Fist  
+Level: 50  
+Tera Type: Water  
+EVs: 156 HP / 252 Atk / 100 Def  
+Adamant Nature  
+- Surging Strikes  
+- Close Combat  
+- U-turn  
+- Aqua Jet  
+
+Lunala @ Rocky Helmet  
+Ability: Shadow Shield  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 12 Def / 244 SpA  
+Modest Nature  
+- Moongeist Beam  
+- Moonblast  
+- Moonlight  
+- Trick Room  
+
+Chien-Pao @ Focus Sash  
+Ability: Sword of Ruin  
+Level: 50  
+Tera Type: Stellar  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Icicle Crash  
+- Sacred Sword  
+- Sucker Punch  
+- Swords Dance  
+
+Landorus-Therian @ Assault Vest  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Fire  
+EVs: 244 HP / 4 Atk / 4 Def / 252 SpD / 4 Spe  
+Adamant Nature  
+- Earthquake  
+- U-turn  
+- Tera Blast  
+- Rock Tomb  
+
+Dragonite @ Loaded Dice  
+Ability: Multiscale  
+Level: 50  
+Tera Type: Normal  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Adamant Nature  
+- Extreme Speed  
+- Scale Shot  
+- Earthquake  
+- Encore  
+

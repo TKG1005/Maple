@@ -1,0 +1,66 @@
+Miraidon @ Choice Scarf  
+Ability: Hadron Engine  
+Level: 50  
+Tera Type: Electric  
+EVs: 108 HP / 156 Def / 220 SpA / 12 SpD / 12 Spe  
+Modest Nature  
+- Electro Drift  
+- Draco Meteor  
+- Volt Switch  
+- U-turn  
+
+Calyrex-Ice @ Leftovers  
+Ability: As One (Glastrier)  
+Level: 50  
+Tera Type: Water  
+EVs: 252 HP / 20 Atk / 100 Def / 132 SpD / 4 Spe  
+Adamant Nature  
+- Glacial Lance  
+- Trick Room  
+- Leech Seed  
+- Encore  
+
+Urshifu-Rapid-Strike @ Choice Band  
+Ability: Unseen Fist  
+Level: 50  
+Tera Type: Normal  
+EVs: 156 HP / 252 Atk / 84 Def / 4 SpD / 12 Spe  
+Adamant Nature  
+- Surging Strikes  
+- Close Combat  
+- Ice Punch  
+- Facade  
+
+Sneasler @ Electric Seed  
+Ability: Unburden  
+Level: 50  
+Tera Type: Flying  
+EVs: 156 HP / 132 Atk / 220 Spe  
+Adamant Nature  
+- Close Combat  
+- Swords Dance  
+- Taunt  
+- Acrobatics  
+
+Landorus-Therian @ Assault Vest  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Dark  
+EVs: 252 HP / 4 Def / 252 SpD  
+Sassy Nature  
+- Earthquake  
+- U-turn  
+- Rock Tomb  
+- Fissure  
+
+Flutter Mane @ Focus Sash  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Stellar  
+EVs: 4 HP / 252 SpA / 252 Spe  
+Timid Nature  
+- Moonblast  
+- Taunt  
+- Fake Tears  
+- Power Gem  
+

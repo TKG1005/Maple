@@ -1,0 +1,68 @@
+Necrozma-Dusk-Mane @ Leftovers  
+Ability: Prism Armor  
+Level: 50  
+Tera Type: Normal  
+EVs: 36 HP / 212 Atk / 4 Def / 4 SpD / 252 Spe  
+Jolly Nature  
+- Sunsteel Strike  
+- Photon Geyser  
+- Dragon Dance  
+- Substitute  
+
+Eternatus @ Choice Specs  
+Ability: Pressure  
+Level: 50  
+Tera Type: Normal  
+EVs: 60 HP / 4 Def / 252 SpA / 20 SpD / 172 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Dynamax Cannon  
+- Sludge Wave  
+- Draco Meteor  
+- Toxic Spikes  
+
+Landorus-Therian @ Rocky Helmet  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Steel  
+EVs: 252 HP / 4 Atk / 252 Def  
+Impish Nature  
+- Earthquake  
+- Rock Tomb  
+- U-turn  
+- Taunt  
+
+Incineroar @ Heavy-Duty Boots  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Bug  
+EVs: 252 HP / 156 Def / 100 SpD  
+Impish Nature  
+- Knock Off  
+- Bulldoze  
+- Parting Shot  
+- Roar  
+
+Rillaboom @ Assault Vest  
+Ability: Grassy Surge  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 4 Atk / 252 SpD  
+Careful Nature  
+- Drum Beating  
+- Knock Off  
+- U-turn  
+- Grassy Glide  
+
+Flutter Mane @ Choice Scarf  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Fairy  
+EVs: 100 HP / 188 Def / 196 SpA / 4 SpD / 20 Spe  
+Modest Nature  
+IVs: 0 Atk  
+- Moonblast  
+- Shadow Ball  
+- Hex  
+- Perish Song  
+

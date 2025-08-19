@@ -1,0 +1,67 @@
+Alomomola @ Assault Vest  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Normal  
+EVs: 20 HP / 236 Def / 252 SpD  
+Sassy Nature  
+IVs: 0 Spe  
+- Flip Turn  
+- Aqua Jet  
+- Icy Wind  
+- Mirror Coat  
+
+Koraidon @ Choice Scarf  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fairy  
+EVs: 108 HP / 236 Atk / 4 Def / 132 SpD / 28 Spe  
+Adamant Nature  
+- Flare Blitz  
+- U-turn  
+- Close Combat  
+- Tera Blast  
+
+Calyrex-Shadow @ Choice Specs  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Grass  
+EVs: 124 HP / 4 Def / 124 SpA / 4 SpD / 252 Spe  
+Timid Nature  
+- Astral Barrage  
+- Psyshock  
+- Leaf Storm  
+- Psychic  
+
+Gliscor @ Toxic Orb  
+Ability: Poison Heal  
+Level: 50  
+Tera Type: Steel  
+EVs: 228 HP / 244 SpD / 36 Spe  
+Careful Nature  
+- Protect  
+- Substitute  
+- Toxic  
+- Earthquake  
+
+Ting-Lu @ Sitrus Berry  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 244 HP / 36 Def / 228 SpD  
+Impish Nature  
+- Earthquake  
+- Ruination  
+- Stealth Rock  
+- Whirlwind  
+
+Garganacl @ Leftovers  
+Ability: Purifying Salt  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 236 Def / 20 Spe  
+Impish Nature  
+- Salt Cure  
+- Recover  
+- Iron Defense  
+- Body Press  
+

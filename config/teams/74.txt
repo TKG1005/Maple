@@ -1,0 +1,69 @@
+Smeargle @ Focus Sash  
+Ability: Moody  
+Level: 50  
+Tera Type: Fairy  
+EVs: 84 HP / 4 Atk / 124 Def / 44 SpD / 252 Spe  
+Jolly Nature  
+- Sticky Web  
+- Nuzzle  
+- Mortal Spin  
+- Ceaseless Edge  
+
+Archaludon @ Red Card  
+Ability: Sturdy  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 SpA / 4 SpD / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Reflect  
+- Light Screen  
+- Steel Beam  
+- Stealth Rock  
+
+Koraidon @ Leftovers  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fire  
+EVs: 188 HP / 252 Atk / 4 Def / 4 SpD / 60 Spe  
+Adamant Nature  
+- Drain Punch  
+- Flame Charge  
+- Bulk Up  
+- Taunt  
+
+Calyrex-Shadow @ Sitrus Berry  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Fairy  
+EVs: 108 HP / 4 Def / 252 SpA / 4 SpD / 140 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Astral Barrage  
+- Draining Kiss  
+- Nasty Plot  
+- Taunt  
+
+Glimmora @ Mental Herb  
+Ability: Toxic Debris  
+Level: 50  
+Tera Type: Ghost  
+EVs: 252 HP / 44 Def / 4 SpA / 92 SpD / 116 Spe  
+Calm Nature  
+- Toxic Spikes  
+- Mud Shot  
+- Mortal Spin  
+- Spikes  
+
+Flutter Mane @ Booster Energy  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 252 Def / 4 Spe  
+Bold Nature  
+IVs: 0 Atk  
+- Hex  
+- Charm  
+- Mystical Fire  
+- Pain Split  
+

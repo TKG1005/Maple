@@ -1,0 +1,66 @@
+Koraidon @ Loaded Dice  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Steel  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Scale Shot  
+- Iron Head  
+- Swords Dance  
+- Substitute  
+
+Ho-Oh @ Heavy-Duty Boots  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 196 Def / 60 SpD  
+Impish Nature  
+- Sacred Fire  
+- Brave Bird  
+- Whirlwind  
+- Recover  
+
+Chi-Yu @ Choice Scarf  
+Ability: Beads of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 4 HP / 252 SpA / 252 Spe  
+Modest Nature  
+- Flamethrower  
+- Dark Pulse  
+- Fire Blast  
+- Overheat  
+
+Mimikyu @ Rocky Helmet  
+Ability: Disguise  
+Level: 50  
+Tera Type: Ghost  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Adamant Nature  
+- Play Rough  
+- Shadow Sneak  
+- Curse  
+- Endure  
+
+Garganacl @ Leftovers  
+Ability: Purifying Salt  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 4 Def / 252 SpD  
+Impish Nature  
+- Salt Cure  
+- Protect  
+- Tera Blast  
+- Recover  
+
+Gliscor @ Focus Sash  
+Ability: Poison Heal  
+Level: 50  
+Tera Type: Normal  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Jolly Nature  
+- Bulldoze  
+- Knock Off  
+- Taunt  
+- Toxic Spikes  
+

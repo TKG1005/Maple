@@ -1,0 +1,68 @@
+Calyrex-Shadow @ Heavy-Duty Boots  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Normal  
+EVs: 4 Def / 252 SpA / 252 Spe  
+Timid Nature  
+- Encore  
+- Astral Barrage  
+- Grass Knot  
+- Psyshock  
+
+Ho-Oh @ Assault Vest  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Electric  
+EVs: 252 HP / 28 Atk / 220 Def / 4 SpD / 4 Spe  
+Impish Nature  
+- Sacred Fire  
+- Brave Bird  
+- Earthquake  
+- Fire Spin  
+
+Alomomola @ Rocky Helmet  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 252 Def / 4 SpD  
+Relaxed Nature  
+IVs: 0 Spe  
+- Wish  
+- Protect  
+- Flip Turn  
+- Tickle  
+
+Grimmsnarl @ Choice Band  
+Ability: Prankster  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 28 Def / 228 SpD  
+Careful Nature  
+- Spirit Break  
+- Sucker Punch  
+- Trick  
+- Parting Shot  
+
+Gliscor @ Toxic Orb  
+Ability: Poison Heal  
+Level: 50  
+Tera Type: Dark  
+EVs: 228 HP / 28 Def / 252 SpD  
+Careful Nature  
+- Protect  
+- Substitute  
+- Stealth Rock  
+- Knock Off  
+
+Amoonguss @ Leftovers  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Dark  
+EVs: 252 HP / 52 Def / 204 SpD  
+Calm Nature  
+IVs: 0 Atk  
+- Spore  
+- Synthesis  
+- Clear Smog  
+- Giga Drain  
+

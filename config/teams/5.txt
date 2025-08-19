@@ -1,0 +1,67 @@
+Ditto @ Focus Sash  
+Ability: Imposter  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Jolly Nature  
+IVs: 30 Atk  
+- Transform  
+
+Kyogre @ Assault Vest  
+Ability: Drizzle  
+Level: 50  
+Tera Type: Electric  
+EVs: 252 HP / 252 SpA / 4 SpD  
+Modest Nature  
+IVs: 0 Atk  
+- Water Spout  
+- Surf  
+- Thunder  
+- Ice Beam  
+
+Calyrex-Shadow @ Leftovers  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Fairy  
+EVs: 4 Def / 252 SpA / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Astral Barrage  
+- Draining Kiss  
+- Taunt  
+- Calm Mind  
+
+Grimmsnarl @ Light Clay  
+Ability: Prankster  
+Level: 50  
+Tera Type: Ground  
+EVs: 252 HP / 252 Def / 4 SpD  
+Impish Nature  
+IVs: 0 Atk  
+- Foul Play  
+- Reflect  
+- Light Screen  
+- Thunder Wave  
+
+Ting-Lu @ Sitrus Berry  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 252 Def / 4 SpD  
+Impish Nature  
+- Earthquake  
+- Payback  
+- Tera Blast  
+- Taunt  
+
+Dragonite @ Loaded Dice  
+Ability: Multiscale  
+Level: 50  
+Tera Type: Steel  
+EVs: 4 HP / 252 Atk / 252 Spe  
+Jolly Nature  
+- Scale Shot  
+- Iron Head  
+- Encore  
+- Dragon Dance  
+

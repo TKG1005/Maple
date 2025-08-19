@@ -1,0 +1,68 @@
+Landorus-Therian @ Choice Band  
+Ability: Intimidate  
+Level: 50  
+Tera Type: Water  
+EVs: 212 HP / 252 Atk / 44 SpD  
+Adamant Nature  
+- Earthquake  
+- Crunch  
+- Stone Edge  
+- U-turn  
+
+Zacian-Crowned @ Rusted Sword  
+Ability: Intrepid Sword  
+Level: 50  
+Tera Type: Stellar  
+EVs: 252 HP / 252 Atk / 4 SpD  
+Adamant Nature  
+- Play Rough  
+- Behemoth Blade  
+- Crunch  
+- Ice Fang  
+
+Ursaluna @ Flame Orb  
+Ability: Guts  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 252 Atk / 4 SpD  
+Adamant Nature  
+- Headlong Rush  
+- Facade  
+- Crunch  
+- Stone Edge  
+
+Skeledirge @ Choice Specs  
+Ability: Unaware  
+Level: 50  
+Tera Type: Fairy  
+EVs: 12 HP / 244 Def / 252 SpA  
+Modest Nature  
+IVs: 0 Atk  
+- Overheat  
+- Shadow Ball  
+- Earth Power  
+- Alluring Voice  
+
+Chi-Yu @ Assault Vest  
+Ability: Beads of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 228 HP / 252 SpA / 28 SpD  
+Modest Nature  
+IVs: 0 Atk  
+- Dark Pulse  
+- Snarl  
+- Overheat  
+- Psychic  
+
+Koraidon @ Life Orb  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 252 Atk / 4 SpD  
+Adamant Nature  
+- Close Combat  
+- Scale Shot  
+- Wild Charge  
+- Flare Blitz  
+

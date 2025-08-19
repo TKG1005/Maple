@@ -1,0 +1,66 @@
+Eternatus @ Leftovers  
+Ability: Pressure  
+Level: 50  
+Tera Type: Fire  
+EVs: 76 HP / 4 Def / 252 SpA / 4 SpD / 172 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Protect  
+- Substitute  
+- Flamethrower  
+- Dynamax Cannon  
+
+Kyogre @ Rocky Helmet  
+Ability: Drizzle  
+Level: 50  
+Tera Type: Fairy  
+EVs: 252 HP / 236 Def / 4 SpA / 4 SpD / 12 Spe  
+Bold Nature  
+IVs: 0 Atk  
+- Surf  
+- Thunder  
+- Ice Beam  
+- Thunder Wave  
+
+Ditto @ Choice Scarf  
+Ability: Imposter  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 4 Def / 252 SpD  
+Sassy Nature  
+IVs: 30 Atk  
+- Transform  
+
+Rillaboom @ Assault Vest  
+Ability: Grassy Surge  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 4 Def / 252 SpD  
+Careful Nature  
+- Drum Beating  
+- Knock Off  
+- U-turn  
+- Grassy Glide  
+
+Ogerpon-Cornerstone (F) @ Cornerstone Mask  
+Ability: Sturdy  
+Level: 50  
+Tera Type: Rock  
+EVs: 252 Atk / 4 SpD / 252 Spe  
+Jolly Nature  
+- Ivy Cudgel  
+- Horn Leech  
+- Encore  
+- Swords Dance  
+
+Chien-Pao @ Focus Sash  
+Ability: Sword of Ruin  
+Level: 50  
+Tera Type: Ghost  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Icicle Crash  
+- Sacred Sword  
+- Sucker Punch  
+- Ice Shard  
+

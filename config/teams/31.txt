@@ -1,0 +1,68 @@
+Koraidon @ Eject Pack  
+Ability: Orichalcum Pulse  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 Atk / 4 Def / 252 Spe  
+Adamant Nature  
+- Flare Blitz  
+- Flame Charge  
+- Close Combat  
+- Taunt  
+
+Flutter Mane @ Focus Sash  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Fairy  
+EVs: 4 Def / 252 SpA / 252 Spe  
+Timid Nature  
+IVs: 0 Atk  
+- Moonblast  
+- Hex  
+- Thunder Wave  
+- Pain Split  
+
+Ho-Oh @ Choice Band  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Fire  
+EVs: 252 HP / 156 Atk / 4 Def / 4 SpD / 92 Spe  
+Adamant Nature  
+- Sacred Fire  
+- Brave Bird  
+- Earthquake  
+- Tera Blast  
+
+Alomomola @ Leftovers  
+Ability: Regenerator  
+Level: 50  
+Tera Type: Poison  
+EVs: 132 HP / 252 Def / 124 SpD  
+Relaxed Nature  
+IVs: 0 Spe  
+- Protect  
+- Substitute  
+- Wish  
+- Flip Turn  
+
+Brute Bonnet @ Heavy-Duty Boots  
+Ability: Protosynthesis  
+Level: 50  
+Tera Type: Normal  
+EVs: 252 HP / 4 Atk / 252 SpD  
+Careful Nature  
+- Spore  
+- Payback  
+- Clear Smog  
+- Synthesis  
+
+Ursaluna-Bloodmoon @ Custap Berry  
+Ability: Mind's Eye  
+Level: 50  
+Tera Type: Normal  
+EVs: 180 HP / 116 Def / 196 SpA / 4 SpD / 12 Spe  
+Modest Nature  
+- Blood Moon  
+- Earth Power  
+- Vacuum Wave  
+- Endure  
+

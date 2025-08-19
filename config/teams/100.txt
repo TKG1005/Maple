@@ -1,0 +1,66 @@
+Calyrex-Shadow @ Focus Sash  
+Ability: As One (Spectrier)  
+Level: 50  
+Tera Type: Grass  
+EVs: 4 Def / 252 SpA / 252 Spe  
+Timid Nature  
+- Astral Barrage  
+- Giga Drain  
+- Nasty Plot  
+- Encore  
+
+Ting-Lu @ Sitrus Berry  
+Ability: Vessel of Ruin  
+Level: 50  
+Tera Type: Water  
+EVs: 244 HP / 12 Atk / 84 Def / 124 SpD / 44 Spe  
+Impish Nature  
+- Earthquake  
+- Rock Tomb  
+- Spikes  
+- Taunt  
+
+Chien-Pao @ Never-Melt Ice  
+Ability: Sword of Ruin  
+Level: 50  
+Tera Type: Fire  
+EVs: 28 HP / 252 Atk / 164 Def / 4 SpD / 60 Spe  
+Adamant Nature  
+- Icicle Crash  
+- Sucker Punch  
+- Ice Shard  
+- Swords Dance  
+
+Eternatus @ Power Herb  
+Ability: Pressure  
+Level: 50  
+Tera Type: Fire  
+EVs: 108 HP / 252 SpA / 148 Spe  
+Modest Nature  
+- Dynamax Cannon  
+- Flamethrower  
+- Meteor Beam  
+- Agility  
+
+Mimikyu @ Rocky Helmet  
+Ability: Disguise  
+Level: 50  
+Tera Type: Stellar  
+EVs: 180 HP / 156 Atk / 108 Def / 4 SpD / 60 Spe  
+Adamant Nature  
+- Play Rough  
+- Shadow Sneak  
+- Curse  
+- Protect  
+
+Dondozo @ Assault Vest  
+Ability: Unaware  
+Level: 50  
+Tera Type: Grass  
+EVs: 252 HP / 84 Atk / 172 SpD  
+Adamant Nature  
+- Wave Crash  
+- Earthquake  
+- Avalanche  
+- Crunch  
+
