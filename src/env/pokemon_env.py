@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any, Tuple
+import concurrent.futures as cf
 import os
 import warnings
 
@@ -24,6 +25,7 @@ from .env_player import EnvPlayer
 from .dual_mode_player import DualModeEnvPlayer, validate_mode_configuration
 from src.rewards import HPDeltaReward, CompositeReward, RewardNormalizer
 from src.sim.battle_state_serializer import BattleStateManager, PokeEnvBattleSerializer
+from src.env.rqid_notifier import get_global_rqid_notifier
 
 
 class PokemonEnv(gym.Env):
@@ -216,6 +218,130 @@ class PokemonEnv(gym.Env):
                 self.defer_action_conversion = env_flag.lower() in ("1", "true", "yes")
         except Exception:
             pass
+
+        # --- Diagnostics helpers (FD/handler stats) ---
+        def _fd_count() -> int:
+            try:
+                return len(os.listdir('/dev/fd'))
+            except Exception:
+                return -1
+        self._fd_count = _fd_count  # type: ignore[attr-defined]
+
+    def _log_fd_stats(self, tag: str) -> None:
+        """Log file descriptor and logger handler stats, plus IPC controller counts if available."""
+        # Reduce verbosity: only key tags by default unless MAPLE_FD_VERBOSE=1
+        try:
+            verbose = str(os.environ.get("MAPLE_FD_VERBOSE", "0")).lower() in ("1", "true", "yes")
+            essential = tag in {"reset_start", "env_close", "battle_finished_notify"}
+            if not verbose and not essential:
+                return
+            fd = self._fd_count() if hasattr(self, "_fd_count") else -1
+        except Exception:
+            fd = -1
+        try:
+            root_handlers = len(logging.getLogger().handlers)
+        except Exception:
+            root_handlers = -1
+        ipc_ctrls: dict[str, int] = {}
+        try:
+            for pid, p in getattr(self, "_env_players", {}).items():
+                wrapper = getattr(p, "ipc_client_wrapper", None)
+                if wrapper is not None:
+                    ctrls = getattr(wrapper, "_controllers", {})
+                    try:
+                        ipc_ctrls[pid] = len(ctrls)  # type: ignore[arg-type]
+                    except Exception:
+                        ipc_ctrls[pid] = -1
+        except Exception:
+            pass
+        try:
+            self._logger.info(
+                "[FD] tag=%s open_fds=%s root_handlers=%s ipc_controllers=%s",
+                tag,
+                fd,
+                root_handlers,
+                ipc_ctrls or {},
+            )
+        except Exception:
+            pass
+        
+    # --- Robust WS teardown helper (online mode) ---
+    def _force_close_psclient(self, ps_client: Any, player_id: str | None = None) -> None:
+        try:
+            # Stop listening if available
+            stop_listening = getattr(ps_client, "stop_listening", None)
+            if callable(stop_listening):
+                try:
+                    asyncio.run_coroutine_threadsafe(stop_listening(), POKE_LOOP).result()
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_TEARDOWN] stop_listening failed pid=%s: %s",
+                        player_id,
+                        e,
+                    )
+                    raise
+            # Close websocket and wait for closure
+            ws = getattr(ps_client, "websocket", None)
+            if ws is not None:
+                try:
+                    close_coro = getattr(ws, "close", None)
+                    if callable(close_coro):
+                        asyncio.run_coroutine_threadsafe(close_coro(), POKE_LOOP).result()
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_TEARDOWN] websocket.close failed pid=%s: %s",
+                        player_id,
+                        e,
+                    )
+                    raise
+                try:
+                    wait_closed = getattr(ws, "wait_closed", None)
+                    if callable(wait_closed):
+                        asyncio.run_coroutine_threadsafe(wait_closed(), POKE_LOOP).result()
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_TEARDOWN] websocket.wait_closed failed pid=%s: %s",
+                        player_id,
+                        e,
+                    )
+                    raise
+                try:
+                    setattr(ps_client, "websocket", None)
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_TEARDOWN] clearing websocket ref failed pid=%s: %s",
+                        player_id,
+                        e,
+                    )
+                    raise
+            # Cancel common background tasks if present
+            for attr in ("_receive_task", "_keep_alive_task", "_listen_task"):
+                try:
+                    t = getattr(ps_client, attr, None)
+                    if isinstance(t, asyncio.Task):
+                        try:
+                            t.cancel()
+                        except Exception as e:
+                            self._logger.exception(
+                                "[WS_TEARDOWN] task cancel failed pid=%s (%s): %s",
+                                player_id,
+                                attr,
+                                e,
+                            )
+                            raise
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_TEARDOWN] access task attr failed pid=%s (%s): %s",
+                        player_id,
+                        attr,
+                        e,
+                    )
+                    raise
+        except Exception as e:
+            self._logger.exception(
+                "[WS_TEARDOWN] unexpected error pid=%s: %s", player_id, e
+            )
+            raise
         
     def _get_team_for_battle(self) -> str | None:
         """Get team content for the current battle.
@@ -349,6 +475,8 @@ class PokemonEnv(gym.Env):
         self._action_mappings = {agent_id: {} for agent_id in self.agent_ids}
         self._last_rqids = {agent_id: None for agent_id in self.agent_ids}
         self._logger.debug("environment reset: cleared action queues and mappings")
+        # FD/handler snapshot at reset start
+        self._log_fd_stats("reset_start")
 
         # poke_env は開発環境によってはインストールされていない場合があるため、
         # メソッド内で遅延インポートする。
@@ -378,11 +506,46 @@ class PokemonEnv(gym.Env):
             # 既存プレイヤーがある場合はクリーンアップ
             if hasattr(self, "_env_players"):
                 for p in self._env_players.values():
-                    if hasattr(p, "close"):
+                    if self.battle_mode == "online":
+                        # Try player's own close_connection first
                         try:
-                            p.close()
-                        except Exception:
-                            pass  # Ignore cleanup errors
+                            if hasattr(p, "close_connection"):
+                                asyncio.run_coroutine_threadsafe(
+                                    p.close_connection(), POKE_LOOP
+                                ).result()
+                        except Exception as e:
+                            self._logger.exception(
+                                "[WS_CLEANUP] player.close_connection failed pid=%s: %s",
+                                getattr(p, "player_id", "unknown"),
+                                e,
+                            )
+                            raise
+                        # Force-close only if websocket remains
+                        try:
+                            ps_client = getattr(p, "ps_client", None)
+                            if ps_client is not None and getattr(ps_client, "websocket", None) is not None:
+                                self._force_close_psclient(ps_client, getattr(p, "player_id", None))
+                        except Exception as e:
+                            self._logger.exception(
+                                "[WS_CLEANUP] force_close_psclient failed pid=%s: %s",
+                                getattr(p, "player_id", "unknown"),
+                                e,
+                            )
+                            raise
+                # Diagnostics: count remaining websockets after teardown (online only)
+                try:
+                    if self.battle_mode == "online":
+                        rem = 0
+                        for p in self._env_players.values():
+                            pc = getattr(p, "ps_client", None)
+                            if pc is not None and getattr(pc, "websocket", None) is not None:
+                                rem += 1
+                        if rem:
+                            self._logger.info("[WS_CLEANUP] remaining_websockets=%d", rem)
+                except Exception as e:
+                    self._logger.exception(
+                        "[WS_CLEANUP] remaining_websockets check failed: %s", e
+                    )
             
             # 各プレイヤー用にチームを選択（ファイル指定 or random/default）
             override_team: str | None = None
@@ -668,6 +831,18 @@ class PokemonEnv(gym.Env):
             
         except Exception:
             self._logger.exception("failed to notify battle finished for %s", player_id)
+        else:
+            # Record FD stats once per battle tag when a battle is marked finished
+            try:
+                if not hasattr(self, "_fd_bf_logged"):
+                    self._fd_bf_logged: set[str] = set()
+                tag = getattr(battle, "battle_tag", None)
+                if isinstance(tag, str) and tag not in self._fd_bf_logged:
+                    self._log_fd_stats("battle_finished_notify")
+                    self._fd_bf_logged.add(tag)
+            except Exception:
+                # Fallback without dedup if anything goes wrong
+                self._log_fd_stats("battle_finished_notify")
 
     def _race_get(
         self,
@@ -1145,36 +1320,72 @@ class PokemonEnv(gym.Env):
         # battle.last_request の更新が反映されるまで短いスリープで再評価する。
         if pending:
             rqid_sync_start = time.monotonic()
-            iterations = 0
+            iterations = 0  # kept for metrics compatibility
             deadline = time.monotonic() + float(self.timeout)
+
+            # Build notifier and per-pid wait futures lazily
+            notifier = get_global_rqid_notifier()
+            wait_futs: dict[str, cf.Future] = {}
+
+            def _ensure_future(pid: str) -> None:
+                if pid in wait_futs and not wait_futs[pid].done():
+                    return
+                baseline = prev_rqids.get(pid)
+                coro = notifier.wait_for_rqid_change(pid, baseline_rqid=baseline, timeout=max(0.0, deadline - time.monotonic()))
+                # Schedule on POKE_LOOP to match notifier loop usage
+                wait_futs[pid] = asyncio.run_coroutine_threadsafe(coro, POKE_LOOP)
+
+            # Initial futures for current pending set
+            for pid in list(pending):
+                # Double-check need before registering waits
+                if _needs_update(pid, battles[pid], prev_rqids.get(pid)):
+                    _ensure_future(pid)
+                else:
+                    pending.discard(pid)
+
+            # Event-driven loop: wait for any rqid change, then re-evaluate
             while pending and time.monotonic() < deadline:
+                # Filter current valid futures
+                current_futs = [wait_futs[pid] for pid in pending if pid in wait_futs]
+                if not current_futs:
+                    # No active waits; create them for remaining pids
+                    for pid in list(pending):
+                        _ensure_future(pid)
+                    current_futs = [wait_futs[pid] for pid in pending if pid in wait_futs]
+                    if not current_futs:
+                        break
+
+                remaining = max(0.0, deadline - time.monotonic())
+                done, not_done = cf.wait(current_futs, timeout=remaining, return_when=cf.FIRST_COMPLETED)
+
+                # Any completion (success or exception) should trigger re-check
+                if not done:
+                    # Overall timeout reached
+                    break
+
+                # Consume results to surface exceptions for diagnostics but continue loop
+                for fut in done:
+                    try:
+                        _ = fut.result()
+                    except Exception:
+                        # Errors are handled by timeout/error path later
+                        pass
+
+                # Re-evaluate all pids against current battles state
                 for pid in list(pending):
                     b = battles[pid]
                     if not _needs_update(pid, b, prev_rqids.get(pid)):
                         pending.discard(pid)
+                        # Cancel and drop its future if any
+                        fut = wait_futs.pop(pid, None)
+                        if fut is not None and not fut.done():
+                            try:
+                                fut.cancel()
+                            except Exception:
+                                pass
                     else:
-                        # Trace unchanged state for diagnostics
-                        try:
-                            lr = getattr(b, "last_request", None)
-                            rq = lr.get("rqid") if isinstance(lr, dict) else None
-                            tp = bool(lr.get("teamPreview")) if isinstance(lr, dict) else False
-                            wt = bool(lr.get("wait")) if isinstance(lr, dict) else False
-                            fs = bool(lr.get("forceSwitch")) if isinstance(lr, dict) else False
-                            self._logger.debug(
-                                "[RQSYNC] %s pending obj=%s tag=%s type=%s rqid=%s prev=%s",
-                                pid,
-                                hex(id(b)) if b else None,
-                                getattr(b, "battle_tag", "?"),
-                                ("teampreview" if tp else ("wait" if wt else ("force" if fs else "normal"))),
-                                rq,
-                                prev_rqids.get(pid),
-                            )
-                        except Exception:
-                            pass
-                # Allow PSClient/IPC pumps to process and update in-place
-                if pending:
-                    iterations += 1
-                    asyncio.run_coroutine_threadsafe(asyncio.sleep(0.05), POKE_LOOP).result()
+                        # Ensure a new wait is registered if the previous one completed
+                        _ensure_future(pid)
 
         # Log success metrics when pending cleared without timeout
         if not pending:
@@ -1185,6 +1396,11 @@ class PokemonEnv(gym.Env):
                     dt_ms,
                     iterations if 'iterations' in locals() else 0,
                 )
+            except Exception:
+                pass
+            # FD snapshot on successful rqid sync
+            try:
+                self._log_fd_stats("rqid_sync_success")
             except Exception:
                 pass
 
@@ -1428,26 +1644,32 @@ class PokemonEnv(gym.Env):
 
         if hasattr(self, "_env_players"):
             for p in self._env_players.values():
-                # Prefer player's own close_connection if available (handles IPC/WS)
-                try:
-                    if hasattr(p, "close_connection"):
-                        asyncio.run_coroutine_threadsafe(
-                            p.close_connection(), POKE_LOOP
-                        ).result()
-                        continue
-                except Exception:
-                    pass
-                # Fallback to PSClient.stop_listening only when websocket exists
-                try:
-                    ps_client = getattr(p, "ps_client", None)
-                    stop_listening = getattr(ps_client, "stop_listening", None)
-                    websocket_obj = getattr(ps_client, "websocket", None)
-                    if callable(stop_listening) and websocket_obj is not None:
-                        asyncio.run_coroutine_threadsafe(
-                            stop_listening(), POKE_LOOP
-                        ).result()
-                except Exception:
-                    pass
+                if self.battle_mode == "online":
+                    # Try player's own close_connection first
+                    try:
+                        if hasattr(p, "close_connection"):
+                            asyncio.run_coroutine_threadsafe(
+                                p.close_connection(), POKE_LOOP
+                            ).result()
+                    except Exception as e:
+                        self._logger.exception(
+                            "[WS_CLEANUP] player.close_connection failed pid=%s: %s",
+                            getattr(p, "player_id", "unknown"),
+                            e,
+                        )
+                        raise
+                    # Force-close only if websocket remains
+                    try:
+                        ps_client = getattr(p, "ps_client", None)
+                        if ps_client is not None and getattr(ps_client, "websocket", None) is not None:
+                            self._force_close_psclient(ps_client, getattr(p, "player_id", None))
+                    except Exception as e:
+                        self._logger.exception(
+                            "[WS_CLEANUP] force_close_psclient failed pid=%s: %s",
+                            getattr(p, "player_id", "unknown"),
+                            e,
+                        )
+                        raise
             self._env_players.clear()
 
         # Drain any leftover items from queues to avoid join() blocking
@@ -1488,6 +1710,8 @@ class PokemonEnv(gym.Env):
             pass
         self._action_queues.clear()
         self._battle_queues.clear()
+        # FD snapshot after environment close
+        self._log_fd_stats("env_close")
 
     def _validate_battle_mode_config(self, config: dict) -> None:
         """Validate battle mode configuration."""

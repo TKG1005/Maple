@@ -396,13 +396,24 @@ class DualModeEnvPlayer(EnvPlayer):
     
     
     async def close_connection(self) -> None:
-        """Close the communicator connection."""
-        if self._communicator:
-            await self._communicator.disconnect()
-        
-        # Call parent close if in online mode
-        if self.mode == "online" and hasattr(super(), 'close_connection'):
-            await super().close_connection()
+        """Close connections for both IPC (local) and WebSocket (online) modes."""
+        # Local IPC side: disconnect communicator and wrapper if present
+        try:
+            if self._communicator:
+                await self._communicator.disconnect()
+        except Exception:
+            pass
+        try:
+            if hasattr(self, 'ipc_client_wrapper') and self.ipc_client_wrapper is not None:
+                await self.ipc_client_wrapper.disconnect()
+        except Exception:
+            pass
+
+        # Always attempt to close parent (poke-env) connection for online mode
+        try:
+            await super().close_connection()  # type: ignore[misc]
+        except Exception:
+            pass
     
     async def battle_against(self, opponent, n_battles=1):
         """Override battle_against for IPC mode.
