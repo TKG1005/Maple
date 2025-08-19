@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 
 logger = logging.getLogger(__name__)
+from src.profiling.metrics import emit_metric
 
 
 @dataclass
@@ -64,12 +65,12 @@ class RqidNotifier:
         if ent.last_rqid is not None and ent.last_rqid != baseline_rqid:
             try:
                 dt_ms = int((time.monotonic() - start) * 1000)
-                logger.info(
-                    "[METRIC] tag=RQWAIT_FAST pid=%s baseline=%s new_rqid=%s elapsed_ms=%d",
-                    player_id,
-                    baseline_rqid,
-                    ent.last_rqid,
-                    dt_ms,
+                emit_metric(
+                    "RQWAIT_FAST",
+                    pid=player_id,
+                    baseline=baseline_rqid,
+                    new_rqid=ent.last_rqid,
+                    elapsed_ms=dt_ms,
                 )
             except Exception:
                 pass
@@ -81,11 +82,11 @@ class RqidNotifier:
             if remaining <= 0:
                 try:
                     dt_ms = int((time.monotonic() - start) * 1000)
-                    logger.info(
-                        "[METRIC] tag=RQWAIT_TIMEOUT pid=%s baseline=%s elapsed_ms=%d",
-                        player_id,
-                        baseline_rqid,
-                        dt_ms,
+                    emit_metric(
+                        "RQWAIT_TIMEOUT",
+                        pid=player_id,
+                        baseline=baseline_rqid,
+                        elapsed_ms=dt_ms,
                     )
                 except Exception:
                     pass
@@ -99,17 +100,17 @@ class RqidNotifier:
             if ent.closed:
                 raise RuntimeError(f"notifier closed for {player_id}")
             if ent.last_rqid is not None and ent.last_rqid != baseline_rqid:
-                try:
-                    dt_ms = int((time.monotonic() - start) * 1000)
-                    logger.info(
-                        "[METRIC] tag=RQWAIT_OK pid=%s baseline=%s new_rqid=%s elapsed_ms=%d",
-                        player_id,
-                        baseline_rqid,
-                        ent.last_rqid,
-                        dt_ms,
-                    )
-                except Exception:
-                    pass
+            try:
+                dt_ms = int((time.monotonic() - start) * 1000)
+                emit_metric(
+                    "RQWAIT_OK",
+                    pid=player_id,
+                    baseline=baseline_rqid,
+                    new_rqid=ent.last_rqid,
+                    elapsed_ms=dt_ms,
+                )
+            except Exception:
+                pass
                 return int(ent.last_rqid)
 
     async def publish_rqid_update(self, player_id: str, rqid: Optional[int], meta: Optional[dict] = None) -> None:
@@ -142,4 +143,3 @@ def get_global_rqid_notifier() -> RqidNotifier:
     if _GLOBAL is None:
         _GLOBAL = RqidNotifier()
     return _GLOBAL
-

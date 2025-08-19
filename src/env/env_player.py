@@ -14,6 +14,7 @@ from poke_env.data.gen_data import GenData
 from poke_env.environment.pokemon import Pokemon
 from poke_env.teambuilder.constant_teambuilder import ConstantTeambuilder
 from .custom_battle import CustomBattle
+from src.profiling.metrics import emit_metric
 
 
 class EnvPlayer(Player):
@@ -127,17 +128,17 @@ class EnvPlayer(Player):
                                 last_drop_ts = now
                             try:
                                 q = self._env._action_queues[self.player_id]
-                                self._logger.info(
-                                    "[METRIC] tag=rqid_action_drop player=%s curr_rqid=%s mask_rqid=%s drop_count=%d qsize=%d empty=%s waiting=%s trying_again=%s elapsed_ms=%d",
-                                    self.player_id,
-                                    curr_rqid,
-                                    last_mask_rqid,
-                                    drop_count,
-                                    q.qsize(),
-                                    q.empty(),
-                                    self._waiting.is_set(),
-                                    self._trying_again.is_set(),
-                                    int((now - wait_started) * 1000),
+                                emit_metric(
+                                    "rqid_action_drop",
+                                    player=self.player_id,
+                                    curr_rqid=curr_rqid,
+                                    mask_rqid=last_mask_rqid,
+                                    drop_count=drop_count,
+                                    qsize=q.qsize(),
+                                    empty=q.empty(),
+                                    waiting=self._waiting.is_set(),
+                                    trying_again=self._trying_again.is_set(),
+                                    elapsed_ms=int((now - wait_started) * 1000),
                                 )
                             except Exception:
                                 pass
@@ -157,14 +158,18 @@ class EnvPlayer(Player):
                     # 受理時点の rQID も記録
                     lr2 = getattr(battle, "last_request", None)
                     accept_rqid = lr2.get("rqid") if isinstance(lr2, dict) else None
-                    self._logger.info(
-                        "[METRIC] tag=rqid_action_accept player=%s drop_count=%d gap_ms=%d total_wait_ms=%d accept_rqid=%s accepted_type=%s",
-                        self.player_id,
-                        drop_count,
-                        gap_ms,
-                        int((time.monotonic() - wait_started) * 1000),
-                        accept_rqid,
-                        ("int" if isinstance(action_data, int) else ("str" if isinstance(action_data, str) else type(action_data).__name__)),
+                    emit_metric(
+                        "rqid_action_accept",
+                        player=self.player_id,
+                        drop_count=drop_count,
+                        gap_ms=gap_ms,
+                        total_wait_ms=int((time.monotonic() - wait_started) * 1000),
+                        accept_rqid=accept_rqid,
+                        accepted_type=(
+                            "int" if isinstance(action_data, int) else (
+                                "str" if isinstance(action_data, str) else type(action_data).__name__
+                            )
+                        ),
                     )
                 except Exception:
                     pass
@@ -179,11 +184,11 @@ class EnvPlayer(Player):
             )
             try:
                 # 追加計測: タイムアウト時点での破棄回数/待機時間
-                self._logger.info(
-                    "[METRIC] tag=rqid_action_timeout player=%s drop_count=%s total_wait_ms=%d",
-                    self.player_id,
-                    'unknown' if 'drop_count' not in locals() else drop_count,
-                    int((time.monotonic() - (wait_started if 'wait_started' in locals() else time.monotonic())) * 1000),
+                emit_metric(
+                    "rqid_action_timeout",
+                    player=self.player_id,
+                    drop_count=('unknown' if 'drop_count' not in locals() else drop_count),
+                    total_wait_ms=int((time.monotonic() - (wait_started if 'wait_started' in locals() else time.monotonic())) * 1000),
                 )
             except Exception:
                 pass
