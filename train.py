@@ -988,6 +988,8 @@ def main(
                 log_level=log_level,
                 reuse_processes=cfg_reuse_processes,
                 max_processes=cfg_max_processes,
+                # Ensure event-sync setting propagates to gameplay envs
+                disable_race_get_micro_sleep=cfg_disable_race_get_micro_sleep,
             )
             
             # Determine opponent type for this environment
