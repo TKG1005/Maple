@@ -97,6 +97,13 @@ class PokemonEnv(gym.Env):
         self.battle_mode = battle_mode
         self.reuse_processes = reuse_processes
         self.max_processes = max_processes
+        # Toggle: disable micro-sleeps in _race_get when True (config-driven)
+        try:
+            self.disable_race_get_micro_sleep: bool = bool(
+                kwargs.get("disable_race_get_micro_sleep", False)
+            )
+        except Exception:
+            self.disable_race_get_micro_sleep = False
         
         # Skip validation for now as it requires complete configuration
         # TODO: Implement proper configuration validation in Phase 3
@@ -949,6 +956,20 @@ class PokemonEnv(gym.Env):
             # 追加される場合がある。直後にチェックすると空のままになってしまい
             # マスク生成に失敗するため、僅かに待機してから再確認する。
             micro_sleeps = 0
+            # Optional: skip micro-sleeps entirely when disabled via config
+            if getattr(self, "disable_race_get_micro_sleep", False):
+                try:
+                    if pid_label is not None:
+                        dt_ms = int((time.monotonic() - ts_start) * 1000)
+                        self._logger.info(
+                            "[METRIC] tag=race_get_no_micro_sleep pid=%s latency_ms=%d qsize0=%d",
+                            pid_label,
+                            dt_ms,
+                            qsize0 if 'qsize0' in locals() else -1,
+                        )
+                except Exception:
+                    pass
+                return None
             for _ in range(10):
                 await asyncio.sleep(0.05)  # タスク切り替えを促す
                 micro_sleeps += 1

@@ -87,7 +87,7 @@ from src.teams import TeamCacheManager  # noqa: E402
 from src.utils.server_manager import MultiServerManager  # noqa: E402
 
 
-def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", full_ipc: bool = False, log_level: int = logging.DEBUG, reuse_processes: bool | None = None, max_processes: int | None = None) -> PokemonEnv:
+def init_env(reward: str = "composite", reward_config: str | None = None, team_mode: str = "default", teams_dir: str | None = None, normalize_rewards: bool = True, server_config=None, battle_mode: str = "local", full_ipc: bool = False, log_level: int = logging.DEBUG, reuse_processes: bool | None = None, max_processes: int | None = None, disable_race_get_micro_sleep: bool | None = None) -> PokemonEnv:
     """Create :class:`PokemonEnv` for self-play."""
     observer = StateObserver(str(ROOT_DIR / "config" / "state_spec.yml"))
     env = PokemonEnv(
@@ -105,6 +105,7 @@ def init_env(reward: str = "composite", reward_config: str | None = None, team_m
         log_level=log_level,
         reuse_processes=reuse_processes,
         max_processes=max_processes,
+        disable_race_get_micro_sleep=disable_race_get_micro_sleep,
     )
     return env
 
@@ -652,6 +653,9 @@ def main(
     local_mode_cfg = cfg.get("local_mode", {})
     cfg_reuse_processes = local_mode_cfg.get("reuse_processes", True)
     cfg_max_processes = int(local_mode_cfg.get("max_processes", 2))
+    # Event-driven sync toggles
+    event_sync_cfg = cfg.get("event_sync", {})
+    cfg_disable_race_get_micro_sleep = bool(event_sync_cfg.get("race_get_no_micro_sleep", False))
     sample_env = init_env(
         reward=reward,
         reward_config=reward_config,
@@ -663,6 +667,7 @@ def main(
         log_level=log_level,
         reuse_processes=cfg_reuse_processes,
         max_processes=cfg_max_processes,
+        disable_race_get_micro_sleep=cfg_disable_race_get_micro_sleep,
     )
     
     # Get network configuration
@@ -1205,7 +1210,8 @@ def main(
                     server_config=temp_server_config,
                     battle_mode=battle_mode,
                     log_level=log_level,
-                    full_ipc=full_ipc
+                    full_ipc=full_ipc,
+                    disable_race_get_micro_sleep=cfg_disable_race_get_micro_sleep,
                 )
                 temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
                 
@@ -1262,7 +1268,8 @@ def main(
                 server_config=temp_server_config,
                 battle_mode=battle_mode,
                 log_level=log_level,
-                full_ipc=full_ipc
+                full_ipc=full_ipc,
+                disable_race_get_micro_sleep=cfg_disable_race_get_micro_sleep,
             )
             temp_agent = RLAgent(temp_env, policy_net, value_net, optimizer, algorithm=algorithm)
             
