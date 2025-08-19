@@ -9,6 +9,28 @@ from typing import Optional
 from logging import Logger
 
 
+class _PSClientNoiseFilter(logging.Filter):
+    """Filter to drop verbose duplicate PSClient raw messages.
+
+    Suppresses logger-emitted copies of messages that are also printed raw,
+    such as PSClient._handle_message raw payloads and '<<< >battle' dumps.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:  # type: ignore[override]
+        try:
+            msg = record.getMessage()
+        except Exception:
+            return True
+        if not isinstance(msg, str):
+            return True
+        # Drop detailed raw payload echoes that also appear as raw prints
+        if msg.startswith("PSClient._handle_message: raw="):
+            return False
+        if msg.startswith("<<< >battle"):
+            return False
+        return True
+
+
 def create_logger_without_duplicate_handlers(username: str, log_level: Optional[int]) -> Logger:
     """Create a logger without adding duplicate handlers.
     
@@ -26,6 +48,13 @@ def create_logger_without_duplicate_handlers(username: str, log_level: Optional[
         )
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
+    # Ensure noise filter is attached exactly once
+    try:
+        has_filter = any(isinstance(f, _PSClientNoiseFilter) for f in logger.filters)
+    except Exception:
+        has_filter = False
+    if not has_filter:
+        logger.addFilter(_PSClientNoiseFilter())
     
     # Always update log level if provided
     if log_level is not None:
