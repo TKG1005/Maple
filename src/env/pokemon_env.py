@@ -996,6 +996,7 @@ class PokemonEnv(gym.Env):
         # Phase 2 (Future optimization): Battle state retrieval - currently sequential
         # TODO: Implement _retrieve_battles_parallel() for further performance gains
         battles: dict[str, Any] = {}
+        # このステップで各プレイヤーの request/rqid が更新されたかを rqid ベースで検知する
         updated: dict[str, bool] = {}
         # Snapshot previous rqids for synchronization check
         prev_rqids: dict[str, int | None] = {pid: self._last_rqids.get(pid) for pid in self.agent_ids}
@@ -1046,9 +1047,25 @@ class PokemonEnv(gym.Env):
                     self._need_action[pid] = False
             battles[pid] = battle
 
-            updated[pid] = battle is not None and (
-                battle.last_request is not self._last_requests.get(pid)
-            )
+            # rqid の差分、または update:true の付与を「更新」とみなす
+            try:
+                prev_lr = self._last_requests.get(pid)
+                prev_rqid = (
+                    prev_lr.get("rqid") if isinstance(prev_lr, dict) else None
+                )
+                curr_lr = getattr(battle, "last_request", None)
+                curr_rqid = (
+                    curr_lr.get("rqid") if isinstance(curr_lr, dict) else None
+                )
+                has_update_flag = bool(
+                    isinstance(curr_lr, dict) and curr_lr.get("update") is True
+                )
+                updated[pid] = bool(
+                    (prev_rqid is not None and curr_rqid is not None and curr_rqid != prev_rqid)
+                    or has_update_flag
+                )
+            except Exception:
+                updated[pid] = False
             # Snapshot per-pid summary after retrieval path is decided
             
             # Log current battle object and last_request summary for each player
@@ -1078,25 +1095,49 @@ class PokemonEnv(gym.Env):
             lr = getattr(b, "last_request", None)
             return lr.get("rqid") if isinstance(lr, dict) else None
 
-        def _needs_update(b: Any, prev: int | None) -> bool:
-            # finished battles do not require updates
+        # 対向プレイヤーの rqid 変化状況を参照できるように現在 rqid を収集
+        current_rqids: dict[str, int | None] = {pid: _get_rqid(battles[pid]) for pid in self.agent_ids}
+
+        def _needs_update(pid: str, b: Any, prev: int | None) -> bool:
+            """片側だけの rqid 更新を許容し、必要な側のみ待機する判定。
+
+            - finished: 待たない
+            - teamPreview: 従来通り待つ
+            - update:true: 直ちに処理（待たない）
+            - このステップで更新が検知されていない側は待たない
+            - それ以外は、前回 rqid が存在し、かつ未変化のときのみ待つ
+            - ただし相手側がこのステップで rqid 更新（または update:true）している場合は待たない
+            """
             if getattr(b, "finished", False):
                 return False
             lr = getattr(b, "last_request", None)
-            if isinstance(lr, dict):
-                # Consider teampreview as not-ready
-                if lr.get("teamPreview"):
-                    return True
-                # If we have a previous rqid, require it to change
-                if prev is not None:
-                    curr = lr.get("rqid")
-                    return curr == prev
+            if not isinstance(lr, dict):
+                # 構造化 request が未到着なら一旦待つ
+                return True
+
+            if lr.get("teamPreview"):
+                return True
+
+            if lr.get("update") is True:
                 return False
-            # If we don't have a structured request yet, wait
-            return True
+
+            # このステップで自身に更新がなければ待たない
+            if not updated.get(pid, False):
+                return False
+
+            # 相手がこのステップで更新しているなら、自身の未変化は待たない
+            opp = "player_1" if pid == "player_0" else "player_0"
+            if updated.get(opp, False):
+                return False
+
+            # 上記いずれにも該当しなければ rqid の未変化を待つ
+            if prev is not None:
+                curr = lr.get("rqid")
+                return curr == prev
+            return False
 
         pending: set[str] = set(
-            pid for pid in self.agent_ids if _needs_update(battles[pid], prev_rqids.get(pid))
+            pid for pid in self.agent_ids if _needs_update(pid, battles[pid], prev_rqids.get(pid))
         )
 
         # RQID 同期: 以降は同一 Battle オブジェクトの in-place 更新を待つ。
@@ -1109,7 +1150,7 @@ class PokemonEnv(gym.Env):
             while pending and time.monotonic() < deadline:
                 for pid in list(pending):
                     b = battles[pid]
-                    if not _needs_update(b, prev_rqids.get(pid)):
+                    if not _needs_update(pid, b, prev_rqids.get(pid)):
                         pending.discard(pid)
                     else:
                         # Trace unchanged state for diagnostics
@@ -1409,10 +1450,42 @@ class PokemonEnv(gym.Env):
                     pass
             self._env_players.clear()
 
-        for q in self._action_queues.values():
+        # Drain any leftover items from queues to avoid join() blocking
+        async def _drain(q: asyncio.Queue[Any]) -> int:
+            drained = 0
+            while True:
+                try:
+                    item = q.get_nowait()
+                except asyncio.QueueEmpty:
+                    break
+                else:
+                    drained += 1
+                    q.task_done()
+            return drained
+
+        for q in list(self._action_queues.values()):
+            try:
+                asyncio.run_coroutine_threadsafe(_drain(q), POKE_LOOP).result()
+            except Exception:
+                pass
             asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
-        for q in self._battle_queues.values():
+
+        for q in list(self._battle_queues.values()):
+            try:
+                asyncio.run_coroutine_threadsafe(_drain(q), POKE_LOOP).result()
+            except Exception:
+                pass
             asyncio.run_coroutine_threadsafe(q.join(), POKE_LOOP).result()
+
+        # Clear finished events to release any waiters
+        try:
+            for ev in getattr(self, "_finished_events", {}).values():
+                try:
+                    ev.clear()
+                except Exception:
+                    pass
+        except Exception:
+            pass
         self._action_queues.clear()
         self._battle_queues.clear()
 

@@ -349,48 +349,31 @@ class DualModeEnvPlayer(EnvPlayer):
             )
             self._logger.debug(f"Online mode player initialized for {player_id}")
         else:
-            # Local mode initialization - Phase 4 adds full_ipc support
+            # Local mode initialization - Always run in full IPC mode (WebSocket disabled)
             if server_configuration is None:
                 # Create a valid server configuration for compatibility
                 server_configuration = ServerConfiguration("localhost", 8000)
-            
-            if full_ipc:
-                # Phase 4: Full IPC mode - completely disable WebSocket
-                self._logger.debug(f"Phase 4: Initializing full IPC mode for {player_id}")
-                kwargs['start_listening'] = False  # Disable WebSocket completely
-                
-                try:
-                    super().__init__(
-                        env=env,
-                        player_id=player_id,
-                        server_configuration=server_configuration,
-                        **kwargs
-                    )
-                    self._logger.debug(f"Full IPC mode player initialized for {player_id} (WebSocket disabled)")
-                except Exception as e:
-                    self._logger.error(f"❌ Full IPC initialization failed for {player_id}: {e}")
-                    raise RuntimeError(f"Full IPC mode requires working IPC infrastructure: {e}") from e
-            else:
-                # Phase 3: Local mode with WebSocket fallback
+            # Disable WebSocket completely in local mode
+            self._logger.debug(f"Initializing full IPC local mode for {player_id} (WebSocket disabled)")
+            kwargs['start_listening'] = False
+            try:
                 super().__init__(
                     env=env,
                     player_id=player_id,
                     server_configuration=server_configuration,
                     **kwargs
                 )
-                self._logger.debug(f"Local mode player initialized for {player_id} with IPC capability (WebSocket fallback for Phase 3)")
+                self._logger.debug(f"Full IPC mode player initialized for {player_id} (WebSocket disabled)")
+            except Exception as e:
+                self._logger.error(f"❌ Full IPC initialization failed for {player_id}: {e}")
+                raise RuntimeError(f"Local mode requires working IPC infrastructure: {e}") from e
         
-        # For local mode, initialize IPC communicator and (if requested) establish full IPC
+        # For local mode, initialize IPC communicator
         if mode == "local":
             # Initialize communicator (create IPCClientWrapper)
             self._initialize_communicator(reuse_processes, max_processes)
-            if full_ipc:
-                # Phase 4: Full IPC mode - must establish working connection
-                self._logger.debug(f"Phase 4: Establishing mandatory IPC connection for {self.player_id}")
-                self._establish_full_ipc_connection()
-            else:
-                # Phase 3: IPC capability initialized
-                self._logger.debug(f"IPC capability initialized for {self.player_id} (WebSocket fallback)")
+            # Log IPC readiness
+            self._logger.debug(f"IPC capability initialized for {self.player_id} (full IPC mode)")
     
     def _initialize_communicator(self, reuse_processes: Optional[bool] = None, max_processes: Optional[int] = None) -> None:
         """Initialize IPCClientWrapper for local mode."""
