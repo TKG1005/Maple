@@ -7,6 +7,8 @@ import psutil
 import time
 import torch
 from dataclasses import dataclass, field
+import logging
+import random
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 import json
@@ -277,3 +279,59 @@ class ProfileMetrics:
             }
         }
         return result
+
+
+# ---- Lightweight metric emitter (Step 6) ----
+_logger = logging.getLogger(__name__)
+
+
+def _sanitize_key(k: str) -> str:
+    try:
+        k = str(k)
+        return "".join(ch if (ch.isalnum() or ch in "_-:") else "_" for ch in k)
+    except Exception:
+        return "key"
+
+
+def _coerce_value(v: Any) -> str:
+    try:
+        if v is None:
+            return "none"
+        if isinstance(v, bool):
+            return "true" if v else "false"
+        if isinstance(v, int):
+            return str(v)
+        if isinstance(v, float):
+            return ("%.3f" % v).rstrip("0").rstrip(".")
+        s = str(v)
+        if not s:
+            return ""  # allow empty
+        s = s.replace("\n", " ").replace("\t", " ")
+        if len(s) > 120:
+            s = s[:117] + "..."
+        return s
+    except Exception:
+        return "error"
+
+
+def _format_metric_line(tag: str, fields: Dict[str, Any]) -> str:
+    parts = [f"[METRIC] tag={_coerce_value(tag)}"]
+    for k in sorted(fields.keys()):
+        parts.append(f"{_sanitize_key(k)}={_coerce_value(fields[k])}")
+    return " ".join(parts)
+
+
+def emit_metric(tag: str, /, *, sample: float = 1.0, **fields: Any) -> None:
+    try:
+        if sample < 1.0:
+            if sample <= 0.0:
+                return
+            if random.random() > sample:
+                return
+        if not _logger.isEnabledFor(logging.INFO):
+            return
+        line = _format_metric_line(tag, fields)
+        _logger.info(line)
+    except Exception:
+        # Swallow all exceptions to avoid impacting control flow
+        pass

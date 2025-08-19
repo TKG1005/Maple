@@ -19,6 +19,7 @@ from poke_env.ps_client.server_configuration import ServerConfiguration
 from .env_player import EnvPlayer
 from src.sim.battle_communicator import CommunicatorFactory, BattleCommunicator
 from src.env.rqid_notifier import get_global_rqid_notifier
+from src.profiling.metrics import emit_metric
 
 class IPCClientWrapper:
     """IPC client wrapper to manage a Node.js process and JSON message exchange."""
@@ -717,11 +718,11 @@ class DualModeEnvPlayer(EnvPlayer):
             self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready (pre-check)!")
             try:
                 dt_ms = int((time.time() - start_time) * 1000)
-                self._logger.info(
-                    "[METRIC] tag=ready_wait_event player=%s battle=%s ready_wait_latency_ms=%d",
-                    self.player_id,
-                    battle_id,
-                    dt_ms,
+                emit_metric(
+                    "ready_wait_event",
+                    player=self.player_id,
+                    battle=battle_id,
+                    ready_wait_latency_ms=dt_ms,
                 )
             except Exception:
                 pass
@@ -743,11 +744,11 @@ class DualModeEnvPlayer(EnvPlayer):
             self._logger.debug(f"[{self.player_id}] Battle {battle_id} is ready (event)!")
             try:
                 dt_ms = int((time.time() - start_time) * 1000)
-                self._logger.info(
-                    "[METRIC] tag=ready_wait_event player=%s battle=%s ready_wait_latency_ms=%d",
-                    self.player_id,
-                    battle_id,
-                    dt_ms,
+                emit_metric(
+                    "ready_wait_event",
+                    player=self.player_id,
+                    battle=battle_id,
+                    ready_wait_latency_ms=dt_ms,
                 )
             except Exception:
                 pass
@@ -765,11 +766,11 @@ class DualModeEnvPlayer(EnvPlayer):
                     dt_ms,
                     e,
                 )
-                self._logger.info(
-                    "[METRIC] tag=ready_wait_event_timeout player=%s battle=%s elapsed_ms=%d",
-                    self.player_id,
-                    battle_id,
-                    dt_ms,
+                emit_metric(
+                    "ready_wait_event_timeout",
+                    player=self.player_id,
+                    battle=battle_id,
+                    elapsed_ms=dt_ms,
                 )
             except Exception:
                 pass

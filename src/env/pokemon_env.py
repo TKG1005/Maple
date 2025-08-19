@@ -26,6 +26,7 @@ from .dual_mode_player import DualModeEnvPlayer, validate_mode_configuration
 from src.rewards import HPDeltaReward, CompositeReward, RewardNormalizer
 from src.sim.battle_state_serializer import BattleStateManager, PokeEnvBattleSerializer
 from src.env.rqid_notifier import get_global_rqid_notifier
+from src.profiling.metrics import emit_metric
 
 
 class PokemonEnv(gym.Env):
@@ -900,11 +901,12 @@ class PokemonEnv(gym.Env):
                 try:
                     dt_ms = int((time.monotonic() - ts_start) * 1000)
                     if pid_label is not None:
-                        self._logger.info(
-                            "[METRIC] tag=race_get_decision pid=%s decision=get_task qsize0=%d latency_ms=%d",
-                            pid_label,
-                            qsize0,
-                            dt_ms,
+                        emit_metric(
+                            "race_get_decision",
+                            pid=pid_label,
+                            decision="get_task",
+                            qsize0=qsize0,
+                            latency_ms=dt_ms,
                         )
                 except Exception:
                     pass
@@ -917,11 +919,12 @@ class PokemonEnv(gym.Env):
                     try:
                         dt_ms = int((time.monotonic() - ts_start) * 1000)
                         if pid_label is not None:
-                            self._logger.info(
-                                "[METRIC] tag=race_get_decision pid=%s decision=finished_event qsize0=%d latency_ms=%d",
-                                pid_label,
-                                qsize0,
-                                dt_ms,
+                            emit_metric(
+                                "race_get_decision",
+                                pid=pid_label,
+                                decision="finished_event",
+                                qsize0=qsize0,
+                                latency_ms=dt_ms,
                             )
                     except Exception:
                         pass
@@ -936,11 +939,12 @@ class PokemonEnv(gym.Env):
                 try:
                     dt_ms = int((time.monotonic() - ts_start) * 1000)
                     if pid_label is not None:
-                        self._logger.info(
-                            "[METRIC] tag=race_get_decision pid=%s decision=drain_after_event qsize0=%d latency_ms=%d",
-                            pid_label,
-                            qsize0,
-                            dt_ms,
+                        emit_metric(
+                            "race_get_decision",
+                            pid=pid_label,
+                            decision="drain_after_event",
+                            qsize0=qsize0,
+                            latency_ms=dt_ms,
                         )
                 except Exception:
                     pass
@@ -949,11 +953,12 @@ class PokemonEnv(gym.Env):
             try:
                 dt_ms = int((time.monotonic() - ts_start) * 1000)
                 if pid_label is not None:
-                    self._logger.info(
-                        "[METRIC] tag=race_get_decision pid=%s decision=event_none qsize0=%d latency_ms=%d",
-                        pid_label,
-                        qsize0,
-                        dt_ms,
+                    emit_metric(
+                        "race_get_decision",
+                        pid=pid_label,
+                        decision="event_none",
+                        qsize0=qsize0,
+                        latency_ms=dt_ms,
                     )
             except Exception:
                 pass
@@ -1427,10 +1432,10 @@ class PokemonEnv(gym.Env):
         if not pending:
             try:
                 dt_ms = int((time.monotonic() - rqid_sync_start) * 1000) if 'rqid_sync_start' in locals() else 0
-                self._logger.info(
-                    "[METRIC] tag=rqid_sync_success rqid_wait_latency_ms=%d rqid_poll_iterations=%d",
-                    dt_ms,
-                    iterations if 'iterations' in locals() else 0,
+                emit_metric(
+                    "rqid_sync_success",
+                    rqid_wait_latency_ms=dt_ms,
+                    rqid_poll_iterations=(iterations if 'iterations' in locals() else 0),
                 )
             except Exception:
                 pass
@@ -1453,13 +1458,15 @@ class PokemonEnv(gym.Env):
                 )
                 try:
                     dt_ms = int((time.monotonic() - rqid_sync_start) * 1000) if 'rqid_sync_start' in locals() else 0
-                    self._logger.info(
-                        "[METRIC] tag=rqid_sync_timeout pid=%s rqid_timeouts_count=1 elapsed_ms=%d iterations=%d prev_rqid=%s curr_rqid=%s",
-                        pid,
-                        dt_ms,
-                        iterations if 'iterations' in locals() else 0,
-                        prev,
-                        curr,
+                    emit_metric(
+                        "rqid_sync_timeout",
+                        pid=pid,
+                        rqid_timeouts_count=1,
+                        elapsed_ms=dt_ms,
+                        iterations=(iterations if 'iterations' in locals() else 0),
+                        prev_rqid=prev,
+                        curr_rqid=curr,
+                        lr_type=lr_type,
                     )
                 except Exception:
                     pass
