@@ -142,8 +142,35 @@ class EpsilonGreedyWrapper(MapleAgent):
             valid_indices = []
         
         if not valid_indices:
-            # No valid actions, let wrapped agent handle it
-            self._logger.warning("No valid actions available, delegating to wrapped agent")
+            # No valid actions, add diagnostics: current turn and teampreview flag
+            try:
+                pid = self._get_player_id()
+            except Exception:
+                pid = "player_0"
+            turn = None
+            teampreview = False
+            try:
+                battle = self.env.get_current_battle(pid)
+                if battle is not None:
+                    # Current turn
+                    turn = getattr(battle, "turn", None)
+                    # Determine if current request is team preview
+                    lr = getattr(battle, "last_request", None)
+                    if isinstance(lr, dict):
+                        teampreview = bool(lr.get("teamPreview"))
+                    else:
+                        # Fallback to environment snapshot if available
+                        lr2 = getattr(self.env, "_last_requests", {}).get(pid)
+                        if isinstance(lr2, dict):
+                            teampreview = bool(lr2.get("teamPreview"))
+            except Exception:
+                pass
+            self._logger.warning(
+                "No valid actions available, delegating to wrapped agent (pid=%s, turn=%s, teampreview=%s)",
+                pid,
+                turn,
+                teampreview,
+            )
             return policy_result
         
         # Handle both probability and action index returns from wrapped agent

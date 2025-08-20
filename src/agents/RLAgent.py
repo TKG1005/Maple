@@ -109,7 +109,6 @@ class RLAgent(MapleAgent):
         if self.has_hidden_states:
             self.policy_hidden = None
             self.value_hidden = None
-            self._logger.debug("Hidden states reset for %s", self._get_player_id())
 
     def update(self, batch: dict[str, torch.Tensor]) -> float:
         """Delegate a training update to the underlying algorithm."""
