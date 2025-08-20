@@ -573,9 +573,32 @@ def main(
     win_rate_window = int(win_rate_window) if win_rate_window is not None else int(cfg.get("win_rate_window", 50))
     
     # Model management from config file
+    # Default model directory
+    default_model_dir = ROOT_DIR / "models"
     load_model = cfg.get("load_model", load_model)
     if load_model is not None:
         load_model = str(load_model)
+        # If the provided path does not exist, try resolving under models/ by default
+        try:
+            p = Path(load_model)
+            if not p.is_absolute():
+                # Prefer models/relative if it exists
+                candidate = default_model_dir / p
+                if candidate.exists():
+                    load_model = str(candidate)
+                else:
+                    # Also allow resolving relative to project root
+                    candidate2 = ROOT_DIR / p
+                    if candidate2.exists():
+                        load_model = str(candidate2)
+            else:
+                # Absolute path given but missing — attempt models/<basename>
+                if not p.exists():
+                    candidate = default_model_dir / p.name
+                    if candidate.exists():
+                        load_model = str(candidate)
+        except Exception:
+            pass
     # Only use config file value if command line flag was not explicitly set
     if not reset_optimizer:  # If command line flag was not set (False)
         reset_optimizer = bool(cfg.get("reset_optimizer", reset_optimizer))
@@ -584,6 +607,9 @@ def main(
         save_path = cfg.get("save_model", save_path)
     if save_path is not None:
         save_path = str(save_path)
+    # If still not specified, default to models/model.pt
+    if save_path is None or not str(save_path).strip():
+        save_path = str(default_model_dir / "model.pt")
     
     # Team configuration
     team_mode = team
