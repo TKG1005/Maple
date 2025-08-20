@@ -100,17 +100,17 @@ class RqidNotifier:
             if ent.closed:
                 raise RuntimeError(f"notifier closed for {player_id}")
             if ent.last_rqid is not None and ent.last_rqid != baseline_rqid:
-            try:
-                dt_ms = int((time.monotonic() - start) * 1000)
-                emit_metric(
-                    "RQWAIT_OK",
-                    pid=player_id,
-                    baseline=baseline_rqid,
-                    new_rqid=ent.last_rqid,
-                    elapsed_ms=dt_ms,
-                )
-            except Exception:
-                pass
+                try:
+                    dt_ms = int((time.monotonic() - start) * 1000)
+                    emit_metric(
+                        "RQWAIT_OK",
+                        pid=player_id,
+                        baseline=baseline_rqid,
+                        new_rqid=ent.last_rqid,
+                        elapsed_ms=dt_ms,
+                    )
+                except Exception:
+                    pass
                 return int(ent.last_rqid)
 
     async def publish_rqid_update(self, player_id: str, rqid: Optional[int], meta: Optional[dict] = None) -> None:
