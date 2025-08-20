@@ -14,3 +14,4 @@ runs/
 !pokemon-showdown/sim/ipc-battle-server.js
 checkpoints/
 .aider*
+checkpoints/
