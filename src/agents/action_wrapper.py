@@ -149,6 +149,7 @@ class EpsilonGreedyWrapper(MapleAgent):
                 pid = "player_0"
             turn = None
             teampreview = False
+            wait_flag = False
             try:
                 battle = self.env.get_current_battle(pid)
                 if battle is not None:
@@ -158,19 +159,23 @@ class EpsilonGreedyWrapper(MapleAgent):
                     lr = getattr(battle, "last_request", None)
                     if isinstance(lr, dict):
                         teampreview = bool(lr.get("teamPreview"))
+                        wait_flag = bool(lr.get("wait"))
                     else:
                         # Fallback to environment snapshot if available
                         lr2 = getattr(self.env, "_last_requests", {}).get(pid)
                         if isinstance(lr2, dict):
                             teampreview = bool(lr2.get("teamPreview"))
+                            wait_flag = bool(lr2.get("wait"))
             except Exception:
                 pass
-            self._logger.warning(
-                "No valid actions available, delegating to wrapped agent (pid=%s, turn=%s, teampreview=%s)",
-                pid,
-                turn,
-                teampreview,
-            )
+            # Do not log this warning when the request is a 'wait' phase
+            if not wait_flag:
+                self._logger.warning(
+                    "No valid actions available, delegating to wrapped agent (pid=%s, turn=%s, teampreview=%s)",
+                    pid,
+                    turn,
+                    teampreview,
+                )
             return policy_result
         
         # Handle both probability and action index returns from wrapped agent
