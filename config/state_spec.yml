@@ -459,7 +459,7 @@ my_active:
     dtype: optional
     battle_path: battle.active_pokemon.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
@@ -659,7 +659,7 @@ opp_active:
     dtype: optional
     battle_path: battle.opponent_active_pokemon.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
@@ -755,7 +755,7 @@ opp_active:
     dtype: optional
     battle_path: opp_bench1.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
@@ -1195,7 +1195,7 @@ my_bench1:
     dtype: optional
     battle_path: bench1.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
@@ -1717,7 +1717,7 @@ my_bench2:
     dtype: optional
     battle_path: bench2.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
@@ -1937,7 +1937,7 @@ opp_bench2:
     dtype: optional
     battle_path: opp_bench2.status
     encoder: onehot
-    default: '[1.0,0,0,0,0,0,0]'
+    default: '[1.0,0,0,0,0,0,0,0]'
     classes:
     - none
     - brn
