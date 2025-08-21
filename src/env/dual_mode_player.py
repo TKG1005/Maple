@@ -636,9 +636,9 @@ class DualModeEnvPlayer(EnvPlayer):
     async def _handle_battle_start(self, battle_id: str):
         """Handle battle start notification."""
         try:
-            # Create battle object
+            # Create battle object (use CustomBattle to match online path and enable replay saving)
             from poke_env.environment.abstract_battle import AbstractBattle
-            from poke_env.environment.battle import Battle
+            from src.env.custom_battle import CustomBattle
             
             # Get the generation from the format
             gen = 9  # Default to gen 9
@@ -656,7 +656,13 @@ class DualModeEnvPlayer(EnvPlayer):
             except Exception:
                 rt = None
             battle_tag_for_obj = rt if isinstance(rt, str) and rt else battle_id
-            battle = Battle(battle_tag_for_obj, self.username, self._logger, gen=gen)
+            battle = CustomBattle(
+                battle_tag_for_obj,
+                self.username,
+                self._logger,
+                gen=gen,
+                save_replays=getattr(self, "_save_replays", False),
+            )
             # Debug: log before registering the battle to help diagnose races
             try:
                 self._logger.debug(
