@@ -591,6 +591,74 @@ class StateObserver:
             # 詳細なエラー情報をログ出力してからエラーを再発生させる
             logging.error(f"EXTRACT ERROR: Path '{path}' failed with {type(e).__name__}: '{e}'")
             logging.error(f"EXTRACT ERROR: Context keys: {list(ctx.keys())}")
+
+            # 追加情報: ターン数 / teampreview / wait（battle が不完全なら取得不可を表示）
+            battle = ctx.get('battle')
+            if not battle:
+                logging.error("EXTRACT ERROR: Turn/teampreview/wait info not available (battle is None or missing)")
+            else:
+                # ターン数
+                turn_val = getattr(battle, 'turn', None)
+                if turn_val is None:
+                    logging.error("EXTRACT ERROR: Turn not available (battle.turn missing)")
+                else:
+                    logging.error(f"EXTRACT ERROR: Turn = {turn_val}")
+
+                # teampreview 判定: 可能な属性を順に参照して推定
+                teampreview_info = None
+                try:
+                    if hasattr(battle, 'in_team_preview'):
+                        teampreview_info = getattr(battle, 'in_team_preview')
+                    elif hasattr(battle, 'teampreview'):
+                        teampreview_info = getattr(battle, 'teampreview')
+                    else:
+                        tp_team = getattr(battle, 'teampreview_opponent_team', None)
+                        # Truthy であれば teampreview 中と推定（poke-envの振る舞いに依存）
+                        teampreview_info = bool(tp_team) if tp_team is not None else None
+                except Exception:
+                    teampreview_info = None
+                if teampreview_info is None:
+                    logging.error("EXTRACT ERROR: teampreview info not available (no indicative attributes)")
+                else:
+                    logging.error(f"EXTRACT ERROR: teampreview = {teampreview_info}")
+
+                # wait 判定: よくある属性を探索（取得できなければ不明）
+                wait_info = None
+                wait_source = None
+                try:
+                    if hasattr(battle, 'wait'):
+                        wait_info = getattr(battle, 'wait')
+                        wait_source = 'battle.wait'
+                    elif hasattr(battle, 'is_waiting'):
+                        wait_info = getattr(battle, 'is_waiting')
+                        wait_source = 'battle.is_waiting'
+                    else:
+                        req = getattr(battle, '_request', None) or getattr(battle, 'request', None)
+                        # Showdown の request が dict で {"wait": True} のような形の場合に対応
+                        if isinstance(req, dict):
+                            if 'wait' in req:
+                                wait_info = bool(req.get('wait'))
+                                wait_source = 'request.wait'
+                            elif req.get('request') == 'wait':
+                                wait_info = True
+                                wait_source = "request['request']=='wait'"
+                            else:
+                                # request の概要のみ出す
+                                wait_info = f"unknown (request keys: {list(req.keys())})"
+                                wait_source = 'request'
+                        elif isinstance(req, str):
+                            wait_info = (req.lower() == 'wait')
+                            wait_source = 'request(str)'
+                except Exception:
+                    wait_info = None
+                    wait_source = None
+                if wait_info is None:
+                    logging.error("EXTRACT ERROR: wait info not available (no indicative attributes)")
+                else:
+                    if isinstance(wait_info, (bool, str)):
+                        logging.error(f"EXTRACT ERROR: wait = {wait_info} (source={wait_source})")
+                    else:
+                        logging.error(f"EXTRACT ERROR: wait info = {wait_info} (source={wait_source})")
             
             # Additional debugging for specific problematic paths
             if 'my_bench2' in path:

@@ -25,7 +25,7 @@ checkpoint_dir: "checkpoints"
 tensorboard: true
 
 # Battle Mode Configuration
-battle_mode: "local"  # "local" (IPC) or "online" (WebSocket)
+battle_mode: "online"  # "local" (IPC) or "online" (WebSocket)
 
 # Local mode configuration (for battle_mode: "local")
 local_mode:
