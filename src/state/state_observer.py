@@ -15,6 +15,10 @@ from src.damage.calculator import DamageCalculator
 from src.damage.data_loader import DataLoader
 # Avoid circular import by importing MoveEmbeddingLayer only when needed
 
+# Global singletons for heavy embedding layers to avoid re-initialization per episode
+_GLOBAL_MOVE_EMBEDDING_LAYER = None
+_GLOBAL_SPECIES_EMBEDDING_LAYER = None
+
 
 class StateObserver:
     def __init__(self, yaml_path: str):
@@ -138,7 +142,13 @@ class StateObserver:
     
     def _get_move_embedding_layer(self):
         """Get move embedding layer with lazy initialization for performance."""
+        global _GLOBAL_MOVE_EMBEDDING_LAYER
         if not self._move_embedding_initialized:
+            # Reuse a global singleton if already created by another StateObserver
+            if _GLOBAL_MOVE_EMBEDDING_LAYER is not None:
+                self._move_embedding_layer = _GLOBAL_MOVE_EMBEDDING_LAYER
+                self._move_embedding_initialized = True
+                return self._move_embedding_layer
             try:
                 import torch
                 from src.agents.move_embedding_layer import MoveEmbeddingLayer
@@ -146,6 +156,7 @@ class StateObserver:
                 # Try to load the saved move embeddings
                 embedding_file = 'config/move_embeddings_256d_fixed.pkl'
                 self._move_embedding_layer = MoveEmbeddingLayer(embedding_file, device)
+                _GLOBAL_MOVE_EMBEDDING_LAYER = self._move_embedding_layer
                 print("Move embedding layer initialized successfully")
             except Exception as e:
                 print(f"Warning: Could not initialize move embedding layer: {e}")
@@ -155,7 +166,13 @@ class StateObserver:
     
     def _get_species_embedding_layer(self):
         """Get species embedding layer with lazy initialization for performance."""
+        global _GLOBAL_SPECIES_EMBEDDING_LAYER
         if not self._species_embedding_initialized:
+            # Reuse a global singleton if already created by another StateObserver
+            if _GLOBAL_SPECIES_EMBEDDING_LAYER is not None:
+                self._species_embedding_layer = _GLOBAL_SPECIES_EMBEDDING_LAYER
+                self._species_embedding_initialized = True
+                return self._species_embedding_layer
             try:
                 import torch
                 from src.agents.species_embedding_layer import SpeciesEmbeddingLayer
@@ -166,6 +183,7 @@ class StateObserver:
                     stats_csv_path="config/pokemon_stats.csv",
                     device=device
                 )
+                _GLOBAL_SPECIES_EMBEDDING_LAYER = self._species_embedding_layer
                 print("Species embedding layer initialized successfully")
             except Exception as e:
                 print(f"Warning: Could not initialize species embedding layer: {e}")

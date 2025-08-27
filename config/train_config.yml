@@ -58,7 +58,7 @@ opponent_mix: "self:10"       # Mixed opponents (e.g., "random:0.3,max:0.3,self:
 
 # Self-play win rate based opponent update
 win_rate_threshold: 0.7  # Win rate threshold for updating opponent (0.6-0.8 recommended)
-win_rate_window: 200       # Number of recent battles to track
+win_rate_window: 100       # Number of recent battles to track
 
 # League Training configuration (prevents catastrophic forgetting)
 league_training:
@@ -116,9 +116,9 @@ exploration:
   epsilon_greedy:
     enabled: true            # Enable ε-greedy exploration wrapper
     epsilon_start: 1.0      # Initial exploration rate (1.0 = always explore)
-    epsilon_end: 0.1        # Final exploration rate (0.05 = 5% exploration)
-    decay_steps: 800       # Number of episodes/steps to decay from start to end (reasonable for training)
-    decay_strategy: "linear" # Decay strategy: "linear" or "exponential" (linear for predictable decay)
+    epsilon_end: 0.2        # Final exploration rate (0.05 = 5% exploration)
+    decay_steps: 3000       # Number of episodes/steps to decay from start to end (reasonable for training)
+    decay_strategy: "exponential" # Decay strategy: "linear" or "exponential" (linear for predictable decay)
     decay_mode: "episode"    # Decay mode: "step" (per-action) or "episode" (per-episode)
 
 # Scheduler configuration

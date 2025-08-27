@@ -12,6 +12,7 @@ import numpy as np
 from poke_env.environment import Battle
 
 from .action_name_mapper import ActionNameMapper
+from src.action.action_helper import get_available_actions_with_details
 
 
 class ActionProbabilityLogger:
@@ -76,9 +77,16 @@ class ActionProbabilityLogger:
             "valid_actions": np.where(action_mask)[0].tolist()
         }
         
-        # Add action names if battle context available
+        # Add action names if battle context available (use detailed mapping for accuracy)
         if battle:
-            turn_data["selected_action_name"] = ActionNameMapper.get_action_name(selected_action, battle, player_id)
+            try:
+                _, details = get_available_actions_with_details(battle)
+                if selected_action in details:
+                    turn_data["selected_action_name"] = details[selected_action]["name"]
+                else:
+                    turn_data["selected_action_name"] = ActionNameMapper.get_action_name(selected_action, battle, player_id)
+            except Exception:
+                turn_data["selected_action_name"] = ActionNameMapper.get_action_name(selected_action, battle, player_id)
             
         self.current_battle["turns"].append(turn_data)
         
@@ -109,10 +117,20 @@ class ActionProbabilityLogger:
             if len(valid_indices) > 0:
                 probs_and_indices = [(action_probs[i], i) for i in valid_indices]
                 probs_and_indices.sort(reverse=True)
-                
+                # Try to get accurate names via detailed mapping
+                details = None
+                if battle:
+                    try:
+                        _, details = get_available_actions_with_details(battle)
+                    except Exception:
+                        details = None
+
                 f.write("Action probabilities:\n")
                 for prob, idx in probs_and_indices:
-                    action_name = ActionNameMapper.get_action_name(idx, battle, player_id)
+                    if details and idx in details:
+                        action_name = details[idx]["name"]
+                    else:
+                        action_name = ActionNameMapper.get_action_name(idx, battle, player_id)
                     selected = " [SELECTED]" if idx == selected_action else ""
                     f.write(f"  {action_name}: {prob*100:.1f}%{selected}\n")
                     

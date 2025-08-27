@@ -6,13 +6,20 @@ from . import RewardBase
 
 
 class KnockoutReward(RewardBase):
-    """撃破と被撃破に基づいて報酬を計算するクラス。"""
+    """撃破と被撃破に基づいて報酬を計算するクラス。
 
-    ENEMY_KO_BONUS = 1.0
-    SELF_KO_PENALTY = -0.5
+    Parameters
+    ----------
+    enemy_ko_bonus : float
+        相手ポケモンを倒したときのボーナス
+    self_ko_penalty : float
+        自分のポケモンが倒れたときのペナルティ（負の値）
+    """
 
-    def __init__(self) -> None:
+    def __init__(self, *, enemy_ko_bonus: float = 1.0, self_ko_penalty: float = -1.0) -> None:
         # 前ターンの HP と生存状態を記録しておく
+        self.enemy_ko_bonus = float(enemy_ko_bonus)
+        self.self_ko_penalty = float(self_ko_penalty)
         self.prev_my_hp: Dict[int, int] = {}
         self.prev_opp_hp: Dict[int, int] = {}
         self.prev_my_alive: Dict[int, bool] = {}
@@ -59,10 +66,7 @@ class KnockoutReward(RewardBase):
             self.prev_opp_hp[id(mon)] = cur_hp
             self.prev_opp_alive[id(mon)] = alive
 
-        reward = (
-            enemy_kos * self.ENEMY_KO_BONUS
-            + self_kos * self.SELF_KO_PENALTY
-        )
+        reward = enemy_kos * self.enemy_ko_bonus + self_kos * self.self_ko_penalty
         return float(reward)
 
 

@@ -159,20 +159,23 @@ def run_episode_multi(
     done = False
     reward0 = 0.0
     reward1 = 0.0
-    turn = 0
     while not done:
-        turn += 1
-        action0 = agent0.act(obs0, mask0) if env._need_action[env.agent_ids[0]] else 0
-        action1 = agent1.act(obs1, mask1) if env._need_action[env.agent_ids[1]] else 0
-        
-        # Log action probabilities if logger is provided
-        if action_logger and isinstance(agent0, RLAgent):
+        # Use the current battle object for accurate turn information
+        battle = env.get_current_battle(env.agent_ids[0])
+        current_turn = getattr(battle, 'turn', 0) if battle is not None else 0
+
+        need0 = env._need_action.get(env.agent_ids[0], True)
+        need1 = env._need_action.get(env.agent_ids[1], True)
+
+        action0 = agent0.act(obs0, mask0) if need0 else 0
+        action1 = agent1.act(obs1, mask1) if need1 else 0
+
+        # Log only when our agent actually needs to act (avoid wait turns)
+        if need0 and action_logger and isinstance(agent0, RLAgent):
             probs_data = agent0.get_last_action_probs()
             if probs_data:
                 probs, mask = probs_data
-                # Get current battle object
-                battle = env.get_current_battle(env.agent_ids[0])
-                action_logger.log_turn(env.agent_ids[0], turn, probs, mask, action0, battle)
+                action_logger.log_turn(env.agent_ids[0], current_turn, probs, mask, action0, battle)
                 
         observations, rewards, terms, truncs, _, masks = env.step(
             {"player_0": action0, "player_1": action1}, return_masks=True

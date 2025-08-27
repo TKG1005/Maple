@@ -45,6 +45,6 @@ rewards:
     weight: 1.0      # 合成時の重み
     # 係数（CompositeReward経由で HPDeltaReward に反映）
     self_damage_coef: -0.01   # 自軍のHP減少（被ダメ）1%あたりのペナルティ
-    self_heal_coef: 0.001      # 自軍のHP回復1%あたりのボーナス
+    self_heal_coef: 0     # 自軍のHP回復1%あたりのボーナス
     enemy_damage_coef: 0.01   # 相手のHP減少（与ダメ）1%あたりのボーナス
-    enemy_heal_coef: -0.005    # 相手のHP回復1%あたりのペナルティ
+    enemy_heal_coef: 0    # 相手のHP回復1%あたりのペナルティ

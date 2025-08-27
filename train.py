@@ -985,6 +985,8 @@ def main(
         return league_enabled and len(historical_opponents) > 0 and np.random.random() < historical_ratio
 
     for ep in range(start_episode, start_episode + episodes):
+        # Print episode start log to stdout as requested
+        print(f"episode {ep - start_episode + 1} start!", flush=True)
         start_time = time.perf_counter()
         
         # Prepare environments and agents for this episode
