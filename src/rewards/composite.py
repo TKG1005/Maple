@@ -8,6 +8,7 @@ except Exception:  # pragma: no cover - fallback when PyYAML is missing
     yaml = None
 
 from . import RewardBase
+from .hp_delta import HPDeltaReward
 from .knockout import KnockoutReward
 from .turn_penalty import TurnPenaltyReward
 from .fail_and_immune import FailAndImmuneReward
@@ -20,6 +21,7 @@ class CompositeReward(RewardBase):
     """複数のサブ報酬を合成するクラス。"""
 
     DEFAULT_REWARDS: Mapping[str, Callable[[], RewardBase]] = {
+        "hp_delta": HPDeltaReward,
         "knockout": KnockoutReward,
         "turn_penalty": TurnPenaltyReward,
         "fail_immune": FailAndImmuneReward,
@@ -67,10 +69,26 @@ class CompositeReward(RewardBase):
             elif name == "fail_immune":
                 penalty = float(params.get("penalty", -1.0))  # Use original default from FailAndImmuneReward class
                 self.rewards[name] = factory(penalty=penalty)
+            elif name == "knockout":
+                enemy_ko_bonus = float(params.get("enemy_ko_bonus", 1.0))
+                self_ko_penalty = float(params.get("self_ko_penalty", -1.0))
+                self.rewards[name] = factory(enemy_ko_bonus=enemy_ko_bonus, self_ko_penalty=self_ko_penalty)
             elif name == "win_loss":
                 win_reward = float(params.get("win_reward", 30.0))
                 loss_penalty = float(params.get("loss_penalty", -30.0))
                 self.rewards[name] = factory(win_reward=win_reward, loss_penalty=loss_penalty)
+            elif name == "hp_delta":
+                # Allow overriding coefficients from config
+                self_damage_coef = float(params.get("self_damage_coef", -0.01))
+                self_heal_coef = float(params.get("self_heal_coef", 0.01))
+                enemy_damage_coef = float(params.get("enemy_damage_coef", 0.01))
+                enemy_heal_coef = float(params.get("enemy_heal_coef", -0.01))
+                self.rewards[name] = factory(
+                    self_damage_coef=self_damage_coef,
+                    self_heal_coef=self_heal_coef,
+                    enemy_damage_coef=enemy_damage_coef,
+                    enemy_heal_coef=enemy_heal_coef,
+                )
             else:
                 self.rewards[name] = factory()
             

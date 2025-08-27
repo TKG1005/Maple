@@ -1,15 +1,18 @@
 rewards:
   # 勝敗報酬 - 絶対的優先度（最重要）
   win_loss:
-    weight: 3.0  # 他の報酬より3倍重要
+    weight: 1.0
     enabled: true
-    win_reward: 30.0   # 勝利時の大きな正の報酬
-    loss_penalty: -30.0  # 敗北時の大きな負のペナルティ
+    win_reward: 50.0   # 勝利時の大きな正の報酬
+    loss_penalty: -50.0  # 敗北時の大きな負のペナルティ
   
   # ノックアウト報酬 - 勝利への直接的貢献（重要）
   knockout:
     weight: 1.0
     enabled: true
+    # 相手撃破時のボーナス・自分被撃破時のペナルティを個別に設定
+    enemy_ko_bonus: 1.0     # 相手を倒したときのボーナス
+    self_ko_penalty: -1.0   # 自分が倒れたときのペナルティ（負の値）
   
   # ポケモン数差報酬 - 勝敗に直結（重要）
   pokemon_count:
@@ -18,18 +21,30 @@ rewards:
   
   # 無効行動ペナルティ - 学習効率向上（補助的だが重要）
   fail_immune:
-    weight: 0.8
+    weight: 1.0
     enabled: true
     penalty: -0.5
   
   # スイッチペナルティ - 戦術安定性（補助的）
   switch_penalty:
-    weight: 0.3
-    enabled: true
-    penalty: -1.0
+    weight: 1.0
+    enabled: false
+    penalty: -0.1
     threshold: 7
   
   # ターンペナルティ - 効率性向上（最小限の補助）
   turn_penalty:
-    weight: 0.1
+    weight: 0.05
     enabled: true
+
+  # HP差分報酬（HPDeltaReward）
+  # CompositeRewardでも使用可能。enabledで有効化。
+  # 係数はコード内定数（下記参照）で設定からは変更不可。
+  hp_delta:
+    enabled: true   # デフォルト無効。必要に応じて true。
+    weight: 1.0      # 合成時の重み
+    # 係数（CompositeReward経由で HPDeltaReward に反映）
+    self_damage_coef: -0.01   # 自軍のHP減少（被ダメ）1%あたりのペナルティ
+    self_heal_coef: 0.001      # 自軍のHP回復1%あたりのボーナス
+    enemy_damage_coef: 0.01   # 相手のHP減少（与ダメ）1%あたりのボーナス
+    enemy_heal_coef: -0.005    # 相手のHP回復1%あたりのペナルティ

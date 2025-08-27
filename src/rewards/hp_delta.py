@@ -8,22 +8,30 @@ from . import RewardBase
 class HPDeltaReward(RewardBase):
     """HP の増減に基づいて報酬を計算するクラス。"""
 
-    SELF_DAMAGE_COEF = -0.01
-    SELF_HEAL_COEF = 0.01
-    ENEMY_DAMAGE_COEF = 0.01
-    ENEMY_HEAL_COEF = -0.01
-
     # 以下 2 つの定数は R-3 で設定ファイル化する予定
     BONUS_THRESHOLD = 0.5
     BONUS_VALUE = 0.1
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        self_damage_coef: float = -0.01,
+        self_heal_coef: float = 0.01,
+        enemy_damage_coef: float = 0.01,
+        enemy_heal_coef: float = -0.01,
+    ) -> None:
         self.prev_my_hp: Dict[int, int] = {}
         self.prev_opp_hp: Dict[int, int] = {}
         self.self_damage = 0.0
         self.self_heal = 0.0
         self.enemy_damage = 0.0
         self.enemy_heal = 0.0
+
+        # Coefficients (configurable via reward.yaml when used through CompositeReward)
+        self.self_damage_coef = float(self_damage_coef)
+        self.self_heal_coef = float(self_heal_coef)
+        self.enemy_damage_coef = float(enemy_damage_coef)
+        self.enemy_heal_coef = float(enemy_heal_coef)
 
     def reset(self, battle: object | None = None) -> None:
         """状態をリセットする。``battle`` が与えられれば HP を初期化する。"""
@@ -81,10 +89,10 @@ class HPDeltaReward(RewardBase):
         self.enemy_heal = enemy_heal
 
         reward = (
-            self_damage * self.SELF_DAMAGE_COEF
-            + self_heal * self.SELF_HEAL_COEF
-            + enemy_damage * self.ENEMY_DAMAGE_COEF
-            + enemy_heal * self.ENEMY_HEAL_COEF
+            self_damage * self.self_damage_coef
+            + self_heal * self.self_heal_coef
+            + enemy_damage * self.enemy_damage_coef
+            + enemy_heal * self.enemy_heal_coef
         )
         bonus = 0.0
         if (
