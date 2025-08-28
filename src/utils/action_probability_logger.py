@@ -53,7 +53,8 @@ class ActionProbabilityLogger:
         action_probs: np.ndarray, 
         action_mask: np.ndarray,
         selected_action: int,
-        battle: Optional[Battle] = None
+        battle: Optional[Battle] = None,
+        value_estimate: float | None = None,
     ) -> None:
         """Log action probabilities for a turn.
         
@@ -74,8 +75,10 @@ class ActionProbabilityLogger:
             "selected_action": int(selected_action),
             "action_probs": action_probs.tolist(),
             "action_mask": action_mask.tolist(),
-            "valid_actions": np.where(action_mask)[0].tolist()
+            "valid_actions": np.where(action_mask)[0].tolist(),
         }
+        if value_estimate is not None:
+            turn_data["value_estimate"] = float(value_estimate)
         
         # Add action names if battle context available (use detailed mapping for accuracy)
         if battle:
@@ -91,7 +94,9 @@ class ActionProbabilityLogger:
         self.current_battle["turns"].append(turn_data)
         
         # Also write human-readable format
-        self._write_human_readable(player_id, turn, action_probs, action_mask, selected_action, battle)
+        self._write_human_readable(
+            player_id, turn, action_probs, action_mask, selected_action, battle, value_estimate
+        )
         
     def _write_human_readable(
         self,
@@ -100,7 +105,8 @@ class ActionProbabilityLogger:
         action_probs: np.ndarray,
         action_mask: np.ndarray,
         selected_action: int,
-        battle: Optional[Battle] = None
+        battle: Optional[Battle] = None,
+        value_estimate: float | None = None,
     ) -> None:
         """Write human-readable log entry."""
         with open(self.txt_file, 'a', encoding='utf-8') as f:
@@ -111,6 +117,10 @@ class ActionProbabilityLogger:
                 f.write(f"{'='*60}\n")
                 
             f.write(f"\nTurn {turn} - {player_id}:\n")
+            
+            # Value estimate (state value) display if available
+            if value_estimate is not None:
+                f.write(f"State value estimate (V): {value_estimate:.4f}\n")
             
             # Sort actions by probability
             valid_indices = np.where(action_mask)[0]

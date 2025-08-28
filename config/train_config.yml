@@ -117,7 +117,7 @@ exploration:
     enabled: true            # Enable ε-greedy exploration wrapper
     epsilon_start: 1.0      # Initial exploration rate (1.0 = always explore)
     epsilon_end: 0.2        # Final exploration rate (0.05 = 5% exploration)
-    decay_steps: 100      # Number of episodes/steps to decay from start to end (reasonable for training)
+    decay_steps: 200      # Number of episodes/steps to decay from start to end (reasonable for training)
     decay_strategy: "linear" # Decay strategy: "linear" or "exponential" (linear for predictable decay)
     decay_mode: "episode"    # Decay mode: "step" (per-action) or "episode" (per-episode)
 

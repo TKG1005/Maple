@@ -175,7 +175,14 @@ def run_episode_multi(
             probs_data = agent0.get_last_action_probs()
             if probs_data:
                 probs, mask = probs_data
-                action_logger.log_turn(env.agent_ids[0], current_turn, probs, mask, action0, battle)
+                # Compute value estimate for logging
+                try:
+                    value_est = agent0.get_value(obs0)
+                except Exception:
+                    value_est = None
+                action_logger.log_turn(
+                    env.agent_ids[0], current_turn, probs, mask, action0, battle, value_estimate=value_est
+                )
                 
         observations, rewards, terms, truncs, _, masks = env.step(
             {"player_0": action0, "player_1": action1}, return_masks=True
